@@ -1,0 +1,19 @@
+.time-container {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+}
+
+.time {
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.time-period {
+    color: white;
+    font-weight: 600;
+    opacity: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}

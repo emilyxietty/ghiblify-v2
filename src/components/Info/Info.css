@@ -1,0 +1,47 @@
+.info-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    padding: 0.5rem 2rem;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    max-width: 60vw;
+    width: 60vw;
+    text-align: center;
+}
+
+.info-item {
+    margin-bottom: 1rem;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    width: 100%;
+    pointer-events: none;
+    white-space: break-spaces;
+}
+
+/* 
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-item-small {
+    font-size: 1rem;
+}
+
+.info-item-medium {
+    font-size: 1.2rem;
+}
+
+.info-item-large {
+    font-size: 3rem;
+} */
