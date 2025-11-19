@@ -9,13 +9,13 @@
     align-items: center;
     justify-content: center;
     color: white;
-    cursor: pointer;
-    padding: 0.5rem 2rem;
+    /* cursor: pointer; */
     border-radius: 8px;
     transition: background-color 0.3s ease;
-    max-width: 60vw;
-    width: 60vw;
+    width: min(80vw, 700px);
     text-align: center;
+    user-select: none;
+
 }
 
 .info-item {

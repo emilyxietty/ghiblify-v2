@@ -1,6 +1,6 @@
 .time-container {
-    display: inline-flex;
-    align-items: baseline;
+    display: flex;
+    align-items: center;
     justify-content: center;
     gap: 4px;
 }
@@ -9,6 +9,8 @@
     color: white;
     font-weight: 600;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    user-select: none;
+
 }
 
 .time-period {

@@ -1,0 +1,13 @@
+.avatar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-image {
+    object-fit: contain;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    user-select: none;
+    pointer-events: none;
+}

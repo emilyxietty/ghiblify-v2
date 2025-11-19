@@ -2,147 +2,259 @@
     position: fixed;
     z-index: 1000;
     border-radius: 12px;
-    padding: 10px 50px;
+    padding: 10px;
     transition: box-shadow 0.2s ease;
     max-width: 80%;
     width: max-content;
     white-space: nowrap;
 }
 
-.widget-content {
-    position: relative;
-}
-
-.widget:hover {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.edit-button {
-    position: absolute;
-    bottom: 30px;
-    right: 0;
-    background: rgba(0, 0, 0, 0.8);
-    border: none;
-    border-radius: 6px;
-    padding: 4px 8px;
+.widget.draggable {
     cursor: pointer;
-    user-select: none;
-    font-size: 16px;
-    color: white;
-    transition: all 0.2s ease;
 }
 
-.edit-button:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-
-.drag-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 6px;
-    padding: 4px 8px;
-    cursor: move;
-    user-select: none;
-    font-size: 16px;
-    color: white;
-    transition: all 0.2s ease;
-}
-
-.drag-handle:hover {
-    background: rgba(0, 0, 0, 0.9);
-}
-
-.drag-handle:active {
+.widget.draggable:active {
     cursor: grabbing;
 }
 
-.edit-popup {
+.widget-content {
+    position: relative;
+    pointer-events: auto;
+}
+
+/* Widget overlay mask */
+.widget-overlay {
     position: absolute;
-    top: 100%;
+    top: 0;
     left: 0;
-    margin-top: 10px;
-    background: rgba(0, 0, 0, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 16px;
-    min-width: 250px;
-    z-index: 1001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.edit-popup-header {
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    border-radius: 12px;
+    z-index: 10;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    padding: 20px;
 }
 
-.edit-popup-header h3 {
-    margin: 0;
-    font-size: 16px;
-    color: white;
+.widget-overlay:not(:has(.widget-controls-container, .field-selector)) {
+    pointer-events: auto;
+    cursor: move;
 }
 
-.edit-close {
-    background: transparent;
+.widget-overlay.draggable-overlay {
+    pointer-events: auto;
+    cursor: move;
+}
+
+.widget.dragging .widget-overlay {
+    opacity: 0;
+}
+
+/* Controls need pointer events */
+.widget-controls-container,
+.field-selector {
+    pointer-events: auto;
+}
+
+/* .widget-label {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: capitalize;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+} */
+
+/* Alignment classes - apply to all children */
+.widget-align-left,
+.widget-align-left .widget-content,
+.widget-align-left .widget-content>* {
+    text-align: left;
+    align-items: flex-start;
+}
+
+.widget-align-center,
+.widget-align-center .widget-content,
+.widget-align-center .widget-content>* {
+    text-align: center;
+    align-items: center;
+}
+
+.widget-align-right,
+.widget-align-right .widget-content,
+.widget-align-right .widget-content>* {
+    text-align: right;
+    align-items: flex-end;
+}
+
+.widget.dragging {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.widget-section {
+    display: flex;
+    flex-direction: row;
+}
+
+.widget-controls-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+    z-index: 20;
+}
+
+.font-size-control-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+
+.font-size-indicator {
+    background: rgba(0, 0, 0, 0.8);
     border: none;
     color: white;
-    font-size: 20px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    padding: 0;
-    width: 24px;
-    height: 24px;
+    transition: all 0.2s;
+}
+
+.font-size-indicator:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.font-size-btn {
+    height: 28px;
+    width: 28px;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
+    user-select: none;
 }
 
-.edit-close:hover {
-    color: #ff6b6b;
+.font-size-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
 }
 
-.edit-popup-content {
+.font-size-btn:active {
+    transform: scale(0.95);
+}
+
+.font-size-minus {
+    position: absolute;
+    right: 100%;
+    margin-right: 4px;
+}
+
+.font-size-plus {
+    position: absolute;
+    left: 100%;
+    margin-left: 4px;
+}
+
+.font-size-controls {
     color: white;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.grid-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 999;
+.font-icon-small {
+    font-size: 10px;
+    font-weight: 600;
 }
 
-/* Vertical lines */
-.grid-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
+.font-icon-large {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.time-format-toggle {
+    height: 28px;
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    user-select: none;
+    min-width: 40px;
+}
+
+.time-format-toggle:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.time-format-toggle:active {
+    transform: scale(0.95);
+}
+
+.size-control-wrapper {
     height: 100%;
-    width: 2px;
-    background: rgba(255, 255, 255, 0.5);
-    left: 2%;
-    box-shadow:
-        calc(48vw - 1px) 0 0 rgba(255, 255, 255, 0.5),
-        calc(96vw - 1px) 0 0 rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
 }
 
-/* Horizontal lines */
-.grid-overlay::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.5);
-    top: 2%;
-    box-shadow:
-        0 calc(48vh - 1px) 0 rgba(255, 255, 255, 0.5),
-        0 calc(96vh - 1px) 0 rgba(255, 255, 255, 0.5);
+.size-controls {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.size-btn {
+    height: 28px;
+    width: 28px;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    color: white;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.size-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.size-btn:active {
+    transform: scale(0.95);
 }
