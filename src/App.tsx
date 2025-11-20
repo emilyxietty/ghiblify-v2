@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { Avatar } from "./components/Avatar/Avatar";
 import { Button } from "./components/Button/Button";
@@ -32,7 +32,32 @@ const AppContent: React.FC = () => {
     widgetVisibility,
   } = useAppContext();
 
-  console.log("Widget visibility:", widgetVisibility); // Debug log
+  //   const widgetsContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showWidgetEdits) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const widget = (e.target as HTMLElement).closest(".widget");
+      if (!widget) {
+        toggleEditMode();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter") {
+        toggleEditMode();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showWidgetEdits, toggleEditMode]);
 
   return (
     <>
@@ -46,7 +71,7 @@ const AppContent: React.FC = () => {
             pill
             onClick={toggleEditMode}
           >
-            ✓ Done
+            Done
           </Button>
         </div>
       )}
@@ -85,9 +110,14 @@ const AppContent: React.FC = () => {
             />
           </Widget>
         )}
-        <Widget storageKey="avatar_position" initialPosition={{ x: 80, y: 20 }}>
-          <Avatar />
-        </Widget>
+        {widgetVisibility.avatar && !bgLoading && !infoLoading && (
+          <Widget
+            storageKey="avatar_position"
+            initialPosition={{ x: 80, y: 20 }}
+          >
+            <Avatar />
+          </Widget>
+        )}
       </Background>
     </>
   );

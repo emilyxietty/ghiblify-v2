@@ -11,9 +11,10 @@ interface WidgetVisibility {
   date: boolean;
   info: boolean;
   todo: boolean;
+  avatar: boolean; // Added avatar
 }
 
-interface InfoFields {
+export interface InfoFields {
   japaneseTitle: boolean;
   title: boolean;
   year: boolean;
@@ -55,11 +56,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       const dateVisible = localStorage.getItem("date_switch") !== "off";
       const infoVisible = localStorage.getItem("info_switch") !== "off";
       const todoVisible = localStorage.getItem("todo_switch") !== "off";
+      const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
       return {
         time: timeVisible,
         date: dateVisible,
         info: infoVisible,
         todo: todoVisible,
+        avatar: avatarVisible, // Added avatar
       };
     }
   );

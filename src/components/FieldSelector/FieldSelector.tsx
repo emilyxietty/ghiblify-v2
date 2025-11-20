@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "../Button/Button";
 import "./FieldSelector.css";
 
 export interface FieldOption {
@@ -44,19 +45,19 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
   return (
     <div className={`field-selector field-selector-${variant}`}>
       {options.map((option) => (
-        <button
+        <Button
           key={option.value}
-          className={`field-pill ${
-            selectedValues.includes(option.value) ? "active" : ""
-          } ${isLastSelected(option.value) ? "last-selected" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
             handleToggle(option.value);
           }}
+          variant={selectedValues.includes(option.value) ? "dark" : "light"}
+          size="small"
+          pill
           disabled={isLastSelected(option.value)}
         >
           {option.label}
-        </button>
+        </Button>
       ))}
     </div>
   );

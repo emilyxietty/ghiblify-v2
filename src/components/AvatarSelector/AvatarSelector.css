@@ -1,14 +1,3 @@
-.avatar-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px;
-    max-width: 500px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-}
-
 .avatar-option {
     width: 60px;
     height: 60px;
@@ -45,4 +34,67 @@
 
 .avatar-option:active {
     transform: scale(0.95);
+}
+
+.avatar-selector-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    pointer-events: auto;
+}
+
+.avatar-nav-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.avatar-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.avatar-nav-btn:active {
+    transform: scale(0.95);
+}
+
+.avatar-nav-btn svg {
+    font-size: 18px;
+}
+
+.avatar-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px;
+}
+
+.avatar-preview img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+}
+
+.avatar-label {
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
 }

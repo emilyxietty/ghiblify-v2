@@ -2,13 +2,21 @@ export interface WidgetConfig {
   name: string;
   storageKey: string;
   fontSize: {
+    min?: number;
+    max?: number;
+    default: number;
+    step?: number;
+    enabled: boolean;
+  };
+  darkMode?: { enabled: boolean; default: boolean };
+  width?: {
     min: number;
     max: number;
     default: number;
     step: number;
     enabled: boolean;
   };
-  width?: {
+  height?: {
     min: number;
     max: number;
     default: number;
@@ -73,16 +81,24 @@ export const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
     name: "Todo",
     storageKey: "todo_position",
     fontSize: {
-      min: 10,
-      max: 50,
       default: 14,
-      step: 5,
       enabled: false,
+    },
+    darkMode: {
+      enabled: true,
+      default: false,
     },
     width: {
       min: 250,
-      max: 450,
+      max: 600,
       default: 350,
+      step: 50,
+      enabled: true,
+    },
+    height: {
+      min: 100,
+      max: 700,
+      default: 500,
       step: 50,
       enabled: true,
     },

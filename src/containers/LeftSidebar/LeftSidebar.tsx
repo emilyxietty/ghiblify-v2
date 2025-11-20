@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button/Button";
+import {
+  GITHUB_REPO_URL,
+  SIDEBAR_EDGE_TRIGGER,
+  SIDEBAR_WIDTH,
+} from "../../config/appConfig";
 import { BackgroundFilters, useAppContext } from "../../contexts/AppContext";
 import "./LeftSidebar.css";
 
@@ -17,9 +22,9 @@ export const LeftSidebar: React.FC = () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const sidebarWidth = Math.min(450, window.innerWidth);
+      const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
 
-      if (e.clientX < 50) {
+      if (e.clientX < SIDEBAR_EDGE_TRIGGER) {
         setIsOpen(true);
       } else if (isOpen && e.clientX > sidebarWidth) {
         setIsOpen(false);
@@ -33,11 +38,7 @@ export const LeftSidebar: React.FC = () => {
   }, [isOpen]);
 
   const handleGithubClick = () => {
-    window.open(
-      "https://github.com/emilyxietty/ghiblify-v2",
-      "_blank",
-      "noopener,noreferrer"
-    );
+    window.open(GITHUB_REPO_URL, "_blank", "noopener,noreferrer");
   };
 
   const handleFilterChange = (

@@ -1,8 +1,12 @@
 import React from "react";
 import "./Button.css";
 
-export type ButtonVariant = "light" | "dark" | "outline-light" | "outline-dark";
-
+export type ButtonVariant =
+  | "light"
+  | "dark"
+  | "outline-light"
+  | "outline-dark"
+  | "transparent";
 export type ButtonSize = "small" | "medium" | "large";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,7 +14,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   fullWidth?: boolean;
   pill?: boolean;
-  children: React.ReactNode;
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -18,6 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
   size = "medium",
   fullWidth = false,
   pill = false,
+  icon,
   children,
   className = "",
   disabled = false,
@@ -30,6 +36,7 @@ export const Button: React.FC<ButtonProps> = ({
     fullWidth ? "btn-full-width" : "",
     pill ? "btn-pill" : "",
     disabled ? "btn-disabled" : "",
+    icon && "btn-icon",
     className,
   ]
     .filter(Boolean)
@@ -37,6 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button className={classes} disabled={disabled} {...props}>
+      {icon && <span className="btn-icon-element">{icon}</span>}
       {children}
     </button>
   );

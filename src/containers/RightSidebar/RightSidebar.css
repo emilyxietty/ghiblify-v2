@@ -92,6 +92,42 @@
     opacity: 0.8;
 }
 
+/* Avatar icon styles */
+.widget-icon img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    display: block;
+    transition: box-shadow 0.2s;
+}
+
+/* Add a dark overlay on top of the avatar image */
+.widget-icon.avatar-with-overlay {
+    position: relative;
+}
+
+.widget-icon.avatar-with-overlay img {
+    filter: brightness(0.4);
+    transition: filter 0.3s ease;
+}
+
+.widget-icon.avatar-with-overlay:hover img {
+    filter: brightness(0.7);
+    transition: filter 0.3s ease;
+}
+
+.widget-icon.avatar-with-overlay.active img {
+    filter: brightness(1);
+    transition: filter 0.3s ease;
+}
+
+/* General widget icon hover effect */
+.widget-icon:hover {
+    cursor: pointer;
+}
+
 /* Scrollbar styling */
 .right-sidebar::-webkit-scrollbar {
     width: 6px;

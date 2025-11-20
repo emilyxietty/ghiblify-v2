@@ -124,3 +124,27 @@
     width: 1em;
     height: 1em;
 }
+
+.btn-icon {
+    padding: 12px;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.btn-icon-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* font-size: 1.2em; */
+}
+
+.btn-transparent {
+    background: transparent;
+    border: none;
+    color: inherit;
+    box-shadow: none;
+}

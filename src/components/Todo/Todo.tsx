@@ -1,3 +1,5 @@
+import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
 import React, { useEffect, useRef, useState } from "react";
 import "./Todo.css";
 
@@ -7,14 +9,27 @@ interface TodoItem {
   checked: boolean;
 }
 
-export const Todo: React.FC = () => {
+interface TodoProps {
+  //   darkMode?: boolean;
+}
+
+export const Todo: React.FC<TodoProps> = ({}) => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [width, setWidth] = useState(() => {
     return parseInt(localStorage.getItem("todo_width") || "350");
   });
+  const [height, setHeight] = useState(() => {
+    return parseInt(localStorage.getItem("todo_height") || "500");
+  });
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("todo_darkMode");
+    return saved ? saved === "true" : false;
+  });
 
   // Load todos from localStorage on mount
   useEffect(() => {
@@ -29,21 +44,24 @@ export const Todo: React.FC = () => {
     }
 
     // Listen for custom settings change event
-    const handleSettingsChange = (e: CustomEvent) => {
-      if (e.detail.width) {
-        setWidth(e.detail.width);
+    const handleSettingsChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail.width !== undefined) {
+        setWidth(customEvent.detail.width);
+        localStorage.setItem("todo_width", customEvent.detail.width.toString());
+      }
+      if (customEvent.detail.height !== undefined) {
+        setHeight(customEvent.detail.height);
+        localStorage.setItem(
+          "todo_height",
+          customEvent.detail.height.toString()
+        );
       }
     };
 
-    window.addEventListener(
-      "todoSettingsChange",
-      handleSettingsChange as EventListener
-    );
+    window.addEventListener("todoSettingsChange", handleSettingsChange);
     return () => {
-      window.removeEventListener(
-        "todoSettingsChange",
-        handleSettingsChange as EventListener
-      );
+      window.removeEventListener("todoSettingsChange", handleSettingsChange);
     };
   }, []);
 
@@ -110,11 +128,48 @@ export const Todo: React.FC = () => {
     return a.checked ? 1 : -1;
   });
 
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (index: number) => {
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (index: number) => {
+    if (draggedIndex === null) return;
+    const updated = [...sortedTodos];
+    const [removed] = updated.splice(draggedIndex, 1);
+    updated.splice(index, 0, removed);
+    setTodos(updated);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  useEffect(() => {
+    const handler = () => {
+      const saved = localStorage.getItem("todo_darkMode");
+      setDarkMode(saved === "true");
+    };
+    window.addEventListener("todoSettingsChange", handler);
+    return () => window.removeEventListener("todoSettingsChange", handler);
+  }, []);
+
   return (
     <div
-      className="todo-container"
+      className={`todo-container${darkMode ? " todo-dark" : ""}`}
       onMouseDown={handleMouseDown}
-      style={{ width: `${width}px` }}
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        minHeight: `${height}px`,
+        boxSizing: "border-box",
+      }}
     >
       <div className="todo-input-wrapper">
         <input
@@ -135,19 +190,28 @@ export const Todo: React.FC = () => {
 
       {todos.length > 0 && (
         <ul className="todo-list">
-          {sortedTodos.map((todo) => (
+          {sortedTodos.map((todo, index) => (
             <li
               key={todo.id}
-              className={`todo-item ${todo.checked ? "checked" : ""}`}
+              className={`todo-item ${todo.checked ? "checked" : ""} ${
+                draggedIndex === index ? "dragging" : ""
+              } ${dragOverIndex === index ? "drag-over" : ""}`}
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => {
+                e.preventDefault();
+                handleDragOver(index);
+              }}
+              onDrop={() => handleDrop(index)}
+              onDragEnd={handleDragEnd}
             >
               <div className="todo-item-content">
                 <button
                   className="todo-checkbox"
                   onClick={() => toggleTodo(todo.id)}
                 >
-                  {todo.checked && "✓"}
+                  {todo.checked && <CheckIcon style={{ fontSize: "14px" }} />}
                 </button>
-
                 {editingId === todo.id ? (
                   <input
                     id={`todo-edit-${todo.id}`}
@@ -167,12 +231,11 @@ export const Todo: React.FC = () => {
                     {todo.text}
                   </span>
                 )}
-
                 <button
                   className="todo-delete-btn"
                   onClick={() => deleteTodo(todo.id)}
                 >
-                  ×
+                  <ClearIcon style={{ fontSize: "14px" }} />
                 </button>
               </div>
             </li>
