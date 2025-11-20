@@ -1,42 +1,36 @@
 import React, { useEffect, useState } from "react";
+import { useAppContext } from "../../contexts/AppContext";
 import "./Time.css";
 
 export const Time: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [fontSize, setFontSize] = useState(() => {
-    const saved = localStorage.getItem("time_fontSize");
-    return saved ? parseInt(saved) : 48;
-  });
-  const [is24Hour, setIs24Hour] = useState(() => {
-    const saved = localStorage.getItem("time_is24Hour");
-    return saved === "true";
-  });
+  const { timeSettings, updateTimeSettings } = useAppContext();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-
-    const handleSettingsChange = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail.fontSize !== undefined) {
-        setFontSize(customEvent.detail.fontSize);
-      }
-      if (customEvent.detail.is24Hour !== undefined) {
-        setIs24Hour(customEvent.detail.is24Hour);
-      }
-    };
-
-    window.addEventListener("timeSettingsChange", handleSettingsChange);
-
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener("timeSettingsChange", handleSettingsChange);
-    };
+    return () => clearInterval(timer);
   }, []);
+
+  //   useEffect(() => {
+  //     const handleSettingsChange = (e: Event) => {
+  //       const customEvent = e as CustomEvent;
+  //       if (customEvent.detail.fontSize !== undefined) {
+  //         updateTimeSettings({ fontSize: customEvent.detail.fontSize });
+  //       }
+  //       if (customEvent.detail.is24Hour !== undefined) {
+  //         updateTimeSettings({ is24Hour: customEvent.detail.is24Hour });
+  //       }
+  //     };
+  //     window.addEventListener("timeSettingsChange", handleSettingsChange);
+  //     return () => {
+  //       window.removeEventListener("timeSettingsChange", handleSettingsChange);
+  //     };
+  //   }, [updateTimeSettings]);
 
   const hours = currentTime.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    hour12: !is24Hour,
+    hour12: !timeSettings.is24Hour,
   });
 
   // Split time and period (AM/PM) for 12-hour format
@@ -46,12 +40,12 @@ export const Time: React.FC = () => {
 
   return (
     <div className="time-container">
-      <div className="time" style={{ fontSize: `${fontSize}px` }}>
+      <div className="time" style={{ fontSize: `${timeSettings.fontSize}px` }}>
         {timeDigits}
         {period && (
           <span
             className="time-period"
-            style={{ fontSize: `${fontSize * 0.2}px` }}
+            style={{ fontSize: `${timeSettings.fontSize * 0.2}px` }}
           >
             {period}
           </span>

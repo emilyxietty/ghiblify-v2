@@ -1,7 +1,7 @@
 export interface WidgetConfig {
   name: string;
   storageKey: string;
-  fontSize: {
+  fontSize?: {
     min?: number;
     max?: number;
     default: number;
@@ -106,17 +106,10 @@ export const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
   avatar: {
     name: "Avatar",
     storageKey: "avatar_position",
-    fontSize: {
-      min: 10,
-      max: 50,
-      default: 14,
-      step: 5,
-      enabled: false,
-    },
     size: {
-      min: 100,
+      min: 50,
       max: 400,
-      default: 200,
+      default: 100,
       step: 50,
       enabled: true,
     },

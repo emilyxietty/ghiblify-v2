@@ -19,7 +19,15 @@ export const Widget: React.FC<WidgetProps> = ({
   onReset,
   showDragHandle,
 }) => {
-  const { showWidgetEdits, setIsDragging } = useAppContext();
+  const {
+    showWidgetEdits,
+    setIsDragging,
+    updateAvatarSettings,
+    updateTodoSettings,
+    updateDateSettings,
+    updateTimeSettings,
+    updateInfoSettings,
+  } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
 
   const [position, setPosition] = useState(() => {
@@ -158,13 +166,17 @@ export const Widget: React.FC<WidgetProps> = ({
 
           localStorage.setItem(sizeKey, newSize.toString());
 
+          // If this is the avatar widget, update context so consumers using
+          // `avatarSettings` (via useAppContext) update immediately.
+          if (baseKey === "avatar" && updateAvatarSettings) {
+            updateAvatarSettings({ size: newSize });
+          }
+
           const eventName = `${baseKey}SettingsChange`;
           window.dispatchEvent(
             new CustomEvent(eventName, { detail: { size: newSize } })
           );
-        }
-        // Todo: width (and/or height) with step
-        else if (
+        } else if (
           widgetConfig?.width?.enabled ||
           widgetConfig?.height?.enabled
         ) {
@@ -180,6 +192,12 @@ export const Widget: React.FC<WidgetProps> = ({
             const newWidth = Math.max(min, Math.min(max, snappedWidth));
 
             localStorage.setItem(widthKey, newWidth.toString());
+
+            // If this is the todo widget, update context so consumers using
+            // `todoSettings` update immediately.
+            if (baseKey === "todo" && updateTodoSettings) {
+              updateTodoSettings({ width: newWidth });
+            }
 
             const eventName = `${baseKey}SettingsChange`;
             window.dispatchEvent(
@@ -200,14 +218,18 @@ export const Widget: React.FC<WidgetProps> = ({
 
             localStorage.setItem(heightKey, newHeight.toString());
 
+            // If this is the todo widget, update context so consumers using
+            // `todoSettings` update immediately.
+            if (baseKey === "todo" && updateTodoSettings) {
+              updateTodoSettings({ height: newHeight });
+            }
+
             const eventName = `${baseKey}SettingsChange`;
             window.dispatchEvent(
               new CustomEvent(eventName, { detail: { height: newHeight } })
             );
           }
-        }
-        // Handle font size resizing
-        else if (widgetConfig?.fontSize?.enabled) {
+        } else if (widgetConfig?.fontSize?.enabled) {
           const deltaY = e.clientY - resizeStartY;
           const fontSizeKey = `${baseKey}_fontSize`;
           const { min, max, step } = widgetConfig.fontSize;
@@ -220,6 +242,17 @@ export const Widget: React.FC<WidgetProps> = ({
           const newSize = Math.max(min ?? 1, Math.min(max ?? 1, snappedSize));
 
           localStorage.setItem(fontSizeKey, newSize.toString());
+
+          // Update context so date/time/info widgets re-render immediately
+          if (baseKey === "date" && updateDateSettings) {
+            updateDateSettings({ fontSize: newSize });
+          }
+          if (baseKey === "time" && updateTimeSettings) {
+            updateTimeSettings({ fontSize: newSize });
+          }
+          if (baseKey === "info" && updateInfoSettings) {
+            updateInfoSettings({ fontSize: newSize });
+          }
 
           let detail: any = { fontSize: newSize };
 
@@ -291,6 +324,7 @@ export const Widget: React.FC<WidgetProps> = ({
     position,
     widgetConfig,
     setIsDragging,
+    updateAvatarSettings,
     hasMovedWhileMouseDown,
   ]);
 

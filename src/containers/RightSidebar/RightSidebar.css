@@ -114,7 +114,12 @@
 }
 
 .widget-icon.avatar-with-overlay:hover img {
-    filter: brightness(0.7);
+    filter: brightness(0.6);
+    transition: filter 0.3s ease;
+}
+
+.widget-icon.avatar-with-overlay.active:hover img {
+    filter: brightness(0.6);
     transition: filter 0.3s ease;
 }
 

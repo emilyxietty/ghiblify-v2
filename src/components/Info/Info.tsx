@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useAppContext } from "../../contexts/AppContext";
 import "./Info.css";
 
@@ -17,26 +17,22 @@ export const Info: React.FC<InfoProps> = ({
   screentime,
   quote,
 }) => {
-  const { infoFields } = useAppContext();
-  const [fontSize, setFontSize] = useState(() => {
-    const saved = localStorage.getItem("info_fontSize");
-    return saved ? parseInt(saved) : 16;
-  });
+  const { infoSettings, updateInfoSettings } = useAppContext();
 
-  useEffect(() => {
-    const handleSettingsChange = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail.fontSize) {
-        setFontSize(customEvent.detail.fontSize);
-      }
-    };
+  //   useEffect(() => {
+  //     const handleSettingsChange = (e: Event) => {
+  //       const customEvent = e as CustomEvent;
+  //       if (customEvent.detail.fontSize) {
+  //         updateInfoSettings({ fontSize: customEvent.detail.fontSize });
+  //       }
+  //     };
+  //     window.addEventListener("infoSettingsChange", handleSettingsChange);
+  //     return () => {
+  //       window.removeEventListener("infoSettingsChange", handleSettingsChange);
+  //     };
+  //   }, [updateInfoSettings]);
 
-    window.addEventListener("infoSettingsChange", handleSettingsChange);
-
-    return () => {
-      window.removeEventListener("infoSettingsChange", handleSettingsChange);
-    };
-  }, []);
+  const { infoFields, fontSize } = infoSettings;
 
   return (
     <div className="info-container" style={{ fontSize: `${fontSize}px` }}>

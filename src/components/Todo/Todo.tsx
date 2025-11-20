@@ -1,6 +1,7 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import React, { useEffect, useRef, useState } from "react";
+import { useAppContext } from "../../contexts/AppContext";
 import "./Todo.css";
 
 interface TodoItem {
@@ -17,21 +18,14 @@ export const Todo: React.FC<TodoProps> = ({}) => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [width, setWidth] = useState(() => {
-    return parseInt(localStorage.getItem("todo_width") || "350");
-  });
-  const [height, setHeight] = useState(() => {
-    return parseInt(localStorage.getItem("todo_height") || "500");
-  });
+  const { todoSettings } = useAppContext();
+  const width = todoSettings.width;
+  const height = todoSettings.height;
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("todo_darkMode");
-    return saved ? saved === "true" : false;
-  });
+  const darkMode = todoSettings.darkMode;
 
-  // Load todos from localStorage on mount
   useEffect(() => {
     const savedTodos = localStorage.getItem("todo_data");
     if (savedTodos) {
@@ -42,27 +36,6 @@ export const Todo: React.FC<TodoProps> = ({}) => {
         console.error("Error parsing todos:", error);
       }
     }
-
-    // Listen for custom settings change event
-    const handleSettingsChange = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail.width !== undefined) {
-        setWidth(customEvent.detail.width);
-        localStorage.setItem("todo_width", customEvent.detail.width.toString());
-      }
-      if (customEvent.detail.height !== undefined) {
-        setHeight(customEvent.detail.height);
-        localStorage.setItem(
-          "todo_height",
-          customEvent.detail.height.toString()
-        );
-      }
-    };
-
-    window.addEventListener("todoSettingsChange", handleSettingsChange);
-    return () => {
-      window.removeEventListener("todoSettingsChange", handleSettingsChange);
-    };
   }, []);
 
   // Save todos to localStorage whenever they change
@@ -151,14 +124,9 @@ export const Todo: React.FC<TodoProps> = ({}) => {
     setDragOverIndex(null);
   };
 
-  useEffect(() => {
-    const handler = () => {
-      const saved = localStorage.getItem("todo_darkMode");
-      setDarkMode(saved === "true");
-    };
-    window.addEventListener("todoSettingsChange", handler);
-    return () => window.removeEventListener("todoSettingsChange", handler);
-  }, []);
+  // No global event listener here anymore; the component consumes
+  // `todoSettings` from context which is kept in sync with localStorage
+  // by the AppContext updater.
 
   return (
     <div

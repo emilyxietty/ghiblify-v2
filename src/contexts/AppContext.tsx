@@ -14,12 +14,37 @@ interface WidgetVisibility {
   avatar: boolean; // Added avatar
 }
 
-export interface InfoFields {
+interface InfoFields {
   japaneseTitle: boolean;
   title: boolean;
   year: boolean;
   movieLength: boolean;
   quote: boolean;
+}
+
+interface InfoSettings {
+  infoFields: InfoFields;
+  fontSize: number;
+}
+
+interface TimeSettings {
+  fontSize: number;
+  is24Hour: boolean;
+}
+
+interface DateSettings {
+  fontSize: number;
+}
+
+interface TodoSettings {
+  width: number;
+  height: number;
+  darkMode: boolean;
+}
+
+interface AvatarSettings {
+  selectedAvatar: string;
+  size: number;
 }
 
 interface AppContextType {
@@ -31,8 +56,32 @@ interface AppContextType {
   toggleWidgetVisibility: (widget: keyof WidgetVisibility) => void;
   isDragging: boolean;
   setIsDragging: (dragging: boolean) => void;
-  infoFields: InfoFields;
-  updateInfoFields: (fields: InfoFields) => void;
+
+  infoSettings: InfoSettings;
+  updateInfoSettings: (
+    settings: Partial<InfoSettings>,
+    options?: { persist?: boolean }
+  ) => void;
+  timeSettings: TimeSettings;
+  updateTimeSettings: (
+    settings: Partial<TimeSettings>,
+    options?: { persist?: boolean }
+  ) => void;
+  dateSettings: DateSettings;
+  avatarSettings: AvatarSettings;
+  todoSettings: TodoSettings;
+  updateDateSettings: (
+    settings: Partial<DateSettings>,
+    options?: { persist?: boolean }
+  ) => void;
+  updateAvatarSettings: (
+    settings: Partial<AvatarSettings>,
+    options?: { persist?: boolean }
+  ) => void;
+  updateTodoSettings: (
+    settings: Partial<TodoSettings>,
+    options?: { persist?: boolean }
+  ) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -56,7 +105,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       const dateVisible = localStorage.getItem("date_switch") !== "off";
       const infoVisible = localStorage.getItem("info_switch") !== "off";
       const todoVisible = localStorage.getItem("todo_switch") !== "off";
-      const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
+      const avatarVisible = localStorage.getItem("avatar_switch") !== "off"; // Added avatar
       return {
         time: timeVisible,
         date: dateVisible,
@@ -66,19 +115,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       };
     }
   );
-  const [infoFields, setInfoFields] = useState<InfoFields>(() => {
-    const saved = localStorage.getItem("info_selectedFields");
-    const selectedFields = saved
-      ? JSON.parse(saved)
+  const [infoSettings, setInfoSettings] = useState<InfoSettings>(() => {
+    // InfoFields
+    const savedFields = localStorage.getItem("info_selectedFields");
+    const selectedFields = savedFields
+      ? JSON.parse(savedFields)
       : ["japaneseTitle", "title", "year", "movieLength", "quote"];
-
-    return {
+    const infoFields: InfoFields = {
       japaneseTitle: selectedFields.includes("japaneseTitle"),
       title: selectedFields.includes("title"),
       year: selectedFields.includes("year"),
       movieLength: selectedFields.includes("movieLength"),
       quote: selectedFields.includes("quote"),
     };
+    // Font size
+    const savedFontSize = localStorage.getItem("info_fontSize");
+    const fontSize = savedFontSize ? parseInt(savedFontSize) : 16;
+    return { infoFields, fontSize };
+  });
+  const [timeSettings, setTimeSettings] = useState<TimeSettings>(() => {
+    const savedFontSize = localStorage.getItem("time_fontSize");
+    const fontSize = savedFontSize ? parseInt(savedFontSize) : 32;
+    const is24Hour = localStorage.getItem("time_is24Hour") === "true";
+    return { fontSize, is24Hour };
+  });
+  const [dateSettings, setDateSettings] = useState<DateSettings>(() => {
+    const savedFontSize = localStorage.getItem("date_fontSize");
+    const fontSize = savedFontSize ? parseInt(savedFontSize) : 24;
+    return { fontSize };
+  });
+  const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>(() => {
+    const selected = localStorage.getItem("avatar_selected") || "totoro";
+    const size = parseInt(localStorage.getItem("avatar_size") || "100");
+    return { selectedAvatar: selected, size };
+  });
+  const [todoSettings, setTodoSettings] = useState<TodoSettings>(() => {
+    const width = parseInt(localStorage.getItem("todo_width") || "350");
+    const height = parseInt(localStorage.getItem("todo_height") || "500");
+    const darkMode = localStorage.getItem("todo_darkMode") === "true";
+    return { width, height, darkMode };
   });
 
   const toggleEditMode = () => {
@@ -89,6 +164,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     setBackgroundFilters((prev) => ({ ...prev, ...filters }));
     const newFilters = { ...backgroundFilters, ...filters };
     localStorage.setItem("background_filters", JSON.stringify(newFilters));
+    console.log("AppContext: updateBackgroundFilters", newFilters);
   };
 
   const toggleWidgetVisibility = (widget: keyof WidgetVisibility) => {
@@ -101,12 +177,113 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         `${widget}_switch`,
         newVisibility[widget] ? "on" : "off"
       );
+      console.log(
+        "AppContext: toggleWidgetVisibility",
+        widget,
+        newVisibility[widget]
+      );
       return newVisibility;
     });
   };
+  const updateInfoSettings = (
+    settings: Partial<InfoSettings>,
+    options?: { persist?: boolean }
+  ) => {
+    console.log("AppContext: updateInfoSettings called", settings);
+    setInfoSettings((prev) => {
+      const next = { ...prev, ...settings };
+      if (settings.infoFields) {
+        const selected: string[] = Object.entries(settings.infoFields)
+          .filter(([_, v]) => v)
+          .map(([k]) => k);
+        localStorage.setItem("info_selectedFields", JSON.stringify(selected));
+        console.log("AppContext: persisted info_selectedFields", selected);
+      }
+      if (settings.fontSize !== undefined) {
+        localStorage.setItem("info_fontSize", next.fontSize.toString());
+        console.log("AppContext: persisted info_fontSize", next.fontSize);
+      }
+      return next;
+    });
+  };
 
-  const updateInfoFields = (fields: InfoFields) => {
-    setInfoFields(fields);
+  const updateTimeSettings = (
+    settings: Partial<TimeSettings>,
+    options?: { persist?: boolean }
+  ) => {
+    console.log("AppContext: updateTimeSettings called", settings);
+    setTimeSettings((prev) => {
+      const next = { ...prev, ...settings };
+      if (settings.fontSize !== undefined) {
+        localStorage.setItem("time_fontSize", next.fontSize.toString());
+        console.log("AppContext: persisted time_fontSize", next.fontSize);
+      }
+      if (settings.is24Hour !== undefined) {
+        localStorage.setItem("time_is24Hour", next.is24Hour.toString());
+        console.log("AppContext: persisted time_is24Hour", next.is24Hour);
+      }
+      return next;
+    });
+  };
+
+  const updateDateSettings = (
+    settings: Partial<DateSettings>,
+    options?: { persist?: boolean }
+  ) => {
+    console.log("AppContext: updateDateSettings called", settings);
+    setDateSettings((prev) => {
+      const next = { ...prev, ...settings };
+      if (settings.fontSize !== undefined) {
+        localStorage.setItem("date_fontSize", next.fontSize.toString());
+        console.log("AppContext: persisted date_fontSize", next.fontSize);
+      }
+      return next;
+    });
+  };
+
+  const updateAvatarSettings = (
+    settings: Partial<AvatarSettings>,
+    options?: { persist?: boolean }
+  ) => {
+    console.log("AppContext: updateAvatarSettings called", settings);
+    setAvatarSettings((prev) => {
+      const next = { ...prev, ...settings };
+      if (settings.selectedAvatar !== undefined) {
+        localStorage.setItem("avatar_selected", next.selectedAvatar);
+        console.log(
+          "AppContext: persisted avatar_selected",
+          next.selectedAvatar
+        );
+      }
+      if (settings.size !== undefined) {
+        localStorage.setItem("avatar_size", next.size.toString());
+        console.log("AppContext: persisted avatar_size", next.size);
+      }
+      return next;
+    });
+  };
+
+  const updateTodoSettings = (
+    settings: Partial<TodoSettings>,
+    options?: { persist?: boolean }
+  ) => {
+    console.log("AppContext: updateTodoSettings called", settings);
+    setTodoSettings((prev) => {
+      const next = { ...prev, ...settings };
+      if (settings.width !== undefined) {
+        localStorage.setItem("todo_width", next.width.toString());
+        console.log("AppContext: persisted todo_width", next.width);
+      }
+      if (settings.height !== undefined) {
+        localStorage.setItem("todo_height", next.height.toString());
+        console.log("AppContext: persisted todo_height", next.height);
+      }
+      if (settings.darkMode !== undefined) {
+        localStorage.setItem("todo_darkMode", next.darkMode.toString());
+        console.log("AppContext: persisted todo_darkMode", next.darkMode);
+      }
+      return next;
+    });
   };
 
   return (
@@ -120,8 +297,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         toggleWidgetVisibility,
         isDragging,
         setIsDragging,
-        infoFields,
-        updateInfoFields,
+        infoSettings,
+        updateInfoSettings,
+        timeSettings,
+        updateTimeSettings,
+        dateSettings,
+        avatarSettings,
+        todoSettings,
+        updateDateSettings,
+        updateAvatarSettings,
+        updateTodoSettings,
       }}
     >
       {children}

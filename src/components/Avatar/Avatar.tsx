@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useAppContext } from "../../contexts/AppContext";
 import "./Avatar.css";
 
 export const AVATAR_OPTIONS = [
@@ -26,35 +27,11 @@ interface AvatarProps {
   selectedAvatar?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ selectedAvatar }) => {
-  const [avatar, setAvatar] = useState(
-    () => selectedAvatar || localStorage.getItem("avatar_selected") || "totoro"
-  );
-  const [avatarSize, setAvatarSize] = useState(() =>
-    parseInt(localStorage.getItem("avatar_size") || "200")
-  );
+export const Avatar: React.FC<AvatarProps> = () => {
+  const { avatarSettings } = useAppContext();
 
-  useEffect(() => {
-    const handleSettingsChange = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent.detail.selectedAvatar) {
-        setAvatar(customEvent.detail.selectedAvatar);
-      }
-      if (customEvent.detail.size !== undefined) {
-        setAvatarSize(customEvent.detail.size);
-        localStorage.setItem("avatar_size", customEvent.detail.size.toString());
-      }
-    };
-
-    window.addEventListener("avatarSettingsChange", handleSettingsChange);
-
-    // Always sync with localStorage on mount
-    setAvatarSize(parseInt(localStorage.getItem("avatar_size") || "200"));
-
-    return () => {
-      window.removeEventListener("avatarSettingsChange", handleSettingsChange);
-    };
-  }, []);
+  const avatar = avatarSettings.selectedAvatar;
+  const avatarSize = avatarSettings.size;
 
   const avatarData = AVATAR_OPTIONS.find((a) => a.value === avatar);
 
