@@ -6,6 +6,7 @@ import { useAppContext } from "../../contexts/AppContext";
 import { getWidgetConfig } from "../../types/widgetConfig";
 import { AvatarSelector } from "../AvatarSelector/AvatarSelector";
 import { FieldSelector } from "../FieldSelector/FieldSelector";
+import "./EditWidget.css";
 
 interface EditWidgetProps {
   showWidgetEdits: boolean;
@@ -159,6 +160,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           <div className="widget-controls-container">
             {hasTimeFormat && (
               <Button
+                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleTimeFormat();
@@ -166,38 +168,46 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 title="Toggle 12/24 hour format"
                 variant="dark"
                 size="small"
-                icon={timeSettings.is24Hour ? "24h" : "12h"}
+                icon={timeSettings.is24Hour ? "12h" : "24h"}
               />
             )}
             {hasDarkMode && (
               <Button
+                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDarkModeToggle();
                 }}
                 title="Toggle dark mode"
-                variant="dark"
+                variant={darkMode ? "light" : "dark"}
                 size="small"
-                icon={darkMode ? <DarkModeIcon /> : <LightModeIcon />}
+                icon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
               />
             )}
           </div>
           {hasInfoFields && (
-            <FieldSelector
-              options={INFO_FIELD_OPTIONS}
-              selectedValues={Object.entries(infoSettings.infoFields)
-                .filter(([_, v]) => v)
-                .map(([k]) => k)}
-              onChange={handleInfoFieldsChange}
-              variant="dark"
-              minSelected={1}
-            />
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <FieldSelector
+                options={INFO_FIELD_OPTIONS}
+                selectedValues={Object.entries(infoSettings.infoFields)
+                  .filter(([_, v]) => v)
+                  .map(([k]) => k)}
+                onChange={handleInfoFieldsChange}
+                variant="dark"
+                minSelected={1}
+              />
+            </div>
           )}
           {hasAvatarSelector && (
-            <AvatarSelector
-              selectedAvatar={selectedAvatar}
-              onChange={handleAvatarChange}
-            />
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <AvatarSelector
+                selectedAvatar={selectedAvatar}
+                onChange={handleAvatarChange}
+                avatarSize={
+                  avatarSettings.size || widgetConfig?.size?.default || 100
+                }
+              />
+            </div>
           )}
         </>
       )}

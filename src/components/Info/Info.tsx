@@ -17,20 +17,7 @@ export const Info: React.FC<InfoProps> = ({
   screentime,
   quote,
 }) => {
-  const { infoSettings, updateInfoSettings } = useAppContext();
-
-  //   useEffect(() => {
-  //     const handleSettingsChange = (e: Event) => {
-  //       const customEvent = e as CustomEvent;
-  //       if (customEvent.detail.fontSize) {
-  //         updateInfoSettings({ fontSize: customEvent.detail.fontSize });
-  //       }
-  //     };
-  //     window.addEventListener("infoSettingsChange", handleSettingsChange);
-  //     return () => {
-  //       window.removeEventListener("infoSettingsChange", handleSettingsChange);
-  //     };
-  //   }, [updateInfoSettings]);
+  const { infoSettings } = useAppContext();
 
   const { infoFields, fontSize } = infoSettings;
 

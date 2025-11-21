@@ -1,59 +1,25 @@
-.avatar-option {
-    width: 60px;
-    height: 60px;
-    padding: 4px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.avatar-option img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    pointer-events: none;
-}
-
-.avatar-option:hover {
-    border-color: rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.avatar-option.active {
-    border-color: rgba(255, 255, 255, 1);
-    background: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
-}
-
-.avatar-option:active {
-    transform: scale(0.95);
-}
-
 .avatar-selector-nav {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 12px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
     border-radius: 12px;
     pointer-events: auto;
+}
+
+.avatar-selector-nav {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .avatar-nav-btn {
     width: 36px;
     height: 36px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
     color: white;
+    border: 1px solid white;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -62,8 +28,6 @@
 }
 
 .avatar-nav-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.6);
     transform: scale(1.1);
 }
 
@@ -80,16 +44,90 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    min-width: 100px;
+    min-width: 0;
+    width: 100%;
 }
 
-.avatar-preview img {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
+.avatar-image-wrap {
+    position: relative;
+    display: block;
+    /* allow overlays to extend outside the image bounds */
+    overflow: visible;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px;
+}
+
+.avatar-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.avatar-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* overlays placed on top of the image */
+
+.avatar-overlay-top {
+    position: absolute;
+    top: -0px;
+    left: -12px;
+    right: -12px;
+    text-align: center;
+    z-index: 5;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.avatar-overlay-bottom {
+    position: absolute;
+    bottom: -0px;
+    left: -12px;
+    right: -12px;
+    text-align: center;
+    z-index: 5;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.avatar-nav-btn.avatar-nav-left,
+.avatar-nav-btn.avatar-nav-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 6;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.avatar-nav-btn.avatar-nav-left {
+    left: -18px;
+}
+
+.avatar-nav-btn.avatar-nav-right {
+    right: -18px;
+}
+
+.avatar-preview {
+    cursor: grab;
+}
+
+.avatar-preview:active {
+    cursor: grabbing;
 }
 
 .avatar-label {
@@ -97,4 +135,12 @@
     font-size: 12px;
     font-weight: 600;
     text-align: center;
+}
+
+.avatar-source {
+    color: white;
+}
+
+.avatar-source:hover {
+    color: rgb(209, 209, 209);
 }

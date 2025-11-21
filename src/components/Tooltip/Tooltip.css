@@ -1,0 +1,33 @@
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    pointer-events: auto;
+    min-width: 120px;
+}
+
+.tooltip-inner {
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+/* Positioning helpers - caller should position the wrapper (absolute) or container */
+.tooltip-top {
+    transform: translateY(-8px);
+}
+
+.tooltip-bottom {
+    transform: translateY(8px);
+}
+
+.tooltip-left {
+    transform: translateX(-8px);
+}
+
+.tooltip-right {
+    transform: translateX(8px);
+}

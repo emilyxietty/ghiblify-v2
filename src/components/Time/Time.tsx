@@ -4,28 +4,12 @@ import "./Time.css";
 
 export const Time: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { timeSettings, updateTimeSettings } = useAppContext();
+  const { timeSettings } = useAppContext();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  //   useEffect(() => {
-  //     const handleSettingsChange = (e: Event) => {
-  //       const customEvent = e as CustomEvent;
-  //       if (customEvent.detail.fontSize !== undefined) {
-  //         updateTimeSettings({ fontSize: customEvent.detail.fontSize });
-  //       }
-  //       if (customEvent.detail.is24Hour !== undefined) {
-  //         updateTimeSettings({ is24Hour: customEvent.detail.is24Hour });
-  //       }
-  //     };
-  //     window.addEventListener("timeSettingsChange", handleSettingsChange);
-  //     return () => {
-  //       window.removeEventListener("timeSettingsChange", handleSettingsChange);
-  //     };
-  //   }, [updateTimeSettings]);
 
   const hours = currentTime.toLocaleTimeString("en-US", {
     hour: "numeric",

@@ -51,7 +51,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
             e.stopPropagation();
             handleToggle(option.value);
           }}
-          variant={selectedValues.includes(option.value) ? "dark" : "light"}
+          variant={selectedValues.includes(option.value) ? "light" : "dark"}
           size="small"
           pill
           disabled={isLastSelected(option.value)}

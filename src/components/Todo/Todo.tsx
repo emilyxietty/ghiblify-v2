@@ -10,11 +10,7 @@ interface TodoItem {
   checked: boolean;
 }
 
-interface TodoProps {
-  //   darkMode?: boolean;
-}
-
-export const Todo: React.FC<TodoProps> = ({}) => {
+export const Todo: React.FC = () => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);

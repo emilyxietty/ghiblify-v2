@@ -70,6 +70,11 @@ interface AppContextType {
   dateSettings: DateSettings;
   avatarSettings: AvatarSettings;
   todoSettings: TodoSettings;
+  widgetPositions: Record<string, { x: number; y: number }>;
+  updateWidgetPosition: (
+    storageKey: string,
+    pos: { x: number; y: number }
+  ) => void;
   updateDateSettings: (
     settings: Partial<DateSettings>,
     options?: { persist?: boolean }
@@ -155,6 +160,48 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     const darkMode = localStorage.getItem("todo_darkMode") === "true";
     return { width, height, darkMode };
   });
+
+  const [widgetPositions, setWidgetPositions] = useState<
+    Record<string, { x: number; y: number }>
+  >(() => {
+    const positions: Record<string, { x: number; y: number }> = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (key.endsWith("_x")) {
+          const base = key.slice(0, -2);
+          const xRaw = localStorage.getItem(key);
+          const yRaw = localStorage.getItem(`${base}_y`);
+          const x = xRaw ? parseFloat(xRaw) : NaN;
+          const y = yRaw ? parseFloat(yRaw) : NaN;
+          if (!isNaN(x) && !isNaN(y)) {
+            positions[base] = { x, y };
+          }
+        }
+      }
+    } catch (err) {
+      console.log(
+        "AppContext: error reading widget positions from localStorage",
+        err
+      );
+    }
+    return positions;
+  });
+
+  const updateWidgetPosition = (
+    storageKey: string,
+    pos: { x: number; y: number }
+  ) => {
+    setWidgetPositions((prev) => ({ ...prev, [storageKey]: pos }));
+    try {
+      localStorage.setItem(`${storageKey}_x`, pos.x.toString());
+      localStorage.setItem(`${storageKey}_y`, pos.y.toString());
+      console.log("AppContext: persisted position", storageKey, pos);
+    } catch (err) {
+      console.log("AppContext: failed to persist position", storageKey, err);
+    }
+  };
 
   const toggleEditMode = () => {
     setShowWidgetEdits((prev) => !prev);
@@ -297,6 +344,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         toggleWidgetVisibility,
         isDragging,
         setIsDragging,
+        widgetPositions,
+        updateWidgetPosition,
         infoSettings,
         updateInfoSettings,
         timeSettings,

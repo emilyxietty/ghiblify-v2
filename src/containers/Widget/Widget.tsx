@@ -27,20 +27,22 @@ export const Widget: React.FC<WidgetProps> = ({
     updateDateSettings,
     updateTimeSettings,
     updateInfoSettings,
+    avatarSettings,
+    todoSettings,
+    dateSettings,
+    timeSettings,
+    infoSettings,
+    widgetPositions,
+    updateWidgetPosition,
   } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
 
   const [position, setPosition] = useState(() => {
     if (!storageKey) return initialPosition;
 
-    const savedX = localStorage.getItem(`${storageKey}_x`);
-    const savedY = localStorage.getItem(`${storageKey}_y`);
-
-    if (savedX && savedY) {
-      return {
-        x: parseFloat(savedX),
-        y: parseFloat(savedY),
-      };
+    // Prefer positions already stored in context
+    if (widgetPositions && widgetPositions[storageKey]) {
+      return widgetPositions[storageKey];
     }
     return initialPosition;
   });
@@ -164,10 +166,9 @@ export const Widget: React.FC<WidgetProps> = ({
           const snappedSize = Math.round(targetSize / step) * step;
           const newSize = Math.max(min, Math.min(max, snappedSize));
 
-          localStorage.setItem(sizeKey, newSize.toString());
-
           // If this is the avatar widget, update context so consumers using
-          // `avatarSettings` (via useAppContext) update immediately.
+          // `avatarSettings` (via useAppContext) update immediately and
+          // persist via the updater.
           if (baseKey === "avatar" && updateAvatarSettings) {
             updateAvatarSettings({ size: newSize });
           }
@@ -191,10 +192,8 @@ export const Widget: React.FC<WidgetProps> = ({
             const snappedWidth = Math.round(targetWidth / step) * step;
             const newWidth = Math.max(min, Math.min(max, snappedWidth));
 
-            localStorage.setItem(widthKey, newWidth.toString());
-
             // If this is the todo widget, update context so consumers using
-            // `todoSettings` update immediately.
+            // `todoSettings` update immediately and persist via the updater.
             if (baseKey === "todo" && updateTodoSettings) {
               updateTodoSettings({ width: newWidth });
             }
@@ -216,10 +215,6 @@ export const Widget: React.FC<WidgetProps> = ({
             const snappedHeight = Math.round(targetHeight / step) * step;
             const newHeight = Math.max(min, Math.min(max, snappedHeight));
 
-            localStorage.setItem(heightKey, newHeight.toString());
-
-            // If this is the todo widget, update context so consumers using
-            // `todoSettings` update immediately.
             if (baseKey === "todo" && updateTodoSettings) {
               updateTodoSettings({ height: newHeight });
             }
@@ -231,7 +226,6 @@ export const Widget: React.FC<WidgetProps> = ({
           }
         } else if (widgetConfig?.fontSize?.enabled) {
           const deltaY = e.clientY - resizeStartY;
-          const fontSizeKey = `${baseKey}_fontSize`;
           const { min, max, step } = widgetConfig.fontSize;
 
           const stepsMoved = Math.round(deltaY / 20);
@@ -241,9 +235,6 @@ export const Widget: React.FC<WidgetProps> = ({
             Math.round(targetSize / (step ?? 1)) * (step ?? 1);
           const newSize = Math.max(min ?? 1, Math.min(max ?? 1, snappedSize));
 
-          localStorage.setItem(fontSizeKey, newSize.toString());
-
-          // Update context so date/time/info widgets re-render immediately
           if (baseKey === "date" && updateDateSettings) {
             updateDateSettings({ fontSize: newSize });
           }
@@ -257,8 +248,7 @@ export const Widget: React.FC<WidgetProps> = ({
           let detail: any = { fontSize: newSize };
 
           if (widgetConfig.customControls?.timeFormat) {
-            const is24Hour = localStorage.getItem("time_is24Hour") === "true";
-            detail.is24Hour = is24Hour;
+            detail.is24Hour = !!timeSettings?.is24Hour;
           }
 
           const eventName = `${baseKey}SettingsChange`;
@@ -295,9 +285,8 @@ export const Widget: React.FC<WidgetProps> = ({
         setLocalIsDragging(false);
         setIsDragging(false);
 
-        if (storageKey && hasMovedWhileMouseDown) {
-          localStorage.setItem(`${storageKey}_x`, position.x.toString());
-          localStorage.setItem(`${storageKey}_y`, position.y.toString());
+        if (storageKey && hasMovedWhileMouseDown && updateWidgetPosition) {
+          updateWidgetPosition(storageKey, position);
         }
       }
     };
@@ -359,33 +348,34 @@ export const Widget: React.FC<WidgetProps> = ({
       const baseKey = storageKey.replace(/_position$/, "");
 
       if (widgetConfig.fontSize?.enabled) {
-        const fontSizeKey = `${baseKey}_fontSize`;
-        const currentSize = parseInt(
-          localStorage.getItem(fontSizeKey) ||
-            widgetConfig.fontSize.default.toString()
-        );
+        let currentSize = widgetConfig.fontSize.default;
+        if (baseKey === "date" && dateSettings?.fontSize !== undefined) {
+          currentSize = dateSettings.fontSize;
+        } else if (baseKey === "time" && timeSettings?.fontSize !== undefined) {
+          currentSize = timeSettings.fontSize;
+        } else if (baseKey === "info" && infoSettings?.fontSize !== undefined) {
+          currentSize = infoSettings.fontSize;
+        }
         setResizeStartSize(currentSize);
       } else if (widgetConfig.size?.enabled) {
-        const sizeKey = `${baseKey}_size`;
-        const currentSize = parseInt(
-          localStorage.getItem(sizeKey) || widgetConfig.size.default.toString()
-        );
+        let currentSize = widgetConfig.size.default;
+        if (baseKey === "avatar" && avatarSettings?.size !== undefined) {
+          currentSize = avatarSettings.size;
+        }
         setResizeStartSize(currentSize);
       } else if (widgetConfig.width?.enabled || widgetConfig.height?.enabled) {
         if (widgetConfig.width?.enabled) {
-          const widthKey = `${baseKey}_width`;
-          const currentWidth = parseInt(
-            localStorage.getItem(widthKey) ||
-              widgetConfig.width.default.toString()
-          );
+          let currentWidth = widgetConfig.width.default;
+          if (baseKey === "todo" && todoSettings?.width !== undefined) {
+            currentWidth = todoSettings.width;
+          }
           setResizeStartWidth(currentWidth);
         }
         if (widgetConfig.height?.enabled) {
-          const heightKey = `${baseKey}_height`;
-          const currentHeight = parseInt(
-            localStorage.getItem(heightKey) ||
-              widgetConfig.height.default.toString()
-          );
+          let currentHeight = widgetConfig.height.default;
+          if (baseKey === "todo" && todoSettings?.height !== undefined) {
+            currentHeight = todoSettings.height;
+          }
           setResizeStartHeight(currentHeight);
         }
       }
