@@ -96,7 +96,7 @@ export const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
       enabled: true,
     },
     height: {
-      min: 100,
+      min: 200,
       max: 700,
       default: 500,
       step: 50,

@@ -118,6 +118,12 @@
     margin-bottom: 16px;
 }
 
+.filter-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
 .filter-control label {
     display: flex;
     justify-content: space-between;

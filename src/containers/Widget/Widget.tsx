@@ -321,6 +321,11 @@ export const Widget: React.FC<WidgetProps> = ({
     if (e.button !== 0) return;
     if (isResizing) return;
 
+    // debug: log when the widget receives a mousedown so we can verify which
+    // header areas let the event bubble up. Remove/disable logs after debugging.
+    // eslint-disable-next-line no-console
+    console.debug("Widget.handleWidgetMouseDown target:", e.target);
+
     e.preventDefault();
     e.stopPropagation();
 

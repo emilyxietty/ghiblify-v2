@@ -70,6 +70,8 @@ interface AppContextType {
   dateSettings: DateSettings;
   avatarSettings: AvatarSettings;
   todoSettings: TodoSettings;
+  todoCollapsed: boolean;
+  updateTodoCollapsed: (collapsed: boolean) => void;
   widgetPositions: Record<string, { x: number; y: number }>;
   updateWidgetPosition: (
     storageKey: string,
@@ -202,6 +204,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       console.log("AppContext: persisted position", storageKey, pos);
     } catch (err) {
       console.log("AppContext: failed to persist position", storageKey, err);
+    }
+  };
+
+  // persisted collapsed state for the todo widget (so its open/collapsed
+  // state survives page reloads and is globally accessible)
+  const [todoCollapsed, setTodoCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem("todo_collapsed") === "true";
+  });
+
+  const updateTodoCollapsed = (collapsed: boolean) => {
+    setTodoCollapsed(collapsed);
+    try {
+      localStorage.setItem("todo_collapsed", collapsed.toString());
+      console.log("AppContext: persisted todo_collapsed", collapsed);
+    } catch (err) {
+      console.log("AppContext: failed to persist todo_collapsed", err);
     }
   };
 
@@ -382,6 +400,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         dateSettings,
         avatarSettings,
         todoSettings,
+        todoCollapsed,
+        updateTodoCollapsed,
         updateDateSettings,
         updateAvatarSettings,
         updateTodoSettings,

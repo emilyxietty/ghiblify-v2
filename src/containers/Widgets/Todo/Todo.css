@@ -2,14 +2,23 @@
     min-width: 100px;
     max-width: 450px;
     width: 350px;
-    transition: width 0.3s ease;
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.todo-contaainer:hover {
-    background-color: rgba(0, 0, 0, 0.155);
+/* allow collapsed widget to shrink to its header width */
+.todo-container.collapsed {
+    /* keep container width same as un-collapsed — only hide content */
+    min-width: 0;
+    max-width: none;
+}
+
+/* keep header fixed at top so collapsing doesn't reflow it vertically */
+.todo-container {
+    position: relative;
+    padding-top: 44px;
+    /* reserve space for absolute header */
 }
 
 .todo-input-wrapper {
@@ -89,33 +98,25 @@
 
 .todo-item {
     margin-bottom: 6px;
-    animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .todo-item-content {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
+    padding: 10px 12px;
+    /* semi-opaque so backdrop-filter has visible effect */
     background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     border-radius: 8px;
-    transition: all 0.2s ease;
+    transition: background 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .todo-item:hover .todo-item-content {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 .todo-checkbox {
@@ -227,18 +228,76 @@
 }
 
 .todo-container.todo-dark .todo-item-content {
-    /* border-bottom: 1px solid #333; */
-    background: #000000a9;
+    /* darker translucent background for dark mode + blur */
+    background: rgba(0, 0, 0, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
 }
 
 .todo-container.todo-dark .todo-checkbox {
     background: #000000a9;
     /* border: 1px solid #444; */
-    color: #f3f3f3;
+    color: white;
 }
 
 .todo-container.todo-dark .todo-add-btn {
     background: #000000a9;
     color: #f3f3f3;
     border: 1px solid #000000a9;
+}
+
+/* Header/title for collapsing the todo widget */
+.todo-header {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+    z-index: 60;
+}
+
+.todo-hover-label {
+    opacity: 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.95);
+    margin-left: 8px;
+    pointer-events: none;
+    z-index: 61;
+    display: inline-block;
+}
+
+.todo-header:hover .todo-hover-label,
+.todo-header:focus .todo-hover-label,
+.todo-header:focus-within .todo-hover-label {
+    opacity: 1;
+}
+
+.todo-header:hover {
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+}
+
+
+
+/* when collapsed hide the input and list while keeping header visible */
+.todo-container.collapsed .todo-input-wrapper,
+.todo-container.collapsed .todo-list {
+    display: none;
+}
+
+.todo-title-text {
+    font-weight: 600;
+    font-size: 14px;
+    color: inherit;
 }

@@ -1,4 +1,5 @@
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import RestoreIcon from "@mui/icons-material/Restore";
 import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import {
@@ -297,15 +298,6 @@ export const LeftSidebar: React.FC = () => {
               Github Repo
             </Button>
           </div>
-          <div className="sidebar-section">
-            <Button
-              variant={showBackgroundSettings ? "dark" : "outline-light"}
-              size="small"
-              onClick={() => setShowBackgroundSettings((s) => !s)}
-            >
-              Background Settings
-            </Button>
-          </div>
           {/* background settings modal is rendered below as a sibling so it isn't
             constrained by the sidebar's transform (allows centering) */}
           <div className="sidebar-section">
@@ -361,8 +353,24 @@ export const LeftSidebar: React.FC = () => {
               />
             </div>
 
-            <Button variant="outline-light" size="small" onClick={resetFilters}>
-              Reset Filters
+            <div className="filter-actions">
+              <Button
+                variant="outline-light"
+                size="small"
+                onClick={resetFilters}
+              >
+                <RestoreIcon style={{ fontSize: 16, marginRight: 8 }} />
+                Reset Filters
+              </Button>
+            </div>
+          </div>
+          <div className="sidebar-section">
+            <Button
+              variant={showBackgroundSettings ? "dark" : "outline-light"}
+              fullWidth={true}
+              onClick={() => setShowBackgroundSettings((s) => !s)}
+            >
+              Background Settings
             </Button>
           </div>
         </div>
