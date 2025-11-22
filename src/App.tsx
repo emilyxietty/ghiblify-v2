@@ -8,6 +8,7 @@ import { Widget } from "./containers/Widget/Widget";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Info } from "./containers/Widgets/Info/Info";
+import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
 import { Time } from "./containers/Widgets/Time/Time";
 import { Todo } from "./containers/Widgets/Todo/Todo";
 import { AppProvider, useAppContext } from "./contexts/AppContext";
@@ -81,6 +82,14 @@ const AppContent: React.FC = () => {
         backgroundFilters={backgroundFilters}
         showWidgetEdits={showWidgetEdits}
       >
+        {widgetVisibility.quickLinks && (
+          <Widget
+            storageKey="quicklinks_position"
+            initialPosition={{ x: 50, y: 36 }}
+          >
+            <QuickLinks />
+          </Widget>
+        )}
         {widgetVisibility.time && (
           <Widget storageKey="time_position" initialPosition={{ x: 50, y: 20 }}>
             <Time />

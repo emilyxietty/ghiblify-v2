@@ -3,6 +3,7 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import {
+  BUYMEACOFFEE_URL,
   GITHUB_REPO_URL,
   SIDEBAR_EDGE_TRIGGER,
   SIDEBAR_WIDTH,
@@ -89,8 +90,8 @@ export const LeftSidebar: React.FC = () => {
     return () => document.removeEventListener("keydown", onKey);
   }, [showBackgroundSettings]);
 
-  const handleGithubClick = () => {
-    window.open(GITHUB_REPO_URL, "_blank", "noopener,noreferrer");
+  const handleSiteClick = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleFilterChange = (
@@ -289,13 +290,20 @@ export const LeftSidebar: React.FC = () => {
       <div className={`left-sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-content">
           <h3>Settings</h3>
-          <div className="sidebar-section">
+          <div className="sidebar-section button-group">
             <Button
-              variant="outline-light"
+              variant="dark"
               size="small"
-              onClick={handleGithubClick}
+              onClick={() => handleSiteClick(GITHUB_REPO_URL)}
             >
               Github Repo
+            </Button>
+            <Button
+              variant="dark"
+              size="small"
+              onClick={() => handleSiteClick(BUYMEACOFFEE_URL)}
+            >
+              Buy me a Coffee
             </Button>
           </div>
           {/* background settings modal is rendered below as a sibling so it isn't
@@ -390,31 +398,63 @@ export const LeftSidebar: React.FC = () => {
               <h4>Background Settings</h4>
               <div>{movies.length} movies</div>
               <div className="modal-actions">
-                <button
-                  className="modal-action-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectAll();
-                  }}
-                >
-                  Select All
-                </button>
-                <button
-                  className="modal-action-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deselectAll();
-                  }}
-                >
-                  Deselect All (except 1)
-                </button>
-                <button
-                  className="modal-close"
-                  onClick={() => setShowBackgroundSettings(false)}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
+                {(() => {
+                  // Compute enabled and available movies
+                  const availMap = new Map<string, boolean>();
+                  movies.forEach((m) => {
+                    const mk = (m.key || "").toLowerCase().trim();
+                    const available = Array.from(
+                      availableBackgroundTitles
+                    ).some((t) => t === mk || t.includes(mk) || mk.includes(t));
+                    availMap.set(m.key, available);
+                  });
+                  const enabledSelectable = movies.filter((m) => {
+                    const enabled =
+                      (backgroundSelection && backgroundSelection[m.key]) ??
+                      true;
+                    const available = availMap.get(m.key) || false;
+                    return enabled && available;
+                  });
+                  const allSelected =
+                    enabledSelectable.length ===
+                    movies.filter((m) => availMap.get(m.key) || false).length;
+                  const onlyOneLeft = enabledSelectable.length <= 1;
+                  return (
+                    <>
+                      <Button
+                        className="modal-action-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectAll();
+                        }}
+                        disabled={allSelected}
+                        size="small"
+                        variant="outline-light"
+                      >
+                        Select All
+                      </Button>
+                      <Button
+                        className="modal-action-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deselectAll();
+                        }}
+                        disabled={onlyOneLeft}
+                        size="small"
+                        variant="outline-light"
+                      >
+                        Deselect All (except 1)
+                      </Button>
+                      <button
+                        className="modal-close"
+                        onClick={() => setShowBackgroundSettings(false)}
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -488,15 +528,17 @@ export const LeftSidebar: React.FC = () => {
             </div>
 
             <div className="modal-footer" style={{ padding: "8px 16px" }}>
-              <button
+              <Button
                 className="modal-action-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   clearBlacklist();
                 }}
+                variant="dark"
               >
+                <RestoreIcon style={{ fontSize: 16, marginRight: 8 }} />
                 Restore Deleted
-              </button>
+              </Button>
             </div>
           </dialog>
         </div>

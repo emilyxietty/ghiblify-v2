@@ -2,6 +2,7 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import LinkIcon from "@mui/icons-material/Link";
 import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import { SIDEBAR_EDGE_TRIGGER, SIDEBAR_WIDTH } from "../../config/appConfig";
@@ -99,6 +100,16 @@ export const RightSidebar: React.FC = () => {
             size="medium"
             onClick={() => toggleWidgetVisibility("todo")}
             title="Toggle Todo Widget"
+            variant="transparent"
+          ></Button>
+          <Button
+            className={`widget-icon${
+              widgetVisibility.quickLinks ? " active" : ""
+            }`}
+            icon={<LinkIcon />}
+            size="medium"
+            onClick={() => toggleWidgetVisibility("quickLinks")}
+            title="Toggle Quicklinks Widget"
             variant="transparent"
           ></Button>
           <Button

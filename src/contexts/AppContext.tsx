@@ -11,7 +11,8 @@ interface WidgetVisibility {
   date: boolean;
   info: boolean;
   todo: boolean;
-  avatar: boolean; // Added avatar
+  avatar: boolean;
+  quickLinks: boolean;
 }
 
 interface InfoFields {
@@ -91,6 +92,10 @@ interface AppContextType {
   ) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
+  quickLinks: Array<{ id: string; title: string; url: string }>;
+  updateQuickLinks: (
+    links: Array<{ id: string; title: string; url: string }>
+  ) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -114,13 +119,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       const dateVisible = localStorage.getItem("date_switch") !== "off";
       const infoVisible = localStorage.getItem("info_switch") !== "off";
       const todoVisible = localStorage.getItem("todo_switch") !== "off";
-      const avatarVisible = localStorage.getItem("avatar_switch") !== "off"; // Added avatar
+      const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
+      const quickLinksVisible =
+        localStorage.getItem("quicklinks_switch") !== "off";
       return {
         time: timeVisible,
         date: dateVisible,
         info: infoVisible,
         todo: todoVisible,
-        avatar: avatarVisible, // Added avatar
+        avatar: avatarVisible,
+        quickLinks: quickLinksVisible,
       };
     }
   );
@@ -265,10 +273,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         ...prev,
         [widget]: !prev[widget],
       };
-      localStorage.setItem(
-        `${widget}_switch`,
-        newVisibility[widget] ? "on" : "off"
-      );
+      try {
+        const key = `${String(widget).toLowerCase()}_switch`;
+        localStorage.setItem(key, newVisibility[widget] ? "on" : "off");
+      } catch (err) {
+        console.warn("AppContext: failed to persist widget visibility", err);
+      }
       console.log(
         "AppContext: toggleWidgetVisibility",
         widget,
@@ -378,6 +388,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  // quick links persisted globally so other components can access them
+  const [quickLinks, setQuickLinks] = useState<
+    Array<{ id: string; title: string; url: string }>
+  >(() => {
+    try {
+      const raw = localStorage.getItem("quick_links");
+      return raw ? JSON.parse(raw) : [];
+    } catch (err) {
+      console.warn("AppContext: failed to read quick_links", err);
+      return [];
+    }
+  });
+
+  const updateQuickLinks = (
+    links: Array<{ id: string; title: string; url: string }>
+  ) => {
+    setQuickLinks(links);
+    try {
+      localStorage.setItem("quick_links", JSON.stringify(links));
+    } catch (err) {
+      console.warn("AppContext: failed to persist quick_links", err);
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -405,6 +439,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateDateSettings,
         updateAvatarSettings,
         updateTodoSettings,
+        quickLinks,
+        updateQuickLinks,
       }}
     >
       {children}

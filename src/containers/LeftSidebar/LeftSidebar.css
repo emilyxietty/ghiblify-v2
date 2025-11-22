@@ -66,6 +66,12 @@
     margin-bottom: 20px;
 }
 
+.button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
 .sidebar-section h4 {
     margin: 0 0 8px 0;
     font-size: 14px;
@@ -228,6 +234,10 @@
 }
 
 .modal-action-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
     background: rgba(255, 255, 255, 0.06);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.06);

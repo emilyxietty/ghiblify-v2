@@ -2,12 +2,23 @@
     position: fixed;
     z-index: 1000;
     border-radius: 12px;
-    padding: 10px;
     transition: box-shadow 0.2s ease;
     max-width: 80%;
     width: max-content;
     white-space: nowrap;
     border: 1px solid transparent;
+}
+
+.widget-fallback-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 36px;
+    /* invisible but captures pointer events so header-only dragging works */
+    background: transparent;
+    z-index: 70;
+    cursor: grab;
 }
 
 .widget.draggable {

@@ -1,5 +1,6 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
+import Popper from "@mui/material/Popper";
 import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
 import "./Todo.css";
@@ -14,13 +15,26 @@ export const Todo: React.FC = () => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { todoSettings, todoCollapsed, updateTodoCollapsed } = useAppContext();
+  const { todoSettings, todoCollapsed, updateTodoCollapsed, isDragging } =
+    useAppContext();
   const width = todoSettings.width;
   const height = todoSettings.height;
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const darkMode = todoSettings.darkMode;
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  // initialize anchorEl based on persisted collapsed state
+  useEffect(() => {
+    if (!todoCollapsed && headerRef.current && !anchorEl) {
+      setAnchorEl(headerRef.current);
+    }
+    if (todoCollapsed && anchorEl) {
+      setAnchorEl(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todoCollapsed]);
 
   useEffect(() => {
     const savedTodos = localStorage.getItem("todo_data");
@@ -34,7 +48,6 @@ export const Todo: React.FC = () => {
     }
   }, []);
 
-  // Save todos to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("todo_data", JSON.stringify(todos));
   }, [todos]);
@@ -46,81 +59,48 @@ export const Todo: React.FC = () => {
         text: inputValue.trim(),
         checked: false,
       };
-      setTodos([...todos, newTodo]);
+      setTodos((prev) => [...prev, newTodo]);
       setInputValue("");
     }
   };
 
   const toggleTodo = (id: string) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, checked: !todo.checked } : todo
-      )
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, checked: !t.checked } : t))
     );
   };
 
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
+  const deleteTodo = (id: string) =>
+    setTodos((prev) => prev.filter((t) => t.id !== id));
 
   const updateTodoText = (id: string, newText: string) => {
-    setTodos(
-      todos.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo))
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, text: newText } : t))
     );
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      addTodo();
-    }
+    if (e.key === "Enter") addTodo();
   };
 
   const handleEditKeyPress = (
     e: React.KeyboardEvent<HTMLInputElement>,
     id: string
   ) => {
-    if (e.key === "Enter") {
-      setEditingId(null);
-    } else if (e.key === "Escape") {
-      setEditingId(null);
-    }
+    if (e.key === "Enter" || e.key === "Escape") setEditingId(null);
   };
 
-  // Prevent drag when clicking inside todo container
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // Allow dragging when the user clicks the header; only stop propagation
-    // for clicks inside the body/content of the widget.
-    const target = e.target as HTMLElement | null;
-    // debug: log what element was clicked and whether it's inside the header
-    // (remove these logs after debugging)
-    // eslint-disable-next-line no-console
-    console.debug(
-      "Todo.handleMouseDown target:",
-      target,
-      "closest(.todo-header):",
-      target?.closest?.(".todo-header")
-    );
-    if (target && target.closest && target.closest(".todo-header")) {
-      // do not stop propagation -> allow widget drag to start
-      return;
-    }
-    e.stopPropagation();
-  };
+  // Note: removed a global mousedown stopPropagation handler so inputs
+  // inside the Popper can receive events. Popper is rendered with
+  // `disablePortal` (below) so the popover lives inside the widget DOM
+  // and won't be treated as a click-outside by the app-level handler.
 
-  // Sort todos: unchecked first, then checked
-  const sortedTodos = [...todos].sort((a, b) => {
-    if (a.checked === b.checked) return 0;
-    return a.checked ? 1 : -1;
-  });
+  const sortedTodos = [...todos].sort((a, b) =>
+    a.checked === b.checked ? 0 : a.checked ? 1 : -1
+  );
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
-
-  const handleDragOver = (index: number) => {
-    setDragOverIndex(index);
-  };
-
+  const handleDragStart = (index: number) => setDraggedIndex(index);
+  const handleDragOver = (index: number) => setDragOverIndex(index);
   const handleDrop = (index: number) => {
     if (draggedIndex === null) return;
     const updated = [...sortedTodos];
@@ -138,27 +118,38 @@ export const Todo: React.FC = () => {
 
   return (
     <div
-      className={`todo-container${darkMode ? " todo-dark" : ""}${
-        !open ? " collapsed" : ""
+      className={`todo-container ${todoCollapsed ? "collapsed" : ""} ${
+        todoSettings.darkMode ? "todo-dark" : ""
       }`}
-      onMouseDown={handleMouseDown}
-      style={{
-        width: `${width}px`,
-        height: `${height}px`,
-        minHeight: `${height}px`,
-        boxSizing: "border-box",
-      }}
+      style={{ width: `${width}px` }}
     >
       <div
-        className="todo-header"
-        role="button"
+        className="todo-header widget-header"
+        ref={headerRef}
         tabIndex={0}
-        aria-expanded={!todoCollapsed}
-        onClick={() => updateTodoCollapsed(!todoCollapsed)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ")
-            updateTodoCollapsed(!todoCollapsed);
+        onClick={() => {
+          if (isDragging) return;
+          if (anchorEl) {
+            setAnchorEl(null);
+            updateTodoCollapsed(true);
+          } else if (headerRef.current) {
+            setAnchorEl(headerRef.current);
+            updateTodoCollapsed(false);
+          }
         }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (isDragging) return;
+            if (anchorEl) {
+              setAnchorEl(null);
+              updateTodoCollapsed(true);
+            } else if (headerRef.current) {
+              setAnchorEl(headerRef.current);
+              updateTodoCollapsed(false);
+            }
+          }
+        }}
+        aria-expanded={!todoCollapsed}
       >
         <span className="todo-title-text">Todo</span>
         {!todoCollapsed && (
@@ -168,91 +159,121 @@ export const Todo: React.FC = () => {
         )}
       </div>
 
-      {!todoCollapsed && (
-        <>
-          <div className="todo-input-wrapper">
-            <input
-              ref={inputRef}
-              type="text"
-              className="todo-input"
-              placeholder="Add a task..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            {inputValue && (
-              <button className="todo-add-btn" onClick={addTodo}>
-                +
-              </button>
+      <Popper
+        disablePortal
+        open={Boolean(anchorEl) && !todoCollapsed}
+        anchorEl={anchorEl}
+        placement="bottom"
+        modifiers={
+          [
+            {
+              name: "preventOverflow",
+              options: { boundary: "viewport", padding: 16 },
+            },
+            { name: "flip", options: { fallbackPlacements: ["top"] } },
+          ] as any
+        }
+      >
+        <div
+          className="todo-popover"
+          style={{ width: `${width}px`, padding: 12 }}
+        >
+          <div style={{ padding: 0 }}>
+            {/* hide inputs and list while dragging */}
+            {!isDragging && (
+              <>
+                <div className="todo-input-wrapper">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="todo-input"
+                    placeholder="Add a task..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                  />
+                  {inputValue && (
+                    <button className="todo-add-btn" onClick={addTodo}>
+                      +
+                    </button>
+                  )}
+                </div>
+
+                {todos.length > 0 && (
+                  <ul className="todo-list">
+                    {sortedTodos.map((todo, index) => (
+                      <li
+                        key={todo.id}
+                        className={`todo-item ${
+                          todo.checked ? "checked" : ""
+                        } ${draggedIndex === index ? "dragging" : ""} ${
+                          dragOverIndex === index ? "drag-over" : ""
+                        }`}
+                        draggable={!todo.checked}
+                        onDragStart={
+                          todo.checked
+                            ? undefined
+                            : () => handleDragStart(index)
+                        }
+                        onDragOver={
+                          todo.checked
+                            ? undefined
+                            : (e) => {
+                                e.preventDefault();
+                                handleDragOver(index);
+                              }
+                        }
+                        onDrop={
+                          todo.checked ? undefined : () => handleDrop(index)
+                        }
+                        onDragEnd={todo.checked ? undefined : handleDragEnd}
+                      >
+                        <div className="todo-item-content">
+                          <button
+                            className="todo-checkbox"
+                            onClick={() => toggleTodo(todo.id)}
+                          >
+                            {todo.checked && (
+                              <CheckIcon style={{ fontSize: "14px" }} />
+                            )}
+                          </button>
+                          {editingId === todo.id ? (
+                            <input
+                              id={`todo-edit-${todo.id}`}
+                              type="text"
+                              className="todo-edit-input"
+                              value={todo.text}
+                              onChange={(e) =>
+                                updateTodoText(todo.id, e.target.value)
+                              }
+                              onKeyDown={(e) => handleEditKeyPress(e, todo.id)}
+                              onBlur={() => setEditingId(null)}
+                              autoFocus
+                            />
+                          ) : (
+                            <span
+                              className="todo-text"
+                              onClick={() => setEditingId(todo.id)}
+                            >
+                              {todo.text}
+                            </span>
+                          )}
+                          <button
+                            className="todo-delete-btn"
+                            onClick={() => deleteTodo(todo.id)}
+                          >
+                            <ClearIcon style={{ fontSize: "14px" }} />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
             )}
           </div>
-
-          {todos.length > 0 && (
-            <ul className="todo-list">
-              {sortedTodos.map((todo, index) => (
-                <li
-                  key={todo.id}
-                  className={`todo-item ${todo.checked ? "checked" : ""} ${
-                    draggedIndex === index ? "dragging" : ""
-                  } ${dragOverIndex === index ? "drag-over" : ""}`}
-                  draggable={!todo.checked}
-                  onDragStart={
-                    todo.checked ? undefined : () => handleDragStart(index)
-                  }
-                  onDragOver={
-                    todo.checked
-                      ? undefined
-                      : (e) => {
-                          e.preventDefault();
-                          handleDragOver(index);
-                        }
-                  }
-                  onDrop={todo.checked ? undefined : () => handleDrop(index)}
-                  onDragEnd={todo.checked ? undefined : handleDragEnd}
-                >
-                  <div className="todo-item-content">
-                    <button
-                      className="todo-checkbox"
-                      onClick={() => toggleTodo(todo.id)}
-                    >
-                      {todo.checked && (
-                        <CheckIcon style={{ fontSize: "14px" }} />
-                      )}
-                    </button>
-                    {editingId === todo.id ? (
-                      <input
-                        id={`todo-edit-${todo.id}`}
-                        type="text"
-                        className="todo-edit-input"
-                        value={todo.text}
-                        onChange={(e) =>
-                          updateTodoText(todo.id, e.target.value)
-                        }
-                        onKeyDown={(e) => handleEditKeyPress(e, todo.id)}
-                        onBlur={() => setEditingId(null)}
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        className="todo-text"
-                        onClick={() => setEditingId(todo.id)}
-                      >
-                        {todo.text}
-                      </span>
-                    )}
-                    <button
-                      className="todo-delete-btn"
-                      onClick={() => deleteTodo(todo.id)}
-                    >
-                      <ClearIcon style={{ fontSize: "14px" }} />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
+        </div>
+      </Popper>
     </div>
   );
 };

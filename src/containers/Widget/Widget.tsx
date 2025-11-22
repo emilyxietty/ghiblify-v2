@@ -58,6 +58,7 @@ export const Widget: React.FC<WidgetProps> = ({
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
   const [resizeStartHeight, setResizeStartHeight] = useState(0);
   const widgetRef = useRef<HTMLDivElement>(null);
+  const [hasChildHeader, setHasChildHeader] = useState(false);
   const resizeHandleRef = useRef<HTMLDivElement>(null);
 
   // Update global context when local drag state changes
@@ -317,9 +318,45 @@ export const Widget: React.FC<WidgetProps> = ({
     hasMovedWhileMouseDown,
   ]);
 
+  // detect whether the child rendered its own header (so we can avoid
+  // rendering a fallback header)
+  useEffect(() => {
+    const el = widgetRef.current;
+    if (!el) return;
+    const found = Boolean(
+      el.querySelector && el.querySelector(".widget-header")
+    );
+    setHasChildHeader(found);
+  }, [children]);
+
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     if (isResizing) return;
+
+    // Only start dragging when the user clicks on a header/drag-handle
+    const target = e.target as HTMLElement | null;
+    // If the child rendered its own header, require header-only drags.
+    // However, treat clicks that land on the container itself (e.g. the
+    // border/padding area) as valid drag starts so edges remain draggable.
+    const current = e.currentTarget as HTMLElement | null;
+    if (hasChildHeader) {
+      const clickedHeader =
+        target && target.closest && target.closest(".widget-header");
+      const clickedContainer = current && target === current;
+      if (!clickedHeader && !clickedContainer) {
+        return;
+      }
+    } else {
+      // No child header: allow dragging from any non-interactive area.
+      // Prevent starting a drag when clicking inputs, buttons, links, or
+      // elements explicitly marked with `.no-drag`.
+      const interactiveSelector =
+        "input, button, textarea, select, a, [role=button], .no-drag";
+      if (target && target.closest && target.closest(interactiveSelector)) {
+        return;
+      }
+      // otherwise allow drag
+    }
 
     // debug: log when the widget receives a mousedown so we can verify which
     // header areas let the event bubble up. Remove/disable logs after debugging.
@@ -338,6 +375,7 @@ export const Widget: React.FC<WidgetProps> = ({
         x: centerX - e.clientX,
         y: centerY - e.clientY,
       });
+
       setIsMouseDown(true);
       setHasMovedWhileMouseDown(false);
     }
@@ -413,6 +451,14 @@ export const Widget: React.FC<WidgetProps> = ({
       }}
       onMouseDown={handleWidgetMouseDown}
     >
+      {/* if child doesn't render a '.widget-header', show a small invisible
+          top handle so the widget remains draggable */}
+      {!hasChildHeader && (
+        <div
+          className="widget-fallback-header widget-header"
+          aria-hidden="true"
+        />
+      )}
       <EditWidget
         showWidgetEdits={showWidgetEdits}
         localIsDragging={localIsDragging}
