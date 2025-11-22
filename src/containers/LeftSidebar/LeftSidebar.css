@@ -4,15 +4,16 @@
     left: 0;
     width: min(400px, 100vw);
     height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(18, 18, 18, 0.3);
+    backdrop-filter: blur(3px);
+    /* border-right: 1px solid rgba(255, 255, 255, 0.2); */
     transform: translateX(-100%);
-    /* transition: transform 0.3s ease; */
     z-index: 2000;
     overflow-y: auto;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+    /* box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3); */
     display: flex;
     flex-direction: column;
+    gap: 24px;
 }
 
 .left-sidebar.open {
@@ -21,8 +22,11 @@
 
 .sidebar-content {
     flex: 1;
-    padding: 24px 20px;
+    padding: 32px 24px;
     color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 
     .summary-images {
         display: flex;
@@ -63,7 +67,8 @@
 }
 
 .sidebar-section {
-    margin-bottom: 20px;
+    /* margin-bottom: 32px; */
+    gap: 16px;
 }
 
 .button-group {
@@ -120,8 +125,19 @@
     background: rgba(255, 255, 255, 0.5);
 }
 
+.filter-group {
+    background-color: var(--dark);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .filter-control {
     margin-bottom: 16px;
+
 }
 
 .filter-actions {
@@ -179,4 +195,119 @@
 .filter-slider::-moz-range-thumb:hover {
     background: rgba(255, 255, 255, 0.9);
     /* transform: scale(1.1); */
+}
+
+.sidebar-content {
+    flex: 1;
+    padding: 24px 20px;
+    overflow-y: auto;
+}
+
+.left-sidebar h3 {
+    margin: 0 0 24px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--light);
+}
+
+
+.left-sidebar .widget-section {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    background-color: var(--dark);
+    align-items: center;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+
+.left-sidebar h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.left-sidebar .sidebar-footer {
+    padding: 32px 20px 20px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+
+.widget-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.widget-icon svg {
+    color: var(--disabled-dark);
+    transition: color 0.3s ease;
+}
+
+.widget-icon:hover {}
+
+.widget-icon:hover svg {
+    color: var(--disabled-light);
+}
+
+.widget-icon.active {}
+
+.widget-icon.active svg {
+    color: var(--light);
+}
+
+.widget-icon.active:hover svg {
+    color: var(--light);
+    opacity: 0.8;
+}
+
+/* Avatar icon styles */
+.widget-icon img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    display: block;
+    transition: box-shadow 0.2s;
+}
+
+/* Add a dark overlay on top of the avatar image */
+.widget-icon.avatar-with-overlay {
+    position: relative;
+}
+
+.widget-icon.avatar-with-overlay img {
+    filter: brightness(0.4);
+    transition: filter 0.3s ease;
+}
+
+.widget-icon.avatar-with-overlay:hover img {
+    filter: brightness(0.6);
+    transition: filter 0.3s ease;
+}
+
+.widget-icon.avatar-with-overlay.active:hover img {
+    filter: brightness(0.6);
+    transition: filter 0.3s ease;
+}
+
+.widget-icon.avatar-with-overlay.active img {
+    filter: brightness(1);
+    transition: filter 0.3s ease;
+}
+
+/* General widget icon hover effect */
+.widget-icon:hover {
+    cursor: pointer;
 }

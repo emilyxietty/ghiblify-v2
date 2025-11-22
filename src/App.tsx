@@ -3,7 +3,6 @@ import "./App.css";
 import { Button } from "./components/Button/Button";
 import { Background } from "./containers/Background/Background";
 import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
-import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
 import { Widget } from "./containers/Widget/Widget";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
@@ -63,7 +62,6 @@ const AppContent: React.FC = () => {
   return (
     <>
       <LeftSidebar />
-      <RightSidebar />
       {showWidgetEdits && (
         <div className="edit-toggle-button">
           <Button
