@@ -1,7 +1,7 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import React, { useEffect, useRef, useState } from "react";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAppContext } from "../../../contexts/AppContext";
 import "./Todo.css";
 
 interface TodoItem {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAppContext } from "../../contexts/AppContext";
+import { useAppContext } from "../../../contexts/AppContext";
 import "./Date.css";
 
 export const DateDisplay: React.FC = () => {

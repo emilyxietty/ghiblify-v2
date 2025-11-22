@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import EditWidget from "../../components/EditWidget/EditWidget";
+import { getWidgetConfig } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
-import { getWidgetConfig } from "../../types/widgetConfig";
 import "./Widget.css";
 
 interface WidgetProps {

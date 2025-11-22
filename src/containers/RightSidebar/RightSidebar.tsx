@@ -3,9 +3,9 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import React, { useEffect, useState } from "react";
-import { AVATAR_OPTIONS } from "../../components/Avatar/Avatar";
 import { Button } from "../../components/Button/Button";
 import { SIDEBAR_EDGE_TRIGGER, SIDEBAR_WIDTH } from "../../config/appConfig";
+import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import "./RightSidebar.css";
 

@@ -87,6 +87,8 @@ interface AppContextType {
     settings: Partial<TodoSettings>,
     options?: { persist?: boolean }
   ) => void;
+  backgroundSelection: Record<string, boolean>;
+  updateBackgroundSelection: (movieKey: string, value: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -201,6 +203,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     } catch (err) {
       console.log("AppContext: failed to persist position", storageKey, err);
     }
+  };
+
+  const [backgroundSelection, setBackgroundSelection] = useState<
+    Record<string, boolean>
+  >(() => {
+    try {
+      const saved = localStorage.getItem("background_selection");
+      return saved ? JSON.parse(saved) : {};
+    } catch (err) {
+      console.log("AppContext: failed to read background_selection", err);
+      return {};
+    }
+  });
+
+  const updateBackgroundSelection = (movieKey: string, value: boolean) => {
+    setBackgroundSelection((prev) => {
+      const next = { ...prev, [movieKey]: value };
+      try {
+        localStorage.setItem("background_selection", JSON.stringify(next));
+        console.log("AppContext: persisted background_selection", next);
+      } catch (err) {
+        console.log("AppContext: failed to persist background_selection", err);
+      }
+      return next;
+    });
   };
 
   const toggleEditMode = () => {
@@ -347,6 +374,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         widgetPositions,
         updateWidgetPosition,
         infoSettings,
+        backgroundSelection,
+        updateBackgroundSelection,
         updateInfoSettings,
         timeSettings,
         updateTimeSettings,

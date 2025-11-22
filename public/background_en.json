@@ -5,7 +5,7 @@
   },
   "sources": [
     {
-      "title": "soothing (mindfulness beta)",
+      "title": "soothing (beta)",
       "links": [
         "https://mir-s3-cdn-cf.behance.net/project_modules/2800_opt_1/ba6e5397877185.5ecf73a278179.gif",
         "https://wallpaperaccess.com/full/2471303.gif",
@@ -51,8 +51,6 @@
         "https://64.media.tumblr.com/3e0ff870eecbe60f4f2402eea1e5efff/tumblr_o8rgxdcHGm1vruqgxo1_1280.gif",
         "https://i.pinimg.com/originals/3b/5e/82/3b5e822074a34f15b7c812a773c19845.gif",
         "https://i.gifer.com/3YVx.gif",
-        "https://thumbs.gfycat.com/AdmiredCarefulBedbug-size_restricted.gif",
-        "https://data.whicdn.com/images/255015759/original.gif",
         "https://animesher.com/orig/1/199/1996/19961/animesher.com_ghibli-dark-arrietty-1996131.gif",
         "https://i.pinimg.com/originals/a1/ac/d6/a1acd60c70d6bca876b2a65520fd4489.gif",
         "https://giffiles.alphacoders.com/114/114241.gif",
@@ -439,6 +437,12 @@
         "https://www.ghibli.jp/gallery/kimitachi024.jpg",
         "https://www.ghibli.jp/gallery/kimitachi025.jpg",
         "https://www.ghibli.jp/gallery/kimitachi026.jpg"
+      ]
+    },
+    {
+      "title": "your name",
+      "links": [
+        "https://i.pinimg.com/originals/49/03/a3/4903a3afbb583f08ba69cfd96e87cf2b.gif"
       ]
     }
   ]

@@ -1,7 +1,7 @@
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import React from "react";
-import { AVATAR_OPTIONS } from "../Avatar/Avatar";
+import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import { Button } from "../Button/Button";
 import "./AvatarSelector.css";
 
