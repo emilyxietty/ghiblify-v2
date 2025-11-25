@@ -34,6 +34,8 @@ export const Widget: React.FC<WidgetProps> = ({
     infoSettings,
     widgetPositions,
     updateWidgetPosition,
+    quicklinksSettings,
+    updateQuicklinksSettings,
   } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
 
@@ -146,7 +148,10 @@ export const Widget: React.FC<WidgetProps> = ({
   };
 
   const getTransform = () => {
-    return "translate(-50%, -50%)";
+    // Anchor horizontally centered but vertically anchored to the top
+    // so changes in child height (collapse/expand) don't shift the
+    // widget's top edge / header position.
+    return "translate(-50%, 0)";
   };
 
   useEffect(() => {
@@ -199,6 +204,10 @@ export const Widget: React.FC<WidgetProps> = ({
               updateTodoSettings({ width: newWidth });
             }
 
+            if (baseKey === "quicklinks" && updateQuicklinksSettings) {
+              updateQuicklinksSettings({ width: newWidth });
+            }
+
             const eventName = `${baseKey}SettingsChange`;
             window.dispatchEvent(
               new CustomEvent(eventName, { detail: { width: newWidth } })
@@ -218,6 +227,10 @@ export const Widget: React.FC<WidgetProps> = ({
 
             if (baseKey === "todo" && updateTodoSettings) {
               updateTodoSettings({ height: newHeight });
+            }
+
+            if (baseKey === "quicklinks" && updateQuicklinksSettings) {
+              updateQuicklinksSettings({ height: newHeight });
             }
 
             const eventName = `${baseKey}SettingsChange`;
@@ -262,16 +275,29 @@ export const Widget: React.FC<WidgetProps> = ({
           setIsDragging(true);
         }
 
-        const centerX = e.clientX + dragOffset.x;
-        const centerY = e.clientY + dragOffset.y;
+        // For horizontal positioning we keep center-based coordinates
+        // (left + 50% via translateX). For vertical positioning the
+        // widget is top-anchored (translateY = 0), so we compute and
+        // persist the top edge as `position.y` (percent of viewport
+        // height). To keep snapping behavior consistent (which works in
+        // center coordinates), we compute a candidate center Y from the
+        // new top and run snapToGrid, then convert the snapped center
+        // back to a top percentage.
+        const rect = widgetRef.current.getBoundingClientRect();
 
-        const newPosition = {
-          x: (centerX / window.innerWidth) * 100,
-          y: (centerY / window.innerHeight) * 100,
-        };
+        const newTopPx = e.clientY + dragOffset.y; // dragOffset.y stores top - mouseY
+        const newCenterX = e.clientX + dragOffset.x; // center X in px
 
-        const snappedPosition = snapToGrid(newPosition.x, newPosition.y);
-        setPosition(snappedPosition);
+        const centerXPercent = (newCenterX / window.innerWidth) * 100;
+        const centerYPercent =
+          ((newTopPx + rect.height / 2) / window.innerHeight) * 100;
+
+        const snappedCenter = snapToGrid(centerXPercent, centerYPercent);
+
+        const heightVh = (rect.height / window.innerHeight) * 100;
+        const topPercent = snappedCenter.y - heightVh / 2;
+
+        setPosition({ x: snappedCenter.x, y: topPercent });
       }
     };
 
@@ -286,8 +312,46 @@ export const Widget: React.FC<WidgetProps> = ({
         setLocalIsDragging(false);
         setIsDragging(false);
 
+        // If the user moved the widget while the mouse was down, persist
+        // the new position and mark this widget as "just dragged" so child
+        // header click handlers can ignore the immediate click that follows
+        // the drag end (prevents accidental toggles).
         if (storageKey && hasMovedWhileMouseDown && updateWidgetPosition) {
           updateWidgetPosition(storageKey, position);
+        }
+
+        if (hasMovedWhileMouseDown && widgetRef.current) {
+          try {
+            widgetRef.current.dataset.justDragged = "true";
+            window.setTimeout(() => {
+              if (widgetRef.current)
+                delete widgetRef.current.dataset.justDragged;
+            }, 200);
+          } catch (err) {
+            // ignore
+          }
+          // Suppress the next click event that follows a drag so child
+          // header click handlers don't receive the synthetic click that
+          // browsers typically fire after mouseup. Use capture-phase
+          // listener so we can stop the event before React handlers run.
+          try {
+            const suppressClick = (ev: MouseEvent) => {
+              try {
+                const target = ev.target as Node | null;
+                if (!target || !widgetRef.current) return;
+                // If the click landed inside this widget, prevent it.
+                if (widgetRef.current.contains(target)) {
+                  ev.stopImmediatePropagation();
+                  ev.preventDefault();
+                }
+              } finally {
+                document.removeEventListener("click", suppressClick, true);
+              }
+            };
+            document.addEventListener("click", suppressClick, true);
+          } catch (err) {
+            // ignore
+          }
         }
       }
     };
@@ -339,7 +403,8 @@ export const Widget: React.FC<WidgetProps> = ({
     // However, treat clicks that land on the container itself (e.g. the
     // border/padding area) as valid drag starts so edges remain draggable.
     const current = e.currentTarget as HTMLElement | null;
-    if (hasChildHeader) {
+    if (hasChildHeader && !showWidgetEdits) {
+      // Normal mode: require clicks on the header or the container itself
       const clickedHeader =
         target && target.closest && target.closest(".widget-header");
       const clickedContainer = current && target === current;
@@ -359,9 +424,25 @@ export const Widget: React.FC<WidgetProps> = ({
     }
 
     // debug: log when the widget receives a mousedown so we can verify which
-    // header areas let the event bubble up. Remove/disable logs after debugging.
+    // header areas let the event bubble up. Keep logs short and informative.
     // eslint-disable-next-line no-console
-    console.debug("Widget.handleWidgetMouseDown target:", e.target);
+    try {
+      const target = e.target as HTMLElement | null;
+      // eslint-disable-next-line no-console
+      console.debug("Widget.mousedown", {
+        target:
+          target &&
+          target.tagName + (target.className ? `.${target.className}` : ""),
+        hasChildHeader,
+        isResizing,
+        isMouseDown,
+        isDragging: localIsDragging,
+        clickedHeader:
+          target && target.closest && Boolean(target.closest(".widget-header")),
+      });
+    } catch (err) {
+      // ignore
+    }
 
     e.preventDefault();
     e.stopPropagation();
@@ -369,11 +450,15 @@ export const Widget: React.FC<WidgetProps> = ({
     if (widgetRef.current) {
       const rect = widgetRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      // For Y we store an offset to the top edge so subsequent mouse
+      // moves compute a top-based position (since widget uses
+      // translateY(0) / top-based positioning). For X we keep the
+      // center-based offset so horizontal centering via translateX(-50%) still works.
+      const top = rect.top;
 
       setDragOffset({
         x: centerX - e.clientX,
-        y: centerY - e.clientY,
+        y: top - e.clientY,
       });
 
       setIsMouseDown(true);

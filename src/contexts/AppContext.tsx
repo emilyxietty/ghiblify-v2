@@ -12,7 +12,7 @@ interface WidgetVisibility {
   info: boolean;
   todo: boolean;
   avatar: boolean;
-  quickLinks: boolean;
+  quicklinks: boolean;
 }
 
 interface InfoFields {
@@ -46,6 +46,12 @@ interface TodoSettings {
 interface AvatarSettings {
   selectedAvatar: string;
   size: number;
+}
+
+interface QuicklinksSettings {
+  width: number;
+  height: number;
+  links: Array<{ id: string; title: string; url: string }>;
 }
 
 interface AppContextType {
@@ -92,10 +98,8 @@ interface AppContextType {
   ) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
-  quickLinks: Array<{ id: string; title: string; url: string }>;
-  updateQuickLinks: (
-    links: Array<{ id: string; title: string; url: string }>
-  ) => void;
+  quicklinksSettings: QuicklinksSettings;
+  updateQuicklinksSettings: (settings: Partial<QuicklinksSettings>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -120,7 +124,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       const infoVisible = localStorage.getItem("info_switch") !== "off";
       const todoVisible = localStorage.getItem("todo_switch") !== "off";
       const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
-      const quickLinksVisible =
+      const quicklinksVisible =
         localStorage.getItem("quicklinks_switch") !== "off";
       return {
         time: timeVisible,
@@ -128,7 +132,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         info: infoVisible,
         todo: todoVisible,
         avatar: avatarVisible,
-        quickLinks: quickLinksVisible,
+        quicklinks: quicklinksVisible,
       };
     }
   );
@@ -388,28 +392,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
-  // quick links persisted globally so other components can access them
-  const [quickLinks, setQuickLinks] = useState<
-    Array<{ id: string; title: string; url: string }>
-  >(() => {
-    try {
-      const raw = localStorage.getItem("quick_links");
-      return raw ? JSON.parse(raw) : [];
-    } catch (err) {
-      console.warn("AppContext: failed to read quick_links", err);
-      return [];
-    }
-  });
+  const [quicklinksSettings, setQuicklinksSettings] =
+    useState<QuicklinksSettings>(() => {
+      const width = parseInt(localStorage.getItem("quicklinks_width") || "300");
+      const height = parseInt(
+        localStorage.getItem("quicklinks_height") || "200"
+      );
+      const links = JSON.parse(localStorage.getItem("quick_links") || "[]");
+      return { width, height, links };
+    });
 
-  const updateQuickLinks = (
-    links: Array<{ id: string; title: string; url: string }>
-  ) => {
-    setQuickLinks(links);
-    try {
-      localStorage.setItem("quick_links", JSON.stringify(links));
-    } catch (err) {
-      console.warn("AppContext: failed to persist quick_links", err);
-    }
+  const updateQuicklinksSettings = (settings: Partial<QuicklinksSettings>) => {
+    setQuicklinksSettings((prev) => {
+      const updated = { ...prev, ...settings };
+      if (settings.width !== undefined) {
+        localStorage.setItem("quicklinks_width", updated.width.toString());
+      }
+      if (settings.height !== undefined) {
+        localStorage.setItem("quicklinks_height", updated.height.toString());
+      }
+      if (settings.links !== undefined) {
+        localStorage.setItem("quick_links", JSON.stringify(updated.links));
+      }
+      return updated;
+    });
   };
 
   return (
@@ -439,8 +445,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateDateSettings,
         updateAvatarSettings,
         updateTodoSettings,
-        quickLinks,
-        updateQuickLinks,
+        quicklinksSettings,
+        updateQuicklinksSettings,
       }}
     >
       {children}

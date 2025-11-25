@@ -254,13 +254,9 @@
     transition: color 0.3s ease;
 }
 
-.widget-icon:hover {}
-
 .widget-icon:hover svg {
     color: var(--disabled-light);
 }
-
-.widget-icon.active {}
 
 .widget-icon.active svg {
     color: var(--light);

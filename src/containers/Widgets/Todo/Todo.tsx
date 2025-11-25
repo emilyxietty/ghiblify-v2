@@ -1,7 +1,7 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
-import Popper from "@mui/material/Popper";
 import React, { useEffect, useRef, useState } from "react";
+import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import { useAppContext } from "../../../contexts/AppContext";
 import "./Todo.css";
 
@@ -11,7 +11,11 @@ interface TodoItem {
   checked: boolean;
 }
 
-export const Todo: React.FC = () => {
+interface TodoProps {
+  hideChildren?: boolean;
+}
+
+export const Todo: React.FC<TodoProps> = ({ hideChildren }) => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -23,18 +27,7 @@ export const Todo: React.FC = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-  // initialize anchorEl based on persisted collapsed state
-  useEffect(() => {
-    if (!todoCollapsed && headerRef.current && !anchorEl) {
-      setAnchorEl(headerRef.current);
-    }
-    if (todoCollapsed && anchorEl) {
-      setAnchorEl(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [todoCollapsed]);
+  const titleRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
     const savedTodos = localStorage.getItem("todo_data");
@@ -42,15 +35,11 @@ export const Todo: React.FC = () => {
       try {
         const parsed = JSON.parse(savedTodos);
         setTodos(parsed);
-      } catch (error) {
-        console.error("Error parsing todos:", error);
+      } catch (err) {
+        console.error("Failed to parse saved todos:", err);
       }
     }
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("todo_data", JSON.stringify(todos));
-  }, [todos]);
 
   const addTodo = () => {
     if (inputValue.trim()) {
@@ -59,24 +48,63 @@ export const Todo: React.FC = () => {
         text: inputValue.trim(),
         checked: false,
       };
-      setTodos((prev) => [...prev, newTodo]);
+      setTodos((prev) => {
+        const next = [...prev, newTodo];
+        try {
+          localStorage.setItem("todo_data", JSON.stringify(next));
+        } catch (err) {
+          console.error("Failed to save todos:", err);
+        }
+        return next;
+      });
       setInputValue("");
     }
   };
 
   const toggleTodo = (id: string) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, checked: !t.checked } : t))
-    );
+    setTodos((prev) => {
+      const next = prev.map((t) =>
+        t.id === id ? { ...t, checked: !t.checked } : t
+      );
+      try {
+        localStorage.setItem("todo_data", JSON.stringify(next));
+      } catch (err) {
+        console.error("Failed to save todos:", err);
+      }
+      return next;
+    });
   };
 
+  // Persist todos to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem("todo_data", JSON.stringify(todos));
+    } catch (err) {
+      console.error("Failed to save todos:", err);
+    }
+  }, [todos]);
+
   const deleteTodo = (id: string) =>
-    setTodos((prev) => prev.filter((t) => t.id !== id));
+    setTodos((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      try {
+        localStorage.setItem("todo_data", JSON.stringify(next));
+      } catch (err) {
+        console.error("Failed to save todos:", err);
+      }
+      return next;
+    });
 
   const updateTodoText = (id: string, newText: string) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, text: newText } : t))
-    );
+    setTodos((prev) => {
+      const next = prev.map((t) => (t.id === id ? { ...t, text: newText } : t));
+      try {
+        localStorage.setItem("todo_data", JSON.stringify(next));
+      } catch (err) {
+        console.error("Failed to save todos:", err);
+      }
+      return next;
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -90,11 +118,6 @@ export const Todo: React.FC = () => {
     if (e.key === "Enter" || e.key === "Escape") setEditingId(null);
   };
 
-  // Note: removed a global mousedown stopPropagation handler so inputs
-  // inside the Popper can receive events. Popper is rendered with
-  // `disablePortal` (below) so the popover lives inside the widget DOM
-  // and won't be treated as a click-outside by the app-level handler.
-
   const sortedTodos = [...todos].sort((a, b) =>
     a.checked === b.checked ? 0 : a.checked ? 1 : -1
   );
@@ -106,7 +129,14 @@ export const Todo: React.FC = () => {
     const updated = [...sortedTodos];
     const [removed] = updated.splice(draggedIndex, 1);
     updated.splice(index, 0, removed);
-    setTodos(updated);
+    setTodos(() => {
+      try {
+        localStorage.setItem("todo_data", JSON.stringify(updated));
+      } catch (err) {
+        console.error("Failed to save todos:", err);
+      }
+      return updated;
+    });
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
@@ -124,64 +154,35 @@ export const Todo: React.FC = () => {
       style={{ width: `${width}px` }}
     >
       <div
-        className="todo-header widget-header"
+        className="todo-header"
         ref={headerRef}
-        tabIndex={0}
-        onClick={() => {
-          if (isDragging) return;
-          if (anchorEl) {
-            setAnchorEl(null);
-            updateTodoCollapsed(true);
-          } else if (headerRef.current) {
-            setAnchorEl(headerRef.current);
-            updateTodoCollapsed(false);
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            if (isDragging) return;
-            if (anchorEl) {
-              setAnchorEl(null);
-              updateTodoCollapsed(true);
-            } else if (headerRef.current) {
-              setAnchorEl(headerRef.current);
-              updateTodoCollapsed(false);
-            }
-          }
-        }}
         aria-expanded={!todoCollapsed}
       >
-        <span className="todo-title-text">Todo</span>
-        {!todoCollapsed && (
-          <span className="todo-hover-label" aria-hidden="true">
-            (hide)
-          </span>
-        )}
-      </div>
-
-      <Popper
-        disablePortal
-        open={Boolean(anchorEl) && !todoCollapsed}
-        anchorEl={anchorEl}
-        placement="bottom"
-        modifiers={
-          [
-            {
-              name: "preventOverflow",
-              options: { boundary: "viewport", padding: 16 },
-            },
-            { name: "flip", options: { fallbackPlacements: ["top"] } },
-          ] as any
-        }
-      >
-        <div
-          className="todo-popover"
-          style={{ width: `${width}px`, padding: 12 }}
+        <InlinePopover
+          trigger={
+            <span
+              className="todo-title-text"
+              onClick={() => updateTodoCollapsed(!todoCollapsed)}
+              style={{ cursor: "pointer" }}
+            >
+              Todo
+            </span>
+          }
+          align="start"
+          closeOnOutsideClick={false}
+          isOpen={!todoCollapsed}
+          inline={true}
+          onOpen={() => updateTodoCollapsed(false)}
+          onClose={() => updateTodoCollapsed(true)}
+          disabled={
+            isDragging ||
+            (headerRef.current?.closest(".widget") as HTMLElement | null)
+              ?.dataset.justDragged === "true"
+          }
         >
-          <div style={{ padding: 0 }}>
-            {/* hide inputs and list while dragging */}
-            {!isDragging && (
-              <>
+          {!isDragging && !hideChildren && (
+            <div className="todo-popover" style={{ width: `${width}px` }}>
+              <div style={{ width: "100%" }}>
                 <div className="todo-input-wrapper">
                   <input
                     ref={inputRef}
@@ -269,11 +270,11 @@ export const Todo: React.FC = () => {
                     ))}
                   </ul>
                 )}
-              </>
-            )}
-          </div>
-        </div>
-      </Popper>
+              </div>
+            </div>
+          )}
+        </InlinePopover>
+      </div>
     </div>
   );
 };

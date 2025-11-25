@@ -34,7 +34,9 @@ export interface WidgetConfig {
     timeFormat?: boolean;
     infoFields?: boolean;
     avatarSelector?: boolean;
+    gridMode?: boolean; // Added grid mode toggle
   };
+  localStorageKeys?: string[]; // Added for additional localStorage keys
 }
 
 export const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
@@ -116,6 +118,32 @@ export const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
     customControls: {
       avatarSelector: true,
     },
+  },
+  quicklinks: {
+    name: "Quick Links",
+    storageKey: "quicklinks_position",
+    fontSize: {
+      default: 14,
+      enabled: false,
+    },
+    width: {
+      min: 200,
+      max: 600,
+      default: 300,
+      step: 100,
+      enabled: true,
+    },
+    height: {
+      min: 200,
+      max: 700,
+      default: 400,
+      step: 100,
+      enabled: true,
+    },
+    customControls: {
+      gridMode: true,
+    },
+    localStorageKeys: ["quicklinks_grid", "quicklinks_size"],
   },
 };
 

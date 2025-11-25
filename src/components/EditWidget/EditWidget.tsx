@@ -1,5 +1,7 @@
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
+import ListIcon from "@mui/icons-material/List";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import React, { useEffect, useReducer } from "react";
 import { Button } from "../../components/Button/Button";
 import { getWidgetConfig } from "../../config/widgetConfig";
@@ -40,6 +42,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     updateAvatarSettings,
     todoSettings,
     updateTodoSettings,
+    quicklinksSettings,
+    updateQuicklinksSettings,
   } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
 
@@ -54,6 +58,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     window.addEventListener("infoSettingsChange", handler);
     window.addEventListener("avatarSettingsChange", handler);
     window.addEventListener("dateSettingsChange", handler);
+    window.addEventListener("quicklinksSettingsChange", handler);
     window.addEventListener(
       `${storageKey.replace(/_position$/, "")}SettingsChange`,
       handler
@@ -63,6 +68,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       window.removeEventListener("infoSettingsChange", handler);
       window.removeEventListener("avatarSettingsChange", handler);
       window.removeEventListener("dateSettingsChange", handler);
+      window.removeEventListener("quicklinksSettingsChange", handler);
       window.removeEventListener(
         `${storageKey.replace(/_position$/, "")}SettingsChange`,
         handler
@@ -151,16 +157,27 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     hasAvatarSelector ||
     hasDarkMode;
 
+  const isQuicklinks = baseKey === "quicklinks";
+  const quicklinksGrid = localStorage.getItem("quicklinks_grid") === "true";
+
+  const toggleQuicklinksGrid = () => {
+    const newVal = !quicklinksGrid;
+    localStorage.setItem("quicklinks_grid", newVal ? "true" : "false");
+    window.dispatchEvent(
+      new CustomEvent("quicklinksGridChange", { detail: { value: newVal } })
+    );
+    forceUpdate();
+  };
+
   return (
     <div
       className={`widget-overlay ${!hasAnyControls ? "draggable-overlay" : ""}`}
     >
-      {hasAnyControls && (
+      {(hasAnyControls || isQuicklinks) && (
         <>
           <div className="widget-controls-container">
             {hasTimeFormat && (
               <Button
-                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleTimeFormat();
@@ -173,7 +190,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             )}
             {hasDarkMode && (
               <Button
-                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDarkModeToggle();
@@ -184,9 +200,21 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 icon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
               />
             )}
+            {isQuicklinks && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleQuicklinksGrid();
+                }}
+                title={quicklinksGrid ? "Show as list" : "Show as grid"}
+                variant="dark"
+                size="small"
+                icon={quicklinksGrid ? <ViewModuleIcon /> : <ListIcon />}
+              />
+            )}
           </div>
           {hasInfoFields && (
-            <div onMouseDown={(e) => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()}>
               <FieldSelector
                 options={INFO_FIELD_OPTIONS}
                 selectedValues={Object.entries(infoSettings.infoFields)
@@ -199,7 +227,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             </div>
           )}
           {hasAvatarSelector && (
-            <div onMouseDown={(e) => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()}>
               <AvatarSelector
                 selectedAvatar={selectedAvatar}
                 onChange={handleAvatarChange}

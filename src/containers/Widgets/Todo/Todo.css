@@ -4,22 +4,23 @@
     width: 350px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    /* gap: 16px; */
 }
 
-/* allow collapsed widget to shrink to its header width */
+/* when collapsed, keep the same widget width so header doesn't re-center */
 .todo-container.collapsed {
-    /* keep container width same as un-collapsed — only hide content */
-    min-width: 0;
-    max-width: none;
+    min-width: 100px;
+    max-width: 450px;
+    width: 350px;
 }
 
 /* keep header fixed at top so collapsing doesn't reflow it vertically */
 .todo-container {
     position: relative;
-    padding-top: 44px;
-    /* reserve space for absolute header */
+    /* reserve larger space for absolute header so inline popovers don't overlap when expanded */
 }
+
+/* remove manual padding reservation — header will be sticky and remain in flow */
 
 .todo-input-wrapper {
     position: relative;
@@ -74,7 +75,10 @@
 
 .todo-list {
     width: 100%;
-    height: 100%;
+    /* Let the list size naturally, but constrain with a max-height so it
+       doesn't grow larger than the popover/widget. Use overflow-y to
+       allow scrolling when there are many items. */
+    max-height: 240px;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -84,6 +88,8 @@
     box-sizing: border-box;
     scrollbar-width: thin;
     scrollbar-color: #ccc #f5f5f5;
+    text-align: left;
+    /* Ensure all list items are left-aligned */
 }
 
 .todo-list::-webkit-scrollbar {
@@ -98,6 +104,17 @@
 
 .todo-item {
     margin-bottom: 6px;
+    text-align: left;
+    /* Ensure individual items are left-aligned */
+}
+
+/* Constrain the popover wrapper so its internal scrolling works and
+   it doesn't exceed the widget size. */
+.todo-popover {
+    box-sizing: border-box;
+    max-width: 100%;
+    max-height: 360px;
+    overflow: hidden;
 }
 
 .todo-item-content {
@@ -250,44 +267,25 @@
 .todo-header {
     color: white;
     font-weight: 600;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
+    position: sticky;
+    top: 8px;
+    margin: 0 8px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 5px;
-    border-radius: 4px;
+    min-height: 44px;
+    border-radius: 8px;
     cursor: grab;
-    user-select: none;
-    background: transparent;
-    z-index: 60;
+    z-index: 3000;
 }
 
-.todo-hover-label {
-    opacity: 0;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-left: 8px;
-    font-weight: 200;
-    pointer-events: none;
-    z-index: 61;
-    display: inline-block;
-}
 
-.todo-header:hover .todo-hover-label,
-.todo-header:focus .todo-hover-label,
-.todo-header:focus-within .todo-hover-label {
-    opacity: 1;
-}
-
-.todo-header:hover {
-    background: rgba(255, 255, 255, 0.06);
+.toto-title-text:hover {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(6px);
     cursor: pointer;
 }
-
 
 
 /* when collapsed hide the input and list while keeping header visible */
@@ -297,7 +295,15 @@
 }
 
 .todo-title-text {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 16px;
     color: inherit;
+    padding: 8px 12px;
+}
+
+.todo-title-text:hover {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    border-radius: 6px;
 }

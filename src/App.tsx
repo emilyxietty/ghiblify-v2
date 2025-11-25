@@ -80,7 +80,7 @@ const AppContent: React.FC = () => {
         backgroundFilters={backgroundFilters}
         showWidgetEdits={showWidgetEdits}
       >
-        {widgetVisibility.quickLinks && (
+        {widgetVisibility.quicklinks && (
           <Widget
             storageKey="quicklinks_position"
             initialPosition={{ x: 50, y: 36 }}

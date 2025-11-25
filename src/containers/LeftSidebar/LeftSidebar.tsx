@@ -192,11 +192,11 @@ export const LeftSidebar: React.FC = () => {
               ></Button>
               <Button
                 className={`widget-icon${
-                  widgetVisibility.quickLinks ? " active" : ""
+                  widgetVisibility.quicklinks ? " active" : ""
                 }`}
                 icon={<LinkIcon />}
                 size="medium"
-                onClick={() => toggleWidgetVisibility("quickLinks")}
+                onClick={() => toggleWidgetVisibility("quicklinks")}
                 title="Toggle Quicklinks Widget"
                 variant="transparent"
               ></Button>
