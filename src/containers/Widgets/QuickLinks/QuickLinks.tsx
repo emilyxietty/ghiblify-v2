@@ -18,34 +18,27 @@ export const QuickLinks: React.FC = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [addGridLink, setAddGridLink] = useState(false);
   const [deleteGridLink, setDeleteGridLink] = useState(false);
-  const [showGrid, setShowGrid] = useState(() => {
-    const stored = localStorage.getItem("quicklinks_grid");
-    return stored === null ? true : stored === "true";
-  });
+  const showGrid = quicklinksSettings.format === "grid";
 
   const width = quicklinksSettings.width;
   const height = quicklinksSettings.height;
 
-  useEffect(() => {
-    localStorage.setItem("quicklinks_grid", showGrid ? "true" : "false");
-  }, [showGrid]);
-
   // Listen for changes made from EditWidget so multiple components stay in sync
-  useEffect(() => {
-    const handler = (e: Event) => {
-      // event detail contains { value: boolean }
-      const detail: any = (e as CustomEvent).detail;
-      if (detail && typeof detail.value === "boolean") {
-        setShowGrid(detail.value);
-      }
-    };
-    window.addEventListener("quicklinksGridChange", handler as EventListener);
-    return () =>
-      window.removeEventListener(
-        "quicklinksGridChange",
-        handler as EventListener
-      );
-  }, []);
+  //   useEffect(() => {
+  //     const handler = (e: Event) => {
+  //       // event detail contains { value: boolean }
+  //       const detail: any = (e as CustomEvent).detail;
+  //       if (detail && typeof detail.value === "boolean") {
+  //         setShowGrid(detail.value);
+  //       }
+  //     };
+  //     window.addEventListener("quicklinksGridChange", handler as EventListener);
+  //     return () =>
+  //       window.removeEventListener(
+  //         "quicklinksGridChange",
+  //         handler as EventListener
+  //       );
+  //   }, []);
 
   useEffect(() => {
     if (anchorEl) {
@@ -130,16 +123,22 @@ export const QuickLinks: React.FC = () => {
             >
               {quicklinksSettings.links.map((l, index) => {
                 const favicon = getFavicon(l.url);
+                const isDragOver =
+                  draggedIndex !== null && dragOverIndex === index;
                 return (
                   <div
                     key={l.id}
-                    className="quicklinksSettings-grid-item"
-                    draggable={showWidgetEdits}
+                    className={`quicklinksSettings-grid-item${
+                      draggedIndex === index ? " dragging" : ""
+                    }${isDragOver ? " drag-over" : ""}`}
+                    draggable={!showWidgetEdits}
                     onDragStart={
-                      showWidgetEdits ? () => setDraggedIndex(index) : undefined
+                      !showWidgetEdits
+                        ? () => setDraggedIndex(index)
+                        : undefined
                     }
                     onDragOver={
-                      showWidgetEdits
+                      !showWidgetEdits
                         ? (e) => {
                             e.preventDefault();
                             setDragOverIndex(index);
@@ -147,7 +146,7 @@ export const QuickLinks: React.FC = () => {
                         : undefined
                     }
                     onDrop={
-                      showWidgetEdits
+                      !showWidgetEdits
                         ? () => {
                             if (draggedIndex === null) return;
                             handleDragDrop(draggedIndex, index);
@@ -157,24 +156,16 @@ export const QuickLinks: React.FC = () => {
                         : undefined
                     }
                     onDragEnd={
-                      showWidgetEdits
+                      !showWidgetEdits
                         ? () => {
                             setDraggedIndex(null);
                             setDragOverIndex(null);
                           }
                         : undefined
                     }
-                    // style={{ position: "relative" }} // Ensure relative positioning for hover effect
-                    // onMouseEnter={(e) => {
-                    //   const deleteButton =
-                    //     e.currentTarget.querySelector(".quicklinksSettings-delete");
-                    //   if (deleteButton) deleteButton.style.display = "block";
-                    // }}
-                    // onMouseLeave={(e) => {
-                    //   const deleteButton =
-                    //     e.currentTarget.querySelector(".quicklinksSettings-delete");
-                    //   if (deleteButton) deleteButton.style.display = "none";
-                    // }}
+                    style={
+                      isDragOver ? { borderLeft: "3px solid #1976d2" } : {}
+                    }
                   >
                     {deleteGridLink && (
                       <button
@@ -264,7 +255,7 @@ export const QuickLinks: React.FC = () => {
     );
   }
 
-  // Otherwise, show icon only, and allow toggle in edit mode
+  // Otherwise, show list mode
   return (
     <div className="quicklinksSettings-container" ref={containerRef}>
       <div
@@ -361,17 +352,17 @@ export const QuickLinks: React.FC = () => {
                   return (
                     <li
                       key={l.id}
-                      className={`quicklinksSettings-item ${
-                        draggedIndex === index ? "dragging" : ""
-                      } ${dragOverIndex === index ? "drag-over" : ""}`}
-                      draggable={showWidgetEdits}
+                      className={`quicklinksSettings-item${
+                        draggedIndex === index ? " dragging" : ""
+                      }${dragOverIndex === index ? " drag-over" : ""}`}
+                      draggable={!showWidgetEdits}
                       onDragStart={
-                        showWidgetEdits
+                        !showWidgetEdits
                           ? () => setDraggedIndex(index)
                           : undefined
                       }
                       onDragOver={
-                        showWidgetEdits
+                        !showWidgetEdits
                           ? (e) => {
                               e.preventDefault();
                               setDragOverIndex(index);
@@ -379,7 +370,7 @@ export const QuickLinks: React.FC = () => {
                           : undefined
                       }
                       onDrop={
-                        showWidgetEdits
+                        !showWidgetEdits
                           ? () => {
                               if (draggedIndex === null) return;
                               handleDragDrop(draggedIndex, index);
@@ -389,7 +380,7 @@ export const QuickLinks: React.FC = () => {
                           : undefined
                       }
                       onDragEnd={
-                        showWidgetEdits
+                        !showWidgetEdits
                           ? () => {
                               setDraggedIndex(null);
                               setDragOverIndex(null);

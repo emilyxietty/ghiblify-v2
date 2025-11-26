@@ -163,13 +163,13 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     hasDarkMode;
 
   const isQuicklinks = baseKey === "quicklinks";
-  const quicklinksGrid = localStorage.getItem("quicklinks_grid") === "true";
+  const quicklinksGrid = quicklinksSettings.format === "grid";
 
   const toggleQuicklinksGrid = () => {
-    const newVal = !quicklinksGrid;
-    localStorage.setItem("quicklinks_grid", newVal ? "true" : "false");
+    const newFormat = quicklinksGrid ? "list" : "grid";
+    updateQuicklinksSettings({ format: newFormat });
     window.dispatchEvent(
-      new CustomEvent("quicklinksGridChange", { detail: { value: newVal } })
+      new CustomEvent("quicklinksGridChange", { detail: { value: newFormat } })
     );
     forceUpdate();
   };

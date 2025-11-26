@@ -37,7 +37,7 @@ export const Background: React.FC<BackgroundProps> = ({
 
   const backgroundFilterStyle: React.CSSProperties = {
     backgroundImage: `url(${currentBackground})`,
-    filter: `blur(${backgroundFilters.blur}px) brightness(${backgroundFilters.brightness}%) saturate(${backgroundFilters.saturation}%)`,
+    filter: `blur(${backgroundFilters.blur}px) brightness(${backgroundFilters.brightness}%) contrast(${backgroundFilters.contrast}%) saturate(${backgroundFilters.saturation}%)`,
   };
 
   return (

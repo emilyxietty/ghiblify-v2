@@ -65,6 +65,8 @@ export const Widget: React.FC<WidgetProps> = ({
   const [hasChildHeader, setHasChildHeader] = useState(false);
   const resizeHandleRef = useRef<HTMLDivElement>(null);
 
+  const isQuicklinks = storageKey === "quicklinks_position";
+
   // Update global context when local drag state changes
   useEffect(() => {
     setIsDragging(isResizing);
@@ -581,10 +583,7 @@ export const Widget: React.FC<WidgetProps> = ({
       />
       {showWidgetEdits &&
         hasResizeHandle &&
-        !(
-          storageKey?.startsWith("quicklinks") &&
-          localStorage.getItem("quicklinks_grid") !== "true"
-        ) && (
+        !(isQuicklinks && quicklinksSettings.format === "list") && (
           <div
             ref={resizeHandleRef}
             className="widget-resize-handle"

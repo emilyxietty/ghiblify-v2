@@ -60,6 +60,7 @@ interface QuicklinksSettings {
   width: number;
   height: number;
   links: Array<{ id: string; title: string; url: string }>;
+  format?: "grid" | "list";
 }
 
 interface SearchBarSettings {
@@ -204,7 +205,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         localStorage.getItem("quicklinks_height") || "200"
       );
       const links = JSON.parse(localStorage.getItem("quick_links") || "[]");
-      return { width, height, links };
+      const format =
+        localStorage.getItem("quicklinks_grid") === "true" ? "grid" : "list";
+      return { width, height, links, format };
     });
   const [searchbarSettings, setSearchbarSettings] = useState<SearchBarSettings>(
     () => {
@@ -446,6 +449,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       }
       if (settings.links !== undefined) {
         localStorage.setItem("quick_links", JSON.stringify(updated.links));
+      }
+      if (settings.format !== undefined) {
+        localStorage.setItem(
+          "quicklinks_grid",
+          settings.format === "grid" ? "true" : "false"
+        );
       }
       return updated;
     });
