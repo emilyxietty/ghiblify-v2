@@ -80,10 +80,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
             style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
           />
 
-          <div
-            className="avatar-overlay-top"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
+          <div className="avatar-overlay-top">
             <span className="avatar-label">{currentAvatar.label}</span>
           </div>
 
@@ -93,7 +90,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
             size="small"
             icon={<ArrowBackIosNewIcon />}
             onClick={handlePrevious}
-            onMouseDown={(e) => e.stopPropagation()}
+            // onMouseDown removed
           />
 
           <Button
@@ -102,15 +99,12 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
             size="small"
             icon={<ArrowForwardIosIcon />}
             onClick={handleNext}
-            onMouseDown={(e) => e.stopPropagation()}
+            // onMouseDown removed
           />
 
           {((currentAvatar as any).source ||
             (currentAvatar as any).creator) && (
-            <div
-              className="avatar-overlay-bottom"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
+            <div className="avatar-overlay-bottom">
               {(currentAvatar as any).source &&
               (currentAvatar as any).creator ? (
                 <a
@@ -118,7 +112,7 @@ export const AvatarSelector: React.FC<AvatarSelectorProps> = ({
                   href={(currentAvatar as any).source}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  // onClick remains, but onMouseDown removed
                 >
                   {(currentAvatar as any).creator}
                 </a>

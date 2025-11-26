@@ -141,7 +141,7 @@ export const BackgroundSettingsModal: React.FC<
               checked={enabled}
               disabled={!available || !!disableLast}
               onChange={(e) => onUpdate(movieKey, e.target.checked)}
-              onMouseDown={(e) => e.stopPropagation()}
+              // onMouseDown removed
             />
             <span className="background-title">{title}</span>
             {!available && (
@@ -151,26 +151,25 @@ export const BackgroundSettingsModal: React.FC<
           {available && links.length > 0 && (
             <div
               className="summary-images"
-              onMouseDown={(e) => e.stopPropagation()}
+              // onMouseDown removed
             >
               {links.map((lnk, idx) => (
                 <div
                   key={idx}
                   className="thumb-wrap"
-                  onMouseDown={(e) => e.stopPropagation()}
+                  // onMouseDown removed
                 >
                   <img
                     src={lnk}
                     alt={`${title} ${idx}`}
                     className="summary-thumb"
-                    onMouseDown={(e) => e.stopPropagation()}
+                    // onMouseDown removed
                   />
                   <button
                     type="button"
                     className="thumb-delete"
                     title="Remove image"
                     onClick={(e) => {
-                      e.stopPropagation();
                       // call parent handler via custom event on window — parent will provide
                       const ev = new CustomEvent("ghiblify:blacklist:add", {
                         detail: lnk,

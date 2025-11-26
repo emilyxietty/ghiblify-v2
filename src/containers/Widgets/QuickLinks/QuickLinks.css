@@ -150,12 +150,10 @@
 
 .quicklinksSettings-grid-item:hover .quicklinksSettings-delete.grid {
     display: flex;
-    /* Show the delete button on hover */
 }
 
 .quicklinksSettings-grid-item .quicklinksSettings-grid-link {
     pointer-events: none;
-    /* Disable link clicks when delete button is visible */
 }
 
 .quicklinksSettings-grid-toggle {
@@ -342,8 +340,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    cursor: grab;
-    transition: background 0.18s, box-shadow 0.18s;
+    /* cursor: grab; */
+    /* transition: background 0.18s, box-shadow 0.18s; */
 }
 
 .quicklinksSettings-item.dragging {

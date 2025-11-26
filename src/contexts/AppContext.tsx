@@ -1,8 +1,15 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export interface BackgroundFilters {
   blur: number;
   brightness: number;
+  contrast: number;
   saturation: number;
 }
 
@@ -13,6 +20,7 @@ interface WidgetVisibility {
   todo: boolean;
   avatar: boolean;
   quicklinks: boolean;
+  searchbar: boolean;
 }
 
 interface InfoFields {
@@ -54,15 +62,21 @@ interface QuicklinksSettings {
   links: Array<{ id: string; title: string; url: string }>;
 }
 
+interface SearchBarSettings {
+  width: number;
+  height?: number;
+  darkMode?: boolean;
+}
+
 interface AppContextType {
+  isDragging: boolean;
+  setIsDragging: (dragging: boolean) => void;
   showWidgetEdits: boolean;
   toggleEditMode: () => void;
   backgroundFilters: BackgroundFilters;
   updateBackgroundFilters: (filters: Partial<BackgroundFilters>) => void;
   widgetVisibility: WidgetVisibility;
   toggleWidgetVisibility: (widget: keyof WidgetVisibility) => void;
-  isDragging: boolean;
-  setIsDragging: (dragging: boolean) => void;
 
   infoSettings: InfoSettings;
   updateInfoSettings: (
@@ -100,6 +114,8 @@ interface AppContextType {
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
   quicklinksSettings: QuicklinksSettings;
   updateQuicklinksSettings: (settings: Partial<QuicklinksSettings>) => void;
+  searchbarSettings: SearchBarSettings;
+  updateSearchbarSettings: (settings: Partial<SearchBarSettings>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -107,8 +123,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [showWidgetEdits, setShowWidgetEdits] = useState(false);
+  // Centralized drag state for all widgets
   const [isDragging, setIsDragging] = useState(false);
+  const [showWidgetEdits, setShowWidgetEdits] = useState(false);
   const [backgroundFilters, setBackgroundFilters] = useState<BackgroundFilters>(
     () => {
       const saved = localStorage.getItem("background_filters");
@@ -126,6 +143,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
       const quicklinksVisible =
         localStorage.getItem("quicklinks_switch") !== "off";
+      const searchbarVisible =
+        localStorage.getItem("searchbar_switch") !== "off";
       return {
         time: timeVisible,
         date: dateVisible,
@@ -133,6 +152,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         todo: todoVisible,
         avatar: avatarVisible,
         quicklinks: quicklinksVisible,
+        searchbar: searchbarVisible,
       };
     }
   );
@@ -176,6 +196,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     const darkMode = localStorage.getItem("todo_darkMode") === "true";
     return { width, height, darkMode };
   });
+
+  const [quicklinksSettings, setQuicklinksSettings] =
+    useState<QuicklinksSettings>(() => {
+      const width = parseInt(localStorage.getItem("quicklinks_width") || "300");
+      const height = parseInt(
+        localStorage.getItem("quicklinks_height") || "200"
+      );
+      const links = JSON.parse(localStorage.getItem("quick_links") || "[]");
+      return { width, height, links };
+    });
+  const [searchbarSettings, setSearchbarSettings] = useState<SearchBarSettings>(
+    () => {
+      const width = parseInt(localStorage.getItem("searchbar_width") || "300");
+      const height = parseInt(localStorage.getItem("searchbar_height") || "32");
+      const darkMode = localStorage.getItem("searchbar_darkMode") === "true";
+      return { width, height, darkMode };
+    }
+  );
 
   const [widgetPositions, setWidgetPositions] = useState<
     Record<string, { x: number; y: number }>
@@ -225,6 +263,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     return localStorage.getItem("todo_collapsed") === "true";
   });
 
+  useEffect(() => {
+    console.log("[AppContext] todo_collapsed state changed:", todoCollapsed);
+  }, [todoCollapsed]);
+
   const updateTodoCollapsed = (collapsed: boolean) => {
     setTodoCollapsed(collapsed);
     try {
@@ -262,6 +304,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const toggleEditMode = () => {
     setShowWidgetEdits((prev) => !prev);
+    setIsDragging(false); // Always reset drag state on edit mode toggle
   };
 
   const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
@@ -392,16 +435,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
-  const [quicklinksSettings, setQuicklinksSettings] =
-    useState<QuicklinksSettings>(() => {
-      const width = parseInt(localStorage.getItem("quicklinks_width") || "300");
-      const height = parseInt(
-        localStorage.getItem("quicklinks_height") || "200"
-      );
-      const links = JSON.parse(localStorage.getItem("quick_links") || "[]");
-      return { width, height, links };
-    });
-
   const updateQuicklinksSettings = (settings: Partial<QuicklinksSettings>) => {
     setQuicklinksSettings((prev) => {
       const updated = { ...prev, ...settings };
@@ -418,6 +451,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const updateSearchbarSettings = (settings: Partial<SearchBarSettings>) => {
+    setSearchbarSettings((prev) => {
+      const updated = { ...prev, ...settings };
+      console.log("updateSearchbarSettings called", settings, updated);
+      if (settings.width !== undefined) {
+        localStorage.setItem("searchbar_width", updated.width.toString());
+      }
+      if (settings.height !== undefined && updated.height !== undefined) {
+        localStorage.setItem("searchbar_height", String(updated.height));
+      }
+      if (typeof updated.darkMode === "boolean") {
+        localStorage.setItem("searchbar_darkMode", updated.darkMode.toString());
+      }
+      return updated;
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -427,8 +477,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateBackgroundFilters,
         widgetVisibility,
         toggleWidgetVisibility,
-        isDragging,
-        setIsDragging,
         widgetPositions,
         updateWidgetPosition,
         infoSettings,
@@ -447,6 +495,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateTodoSettings,
         quicklinksSettings,
         updateQuicklinksSettings,
+        searchbarSettings,
+        updateSearchbarSettings,
+        isDragging,
+        setIsDragging,
       }}
     >
       {children}

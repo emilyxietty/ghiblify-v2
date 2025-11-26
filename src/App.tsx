@@ -8,6 +8,7 @@ import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Info } from "./containers/Widgets/Info/Info";
 import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
+import SearchBar from "./containers/Widgets/SearchBar/SearchBar";
 import { Time } from "./containers/Widgets/Time/Time";
 import { Todo } from "./containers/Widgets/Todo/Todo";
 import { AppProvider, useAppContext } from "./contexts/AppContext";
@@ -123,6 +124,14 @@ const AppContent: React.FC = () => {
             initialPosition={{ x: 80, y: 20 }}
           >
             <Avatar />
+          </Widget>
+        )}
+        {widgetVisibility.searchbar && (
+          <Widget
+            storageKey="searchbar_position"
+            initialPosition={{ x: 50, y: 70 }}
+          >
+            <SearchBar />
           </Widget>
         )}
       </Background>

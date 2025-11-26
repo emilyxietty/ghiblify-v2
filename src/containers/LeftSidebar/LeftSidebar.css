@@ -214,6 +214,7 @@
 .left-sidebar .widget-section {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 24px;
     background-color: var(--dark);
     align-items: center;

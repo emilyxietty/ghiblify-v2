@@ -17,7 +17,7 @@
     /* Allow mousedown to pass through the overlay so the widget's
          drag handler can receive the event. Individual controls inside
          the overlay remain interactive via their own pointer-events. */
-    pointer-events: none !important;
+    /* pointer-events: none !important; */
     opacity: 1;
     transition: opacity 0.3s ease;
     padding: 20px;
@@ -26,12 +26,12 @@
 .widget-overlay:not(:has(.widget-controls-container, .field-selector)) {
     /* If there are no interactive controls inside the overlay, keep
        pointer-events:none so drags still work. */
-    pointer-events: none !important;
+    /* pointer-events: none !important; */
     cursor: pointer;
 }
 
 .widget-overlay.draggable-overlay {
-    pointer-events: none !important;
+    /* pointer-events: none !important; */
     cursor: pointer;
 }
 
@@ -40,7 +40,7 @@
 }
 
 .widget.resizing .widget-overlay {
-    pointer-events: none;
+    /* pointer-events: none; */
     opacity: 0.3;
 }
 
@@ -86,7 +86,7 @@
     border-right: 6px solid #ccc;
     border-radius: 0 0 8px 0;
     box-sizing: border-box;
-    pointer-events: none;
+    /* pointer-events: none; */
     transition: border-color 0.2s;
 }
 

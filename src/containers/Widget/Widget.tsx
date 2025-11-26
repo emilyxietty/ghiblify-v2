@@ -21,7 +21,6 @@ export const Widget: React.FC<WidgetProps> = ({
 }) => {
   const {
     showWidgetEdits,
-    setIsDragging,
     updateAvatarSettings,
     updateTodoSettings,
     updateDateSettings,
@@ -36,6 +35,8 @@ export const Widget: React.FC<WidgetProps> = ({
     updateWidgetPosition,
     quicklinksSettings,
     updateQuicklinksSettings,
+    searchbarSettings,
+    updateSearchbarSettings,
   } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
 
@@ -49,8 +50,9 @@ export const Widget: React.FC<WidgetProps> = ({
     return initialPosition;
   });
 
-  const [localIsDragging, setLocalIsDragging] = useState(false);
+  const { isDragging, setIsDragging } = useAppContext();
   const [isMouseDown, setIsMouseDown] = useState(false);
+  const [dragButton, setDragButton] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hasMovedWhileMouseDown, setHasMovedWhileMouseDown] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -65,8 +67,9 @@ export const Widget: React.FC<WidgetProps> = ({
 
   // Update global context when local drag state changes
   useEffect(() => {
-    setIsDragging(localIsDragging || isResizing);
-  }, [localIsDragging, isResizing, setIsDragging]);
+    setIsDragging(isResizing);
+    console.log("[Widget] setIsDragging called (context):", isResizing);
+  }, [isResizing, setIsDragging]);
 
   // Determine alignment based on position
   const getAlignment = () => {
@@ -156,6 +159,28 @@ export const Widget: React.FC<WidgetProps> = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Only track drag if mouse is down and dragButton is 0 (left-click, with Shift)
+      if (isMouseDown && dragButton === 0 && widgetRef.current) {
+        if (!hasMovedWhileMouseDown) {
+          setHasMovedWhileMouseDown(true);
+          setIsDragging(true);
+          console.log("[Widget] Drag started! isDragging:", true);
+        }
+
+        const rect = widgetRef.current.getBoundingClientRect();
+        const newTopPx = e.clientY + dragOffset.y;
+        const newCenterX = e.clientX + dragOffset.x;
+        const centerXPercent = (newCenterX / window.innerWidth) * 100;
+        const centerYPercent =
+          ((newTopPx + rect.height / 2) / window.innerHeight) * 100;
+        const snappedCenter = snapToGrid(centerXPercent, centerYPercent);
+        const heightVh = (rect.height / window.innerHeight) * 100;
+        const topPercent = snappedCenter.y - heightVh / 2;
+        setPosition({ x: snappedCenter.x, y: topPercent });
+        return;
+      }
+
+      // Existing resize logic
       if (isResizing && storageKey) {
         const baseKey = storageKey.replace(/_position$/, "");
 
@@ -203,9 +228,11 @@ export const Widget: React.FC<WidgetProps> = ({
             if (baseKey === "todo" && updateTodoSettings) {
               updateTodoSettings({ width: newWidth });
             }
-
             if (baseKey === "quicklinks" && updateQuicklinksSettings) {
               updateQuicklinksSettings({ width: newWidth });
+            }
+            if (baseKey === "searchbar" && updateSearchbarSettings) {
+              updateSearchbarSettings({ width: newWidth });
             }
 
             const eventName = `${baseKey}SettingsChange`;
@@ -228,9 +255,11 @@ export const Widget: React.FC<WidgetProps> = ({
             if (baseKey === "todo" && updateTodoSettings) {
               updateTodoSettings({ height: newHeight });
             }
-
             if (baseKey === "quicklinks" && updateQuicklinksSettings) {
               updateQuicklinksSettings({ height: newHeight });
+            }
+            if (baseKey === "searchbar" && updateSearchbarSettings) {
+              updateSearchbarSettings({ height: newHeight });
             }
 
             const eventName = `${baseKey}SettingsChange`;
@@ -271,8 +300,8 @@ export const Widget: React.FC<WidgetProps> = ({
       } else if (isMouseDown && widgetRef.current) {
         if (!hasMovedWhileMouseDown) {
           setHasMovedWhileMouseDown(true);
-          setLocalIsDragging(true);
           setIsDragging(true);
+          console.log("[Widget] Drag started! isDragging:", true);
         }
 
         // For horizontal positioning we keep center-based coordinates
@@ -301,7 +330,7 @@ export const Widget: React.FC<WidgetProps> = ({
       }
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e?: MouseEvent) => {
       if (isResizing) {
         setIsResizing(false);
         setIsDragging(false);
@@ -309,8 +338,8 @@ export const Widget: React.FC<WidgetProps> = ({
       if (isMouseDown) {
         setIsMouseDown(false);
         setHasMovedWhileMouseDown(false);
-        setLocalIsDragging(false);
         setIsDragging(false);
+        setDragButton(null);
 
         // If the user moved the widget while the mouse was down, persist
         // the new position and mark this widget as "just dragged" so child
@@ -356,7 +385,7 @@ export const Widget: React.FC<WidgetProps> = ({
       }
     };
 
-    if (isMouseDown || isResizing) {
+    if ((isMouseDown && dragButton === 0) || isResizing) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     }
@@ -394,41 +423,22 @@ export const Widget: React.FC<WidgetProps> = ({
   }, [children]);
 
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
+    console.log("[Widget] Attempt to start drag. isDragging:", isDragging);
+    // Only allow drag on Shift + left-click (button === 0)
+    if (e.button !== 0 || !e.shiftKey) return;
     if (isResizing) return;
+    e.preventDefault();
 
-    // Only start dragging when the user clicks on a header/drag-handle
+    // Always allow dragging from any non-interactive area, regardless of header or edit mode
     const target = e.target as HTMLElement | null;
-    // If the child rendered its own header, require header-only drags.
-    // However, treat clicks that land on the container itself (e.g. the
-    // border/padding area) as valid drag starts so edges remain draggable.
-    const current = e.currentTarget as HTMLElement | null;
-    if (hasChildHeader && !showWidgetEdits) {
-      // Normal mode: require clicks on the header or the container itself
-      const clickedHeader =
-        target && target.closest && target.closest(".widget-header");
-      const clickedContainer = current && target === current;
-      if (!clickedHeader && !clickedContainer) {
-        return;
-      }
-    } else {
-      // No child header: allow dragging from any non-interactive area.
-      // Prevent starting a drag when clicking inputs, buttons, links, or
-      // elements explicitly marked with `.no-drag`.
-      const interactiveSelector =
-        "input, button, textarea, select, a, [role=button], .no-drag";
-      if (target && target.closest && target.closest(interactiveSelector)) {
-        return;
-      }
-      // otherwise allow drag
-    }
+    const interactiveSelector =
+      "input, button, textarea, select, a, [role=button], .no-drag";
+    if (target?.closest?.(interactiveSelector)) return;
 
     // debug: log when the widget receives a mousedown so we can verify which
     // header areas let the event bubble up. Keep logs short and informative.
-    // eslint-disable-next-line no-console
     try {
       const target = e.target as HTMLElement | null;
-      // eslint-disable-next-line no-console
       console.debug("Widget.mousedown", {
         target:
           target &&
@@ -436,7 +446,6 @@ export const Widget: React.FC<WidgetProps> = ({
         hasChildHeader,
         isResizing,
         isMouseDown,
-        isDragging: localIsDragging,
         clickedHeader:
           target && target.closest && Boolean(target.closest(".widget-header")),
       });
@@ -450,10 +459,6 @@ export const Widget: React.FC<WidgetProps> = ({
     if (widgetRef.current) {
       const rect = widgetRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
-      // For Y we store an offset to the top edge so subsequent mouse
-      // moves compute a top-based position (since widget uses
-      // translateY(0) / top-based positioning). For X we keep the
-      // center-based offset so horizontal centering via translateX(-50%) still works.
       const top = rect.top;
 
       setDragOffset({
@@ -463,6 +468,7 @@ export const Widget: React.FC<WidgetProps> = ({
 
       setIsMouseDown(true);
       setHasMovedWhileMouseDown(false);
+      setDragButton(e.button);
     }
   };
 
@@ -496,6 +502,16 @@ export const Widget: React.FC<WidgetProps> = ({
           let currentWidth = widgetConfig.width.default;
           if (baseKey === "todo" && todoSettings?.width !== undefined) {
             currentWidth = todoSettings.width;
+          } else if (
+            baseKey === "quicklinks" &&
+            quicklinksSettings?.width !== undefined
+          ) {
+            currentWidth = quicklinksSettings.width;
+          } else if (
+            baseKey === "searchbar" &&
+            searchbarSettings?.width !== undefined
+          ) {
+            currentWidth = searchbarSettings.width;
           }
           setResizeStartWidth(currentWidth);
         }
@@ -503,6 +519,16 @@ export const Widget: React.FC<WidgetProps> = ({
           let currentHeight = widgetConfig.height.default;
           if (baseKey === "todo" && todoSettings?.height !== undefined) {
             currentHeight = todoSettings.height;
+          } else if (
+            baseKey === "quicklinks" &&
+            quicklinksSettings?.height !== undefined
+          ) {
+            currentHeight = quicklinksSettings.height;
+          } else if (
+            baseKey === "searchbar" &&
+            searchbarSettings?.height !== undefined
+          ) {
+            currentHeight = searchbarSettings.height;
           }
           setResizeStartHeight(currentHeight);
         }
@@ -526,7 +552,7 @@ export const Widget: React.FC<WidgetProps> = ({
   return (
     <div
       ref={widgetRef}
-      className={`widget ${localIsDragging ? "dragging" : ""} ${
+      className={`widget ${isDragging ? "dragging" : ""} ${
         showWidgetEdits ? "edit-mode" : ""
       } ${isResizing ? "resizing" : ""} draggable widget-align-${alignment}`}
       style={{
@@ -535,6 +561,10 @@ export const Widget: React.FC<WidgetProps> = ({
         transform: getTransform(),
       }}
       onMouseDown={handleWidgetMouseDown}
+      onContextMenu={(e) => {
+        // Prevent default context menu
+        e.preventDefault();
+      }}
     >
       {/* if child doesn't render a '.widget-header', show a small invisible
           top handle so the widget remains draggable */}
@@ -546,18 +576,22 @@ export const Widget: React.FC<WidgetProps> = ({
       )}
       <EditWidget
         showWidgetEdits={showWidgetEdits}
-        localIsDragging={localIsDragging}
         isResizing={isResizing}
         storageKey={storageKey}
       />
-      {showWidgetEdits && hasResizeHandle && (
-        <div
-          ref={resizeHandleRef}
-          className="widget-resize-handle"
-          onMouseDown={handleResizeMouseDown}
-          title="Drag to resize"
-        ></div>
-      )}
+      {showWidgetEdits &&
+        hasResizeHandle &&
+        !(
+          storageKey?.startsWith("quicklinks") &&
+          localStorage.getItem("quicklinks_grid") !== "true"
+        ) && (
+          <div
+            ref={resizeHandleRef}
+            className="widget-resize-handle"
+            onMouseDown={handleResizeMouseDown}
+            title="Drag to resize"
+          ></div>
+        )}
       <div className="widget-content">{children}</div>
     </div>
   );

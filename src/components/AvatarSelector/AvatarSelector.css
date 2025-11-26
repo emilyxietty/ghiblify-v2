@@ -122,13 +122,13 @@
     right: -18px;
 }
 
-.avatar-preview {
+/* .avatar-preview {
     cursor: grab;
 }
 
 .avatar-preview:active {
     cursor: grabbing;
-}
+} */
 
 .avatar-label {
     color: white;

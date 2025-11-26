@@ -145,6 +145,28 @@ export const WIDGET_CONFIGS: Record<string, WidgetConfig> = {
     },
     localStorageKeys: ["quicklinks_grid", "quicklinks_size"],
   },
+  searchbar: {
+    name: "Search Bar",
+    storageKey: "searchbar_position",
+    width: {
+      min: 200,
+      max: 800,
+      default: 300,
+      step: 25,
+      enabled: true,
+    },
+    height: {
+      min: 20,
+      max: 40,
+      default: 32,
+      step: 2,
+      enabled: true,
+    },
+    darkMode: {
+      enabled: true,
+      default: false,
+    },
+  },
 };
 
 export const getWidgetConfig = (storageKey?: string): WidgetConfig | null => {

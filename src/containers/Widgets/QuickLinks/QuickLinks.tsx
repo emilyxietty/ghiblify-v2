@@ -4,12 +4,8 @@ import { useAppContext } from "../../../contexts/AppContext";
 import "./QuickLinks.css";
 
 export const QuickLinks: React.FC = () => {
-  const {
-    quicklinksSettings,
-    updateQuicklinksSettings,
-    isDragging,
-    showWidgetEdits,
-  } = useAppContext();
+  const { quicklinksSettings, updateQuicklinksSettings, showWidgetEdits } =
+    useAppContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -300,7 +296,7 @@ export const QuickLinks: React.FC = () => {
                   ".widget"
                 ) as HTMLElement | null;
                 if (widgetEl && widgetEl.dataset.justDragged === "true") return;
-                if (isDragging) return;
+                // if (isDragging) return;
                 if (anchorEl) setAnchorEl(null);
                 else if (headerRef.current)
                   setAnchorEl(titleRef.current || headerRef.current);
@@ -314,7 +310,7 @@ export const QuickLinks: React.FC = () => {
           onClose={() => setAnchorEl(null)}
           inline={true}
           disabled={
-            isDragging ||
+            // isDragging ||
             (headerRef.current?.closest(".widget") as HTMLElement | null)
               ?.dataset.justDragged === "true"
           }

@@ -17,11 +17,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   style,
 }) => {
   return (
-    <div
-      className={`tooltip tooltip-${position} ${className}`}
-      style={style}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
+    <div className={`tooltip tooltip-${position} ${className}`} style={style}>
       <div className="tooltip-inner">{children}</div>
     </div>
   );

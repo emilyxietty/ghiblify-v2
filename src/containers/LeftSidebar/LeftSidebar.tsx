@@ -4,6 +4,7 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
 import RestoreIcon from "@mui/icons-material/Restore";
+import SearchIcon from "@mui/icons-material/Search";
 import React, { useEffect, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
 import { Button } from "../../components/Button/Button";
@@ -112,7 +113,12 @@ export const LeftSidebar: React.FC = () => {
   };
 
   const resetFilters = () => {
-    const defaultFilters = { blur: 0, brightness: 100, saturation: 100 };
+    const defaultFilters = {
+      blur: 0,
+      brightness: 100,
+      contrast: 0,
+      saturation: 100,
+    };
     setFilters(defaultFilters);
     updateBackgroundFilters(defaultFilters);
   };
@@ -220,6 +226,16 @@ export const LeftSidebar: React.FC = () => {
                 onClick={() => toggleWidgetVisibility("avatar")}
                 title="Toggle Avatar Widget"
               ></Button>
+              <Button
+                className={`widget-icon${
+                  widgetVisibility.searchbar ? " active" : ""
+                }`}
+                variant="transparent"
+                icon={<SearchIcon />}
+                size="medium"
+                onClick={() => toggleWidgetVisibility("searchbar")}
+                title="Toggle Searchbar Widget"
+              ></Button>
             </div>
           </div>
           <div className="sidebar-section">
@@ -254,6 +270,25 @@ export const LeftSidebar: React.FC = () => {
                   value={filters.brightness}
                   onChange={(e) =>
                     handleFilterChange("brightness", parseInt(e.target.value))
+                  }
+                  className="filter-slider"
+                />
+              </div>
+
+              <div className="filter-control">
+                <label>
+                  <span>Contrast</span>
+                  <span className="filter-value">
+                    {filters.contrast ?? 100}%
+                  </span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={filters.contrast ?? 100}
+                  onChange={(e) =>
+                    handleFilterChange("contrast", parseInt(e.target.value))
                   }
                   className="filter-slider"
                 />

@@ -18,7 +18,7 @@
     /* invisible but captures pointer events so header-only dragging works */
     background: transparent;
     z-index: 70;
-    cursor: grab;
+    /* cursor: grab; */
 }
 
 .widget.draggable {

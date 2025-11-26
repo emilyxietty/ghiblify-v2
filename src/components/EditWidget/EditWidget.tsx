@@ -12,7 +12,6 @@ import "./EditWidget.css";
 
 interface EditWidgetProps {
   showWidgetEdits: boolean;
-  localIsDragging: boolean;
   isResizing: boolean;
   storageKey?: string;
 }
@@ -27,7 +26,6 @@ const INFO_FIELD_OPTIONS = [
 
 const EditWidget: React.FC<EditWidgetProps> = ({
   showWidgetEdits,
-  localIsDragging,
   isResizing,
   storageKey,
 }) => {
@@ -44,11 +42,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     updateTodoSettings,
     quicklinksSettings,
     updateQuicklinksSettings,
+    searchbarSettings,
+    updateSearchbarSettings,
   } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
 
-  if (!showWidgetEdits || localIsDragging || isResizing || !storageKey)
-    return null;
+  if (!showWidgetEdits || isResizing || !storageKey) return null;
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -59,6 +58,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     window.addEventListener("avatarSettingsChange", handler);
     window.addEventListener("dateSettingsChange", handler);
     window.addEventListener("quicklinksSettingsChange", handler);
+    window.addEventListener("searchbarSettingsChange", handler);
     window.addEventListener(
       `${storageKey.replace(/_position$/, "")}SettingsChange`,
       handler
@@ -69,6 +69,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       window.removeEventListener("avatarSettingsChange", handler);
       window.removeEventListener("dateSettingsChange", handler);
       window.removeEventListener("quicklinksSettingsChange", handler);
+      window.removeEventListener("searchbarSettingsChange", handler);
       window.removeEventListener(
         `${storageKey.replace(/_position$/, "")}SettingsChange`,
         handler
@@ -77,10 +78,14 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   }, [storageKey]);
 
   const baseKey = storageKey.replace(/_position$/, "");
-  const darkMode =
-    baseKey === "todo"
-      ? todoSettings.darkMode
-      : localStorage.getItem(`${storageKey}_darkMode`) === "true";
+  let darkMode = false;
+  if (baseKey === "todo") {
+    darkMode = todoSettings.darkMode;
+  } else if (baseKey === "searchbar") {
+    darkMode = searchbarSettings.darkMode ?? false;
+  } else {
+    darkMode = localStorage.getItem(`${storageKey}_darkMode`) === "true";
+  }
   const selectedAvatar =
     avatarSettings.selectedAvatar ||
     localStorage.getItem("avatar_selected") ||
@@ -101,10 +106,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     const newValue = !darkMode;
     const baseKey = storageKey.replace(/_position$/, "");
     if (baseKey === "todo" && updateTodoSettings) {
-      // Update through context (persists to localStorage inside the updater)
       updateTodoSettings({ darkMode: newValue });
+    } else if (baseKey === "searchbar" && updateSearchbarSettings) {
+      updateSearchbarSettings({ darkMode: newValue });
     } else {
-      // Legacy path for widgets not yet migrated to context
       localStorage.setItem(`${storageKey}_darkMode`, newValue.toString());
       window.dispatchEvent(
         new CustomEvent(`${baseKey}SettingsChange`, {
@@ -170,9 +175,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   };
 
   return (
-    <div
-      className={`widget-overlay ${!hasAnyControls ? "draggable-overlay" : ""}`}
-    >
+    <div className="widget-overlay">
       {(hasAnyControls || isQuicklinks) && (
         <>
           <div className="widget-controls-container">
@@ -214,7 +217,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             )}
           </div>
           {hasInfoFields && (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div
+              style={{ pointerEvents: "auto" }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <FieldSelector
                 options={INFO_FIELD_OPTIONS}
                 selectedValues={Object.entries(infoSettings.infoFields)
@@ -227,7 +233,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             </div>
           )}
           {hasAvatarSelector && (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div
+              style={{ pointerEvents: "auto" }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <AvatarSelector
                 selectedAvatar={selectedAvatar}
                 onChange={handleAvatarChange}
