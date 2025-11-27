@@ -1,3 +1,7 @@
+.quicklinks-widget-mode-light .ql-grid-title {
+    color: #222 !important;
+}
+
 .quicklinksSettings-grid-wrapper.always-show {
     background: none !important;
     box-shadow: none !important;
@@ -54,8 +58,13 @@
     position: relative;
 }
 
-.quicklinksSettings-grid-item:hover {
-    background: rgba(255, 255, 255, 0.04);
+.quicklinksSettings-grid-item-light:hover {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(6px);
+}
+
+.quicklinksSettings-grid-item-dark:hover {
+    background: rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(6px);
 }
 
@@ -65,14 +74,27 @@
     gap: 8px;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
 }
 
-.quicklinksSettings-grid-item.control-button:hover {
-    background: rgba(255, 255, 255, 0.2);
+.control-dark {
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px dashed rgba(0, 0, 0, 0.3);
+}
+
+.control-light {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+
+}
+
+.control-dark:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+.control-light:hover {
+    background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -167,75 +189,6 @@
     border-radius: 4px;
 }
 
-.quicklinksSettings-delete.grid {
-    width: 30px;
-    /* Ensure both buttons are the same size */
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 50%;
-    /* Circular buttons */
-    font-size: 20px;
-    /* Same font size for both */
-    cursor: pointer;
-}
-
-.quicklinksSettings-add-btn.grid,
-.quicklinksSettings-delete-btn.grid {
-    width: 30px;
-    /* Ensure both buttons are the same size */
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 8px;
-    /* border-radius: 50%; */
-    /* Circular buttons */
-    font-size: 20px;
-    /* Same font size for both */
-    cursor: pointer;
-}
-
-.quicklinksSettings-add-btn.grid {
-    background: #2d8cf0;
-    /* Blue background for add button */
-    color: #fff;
-    /* White text */
-}
-
-.quicklinksSettings-add-btn.grid:hover {
-    background: #1a6fb3;
-    /* Darker blue on hover */
-}
-
-.quicklinksSettings-delete-btn.grid {
-    background: #ff6b6b;
-    /* Red background for delete button */
-    color: #fff;
-    /* White text */
-}
-
-.quicklinksSettings-delete-btn.grid:hover {
-    background: #d9534f;
-    /* Red background for delete button */
-    color: #fff;
-    /* White text */
-}
-
-.quicklinksSettings-delete.grid {
-    background: #ff6b6b;
-    /* Red background for delete button */
-    color: #fff;
-    /* White text */
-}
-
-.quicklinksSettings-delete.grid:hover {
-    background: #d9534f;
-    /* Darker red on hover */
-}
 
 .quicklinksSettings-container {
     position: relative;
@@ -274,7 +227,7 @@
 
 .quicklinksSettings-dropdown {
     /* Let MUI Popover control positioning — constrain width instead */
-    min-width: 300px;
+    min-width: min(400px, 90vw);
     background: rgba(18, 18, 18, 0.95);
     color: white;
     border-radius: 8px;

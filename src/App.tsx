@@ -82,33 +82,27 @@ const AppContent: React.FC = () => {
         showWidgetEdits={showWidgetEdits}
       >
         {widgetVisibility.quicklinks && (
-          <Widget
-            storageKey="quicklinks_position"
-            initialPosition={{ x: 50, y: 36 }}
-          >
+          <Widget storageKey="quicklinks" initialPosition={{ x: 50, y: 36 }}>
             <QuickLinks />
           </Widget>
         )}
         {widgetVisibility.time && (
-          <Widget storageKey="time_position" initialPosition={{ x: 50, y: 20 }}>
+          <Widget storageKey="time" initialPosition={{ x: 50, y: 20 }}>
             <Time />
           </Widget>
         )}
         {widgetVisibility.date && (
-          <Widget storageKey="date_position" initialPosition={{ x: 50, y: 52 }}>
+          <Widget storageKey="date" initialPosition={{ x: 50, y: 52 }}>
             <DateDisplay />
           </Widget>
         )}
         {widgetVisibility.todo && (
-          <Widget storageKey="todo_position" initialPosition={{ x: 10, y: 50 }}>
+          <Widget storageKey="todo" initialPosition={{ x: 10, y: 50 }}>
             <Todo />
           </Widget>
         )}
         {widgetVisibility.info && !bgLoading && !infoLoading && (
-          <Widget
-            storageKey="info_position"
-            initialPosition={{ x: 50, y: 88.5 }}
-          >
+          <Widget storageKey="info" initialPosition={{ x: 50, y: 88.5 }}>
             <Info
               titlejp={titlejp}
               title={title}
@@ -119,18 +113,12 @@ const AppContent: React.FC = () => {
           </Widget>
         )}
         {widgetVisibility.avatar && !bgLoading && !infoLoading && (
-          <Widget
-            storageKey="avatar_position"
-            initialPosition={{ x: 80, y: 20 }}
-          >
+          <Widget storageKey="avatar" initialPosition={{ x: 80, y: 20 }}>
             <Avatar />
           </Widget>
         )}
         {widgetVisibility.searchbar && (
-          <Widget
-            storageKey="searchbar_position"
-            initialPosition={{ x: 50, y: 70 }}
-          >
+          <Widget storageKey="searchbar" initialPosition={{ x: 50, y: 70 }}>
             <SearchBar />
           </Widget>
         )}

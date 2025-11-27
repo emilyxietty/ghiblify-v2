@@ -1,6 +1,7 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import React, { useEffect, useRef, useState } from "react";
+import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import "./Todo.css";
 
@@ -143,18 +144,21 @@ export const Todo: React.FC = () => {
 
   return (
     <div
-      className={`todo-container ${todoSettings.darkMode ? "todo-dark" : ""}`}
+      className={`todo-container widget-header ${
+        todoSettings.darkMode ? "todo-dark" : ""
+      }`}
       style={{ width: `${width}px`, height: `${height}px` }}
     >
       <div className="todo-input-wrapper">
-        <input
+        <TextInput
           ref={inputRef}
           type="text"
-          className="todo-input"
+        //   className="todo-input"
           placeholder="Add a task..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyPress}
+          mode={todoSettings.darkMode ? "dark" : "light"}
         />
         {inputValue && (
           <button className="todo-add-btn" onClick={addTodo}>
@@ -187,7 +191,7 @@ export const Todo: React.FC = () => {
                   {todo.checked && <CheckIcon style={{ fontSize: "14px" }} />}
                 </button>
                 {editingId === todo.id ? (
-                  <input
+                  <TextInput
                     id={`todo-edit-${todo.id}`}
                     type="text"
                     className="todo-edit-input"
@@ -196,6 +200,7 @@ export const Todo: React.FC = () => {
                     onKeyDown={(e) => handleEditKeyPress(e, todo.id)}
                     onBlur={() => setEditingId(null)}
                     autoFocus
+                    mode={todoSettings.darkMode ? "dark" : "light"}
                   />
                 ) : (
                   <span

@@ -5,6 +5,17 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import {
+  AvatarSettings,
+  DateSettings,
+  InfoFields,
+  InfoSettings,
+  QuicklinksSettings,
+  SearchBarSettings,
+  TimeSettings,
+  TodoSettings,
+  WIDGET_CONFIGS,
+} from "../config/widgetConfig";
 
 export interface BackgroundFilters {
   blur: number;
@@ -21,55 +32,16 @@ interface WidgetVisibility {
   avatar: boolean;
   quicklinks: boolean;
   searchbar: boolean;
+  pomodoro: boolean;
 }
 
-interface InfoFields {
-  japaneseTitle: boolean;
-  title: boolean;
-  year: boolean;
-  movieLength: boolean;
-  quote: boolean;
-}
-
-interface InfoSettings {
-  infoFields: InfoFields;
-  fontSize: number;
-}
-
-interface TimeSettings {
-  fontSize: number;
-  is24Hour: boolean;
-}
-
-interface DateSettings {
-  fontSize: number;
-}
-
-interface TodoSettings {
-  width: number;
-  height: number;
-  darkMode: boolean;
-}
-
-interface AvatarSettings {
-  selectedAvatar: string;
-  size: number;
-}
-
-interface QuicklinksSettings {
-  width: number;
-  height: number;
-  links: Array<{ id: string; title: string; url: string }>;
-  format?: "grid" | "list";
-}
-
-interface SearchBarSettings {
-  width: number;
-  height?: number;
-  darkMode?: boolean;
-}
+// Widget settings interfaces moved to widgetConfig.ts
 
 interface AppContextType {
+  pomodoroSettings: import("../config/widgetConfig").PomodoroSettings;
+  updatePomodoroSettings: (
+    settings: Partial<import("../config/widgetConfig").PomodoroSettings>
+  ) => void;
   isDragging: boolean;
   setIsDragging: (dragging: boolean) => void;
   showWidgetEdits: boolean;
@@ -78,6 +50,7 @@ interface AppContextType {
   updateBackgroundFilters: (filters: Partial<BackgroundFilters>) => void;
   widgetVisibility: WidgetVisibility;
   toggleWidgetVisibility: (widget: keyof WidgetVisibility) => void;
+  setWidgetsTemporarilyHidden: (hidden: boolean) => void;
 
   infoSettings: InfoSettings;
   updateInfoSettings: (
@@ -146,6 +119,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         localStorage.getItem("quicklinks_switch") !== "off";
       const searchbarVisible =
         localStorage.getItem("searchbar_switch") !== "off";
+      const pomodoroVisible = localStorage.getItem("pomodoro_switch") !== "off";
       return {
         time: timeVisible,
         date: dateVisible,
@@ -154,15 +128,84 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         avatar: avatarVisible,
         quicklinks: quicklinksVisible,
         searchbar: searchbarVisible,
+        pomodoro: pomodoroVisible,
       };
     }
   );
+  // Pomodoro widget settings
+  const [pomodoroSettings, setPomodoroSettings] = useState<
+    import("../config/widgetConfig").PomodoroSettings
+  >(() => {
+    const saved = localStorage.getItem("pomodoro_settings");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          duration: 1500,
+          breakDuration: 300,
+          isActive: false,
+          position: { x: 50, y: 60 },
+        };
+  });
+
+  // Hide all widgets except Pomodoro when timer is active
+  const [widgetsTemporarilyHidden, setWidgetsTemporarilyHiddenState] =
+    useState(false);
+  const setWidgetsTemporarilyHidden = (hidden: boolean) => {
+    setWidgetsTemporarilyHiddenState(hidden);
+    if (hidden) {
+      setWidgetVisibility((prev) => ({
+        time: false,
+        date: false,
+        info: false,
+        todo: false,
+        avatar: false,
+        quicklinks: false,
+        searchbar: false,
+        pomodoro: true,
+      }));
+    } else {
+      setWidgetVisibility((prev) => {
+        // Restore all widgets except Pomodoro to visible (or use localStorage)
+        const timeVisible = localStorage.getItem("time_switch") !== "off";
+        const dateVisible = localStorage.getItem("date_switch") !== "off";
+        const infoVisible = localStorage.getItem("info_switch") !== "off";
+        const todoVisible = localStorage.getItem("todo_switch") !== "off";
+        const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
+        const quicklinksVisible =
+          localStorage.getItem("quicklinks_switch") !== "off";
+        const searchbarVisible =
+          localStorage.getItem("searchbar_switch") !== "off";
+        const pomodoroVisible =
+          localStorage.getItem("pomodoro_switch") !== "off";
+        return {
+          time: timeVisible,
+          date: dateVisible,
+          info: infoVisible,
+          todo: todoVisible,
+          avatar: avatarVisible,
+          quicklinks: quicklinksVisible,
+          searchbar: searchbarVisible,
+          pomodoro: pomodoroVisible,
+        };
+      });
+    }
+  };
+
+  const updatePomodoroSettings = (
+    settings: Partial<import("../config/widgetConfig").PomodoroSettings>
+  ) => {
+    setPomodoroSettings((prev) => {
+      const next = { ...prev, ...settings };
+      localStorage.setItem("pomodoro_settings", JSON.stringify(next));
+      return next;
+    });
+  };
   const [infoSettings, setInfoSettings] = useState<InfoSettings>(() => {
-    // InfoFields
+    // Use WIDGET_CONFIGS.info.defaults as fallback
     const savedFields = localStorage.getItem("info_selectedFields");
     const selectedFields = savedFields
       ? JSON.parse(savedFields)
-      : ["japaneseTitle", "title", "year", "movieLength", "quote"];
+      : Object.keys(WIDGET_CONFIGS.info.defaults.infoFields);
     const infoFields: InfoFields = {
       japaneseTitle: selectedFields.includes("japaneseTitle"),
       title: selectedFields.includes("title"),
@@ -170,51 +213,100 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       movieLength: selectedFields.includes("movieLength"),
       quote: selectedFields.includes("quote"),
     };
-    // Font size
     const savedFontSize = localStorage.getItem("info_fontSize");
-    const fontSize = savedFontSize ? parseInt(savedFontSize) : 16;
-    return { infoFields, fontSize };
+    const fontSize = savedFontSize
+      ? parseInt(savedFontSize)
+      : WIDGET_CONFIGS.info.defaults.fontSize;
+    const position = WIDGET_CONFIGS.info.defaults.position;
+    return { infoFields, fontSize, position };
   });
   const [timeSettings, setTimeSettings] = useState<TimeSettings>(() => {
     const savedFontSize = localStorage.getItem("time_fontSize");
-    const fontSize = savedFontSize ? parseInt(savedFontSize) : 32;
-    const is24Hour = localStorage.getItem("time_is24Hour") === "true";
-    return { fontSize, is24Hour };
+    const fontSize = savedFontSize
+      ? parseInt(savedFontSize)
+      : WIDGET_CONFIGS.time.defaults.fontSize;
+    const is24Hour =
+      localStorage.getItem("time_is24Hour") === "true"
+        ? true
+        : WIDGET_CONFIGS.time.defaults.is24Hour;
+    const position = WIDGET_CONFIGS.time.defaults.position;
+    return { fontSize, is24Hour, position };
   });
   const [dateSettings, setDateSettings] = useState<DateSettings>(() => {
     const savedFontSize = localStorage.getItem("date_fontSize");
-    const fontSize = savedFontSize ? parseInt(savedFontSize) : 24;
-    return { fontSize };
+    const fontSize = savedFontSize
+      ? parseInt(savedFontSize)
+      : WIDGET_CONFIGS.date.defaults.fontSize;
+    const position = WIDGET_CONFIGS.date.defaults.position;
+    return { fontSize, position };
   });
   const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>(() => {
-    const selected = localStorage.getItem("avatar_selected") || "totoro";
-    const size = parseInt(localStorage.getItem("avatar_size") || "100");
-    return { selectedAvatar: selected, size };
+    const selected =
+      localStorage.getItem("avatar_selected") ||
+      WIDGET_CONFIGS.avatar.defaults.selectedAvatar;
+    const size = parseInt(
+      localStorage.getItem("avatar_size") ||
+        WIDGET_CONFIGS.avatar.defaults.size.toString()
+    );
+    const position = WIDGET_CONFIGS.avatar.defaults.position;
+    return { selectedAvatar: selected, size, position };
   });
   const [todoSettings, setTodoSettings] = useState<TodoSettings>(() => {
-    const width = parseInt(localStorage.getItem("todo_width") || "350");
-    const height = parseInt(localStorage.getItem("todo_height") || "500");
-    const darkMode = localStorage.getItem("todo_darkMode") === "true";
-    return { width, height, darkMode };
+    const width = parseInt(
+      localStorage.getItem("todo_width") ||
+        WIDGET_CONFIGS.todo.defaults.width.toString()
+    );
+    const height = parseInt(
+      localStorage.getItem("todo_height") ||
+        WIDGET_CONFIGS.todo.defaults.height.toString()
+    );
+    const darkMode =
+      localStorage.getItem("todo_darkMode") === "true"
+        ? true
+        : WIDGET_CONFIGS.todo.defaults.darkMode;
+    const position = WIDGET_CONFIGS.todo.defaults.position;
+    return { width, height, darkMode, position };
   });
 
   const [quicklinksSettings, setQuicklinksSettings] =
     useState<QuicklinksSettings>(() => {
-      const width = parseInt(localStorage.getItem("quicklinks_width") || "300");
+      const width = parseInt(
+        localStorage.getItem("quicklinks_width") ||
+          WIDGET_CONFIGS.quicklinks.defaults.width.toString()
+      );
       const height = parseInt(
-        localStorage.getItem("quicklinks_height") || "200"
+        localStorage.getItem("quicklinks_height") ||
+          WIDGET_CONFIGS.quicklinks.defaults.height.toString()
       );
       const links = JSON.parse(localStorage.getItem("quick_links") || "[]");
-      const format =
-        localStorage.getItem("quicklinks_grid") === "true" ? "grid" : "list";
-      return { width, height, links, format };
+      const gridMode =
+        localStorage.getItem("quicklinks_grid") !== null
+          ? localStorage.getItem("quicklinks_grid") === "true"
+          : WIDGET_CONFIGS.quicklinks.defaults.gridMode;
+      const darkMode =
+        localStorage.getItem("quicklinks_darkMode") === "true"
+          ? true
+          : WIDGET_CONFIGS.quicklinks.defaults.darkMode;
+      const position = WIDGET_CONFIGS.quicklinks.defaults.position;
+      return { width, height, links, gridMode, darkMode, position };
     });
   const [searchbarSettings, setSearchbarSettings] = useState<SearchBarSettings>(
     () => {
-      const width = parseInt(localStorage.getItem("searchbar_width") || "300");
-      const height = parseInt(localStorage.getItem("searchbar_height") || "32");
-      const darkMode = localStorage.getItem("searchbar_darkMode") === "true";
-      return { width, height, darkMode };
+      const width = parseInt(
+        localStorage.getItem("searchbar_width") ||
+          WIDGET_CONFIGS.searchbar.defaults.width.toString()
+      );
+      // Provide fallback if height is undefined
+      const defaultHeight = WIDGET_CONFIGS.searchbar.defaults.height ?? 40;
+      const height = parseInt(
+        localStorage.getItem("searchbar_height") || defaultHeight.toString()
+      );
+      const darkMode =
+        localStorage.getItem("searchbar_darkMode") === "true"
+          ? true
+          : WIDGET_CONFIGS.searchbar.defaults.darkMode;
+      const position = WIDGET_CONFIGS.searchbar.defaults.position;
+      return { width, height, darkMode, position };
     }
   );
 
@@ -355,6 +447,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         localStorage.setItem("info_fontSize", next.fontSize.toString());
         console.log("AppContext: persisted info_fontSize", next.fontSize);
       }
+      if (settings.position) {
+        localStorage.setItem("info_x", settings.position.x.toString());
+        localStorage.setItem("info_y", settings.position.y.toString());
+      }
       return next;
     });
   };
@@ -374,6 +470,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         localStorage.setItem("time_is24Hour", next.is24Hour.toString());
         console.log("AppContext: persisted time_is24Hour", next.is24Hour);
       }
+      if (settings.position) {
+        localStorage.setItem("time_x", settings.position.x.toString());
+        localStorage.setItem("time_y", settings.position.y.toString());
+      }
       return next;
     });
   };
@@ -388,6 +488,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       if (settings.fontSize !== undefined) {
         localStorage.setItem("date_fontSize", next.fontSize.toString());
         console.log("AppContext: persisted date_fontSize", next.fontSize);
+      }
+      if (settings.position) {
+        localStorage.setItem("date_x", settings.position.x.toString());
+        localStorage.setItem("date_y", settings.position.y.toString());
       }
       return next;
     });
@@ -410,6 +514,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       if (settings.size !== undefined) {
         localStorage.setItem("avatar_size", next.size.toString());
         console.log("AppContext: persisted avatar_size", next.size);
+      }
+      if (settings.position) {
+        localStorage.setItem("avatar_x", settings.position.x.toString());
+        localStorage.setItem("avatar_y", settings.position.y.toString());
       }
       return next;
     });
@@ -434,6 +542,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         localStorage.setItem("todo_darkMode", next.darkMode.toString());
         console.log("AppContext: persisted todo_darkMode", next.darkMode);
       }
+      if (settings.position) {
+        localStorage.setItem("todo_x", settings.position.x.toString());
+        localStorage.setItem("todo_y", settings.position.y.toString());
+      }
       return next;
     });
   };
@@ -450,11 +562,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       if (settings.links !== undefined) {
         localStorage.setItem("quick_links", JSON.stringify(updated.links));
       }
-      if (settings.format !== undefined) {
+      if (settings.gridMode !== undefined) {
         localStorage.setItem(
           "quicklinks_grid",
-          settings.format === "grid" ? "true" : "false"
+          settings.gridMode ? "true" : "false"
         );
+      }
+      if (settings.darkMode !== undefined) {
+        localStorage.setItem(
+          "quicklinks_darkMode",
+          settings.darkMode ? "true" : "false"
+        );
+      }
+      if (settings.position) {
+        localStorage.setItem("quicklinks_x", settings.position.x.toString());
+        localStorage.setItem("quicklinks_y", settings.position.y.toString());
       }
       return updated;
     });
@@ -472,6 +594,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       }
       if (typeof updated.darkMode === "boolean") {
         localStorage.setItem("searchbar_darkMode", updated.darkMode.toString());
+      }
+      if (settings.position) {
+        localStorage.setItem("searchbar_x", settings.position.x.toString());
+        localStorage.setItem("searchbar_y", settings.position.y.toString());
       }
       return updated;
     });
@@ -506,6 +632,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateQuicklinksSettings,
         searchbarSettings,
         updateSearchbarSettings,
+        pomodoroSettings,
+        updatePomodoroSettings,
+        setWidgetsTemporarilyHidden,
         isDragging,
         setIsDragging,
       }}

@@ -1,12 +1,15 @@
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import EditIcon from "@mui/icons-material/Edit";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
 import React, { useEffect, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
+import { WIDGET_CONFIGS } from "../../config/widgetConfig";
+
 import { Button } from "../../components/Button/Button";
 import {
   BUYMEACOFFEE_URL,
@@ -19,6 +22,51 @@ import { BackgroundFilters, useAppContext } from "../../contexts/AppContext";
 import "./LeftSidebar.css";
 
 export const LeftSidebar: React.FC = () => {
+  // Reset all widget settings to default
+  const {
+    updateAvatarSettings,
+    updateTodoSettings,
+    updateDateSettings,
+    updateTimeSettings,
+    updateInfoSettings,
+    updateQuicklinksSettings,
+    updateSearchbarSettings,
+    quicklinksSettings,
+    updateWidgetPosition,
+  } = useAppContext();
+
+  function handleResetAllWidgets() {
+    if (
+      window.confirm("Are you sure you want to reset all widgets to default?")
+    ) {
+      // List of widget keys and their update functions
+      const widgetUpdaters: {
+        key: string;
+        updater: (settings: any) => void;
+      }[] = [
+        { key: "avatar", updater: updateAvatarSettings },
+        { key: "todo", updater: updateTodoSettings },
+        { key: "date", updater: updateDateSettings },
+        { key: "time", updater: updateTimeSettings },
+        { key: "info", updater: updateInfoSettings },
+        { key: "quicklinks", updater: updateQuicklinksSettings },
+        { key: "searchbar", updater: updateSearchbarSettings },
+      ];
+
+      widgetUpdaters.forEach(({ key, updater }) => {
+        updater(WIDGET_CONFIGS[key].defaults);
+        if (WIDGET_CONFIGS[key].defaults.position) {
+          updateWidgetPosition(
+            `${key}_position`,
+            WIDGET_CONFIGS[key].defaults.position
+          );
+        }
+      });
+
+      // Reload the page after reset
+      window.location.reload();
+    }
+  }
   const {
     backgroundFilters,
     updateBackgroundFilters,
@@ -62,13 +110,13 @@ export const LeftSidebar: React.FC = () => {
   };
 
   // Get the selected avatar from localStorage
-  const [selectedAvatar, setSelectedAvatar] = useState(
-    () => localStorage.getItem("avatar_selected") || "totoro"
+  const [selectedAvatar, setSelectedAvatar] = useState(() =>
+    localStorage.getItem("avatar_selected")
   );
 
   useEffect(() => {
     const handleChange = () => {
-      setSelectedAvatar(localStorage.getItem("avatar_selected") || "totoro");
+      setSelectedAvatar(localStorage.getItem("avatar_selected"));
     };
     window.addEventListener("avatarSettingsChange", handleChange);
     return () =>
@@ -116,7 +164,7 @@ export const LeftSidebar: React.FC = () => {
     const defaultFilters = {
       blur: 0,
       brightness: 100,
-      contrast: 0,
+      contrast: 100,
       saturation: 100,
     };
     setFilters(defaultFilters);
@@ -237,6 +285,30 @@ export const LeftSidebar: React.FC = () => {
                 title="Toggle Searchbar Widget"
               ></Button>
             </div>
+            <div className="widget-edits">
+              <Button
+                variant="dark"
+                size="medium"
+                pill
+                onClick={handleEditToggle}
+              >
+                <EditIcon
+                  style={{
+                    fontSize: 14,
+                  }}
+                />
+                {showWidgetEdits ? "Done" : "Edit Widgets"}
+              </Button>
+              <Button
+                variant="dark"
+                size="medium"
+                pill
+                onClick={handleResetAllWidgets}
+              >
+                <RestoreIcon style={{ fontSize: "14px" }} />
+                Reset All Widgets
+              </Button>
+            </div>
           </div>
           <div className="sidebar-section">
             <h4>Background</h4>
@@ -326,11 +398,6 @@ export const LeftSidebar: React.FC = () => {
               Select Backgrounds
             </Button>
           </div>
-        </div>
-        <div className="sidebar-footer">
-          <Button variant="dark" size="medium" pill onClick={handleEditToggle}>
-            {showWidgetEdits ? "Done" : "✎ Edit Widgets"}
-          </Button>
         </div>
       </div>
       {showBackgroundSettings && (

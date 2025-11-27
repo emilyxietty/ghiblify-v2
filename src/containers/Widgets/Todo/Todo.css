@@ -28,7 +28,7 @@
     margin-bottom: 12px;
 }
 
-.todo-input {
+/* .todo-input {
     width: 100%;
     padding: 12px 36px 12px 10px;
     background: rgba(255, 255, 255, 0.1);
@@ -39,7 +39,7 @@
     outline: none;
     transition: all 0.3s ease;
     box-sizing: border-box;
-}
+} */
 
 .todo-input::placeholder {
     color: rgba(255, 255, 255, 0.5);
@@ -238,11 +238,11 @@
     border-radius: 6px;
 }
 
-.todo-container.todo-dark .todo-input {
+/* .todo-container.todo-dark .todo-input {
     background: #000000a9;
     color: #f3f3f3;
     border: none;
-}
+} */
 
 .todo-container.todo-dark .todo-item-content {
     /* darker translucent background for dark mode + blur */

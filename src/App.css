@@ -4,12 +4,12 @@
     --red: #c85a54;
     --blue: #5ba8c9;
     --yellow: #f4e27c;
-    --light: #eceff1;
-    --blue-muted: #6c7b83;
-    --light-muted: #c9cccf;
-    --dark-muted: #32363a;
-    --disabled-dark: #555b61;
-    --disabled-light: rgb(163, 165, 167);
+    --light: rgba(236, 239, 241, 0.6);
+    --blue-muted: rgba(108, 123, 131, 0.6);
+    --light-muted: rgba(201, 204, 207, 0.6);
+    --dark-muted: rgba(50, 54, 58, 0.6);
+    --disabled-dark: rgba(85, 91, 97, 0.6);
+    --disabled-light: rgba(163, 165, 167, 0.6);
 }
 
 body {

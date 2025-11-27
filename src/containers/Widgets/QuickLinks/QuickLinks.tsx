@@ -1,11 +1,25 @@
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CheckIcon from "@mui/icons-material/Check";
 import React, { useEffect, useRef, useState } from "react";
+import { Button } from "../../../components/Button/Button";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
+import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import "./QuickLinks.css";
 
 export const QuickLinks: React.FC = () => {
   const { quicklinksSettings, updateQuicklinksSettings, showWidgetEdits } =
     useAppContext();
+  const darkMode = !!quicklinksSettings.darkMode;
+  // Toggle grid/list mode and persist
+  const handleToggleGridMode = () => {
+    updateQuicklinksSettings({ gridMode: !quicklinksSettings.gridMode });
+  };
+  // Toggle dark mode and persist
+  const handleToggleDarkMode = () => {
+    updateQuicklinksSettings({ darkMode: !quicklinksSettings.darkMode });
+  };
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -18,27 +32,32 @@ export const QuickLinks: React.FC = () => {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [addGridLink, setAddGridLink] = useState(false);
   const [deleteGridLink, setDeleteGridLink] = useState(false);
-  const showGrid = quicklinksSettings.format === "grid";
+  const showGrid = !!quicklinksSettings.gridMode;
 
   const width = quicklinksSettings.width;
   const height = quicklinksSettings.height;
 
-  // Listen for changes made from EditWidget so multiple components stay in sync
-  //   useEffect(() => {
-  //     const handler = (e: Event) => {
-  //       // event detail contains { value: boolean }
-  //       const detail: any = (e as CustomEvent).detail;
-  //       if (detail && typeof detail.value === "boolean") {
-  //         setShowGrid(detail.value);
-  //       }
-  //     };
-  //     window.addEventListener("quicklinksGridChange", handler as EventListener);
-  //     return () =>
-  //       window.removeEventListener(
-  //         "quicklinksGridChange",
-  //         handler as EventListener
-  //       );
-  //   }, []);
+  // Exit delete mode when clicking outside grid or pressing Enter
+  useEffect(() => {
+    if (!deleteGridLink) return;
+    function handleClick(e: MouseEvent) {
+      const grid = document.querySelector(".quicklinksSettings-grid-list");
+      if (grid && !grid.contains(e.target as Node)) {
+        setDeleteGridLink(false);
+      }
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Enter") {
+        setDeleteGridLink(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [deleteGridLink]);
 
   useEffect(() => {
     if (anchorEl) {
@@ -112,122 +131,157 @@ export const QuickLinks: React.FC = () => {
 
   if (showGrid) {
     return (
-      <div className="quicklinksSettings-grid-wrapper always-show">
+      <div
+        className={`quicklinksSettings-grid-wrapper widget-header always-show quicklinks-widget-mode-${
+          darkMode ? "dark" : "light"
+        }`}
+      >
         <div className="quicklinksSettings-grid-list">
-          {quicklinksSettings.links.length === 0 ? (
-            <div className="quicklinksSettings-empty">No quick links saved</div>
-          ) : (
-            <div
-              className="quicklinksSettings-grid-scroll"
-              style={{ width, height }}
-            >
-              {quicklinksSettings.links.map((l, index) => {
-                const favicon = getFavicon(l.url);
-                const isDragOver =
-                  draggedIndex !== null && dragOverIndex === index;
-                return (
-                  <div
-                    key={l.id}
-                    className={`quicklinksSettings-grid-item${
-                      draggedIndex === index ? " dragging" : ""
-                    }${isDragOver ? " drag-over" : ""}`}
-                    draggable={!showWidgetEdits}
-                    onDragStart={
-                      !showWidgetEdits
-                        ? () => setDraggedIndex(index)
-                        : undefined
-                    }
-                    onDragOver={
-                      !showWidgetEdits
-                        ? (e) => {
-                            e.preventDefault();
-                            setDragOverIndex(index);
-                          }
-                        : undefined
-                    }
-                    onDrop={
-                      !showWidgetEdits
-                        ? () => {
-                            if (draggedIndex === null) return;
-                            handleDragDrop(draggedIndex, index);
-                            setDraggedIndex(null);
-                            setDragOverIndex(null);
-                          }
-                        : undefined
-                    }
-                    onDragEnd={
-                      !showWidgetEdits
-                        ? () => {
-                            setDraggedIndex(null);
-                            setDragOverIndex(null);
-                          }
-                        : undefined
-                    }
-                    style={
-                      isDragOver ? { borderLeft: "3px solid #1976d2" } : {}
-                    }
-                  >
-                    {deleteGridLink && (
-                      <button
-                        className="quicklinksSettings-delete grid"
-                        aria-label={`Delete ${l.title}`}
-                        onClick={() => removeLink(l.id)}
-                      >
-                        x
-                      </button>
-                    )}
+          <div
+            className="quicklinksSettings-grid-scroll"
+            style={{ width, height }}
+          >
+            {quicklinksSettings.links.map((l, index) => {
+              const favicon = getFavicon(l.url);
+              const isDragOver =
+                draggedIndex !== null && dragOverIndex === index;
+              const modeClass = darkMode
+                ? "quicklinksSettings-grid-item-dark"
+                : "quicklinksSettings-grid-item-light";
+              return (
+                <div
+                  key={l.id}
+                  className={`quicklinksSettings-grid-item ${modeClass}${
+                    draggedIndex === index ? " dragging" : ""
+                  }${isDragOver ? " drag-over" : ""}`}
+                  draggable={!showWidgetEdits}
+                  onDragStart={
+                    !showWidgetEdits ? () => setDraggedIndex(index) : undefined
+                  }
+                  onDragOver={
+                    !showWidgetEdits
+                      ? (e) => {
+                          e.preventDefault();
+                          setDragOverIndex(index);
+                        }
+                      : undefined
+                  }
+                  onDrop={
+                    !showWidgetEdits
+                      ? () => {
+                          if (draggedIndex === null) return;
+                          handleDragDrop(draggedIndex, index);
+                          setDraggedIndex(null);
+                          setDragOverIndex(null);
+                        }
+                      : undefined
+                  }
+                  onDragEnd={
+                    !showWidgetEdits
+                      ? () => {
+                          setDraggedIndex(null);
+                          setDragOverIndex(null);
+                        }
+                      : undefined
+                  }
+                  style={
+                    isDragOver
+                      ? { borderTop: "3px solid #1976d2", cursor: "pointer" }
+                      : { cursor: "pointer" }
+                  }
+                  onClick={(e) => {
+                    // Prevent delete button from triggering navigation
+                    if (
+                      (e.target as HTMLElement).classList.contains(
+                        "quicklinksSettings-delete"
+                      )
+                    )
+                      return;
+                    goTo(l);
+                  }}
+                  title={l.url}
+                >
+                  {deleteGridLink && (
                     <button
-                      className="quicklinksSettings-grid-link"
-                      onClick={() => goTo(l)}
-                      title={l.url}
+                      className="quicklinksSettings-delete grid"
+                      aria-label={`Delete ${l.title}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeLink(l.id);
+                      }}
                     >
-                      {favicon ? (
-                        <div
-                          className="ql-grid-favicon"
-                          style={{ backgroundImage: `url(${favicon})` }}
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                      <span className="ql-grid-title">{l.title}</span>
+                      <CancelIcon fontSize="small" style={{ color: "red" }} />
                     </button>
-                  </div>
-                );
-              })}
-              <div
-                className="quicklinksSettings-grid-item control-button"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent event propagation issues
-                  setAnchorEl(titleRef.current || headerRef.current);
-                }}
-              >
-                <button
-                  className="quicklinksSettings-add-btn grid"
-                  onClick={() => setAddGridLink(true)}
-                >
-                  +
-                </button>
-                <button
-                  className="quicklinksSettings-delete-btn grid"
-                  onClick={() => setDeleteGridLink(true)}
-                >
-                  x
-                </button>
-              </div>
+                  )}
+                  {favicon ? (
+                    <div
+                      className="ql-grid-favicon"
+                      style={{ backgroundImage: `url(${favicon})` }}
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  <span className="ql-grid-title">{l.title}</span>
+                </div>
+              );
+            })}
+            <div
+              className={`quicklinksSettings-grid-item control-button ${
+                darkMode ? "control-dark" : "control-light"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent event propagation issues
+                setAnchorEl(titleRef.current || headerRef.current);
+              }}
+            >
+              <Button
+                variant={darkMode ? "dark" : "light"}
+                icon={
+                  <AddCircleIcon fontSize="small" style={{ color: "green" }} />
+                }
+                onClick={() => setAddGridLink(true)}
+              ></Button>
+              {deleteGridLink ? (
+                <Button
+                  variant={darkMode ? "dark" : "light"}
+                  icon={
+                    <CheckIcon fontSize="small" style={{ color: "green" }} />
+                  }
+                  onClick={() => setDeleteGridLink(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setDeleteGridLink(false);
+                  }}
+                  tabIndex={0}
+                  aria-label="Done deleting links"
+                ></Button>
+              ) : (
+                <>
+                  {quicklinksSettings.links.length > 0 && (
+                    <Button
+                      variant={darkMode ? "dark" : "light"}
+                      icon={
+                        <CancelIcon fontSize="small" style={{ color: "red" }} />
+                      }
+                      onClick={() => setDeleteGridLink(true)}
+                      aria-label="Show delete buttons"
+                    ></Button>
+                  )}
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
         {addGridLink && (
           <div className="quicklinksSettings-add">
-            <input
-              className="quicklinksSettings-input quicklinksSettings-input-title"
+            <TextInput
               placeholder="label (optional)"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              onClick={(e) => e.stopPropagation()} // Prevent propagation issues
+              onClick={(e) => e.stopPropagation()}
+              mode={darkMode ? "dark" : "light"}
+              key={`grid-title-${darkMode}-${addGridLink}`}
             />
-            <input
+            <TextInput
               ref={urlInputRef}
-              className="quicklinksSettings-input quicklinksSettings-input-url"
               placeholder="https://example.com"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
@@ -237,7 +291,9 @@ export const QuickLinks: React.FC = () => {
                   setAddGridLink(false);
                 }
               }}
-              onClick={(e) => e.stopPropagation()} // Prevent propagation issues
+              onClick={(e) => e.stopPropagation()}
+              mode={darkMode ? "dark" : "light"}
+              key={`grid-url-${darkMode}-${addGridLink}`}
             />
             <button
               className="quicklinksSettings-add-btn"
@@ -257,7 +313,11 @@ export const QuickLinks: React.FC = () => {
 
   // Otherwise, show list mode
   return (
-    <div className="quicklinksSettings-container" ref={containerRef}>
+    <div
+      className={`quicklinksSettings-container
+      }`}
+      ref={containerRef}
+    >
       <div
         className="quicklinksSettings-header"
         role="button"
@@ -313,23 +373,29 @@ export const QuickLinks: React.FC = () => {
             ref={popperRef}
           >
             <div className="quicklinksSettings-add">
-              <input
-                className="quicklinksSettings-input quicklinksSettings-input-title"
+              <TextInput
                 placeholder="label (optional)"
+                inputSize="small"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                onClick={(e) => e.stopPropagation()} // Prevent propagation issues
+                onClick={(e) => e.stopPropagation()}
+                mode={darkMode ? "dark" : "light"}
+                key={`popover-title-${darkMode}-${
+                  anchorEl ? "open" : "closed"
+                }`}
               />
-              <input
+              <TextInput
                 ref={urlInputRef}
-                className="quicklinksSettings-input quicklinksSettings-input-url"
+                inputSize="small"
                 placeholder="https://example.com"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") addLink();
                 }}
-                onClick={(e) => e.stopPropagation()} // Prevent propagation issues
+                onClick={(e) => e.stopPropagation()}
+                mode={darkMode ? "dark" : "light"}
+                key={`popover-url-${darkMode}-${anchorEl ? "open" : "closed"}`}
               />
               <button
                 className="quicklinksSettings-add-btn"

@@ -65,13 +65,33 @@ export const Widget: React.FC<WidgetProps> = ({
   const [hasChildHeader, setHasChildHeader] = useState(false);
   const resizeHandleRef = useRef<HTMLDivElement>(null);
 
-  const isQuicklinks = storageKey === "quicklinks_position";
+  const isQuicklinks = storageKey === "quicklinks";
 
   // Update global context when local drag state changes
   useEffect(() => {
     setIsDragging(isResizing);
     console.log("[Widget] setIsDragging called (context):", isResizing);
   }, [isResizing, setIsDragging]);
+
+  // Show widget outlines when Shift is held
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Shift") {
+        document.body.classList.add("show-widget-outline");
+      }
+    }
+    function handleKeyUp(e: KeyboardEvent) {
+      if (e.key === "Shift") {
+        document.body.classList.remove("show-widget-outline");
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   // Determine alignment based on position
   const getAlignment = () => {
@@ -184,7 +204,7 @@ export const Widget: React.FC<WidgetProps> = ({
 
       // Existing resize logic
       if (isResizing && storageKey) {
-        const baseKey = storageKey.replace(/_position$/, "");
+        const baseKey = storageKey.replace(/$/, "");
 
         // Avatar: proportional square size
         if (widgetConfig?.size?.enabled) {
@@ -481,57 +501,53 @@ export const Widget: React.FC<WidgetProps> = ({
     e.stopPropagation();
 
     if (storageKey && widgetConfig) {
-      const baseKey = storageKey.replace(/_position$/, "");
+      const baseKey = storageKey.replace(/$/, "");
+      const defaults = widgetConfig.defaults || {};
 
       if (widgetConfig.fontSize?.enabled) {
-        let currentSize = widgetConfig.fontSize.default;
-        if (baseKey === "date" && dateSettings?.fontSize !== undefined) {
-          currentSize = dateSettings.fontSize;
-        } else if (baseKey === "time" && timeSettings?.fontSize !== undefined) {
-          currentSize = timeSettings.fontSize;
-        } else if (baseKey === "info" && infoSettings?.fontSize !== undefined) {
-          currentSize = infoSettings.fontSize;
-        }
+        const contextMap = {
+          date: dateSettings,
+          time: timeSettings,
+          info: infoSettings,
+        };
+        const currentSize = getCurrentValue(
+          baseKey,
+          contextMap,
+          defaults.fontSize,
+          "fontSize"
+        );
         setResizeStartSize(currentSize);
       } else if (widgetConfig.size?.enabled) {
-        let currentSize = widgetConfig.size.default;
-        if (baseKey === "avatar" && avatarSettings?.size !== undefined) {
-          currentSize = avatarSettings.size;
-        }
+        const contextMap = { avatar: avatarSettings };
+        const currentSize = getCurrentValue(
+          baseKey,
+          contextMap,
+          defaults.size,
+          "size"
+        );
         setResizeStartSize(currentSize);
       } else if (widgetConfig.width?.enabled || widgetConfig.height?.enabled) {
+        const contextMap = {
+          todo: todoSettings,
+          quicklinks: quicklinksSettings,
+          searchbar: searchbarSettings,
+        };
         if (widgetConfig.width?.enabled) {
-          let currentWidth = widgetConfig.width.default;
-          if (baseKey === "todo" && todoSettings?.width !== undefined) {
-            currentWidth = todoSettings.width;
-          } else if (
-            baseKey === "quicklinks" &&
-            quicklinksSettings?.width !== undefined
-          ) {
-            currentWidth = quicklinksSettings.width;
-          } else if (
-            baseKey === "searchbar" &&
-            searchbarSettings?.width !== undefined
-          ) {
-            currentWidth = searchbarSettings.width;
-          }
+          const currentWidth = getCurrentValue(
+            baseKey,
+            contextMap,
+            defaults.width,
+            "width"
+          );
           setResizeStartWidth(currentWidth);
         }
         if (widgetConfig.height?.enabled) {
-          let currentHeight = widgetConfig.height.default;
-          if (baseKey === "todo" && todoSettings?.height !== undefined) {
-            currentHeight = todoSettings.height;
-          } else if (
-            baseKey === "quicklinks" &&
-            quicklinksSettings?.height !== undefined
-          ) {
-            currentHeight = quicklinksSettings.height;
-          } else if (
-            baseKey === "searchbar" &&
-            searchbarSettings?.height !== undefined
-          ) {
-            currentHeight = searchbarSettings.height;
-          }
+          const currentHeight = getCurrentValue(
+            baseKey,
+            contextMap,
+            defaults.height,
+            "height"
+          );
           setResizeStartHeight(currentHeight);
         }
       }
@@ -542,6 +558,18 @@ export const Widget: React.FC<WidgetProps> = ({
       setIsDragging(true);
     }
   };
+
+  // Helper to get current value from context or default
+  function getCurrentValue(
+    key: string,
+    contextMap: Record<string, any>,
+    defaultValue: any,
+    prop: string
+  ) {
+    return contextMap[key] && contextMap[key][prop] !== undefined
+      ? contextMap[key][prop]
+      : defaultValue;
+  }
 
   const alignment = getAlignment();
   const fontSizeEnabled = widgetConfig?.fontSize?.enabled ?? false;
@@ -583,7 +611,7 @@ export const Widget: React.FC<WidgetProps> = ({
       />
       {showWidgetEdits &&
         hasResizeHandle &&
-        !(isQuicklinks && quicklinksSettings.format === "list") && (
+        !(isQuicklinks && !quicklinksSettings.gridMode) && (
           <div
             ref={resizeHandleRef}
             className="widget-resize-handle"

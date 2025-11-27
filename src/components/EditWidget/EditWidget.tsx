@@ -60,7 +60,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     window.addEventListener("quicklinksSettingsChange", handler);
     window.addEventListener("searchbarSettingsChange", handler);
     window.addEventListener(
-      `${storageKey.replace(/_position$/, "")}SettingsChange`,
+      `${storageKey.replace(/$/, "")}SettingsChange`,
       handler
     );
     return () => {
@@ -71,18 +71,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       window.removeEventListener("quicklinksSettingsChange", handler);
       window.removeEventListener("searchbarSettingsChange", handler);
       window.removeEventListener(
-        `${storageKey.replace(/_position$/, "")}SettingsChange`,
+        `${storageKey.replace(/$/, "")}SettingsChange`,
         handler
       );
     };
   }, [storageKey]);
 
-  const baseKey = storageKey.replace(/_position$/, "");
+  const baseKey = storageKey.replace(/$/, "");
   let darkMode = false;
   if (baseKey === "todo") {
     darkMode = todoSettings.darkMode;
   } else if (baseKey === "searchbar") {
     darkMode = searchbarSettings.darkMode ?? false;
+  } else if (baseKey === "quicklinks") {
+    darkMode = quicklinksSettings.darkMode ?? false;
   } else {
     darkMode = localStorage.getItem(`${storageKey}_darkMode`) === "true";
   }
@@ -104,11 +106,13 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
   const handleDarkModeToggle = () => {
     const newValue = !darkMode;
-    const baseKey = storageKey.replace(/_position$/, "");
+    const baseKey = storageKey.replace(/$/, "");
     if (baseKey === "todo" && updateTodoSettings) {
       updateTodoSettings({ darkMode: newValue });
     } else if (baseKey === "searchbar" && updateSearchbarSettings) {
       updateSearchbarSettings({ darkMode: newValue });
+    } else if (baseKey === "quicklinks" && updateQuicklinksSettings) {
+      updateQuicklinksSettings({ darkMode: newValue });
     } else {
       localStorage.setItem(`${storageKey}_darkMode`, newValue.toString());
       window.dispatchEvent(
@@ -144,15 +148,22 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     forceUpdate();
   };
 
-  const fontSizeEnabled = widgetConfig?.fontSize?.enabled ?? false;
-  const sizeEnabled = widgetConfig?.size?.enabled ?? false;
-  const hasTimeFormat = widgetConfig?.customControls?.timeFormat ?? false;
-  const hasInfoFields = widgetConfig?.customControls?.infoFields ?? false;
+  const defaults = widgetConfig?.defaults || {};
+  const fontSizeEnabled =
+    widgetConfig?.fontSize?.enabled ?? "fontSize" in defaults;
+  const sizeEnabled = widgetConfig?.size?.enabled ?? "size" in defaults;
+  const hasTimeFormat =
+    widgetConfig?.customControls?.timeFormat ?? "is24Hour" in defaults;
+  const hasInfoFields =
+    widgetConfig?.customControls?.infoFields ?? "infoFields" in defaults;
   const hasAvatarSelector =
-    widgetConfig?.customControls?.avatarSelector ?? false;
+    widgetConfig?.customControls?.avatarSelector ??
+    "selectedAvatar" in defaults;
   const hasDarkMode =
     typeof widgetConfig?.darkMode === "object"
-      ? widgetConfig.darkMode.enabled
+      ? widgetConfig.darkMode
+      : "darkMode" in defaults
+      ? true
       : !!widgetConfig?.darkMode;
   const hasAnyControls =
     fontSizeEnabled ||
@@ -163,11 +174,11 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     hasDarkMode;
 
   const isQuicklinks = baseKey === "quicklinks";
-  const quicklinksGrid = quicklinksSettings.format === "grid";
+  const quicklinksGrid = quicklinksSettings.gridMode;
 
   const toggleQuicklinksGrid = () => {
-    const newFormat = quicklinksGrid ? "list" : "grid";
-    updateQuicklinksSettings({ format: newFormat });
+    const newFormat = quicklinksGrid ? false : true;
+    updateQuicklinksSettings({ gridMode: newFormat });
     window.dispatchEvent(
       new CustomEvent("quicklinksGridChange", { detail: { value: newFormat } })
     );
@@ -212,7 +223,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 title={quicklinksGrid ? "Show as list" : "Show as grid"}
                 variant="dark"
                 size="small"
-                icon={quicklinksGrid ? <ViewModuleIcon /> : <ListIcon />}
+                icon={quicklinksGrid ? <ListIcon /> : <ViewModuleIcon />}
               />
             )}
           </div>
@@ -240,9 +251,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               <AvatarSelector
                 selectedAvatar={selectedAvatar}
                 onChange={handleAvatarChange}
-                avatarSize={
-                  avatarSettings.size || widgetConfig?.size?.default || 100
-                }
+                avatarSize={avatarSettings.size}
               />
             </div>
           )}

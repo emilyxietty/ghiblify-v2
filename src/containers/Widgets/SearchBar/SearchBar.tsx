@@ -3,26 +3,29 @@ import React, { useState } from "react";
 import { Button } from "../../../components/Button/Button";
 import { useAppContext } from "../../../contexts/AppContext";
 import "./SearchBar.css";
+import TextInput from "../../../components/TextInput/TextInput";
 
 const SearchBar: React.FC = () => {
   const { searchbarSettings } = useAppContext();
   const [query, setQuery] = useState("");
-  const width = searchbarSettings?.width || 300;
-  const height = searchbarSettings?.height || 32;
+  const width = searchbarSettings.width;
+  const height = searchbarSettings.height;
 
-  const darkClass = searchbarSettings.darkMode ? "dark" : "";
+  const isDark = !!searchbarSettings.darkMode;
+  const darkClass = isDark ? "dark" : "";
   return (
     <div style={{ width, height }} className="widget-header">
       <form
         onSubmit={(e) => e.preventDefault()}
         className={`searchbar ${darkClass}`}
       >
-        <input
+        <TextInput
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Google..."
-          className={`searchbar-input ${darkClass}`}
+        //   className={`searchbar-input ${darkClass}`}
+          mode={isDark ? "dark" : "light"}
         />
         <a
           href={
@@ -36,7 +39,7 @@ const SearchBar: React.FC = () => {
           <Button
             type="button"
             size="small"
-            variant={darkClass ? "dark" : "light"}
+            variant={isDark ? "dark" : "light"}
             disabled={!query.trim()}
             className={`searchbar-search-btn ${darkClass}`}
             style={{ height }}
