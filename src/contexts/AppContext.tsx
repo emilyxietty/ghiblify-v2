@@ -38,10 +38,11 @@ interface WidgetVisibility {
 // Widget settings interfaces moved to widgetConfig.ts
 
 interface AppContextType {
+  //   focusModeOn: boolean;
   pomodoroSettings: import("../config/widgetConfig").PomodoroSettings;
-  updatePomodoroSettings: (
-    settings: Partial<import("../config/widgetConfig").PomodoroSettings>
-  ) => void;
+  //   updatePomodoroSettings: (
+  //     settings: Partial<import("../config/widgetConfig").PomodoroSettings>
+  //   ) => void;
   isDragging: boolean;
   setIsDragging: (dragging: boolean) => void;
   showWidgetEdits: boolean;
@@ -50,7 +51,7 @@ interface AppContextType {
   updateBackgroundFilters: (filters: Partial<BackgroundFilters>) => void;
   widgetVisibility: WidgetVisibility;
   toggleWidgetVisibility: (widget: keyof WidgetVisibility) => void;
-  setWidgetsTemporarilyHidden: (hidden: boolean) => void;
+  //   setFocusModeOn: (hidden: boolean) => void;
 
   infoSettings: InfoSettings;
   updateInfoSettings: (
@@ -147,59 +148,60 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         };
   });
 
-  // Hide all widgets except Pomodoro when timer is active
-  const [widgetsTemporarilyHidden, setWidgetsTemporarilyHiddenState] =
-    useState(false);
-  const setWidgetsTemporarilyHidden = (hidden: boolean) => {
-    setWidgetsTemporarilyHiddenState(hidden);
-    if (hidden) {
-      setWidgetVisibility((prev) => ({
-        time: false,
-        date: false,
-        info: false,
-        todo: false,
-        avatar: false,
-        quicklinks: false,
-        searchbar: false,
-        pomodoro: true,
-      }));
-    } else {
-      setWidgetVisibility((prev) => {
-        // Restore all widgets except Pomodoro to visible (or use localStorage)
-        const timeVisible = localStorage.getItem("time_switch") !== "off";
-        const dateVisible = localStorage.getItem("date_switch") !== "off";
-        const infoVisible = localStorage.getItem("info_switch") !== "off";
-        const todoVisible = localStorage.getItem("todo_switch") !== "off";
-        const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
-        const quicklinksVisible =
-          localStorage.getItem("quicklinks_switch") !== "off";
-        const searchbarVisible =
-          localStorage.getItem("searchbar_switch") !== "off";
-        const pomodoroVisible =
-          localStorage.getItem("pomodoro_switch") !== "off";
-        return {
-          time: timeVisible,
-          date: dateVisible,
-          info: infoVisible,
-          todo: todoVisible,
-          avatar: avatarVisible,
-          quicklinks: quicklinksVisible,
-          searchbar: searchbarVisible,
-          pomodoro: pomodoroVisible,
-        };
-      });
-    }
-  };
+  //   // Hide all widgets except Pomodoro when timer is active
+  //   const [focusModeOn, setFocusModeOnState] = useState(false);
 
-  const updatePomodoroSettings = (
-    settings: Partial<import("../config/widgetConfig").PomodoroSettings>
-  ) => {
-    setPomodoroSettings((prev) => {
-      const next = { ...prev, ...settings };
-      localStorage.setItem("pomodoro_settings", JSON.stringify(next));
-      return next;
-    });
-  };
+  //   // Provide setFocusModeOn to context consumers
+  //   const setFocusModeOn = (hidden: boolean) => {
+  //     setFocusModeOnState(hidden);
+  //   };
+
+  //   useEffect(() => {
+  //     if (focusModeOn) {
+  //       setWidgetVisibility({
+  //         time: false,
+  //         date: false,
+  //         info: false,
+  //         todo: false,
+  //         avatar: false,
+  //         quicklinks: false,
+  //         searchbar: false,
+  //         pomodoro: true,
+  //       });
+  //     } else {
+  //       const timeVisible = localStorage.getItem("time_switch") !== "off";
+  //       const dateVisible = localStorage.getItem("date_switch") !== "off";
+  //       const infoVisible = localStorage.getItem("info_switch") !== "off";
+  //       const todoVisible = localStorage.getItem("todo_switch") !== "off";
+  //       const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
+  //       const quicklinksVisible =
+  //         localStorage.getItem("quicklinks_switch") !== "off";
+  //       const searchbarVisible =
+  //         localStorage.getItem("searchbar_switch") !== "off";
+  //       const pomodoroVisible = localStorage.getItem("pomodoro_switch") !== "off";
+  //       setWidgetVisibility({
+  //         time: timeVisible,
+  //         date: dateVisible,
+  //         info: infoVisible,
+  //         todo: todoVisible,
+  //         avatar: avatarVisible,
+  //         quicklinks: quicklinksVisible,
+  //         searchbar: searchbarVisible,
+  //         pomodoro: pomodoroVisible,
+  //       });
+  //     }
+  //   }, [focusModeOn]);
+
+  //   const updatePomodoroSettings = (
+  //     settings: Partial<import("../config/widgetConfig").PomodoroSettings>
+  //   ) => {
+  //     setPomodoroSettings((prev) => {
+  //       const next = { ...prev, ...settings };
+  //       localStorage.setItem("pomodoro_settings", JSON.stringify(next));
+  //       return next;
+  //     });
+  //   };
+
   const [infoSettings, setInfoSettings] = useState<InfoSettings>(() => {
     // Use WIDGET_CONFIGS.info.defaults as fallback
     const savedFields = localStorage.getItem("info_selectedFields");
@@ -361,6 +363,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     console.log("[AppContext] todo_collapsed state changed:", todoCollapsed);
   }, [todoCollapsed]);
+
+  //   useEffect(() => {
+  //     setFocusModeOn(widgetVisibility.pomodoro && pomodoroSettings.isActive);
+  //   }, [widgetVisibility.pomodoro, pomodoroSettings.isActive]);
 
   const updateTodoCollapsed = (collapsed: boolean) => {
     setTodoCollapsed(collapsed);
@@ -633,8 +639,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         searchbarSettings,
         updateSearchbarSettings,
         pomodoroSettings,
-        updatePomodoroSettings,
-        setWidgetsTemporarilyHidden,
+        // updatePomodoroSettings,
+        // setFocusModeOn,
+        // focusModeOn,
         isDragging,
         setIsDragging,
       }}

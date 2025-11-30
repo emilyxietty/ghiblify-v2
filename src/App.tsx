@@ -7,6 +7,7 @@ import { Widget } from "./containers/Widget/Widget";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Info } from "./containers/Widgets/Info/Info";
+import Pomodoro from "./containers/Widgets/Pomodoro/Pomodoro";
 import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
 import SearchBar from "./containers/Widgets/SearchBar/SearchBar";
 import { Time } from "./containers/Widgets/Time/Time";
@@ -82,27 +83,27 @@ const AppContent: React.FC = () => {
         showWidgetEdits={showWidgetEdits}
       >
         {widgetVisibility.quicklinks && (
-          <Widget storageKey="quicklinks" initialPosition={{ x: 50, y: 36 }}>
+          <Widget storageKey="quicklinks">
             <QuickLinks />
           </Widget>
         )}
         {widgetVisibility.time && (
-          <Widget storageKey="time" initialPosition={{ x: 50, y: 20 }}>
+          <Widget storageKey="time">
             <Time />
           </Widget>
         )}
         {widgetVisibility.date && (
-          <Widget storageKey="date" initialPosition={{ x: 50, y: 52 }}>
+          <Widget storageKey="date">
             <DateDisplay />
           </Widget>
         )}
         {widgetVisibility.todo && (
-          <Widget storageKey="todo" initialPosition={{ x: 10, y: 50 }}>
+          <Widget storageKey="todo">
             <Todo />
           </Widget>
         )}
         {widgetVisibility.info && !bgLoading && !infoLoading && (
-          <Widget storageKey="info" initialPosition={{ x: 50, y: 88.5 }}>
+          <Widget storageKey="info">
             <Info
               titlejp={titlejp}
               title={title}
@@ -113,13 +114,18 @@ const AppContent: React.FC = () => {
           </Widget>
         )}
         {widgetVisibility.avatar && !bgLoading && !infoLoading && (
-          <Widget storageKey="avatar" initialPosition={{ x: 80, y: 20 }}>
+          <Widget storageKey="avatar">
             <Avatar />
           </Widget>
         )}
         {widgetVisibility.searchbar && (
-          <Widget storageKey="searchbar" initialPosition={{ x: 50, y: 70 }}>
+          <Widget storageKey="searchbar">
             <SearchBar />
+          </Widget>
+        )}
+        {widgetVisibility.pomodoro && (
+          <Widget storageKey="pomodoro">
+            <Pomodoro />
           </Widget>
         )}
       </Background>

@@ -6,6 +6,7 @@ import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
+import TimerIcon from "@mui/icons-material/Timer";
 import React, { useEffect, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
 import { WIDGET_CONFIGS } from "../../config/widgetConfig";
@@ -77,27 +78,6 @@ export const LeftSidebar: React.FC = () => {
     widgetVisibility,
     toggleWidgetVisibility,
   } = useAppContext();
-
-  //   useEffect(() => {
-  //     const handleMouseMove = (e: MouseEvent) => {
-  //       const sidebarWidth =
-  //         window.innerWidth - Math.min(SIDEBAR_WIDTH, window.innerWidth);
-
-  //       // Open if cursor is within SIDEBAR_EDGE_TRIGGER px of right edge
-  //       if (e.clientX > window.innerWidth - SIDEBAR_EDGE_TRIGGER) {
-  //         setIsOpen(true);
-  //       }
-  //       // Only close if sidebar is open AND cursor moves past sidebar width
-  //       else if (isOpen && e.clientX < sidebarWidth) {
-  //         setIsOpen(false);
-  //       }
-  //     };
-
-  //     document.addEventListener("mousemove", handleMouseMove);
-  //     return () => {
-  //       document.removeEventListener("mousemove", handleMouseMove);
-  //     };
-  //   }, [isOpen]);
 
   // Close sidebar when edit mode changes
   useEffect(() => {
@@ -283,6 +263,16 @@ export const LeftSidebar: React.FC = () => {
                 size="medium"
                 onClick={() => toggleWidgetVisibility("searchbar")}
                 title="Toggle Searchbar Widget"
+              ></Button>
+              <Button
+                className={`widget-icon${
+                  widgetVisibility.pomodoro ? " active" : ""
+                }`}
+                variant="transparent"
+                icon={<TimerIcon />}
+                size="medium"
+                onClick={() => toggleWidgetVisibility("pomodoro")}
+                title="Toggle Pomodoro Widget"
               ></Button>
             </div>
             <div className="widget-edits">

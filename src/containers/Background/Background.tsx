@@ -20,11 +20,7 @@ export const Background: React.FC<BackgroundProps> = ({
   const { isDragging } = useAppContext();
 
   if (loading) {
-    return (
-      <div className="background-loading">
-        <p>Loading Ghiblify...</p>
-      </div>
-    );
+    return <div className="background-loading"></div>;
   }
 
   if (!currentBackground) {

@@ -29,6 +29,7 @@ export const Avatar: React.FC<AvatarProps> = () => {
           alt={avatarData.label}
           className="avatar-image"
           style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
+          title={avatarData.source}
         />
       )}
     </div>
