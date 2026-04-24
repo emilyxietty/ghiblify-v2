@@ -2,43 +2,6 @@
    Left sidebar — Studio Ghibli theme
    =========================================================================== */
 
-/* Always-visible trigger button (top-left). Lets keyboard users open the
-   sidebar without needing to mouse to the edge. */
-.sidebar-trigger {
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 2001;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--cream);
-    color: var(--dark);
-    border: 1px solid rgba(45, 53, 40, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    transition: background 160ms ease, transform 160ms ease, opacity 160ms ease;
-}
-
-.sidebar-trigger:hover {
-    background: var(--yellow);
-    transform: scale(1.05);
-}
-
-.sidebar-trigger:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 3px;
-}
-
-.sidebar-trigger.is-hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0.85);
-}
-
 /* ---------------------------------------------------------------------------
    Sidebar shell
    --------------------------------------------------------------------------- */
@@ -87,7 +50,7 @@
     margin: 0;
     font-size: 13px;
     font-weight: 700;
-    color: var(--cream);
+    color: var(--light);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     opacity: 0.85;
@@ -114,6 +77,29 @@
     gap: 8px;
 }
 
+/* Stronger hover for every regular Button inside the sidebar — lift +
+   shadow + theme-yellow ring. Excludes .widget-icon (it has its own). */
+.left-sidebar .btn:not(.widget-icon) {
+    transition: background 160ms ease, border-color 160ms ease,
+        transform 160ms ease, box-shadow 160ms ease;
+}
+
+.left-sidebar .btn:not(.widget-icon):hover:not(.btn-disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
+        0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+}
+
+.left-sidebar .btn:not(.widget-icon):active:not(.btn-disabled) {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.left-sidebar .btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
 /* ---------------------------------------------------------------------------
    Widget toggle grid
    --------------------------------------------------------------------------- */
@@ -138,8 +124,14 @@
     height: 44px;
     border-radius: 12px;
     cursor: pointer;
-    transition: background 160ms ease, transform 120ms ease;
+    transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
     background: transparent;
+    position: relative;
+}
+
+.widget-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .widget-icon svg {
@@ -148,15 +140,16 @@
 }
 
 .widget-icon:hover {
-    background: rgba(253, 246, 233, 0.08);
+    background: color-mix(in srgb, var(--light) 14%, transparent);
 }
 
 .widget-icon:hover svg {
-    color: var(--cream);
+    color: var(--light);
 }
 
 .widget-icon:active {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.95);
+    box-shadow: none;
 }
 
 .widget-icon:focus-visible {
@@ -170,7 +163,7 @@
 }
 
 .widget-icon.active svg {
-    color: var(--cream);
+    color: var(--light);
 }
 
 .widget-icon.active:hover {
@@ -285,7 +278,7 @@
 }
 
 .theme-swatch.is-selected {
-    border-color: var(--cream);
+    border-color: var(--light);
     box-shadow: 0 0 0 2px var(--focus-ring), 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
@@ -319,7 +312,7 @@
     display: inline-block;
     width: 36px;
     height: 20px;
-    background: rgba(253, 246, 233, 0.2);
+    background: color-mix(in srgb, var(--light) 22%, transparent);
     border-radius: 999px;
     transition: background 160ms ease;
     flex-shrink: 0;
@@ -333,7 +326,7 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--cream);
+    background: var(--light);
     transition: transform 160ms ease, background 160ms ease;
 }
 
@@ -352,7 +345,7 @@
 
 .filter-value {
     font-weight: 600;
-    color: var(--cream);
+    color: var(--light);
     font-variant-numeric: tabular-nums;
 }
 
@@ -367,7 +360,7 @@
     width: 100%;
     height: 4px;
     border-radius: 2px;
-    background: rgba(253, 246, 233, 0.18);
+    background: color-mix(in srgb, var(--light) 22%, transparent);
     outline: none;
     -webkit-appearance: none;
     appearance: none;
@@ -386,13 +379,13 @@
     border-radius: 50%;
     background: var(--yellow);
     cursor: pointer;
-    border: 2px solid var(--cream);
+    border: 2px solid var(--light);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 120ms ease, background 160ms ease;
 }
 
 .filter-slider::-webkit-slider-thumb:hover {
-    background: var(--cream);
+    background: var(--light);
     transform: scale(1.15);
 }
 
@@ -402,13 +395,13 @@
     border-radius: 50%;
     background: var(--yellow);
     cursor: pointer;
-    border: 2px solid var(--cream);
+    border: 2px solid var(--light);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 120ms ease, background 160ms ease;
 }
 
 .filter-slider::-moz-range-thumb:hover {
-    background: var(--cream);
+    background: var(--light);
     transform: scale(1.15);
 }
 
@@ -428,7 +421,7 @@
 
 .left-sidebar::-webkit-scrollbar-thumb,
 .sidebar-content::-webkit-scrollbar-thumb {
-    background: rgba(253, 246, 233, 0.2);
+    background: color-mix(in srgb, var(--light) 22%, transparent);
     border-radius: 3px;
 }
 

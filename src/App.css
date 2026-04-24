@@ -15,6 +15,11 @@
     --light: rgba(240, 227, 196, 0.95);
     --light-muted: rgba(240, 227, 196, 0.6);
 
+    /* Drop-shadow color used by Time/Date over the photo background.
+       Dark by default (white text + dark shadow). Light themes override
+       to a near-white shadow so dark text gets a luminous halo. */
+    --text-shadow-color: rgba(0, 0, 0, 0.6);
+
     /* Disabled */
     --disabled-dark: rgba(70, 75, 65, 0.55);
     --disabled-light: rgba(190, 180, 155, 0.55);
@@ -25,9 +30,6 @@
 
     /* Focus ring */
     --focus-ring: rgba(233, 179, 48, 0.9);
-
-    /* Widget opacity — set imperatively from AppContext via inline style */
-    --widget-bg-alpha: 0;
 
     /* High-contrast overridable params */
     --focus-ring-width: 2px;
@@ -54,109 +56,381 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Spirited Away — bathhouse crimson, gold, ink
+   Theme: Spirited Away — deep crimson bathhouse, ink, gold
    --------------------------------------------------------------------------- */
 .theme-spirited {
-    --dark: #1a1612;
-    --dark-rgb: 26, 22, 18;
-    --dark-muted: rgba(26, 22, 18, 0.7);
-    --cream: #f5e8c0;
-    --cream-rgb: 245, 232, 192;
-    --red: #c8342e;
+    --dark: #2a1410;
+    --dark-rgb: 42, 20, 16;
+    --dark-muted: rgba(42, 20, 16, 0.7);
+    --cream: #f7e0a8;
+    --cream-rgb: 247, 224, 168;
+    --red: #d83a30;
     --red-dark: #8a1f1c;
     --blue: #2d5a6e;
     --blue-muted: rgba(45, 90, 110, 0.6);
-    --yellow: #d4a338;
-    --green: #3d6b5a;
-    --rose: #b85d6a;
+    --yellow: #f0b830;
+    --green: #5a7a4a;
+    --rose: #d8606a;
     --purple-dark: #4a2e5a;
-    --sidebar-bg: rgba(26, 22, 18, 0.9);
-    --sidebar-card: rgba(15, 13, 10, 0.6);
-    --focus-ring: rgba(212, 163, 56, 0.95);
+    --sidebar-bg: rgba(50, 22, 18, 0.92);
+    --sidebar-card: rgba(28, 12, 10, 0.6);
+    --focus-ring: rgba(240, 184, 48, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Howl's Moving Castle — lavender, sage, dusty rose
+   Theme: Howl's Moving Castle — plum, lavender, sage, butter
    --------------------------------------------------------------------------- */
 .theme-howls {
-    --dark: #2a2530;
-    --dark-rgb: 42, 37, 48;
-    --dark-muted: rgba(42, 37, 48, 0.7);
+    --dark: #3a2a48;
+    --dark-rgb: 58, 42, 72;
+    --dark-muted: rgba(58, 42, 72, 0.7);
     --cream: #f5ebd9;
     --cream-rgb: 245, 235, 217;
-    --red: #c47876;
+    --red: #d68d8a;
     --red-dark: #9c5754;
-    --blue: #8a7ab8;
-    --blue-muted: rgba(138, 122, 184, 0.6);
-    --yellow: #e6c668;
-    --green: #7a9171;
-    --rose: #d9a4ad;
+    --blue: #a892d4;
+    --blue-muted: rgba(168, 146, 212, 0.6);
+    --yellow: #f0d278;
+    --green: #88a07a;
+    --rose: #e0bcc4;
     --purple-dark: #6a4d8a;
-    --sidebar-bg: rgba(42, 37, 48, 0.86);
-    --sidebar-card: rgba(28, 24, 34, 0.55);
-    --focus-ring: rgba(230, 198, 104, 0.9);
+    --sidebar-bg: rgba(50, 36, 64, 0.9);
+    --sidebar-card: rgba(28, 20, 38, 0.6);
+    --focus-ring: rgba(240, 210, 120, 0.9);
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Totoro — forest greens, warm earth, sky
+   Theme: Totoro — deep forest, mossy greens, warm earth
    --------------------------------------------------------------------------- */
 .theme-totoro {
-    --dark: #1f2818;
-    --dark-rgb: 31, 40, 24;
-    --dark-muted: rgba(31, 40, 24, 0.7);
+    --dark: #1a3018;
+    --dark-rgb: 26, 48, 24;
+    --dark-muted: rgba(26, 48, 24, 0.7);
     --cream: #ede0c4;
     --cream-rgb: 237, 224, 196;
-    --red: #b0593a;
+    --red: #c0653f;
     --red-dark: #7c3d27;
-    --blue: #7ba8c4;
-    --blue-muted: rgba(123, 168, 196, 0.6);
-    --yellow: #e9c651;
-    --green: #4a7a3d;
+    --blue: #88b0ce;
+    --blue-muted: rgba(136, 176, 206, 0.6);
+    --yellow: #f0d050;
+    --green: #5b9c45;
     --rose: #c89089;
     --purple-dark: #4f3d6a;
-    --sidebar-bg: rgba(31, 40, 24, 0.86);
-    --sidebar-card: rgba(20, 28, 16, 0.55);
+    --sidebar-bg: rgba(20, 50, 24, 0.88);
+    --sidebar-card: rgba(12, 32, 14, 0.6);
+    --focus-ring: rgba(240, 208, 80, 0.9);
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Ponyo — coral, ocean, seafoam
+   Theme: Ponyo — coral, deep ocean, seafoam
    --------------------------------------------------------------------------- */
 .theme-ponyo {
-    --dark: #1a2530;
-    --dark-rgb: 26, 37, 48;
-    --dark-muted: rgba(26, 37, 48, 0.7);
-    --cream: #f5e9da;
-    --cream-rgb: 245, 233, 218;
-    --red: #e07560;
+    --dark: #0d3550;
+    --dark-rgb: 13, 53, 80;
+    --dark-muted: rgba(13, 53, 80, 0.7);
+    --cream: #fde9d2;
+    --cream-rgb: 253, 233, 210;
+    --red: #ef7a5f;
     --red-dark: #b04a3a;
-    --blue: #2e7ba8;
-    --blue-muted: rgba(46, 123, 168, 0.6);
-    --yellow: #f0c870;
-    --green: #6da894;
-    --rose: #f0a89c;
+    --blue: #2a9bd0;
+    --blue-muted: rgba(42, 155, 208, 0.6);
+    --yellow: #f8d878;
+    --green: #6db8a4;
+    --rose: #f8a89a;
     --purple-dark: #4a5a8a;
-    --sidebar-bg: rgba(26, 37, 48, 0.86);
-    --sidebar-card: rgba(15, 24, 32, 0.55);
-    --focus-ring: rgba(240, 200, 112, 0.9);
+    --sidebar-bg: rgba(10, 50, 80, 0.9);
+    --sidebar-card: rgba(6, 30, 50, 0.6);
+    --focus-ring: rgba(248, 168, 100, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
-   High-contrast modifier — orthogonal to theme.
-   Strengthens text + borders + focus, forces a minimum widget backing.
+   Theme: Sky — bright cyan, sun yellow, cheerful
    --------------------------------------------------------------------------- */
-.high-contrast {
-    --light: rgba(255, 250, 235, 1);
-    --light-muted: rgba(255, 250, 235, 0.85);
-    --focus-ring-width: 3px;
-    --widget-border-alpha: 0.6;
+.theme-sky {
+    --dark: #14406e;
+    --dark-rgb: 20, 64, 110;
+    --dark-muted: rgba(20, 64, 110, 0.7);
+    --cream: #e8f4ff;
+    --cream-rgb: 232, 244, 255;
+    --red: #ff6f7c;
+    --red-dark: #c0444f;
+    --blue: #00b8e6;
+    --blue-muted: rgba(0, 184, 230, 0.6);
+    --yellow: #ffd54a;
+    --green: #6ee0b8;
+    --rose: #ff9bb8;
+    --purple-dark: #5a4a8a;
+    --sidebar-bg: rgba(20, 70, 130, 0.9);
+    --sidebar-card: rgba(8, 38, 80, 0.6);
+    --focus-ring: rgba(255, 213, 74, 0.95);
 }
 
-.high-contrast .widget {
-    /* Force a readable backing regardless of the opacity slider */
-    --widget-bg-alpha-effective: max(0.85, var(--widget-bg-alpha));
-    background: rgba(var(--dark-rgb, 31, 38, 32), 0.85) !important;
-    border-color: rgba(var(--cream-rgb, 240, 227, 196), 0.6) !important;
-    border-width: 1.5px !important;
+/* ---------------------------------------------------------------------------
+   Theme: Sakura — pink blossoms, soft cream, leaf green
+   --------------------------------------------------------------------------- */
+.theme-sakura {
+    --dark: #4a1d3e;
+    --dark-rgb: 74, 29, 62;
+    --dark-muted: rgba(74, 29, 62, 0.7);
+    --cream: #fde8ef;
+    --cream-rgb: 253, 232, 239;
+    --red: #ff5a8a;
+    --red-dark: #c83064;
+    --blue: #b88ad4;
+    --blue-muted: rgba(184, 138, 212, 0.6);
+    --yellow: #ffd870;
+    --green: #88c878;
+    --rose: #ffb0c8;
+    --purple-dark: #6a3a78;
+    --sidebar-bg: rgba(80, 30, 65, 0.9);
+    --sidebar-card: rgba(50, 18, 40, 0.6);
+    --focus-ring: rgba(255, 90, 138, 0.9);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Meadow — bright lime, golden yellow, cherry, sky
+   --------------------------------------------------------------------------- */
+.theme-meadow {
+    --dark: #0d4a25;
+    --dark-rgb: 13, 74, 37;
+    --dark-muted: rgba(13, 74, 37, 0.7);
+    --cream: #f5f8d8;
+    --cream-rgb: 245, 248, 216;
+    --red: #ee5a6a;
+    --red-dark: #b03048;
+    --blue: #4fc3f7;
+    --blue-muted: rgba(79, 195, 247, 0.6);
+    --yellow: #fdd835;
+    --green: #7cc442;
+    --rose: #f48fb1;
+    --purple-dark: #6a4a9c;
+    --sidebar-bg: rgba(14, 76, 40, 0.9);
+    --sidebar-card: rgba(8, 44, 22, 0.6);
+    --focus-ring: rgba(253, 216, 53, 0.95);
+}
+
+/* ===========================================================================
+   LIGHT-MODE THEMES
+   These override --light / --light-muted to dark text (since surfaces are
+   light), --text-shadow-color to a near-white halo (so Time/Date dark text
+   gets a glow on dark photos), and --disabled-light to a darker shade.
+   Surface vars (--dark-rgb, --cream-rgb) intentionally stay light so widget
+   cards in either dark or light mode look light.
+   =========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Theme: Pastel — pink + sage, soft and gentle
+   --------------------------------------------------------------------------- */
+.theme-pastel {
+    --dark: #f4c8d8;
+    --dark-rgb: 244, 200, 216;
+    --dark-muted: rgba(244, 200, 216, 0.7);
+    --cream: #fff5fa;
+    --cream-rgb: 255, 245, 250;
+    --red: #e85a8a;
+    --red-dark: #b03466;
+    --blue: #88b8d8;
+    --blue-muted: rgba(136, 184, 216, 0.6);
+    --yellow: #f0c050;
+    --green: #6fc878;
+    --rose: #ff9bb4;
+    --purple-dark: #a878c8;
+    /* Inverted content vars — DARK foreground on LIGHT surface */
+    --light: rgba(74, 38, 60, 0.95);
+    --light-muted: rgba(74, 38, 60, 0.65);
+    --text-shadow-color: rgba(255, 245, 250, 0.85);
+    --sidebar-bg: rgba(248, 220, 232, 0.92);
+    --sidebar-card: rgba(255, 248, 252, 0.55);
+    --focus-ring: rgba(232, 90, 138, 0.95);
+    --disabled-light: rgba(120, 70, 100, 0.5);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Cream — neutral light, sand + sage + warm clay
+   --------------------------------------------------------------------------- */
+.theme-cream {
+    --dark: #efe2c4;
+    --dark-rgb: 239, 226, 196;
+    --dark-muted: rgba(239, 226, 196, 0.7);
+    --cream: #fbf6e8;
+    --cream-rgb: 251, 246, 232;
+    --red: #c87555;
+    --red-dark: #984a30;
+    --blue: #6b9bb8;
+    --blue-muted: rgba(107, 155, 184, 0.6);
+    --yellow: #d8a838;
+    --green: #88a868;
+    --rose: #d89c98;
+    --purple-dark: #88789c;
+    --light: rgba(50, 40, 28, 0.95);
+    --light-muted: rgba(50, 40, 28, 0.6);
+    --text-shadow-color: rgba(251, 246, 232, 0.85);
+    --sidebar-bg: rgba(245, 232, 200, 0.92);
+    --sidebar-card: rgba(252, 245, 224, 0.55);
+    --focus-ring: rgba(200, 117, 85, 0.95);
+    --disabled-light: rgba(110, 90, 60, 0.45);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Mint — pale green + butter yellow + soft coral
+   --------------------------------------------------------------------------- */
+.theme-mint {
+    --dark: #c8e8d0;
+    --dark-rgb: 200, 232, 208;
+    --dark-muted: rgba(200, 232, 208, 0.7);
+    --cream: #f0faf2;
+    --cream-rgb: 240, 250, 242;
+    --red: #e87878;
+    --red-dark: #b04848;
+    --blue: #6fb8c8;
+    --blue-muted: rgba(111, 184, 200, 0.6);
+    --yellow: #e8c050;
+    --green: #58b878;
+    --rose: #f0a0a8;
+    --purple-dark: #9078c0;
+    --light: rgba(28, 60, 40, 0.95);
+    --light-muted: rgba(28, 60, 40, 0.6);
+    --text-shadow-color: rgba(240, 250, 242, 0.85);
+    --sidebar-bg: rgba(208, 236, 218, 0.92);
+    --sidebar-card: rgba(232, 248, 236, 0.55);
+    --focus-ring: rgba(88, 184, 120, 0.95);
+    --disabled-light: rgba(60, 110, 80, 0.45);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Bloom — PASTEL PINK + PASTEL GREEN TOGETHER. Light theme: soft
+   pink-cream sidebar with sage green and rose as paired accents, both
+   visibly present. Dark text on light surfaces.
+   --------------------------------------------------------------------------- */
+.theme-bloom {
+    --dark: #f4d2dc;
+    --dark-rgb: 244, 210, 220;
+    --dark-muted: rgba(244, 210, 220, 0.7);
+    --cream: #fff0f6;
+    --cream-rgb: 255, 240, 246;
+    /* Pink and green are co-stars — both bumped to a punchier pastel
+       saturation so neither washes out. */
+    --red: #f55a92;
+    --red-dark: #c22c6e;
+    --blue: #98c4d8;
+    --blue-muted: rgba(152, 196, 216, 0.6);
+    --yellow: #f5cf60;
+    --green: #6cd070;
+    --rose: #ff85ad;
+    --purple-dark: #a884c0;
+    /* Inverted text — dark plum on the light pink/green surfaces */
+    --light: rgba(70, 32, 52, 0.95);
+    --light-muted: rgba(70, 32, 52, 0.6);
+    --text-shadow-color: rgba(255, 240, 246, 0.85);
+    /* Sidebar gradient: pink → mint, with both stops more saturated so
+       the dual-tone reads clearly at a glance. */
+    --sidebar-bg: linear-gradient(
+        160deg,
+        rgba(245, 195, 215, 0.94) 0%,
+        rgba(195, 235, 200, 0.94) 100%
+    );
+    --sidebar-card: rgba(255, 248, 252, 0.55);
+    --focus-ring: rgba(245, 90, 146, 0.95);
+    --disabled-light: rgba(120, 60, 90, 0.5);
+}
+
+/* Bloom — active widget-icon glow uses green (the second co-star)
+   instead of the default yellow so the pink+green pairing carries
+   through the active state too. */
+.theme-bloom .widget-icon.active {
+    background: color-mix(in srgb, var(--green) 32%, transparent);
+}
+
+.theme-bloom .widget-icon.active:hover {
+    background: color-mix(in srgb, var(--green) 48%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Mono — light grayscale. White-ish widget surfaces, dark text.
+   This is a *light* theme: --dark holds the light surface color so widget
+   chrome (which paints rgba(--dark-rgb, 0.6)) renders white. Text vars
+   are inverted to dark gray so they read on the light surface.
+   --------------------------------------------------------------------------- */
+.theme-mono {
+    --dark: #ececec;
+    --dark-rgb: 236, 236, 236;
+    --dark-muted: rgba(236, 236, 236, 0.7);
+    --cream: #fafafa;
+    --cream-rgb: 250, 250, 250;
+    --red: #555555;
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds — on
+       this LIGHT theme they need to be LIGHT so the dark text reads. */
+    --red-dark: #d8c8c8;
+    --blue: #444444;
+    --blue-muted: rgba(68, 68, 68, 0.6);
+    --yellow: #777777;
+    --green: #5a5a5a;
+    --rose: #888888;
+    --purple-dark: #d8d4dc;
+    /* Inverted text — dark on light surfaces */
+    --light: rgba(24, 24, 24, 0.95);
+    --light-muted: rgba(24, 24, 24, 0.6);
+    --text-shadow-color: rgba(250, 250, 250, 0.85);
+    --sidebar-bg: rgba(232, 232, 232, 0.94);
+    --sidebar-card: rgba(248, 248, 248, 0.6);
+    --focus-ring: rgba(60, 60, 60, 0.95);
+    --disabled-light: rgba(120, 120, 120, 0.5);
+}
+
+/* ---------------------------------------------------------------------------
+   High-contrast modifier — orthogonal to theme. Forces a true black/white
+   palette regardless of which theme is active, so contrast is guaranteed
+   even on light themes (Pastel/Cream/Mint/Mono/Bloom). Every surface var
+   is overridden so consumers that resolve `var(--dark)` / `var(--light)`
+   etc. all paint with maximum contrast.
+   --------------------------------------------------------------------------- */
+.high-contrast {
+    /* Text → white, surfaces → black. */
+    --light: #ffffff;
+    --light-muted: rgba(255, 255, 255, 0.85);
+    --dark: #000000;
+    --dark-rgb: 0, 0, 0;
+    --cream: #ffffff;
+    --cream-rgb: 255, 255, 255;
+    --dark-muted: rgba(0, 0, 0, 0.7);
+    /* Sidebar surfaces */
+    --sidebar-bg: rgba(0, 0, 0, 0.96);
+    --sidebar-card: rgba(18, 18, 18, 0.8);
+    /* Strong yellow focus ring + thicker outlines */
+    --focus-ring: rgba(255, 220, 80, 1);
+    --focus-ring-width: 3px;
+    --widget-border-alpha: 0.6;
+    /* Strong shadow for callouts */
+    --text-shadow-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Force solid backings on every widget chrome surface, with a white border
+   so the boundary is unmistakable. Uses !important to outrank any
+   theme-specific or per-widget CSS that might tint the surface. */
+.high-contrast .widget,
+.high-contrast .widget-card,
+.high-contrast .custom-input,
+.high-contrast .custom-input:focus,
+.high-contrast .todo-item-content,
+.high-contrast .todo-item:hover .todo-item-content,
+.high-contrast .ql-grid-link,
+.high-contrast .ql-grid-link:hover,
+.high-contrast .quicklinksSettings-item,
+.high-contrast .quicklinksSettings-item:hover,
+.high-contrast .quicklinksSettings-dropdown,
+.high-contrast .searchbar-search-btn,
+.high-contrast .pomodoro-widget,
+.high-contrast .pomodoro-widget.break-mode {
+    background: #000000 !important;
+    border: 1.5px solid #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* Suppress the universal shell when a .widget-card is present so the two
+   solid surfaces don't double-stack. */
+.high-contrast .widget:has(.widget-card) {
+    background: transparent !important;
+    border-color: transparent !important;
 }
 
 /* ===========================================================================
@@ -190,4 +464,113 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 2000;
+}
+
+/* ===========================================================================
+   Hover tooltips
+   ---------------------------------------------------------------------------
+   Any element with [data-tooltip] gets a black/white tooltip on hover or
+   keyboard focus. Always black-with-white-text regardless of theme so the
+   tooltip stays recognizable as UI chrome.
+   Limitation: pseudo-element tooltips can be clipped by ancestor
+   `overflow: hidden` containers. If you hit that, consider MUI's Tooltip
+   for portal-rendered tooltips.
+   =========================================================================== */
+
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    padding: 5px 10px;
+    background: var(--dark);
+    color: var(--light);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5000;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    transition: opacity 160ms ease 100ms, transform 160ms ease 100ms;
+}
+
+[data-tooltip]::before {
+    content: "";
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 6px solid var(--dark);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5001;
+    transition: opacity 160ms ease 100ms, transform 160ms ease 100ms;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus-visible::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Lift the hovered element above its siblings so its tooltip pseudo can
+   never be occluded by a later-painted sibling (palette swatches in a row
+   were occluding earlier swatches' tooltips). */
+[data-tooltip]:hover,
+[data-tooltip]:focus-visible {
+    z-index: 10;
+}
+
+/* ===========================================================================
+   Shift-held drag callout
+   ---------------------------------------------------------------------------
+   Widget.tsx toggles `body.show-widget-outline` on Shift keydown/keyup.
+   This shows a small fixed banner at the top of the screen so users know
+   why widgets are now grabbable.
+   =========================================================================== */
+
+body.show-widget-outline::after {
+    content: "Widgets are draggable — click and drag to move";
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--dark);
+    color: var(--light);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    z-index: 9999;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    pointer-events: none;
+    animation: shift-callout-in 180ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes shift-callout-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }

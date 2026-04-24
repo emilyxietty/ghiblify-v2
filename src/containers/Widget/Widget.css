@@ -7,8 +7,57 @@
     width: max-content;
     white-space: nowrap;
     border: 1px solid rgba(var(--cream-rgb, 240, 227, 196), var(--widget-border-alpha, 0));
-    /* Opacity slider in the sidebar drives --widget-bg-alpha. */
-    background: rgba(var(--dark-rgb, 31, 38, 32), var(--widget-bg-alpha, 0));
+    /* Shell stays transparent — widgets that need a card render their
+       own .widget-card surface. */
+    background: transparent;
+    /* Soft fade-in on mount when a widget is toggled visible. */
+    animation: widget-fade-in 220ms ease both;
+}
+
+@keyframes widget-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Fade-out: applied by Widget.tsx during the FADE_DURATION_MS window
+   between visible flipping false and shouldRender flipping false. */
+.widget.fade-out {
+    animation: widget-fade-out 220ms ease both;
+    pointer-events: none;
+}
+
+@keyframes widget-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* When a widget renders its own .widget-card surface (Todo, SearchBar,
+   QuickLinks), suppress the shell backing so the two don't double-stack. */
+.widget:has(.widget-card) {
+    background: transparent;
+}
+
+/* The unified card surface — every "boxy" widget paints its visible chrome
+   here. Surface color comes from --surface-rgb (set per widget container,
+   typically --cream-rgb in light mode, --dark-rgb in dark mode).
+
+   Cards have a built-in opacity floor of 0.6 so Todo / SearchBar /
+   QuickLinks are visible by default (the theme palette tints the card,
+   which is what the user expects from a "card" widget). The sidebar
+   slider can push the opacity higher than the floor — useful for users
+   who want a fully-solid card on a busy photo background. */
+.widget-card {
+    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.6);
+    border-radius: 12px;
+    transition: background 160ms ease;
 }
 
 .widget-fallback-header {
@@ -23,12 +72,11 @@
     /* cursor: grab; */
 }
 
+/* Default cursor is plain — widget content (todo items, links, etc.)
+   handles its own cursors. Grab/grabbing only when Shift is held, see
+   the .show-widget-outline rules at the bottom of this file. */
 .widget.draggable {
-    cursor: pointer;
-}
-
-.widget.draggable:active {
-    cursor: grabbing;
+    cursor: default;
 }
 
 .widget-content {

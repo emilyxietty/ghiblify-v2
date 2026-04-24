@@ -3,6 +3,7 @@ import "./App.css";
 import { Button } from "./components/Button/Button";
 import { Background } from "./containers/Background/Background";
 import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
+import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
 import { Widget } from "./containers/Widget/Widget";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
@@ -45,7 +46,7 @@ const AppContent: React.FC = () => {
       // their own edit-mode toggling and would otherwise double-toggle.
       if (
         target.closest(
-          ".widget, .left-sidebar, .sidebar-trigger, .edit-toggle-button, [role='dialog']"
+          ".widget, .left-sidebar, .edit-toggle-button, [role='dialog']"
         )
       )
         return;
@@ -70,6 +71,7 @@ const AppContent: React.FC = () => {
   return (
     <>
       <LeftSidebar />
+      <RightSidebar visible={widgets.bookmarks.visible} />
       {showWidgetEdits && (
         <div className="edit-toggle-button">
           <Button
@@ -88,52 +90,42 @@ const AppContent: React.FC = () => {
         backgroundFilters={backgroundFilters}
         showWidgetEdits={showWidgetEdits}
       >
-        {widgets.quicklinks.visible && (
-          <Widget storageKey="quicklinks">
-            <QuickLinks />
-          </Widget>
-        )}
-        {widgets.time.visible && (
-          <Widget storageKey="time">
-            <Time />
-          </Widget>
-        )}
-        {widgets.date.visible && (
-          <Widget storageKey="date">
-            <DateDisplay />
-          </Widget>
-        )}
-        {widgets.todo.visible && (
-          <Widget storageKey="todo">
-            <Todo />
-          </Widget>
-        )}
-        {widgets.info.visible && !bgLoading && !infoLoading && (
-          <Widget storageKey="info">
-            <Info
-              titlejp={titlejp}
-              title={title}
-              year={year}
-              screentime={screentime}
-              quote={quote}
-            />
-          </Widget>
-        )}
-        {widgets.avatar.visible && !bgLoading && !infoLoading && (
-          <Widget storageKey="avatar">
-            <Avatar />
-          </Widget>
-        )}
-        {widgets.searchbar.visible && (
-          <Widget storageKey="searchbar">
-            <SearchBar />
-          </Widget>
-        )}
-        {widgets.pomodoro.visible && (
-          <Widget storageKey="pomodoro">
-            <Pomodoro />
-          </Widget>
-        )}
+        <Widget storageKey="quicklinks" visible={widgets.quicklinks.visible}>
+          <QuickLinks />
+        </Widget>
+        <Widget storageKey="time" visible={widgets.time.visible}>
+          <Time />
+        </Widget>
+        <Widget storageKey="date" visible={widgets.date.visible}>
+          <DateDisplay />
+        </Widget>
+        <Widget storageKey="todo" visible={widgets.todo.visible}>
+          <Todo />
+        </Widget>
+        <Widget
+          storageKey="info"
+          visible={widgets.info.visible && !bgLoading && !infoLoading}
+        >
+          <Info
+            titlejp={titlejp}
+            title={title}
+            year={year}
+            screentime={screentime}
+            quote={quote}
+          />
+        </Widget>
+        <Widget
+          storageKey="avatar"
+          visible={widgets.avatar.visible && !bgLoading && !infoLoading}
+        >
+          <Avatar />
+        </Widget>
+        <Widget storageKey="searchbar" visible={widgets.searchbar.visible}>
+          <SearchBar />
+        </Widget>
+        <Widget storageKey="pomodoro" visible={widgets.pomodoro.visible}>
+          <Pomodoro />
+        </Widget>
       </Background>
     </>
   );

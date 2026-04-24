@@ -1,30 +1,26 @@
-/* Placeholder color for both modes */
-.custom-input::placeholder {
-    color: #888;
-    opacity: 1;
-}
-
-.custom-input-light::placeholder {
-    color: #efefef;
-    opacity: 1;
-}
-
+/* Placeholder uses the theme's muted text so it auto-inverts: dark on
+   light themes (Pastel/Cream/Mint/Bloom/Mono), pale on dark themes. */
+.custom-input::placeholder,
+.custom-input-light::placeholder,
 .custom-input-dark::placeholder {
-    color: #c5c5c5;
+    color: var(--light-muted);
     opacity: 1;
 }
 
+/* Base input. Surface uses the theme's --dark-rgb; border + text inherit
+   var(--light) so they auto-invert on light themes. */
 .custom-input {
     width: 100%;
     padding: 12px 36px 12px 10px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.42);
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
     border-radius: 8px;
-    color: white;
+    color: var(--light);
     font-size: 14px;
     outline: none;
-    transition: all 0.3s ease;
+    transition: background 160ms ease, border-color 160ms ease,
+        box-shadow 160ms ease;
     box-sizing: border-box;
 }
 
@@ -32,26 +28,21 @@
     font-size: 10px;
 }
 
-.custom-input-light {
-    /* background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2); */
-    /* background: rgba(255, 255, 255, 0.6); */
-    color: #222;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
+/* Light + dark variants now share the same theme-aware border. Keeping the
+   classes around so existing markup stays valid. */
+.custom-input-light,
 .custom-input-dark {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    color: #f5f5f5;
+    color: var(--light);
+    border-color: color-mix(in srgb, var(--light) 22%, transparent);
 }
 
 .custom-input:focus {
-    background: rgba(255, 255, 255, 0.5);
-    color: #111;
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.65);
+    color: var(--light);
+    border-color: var(--focus-ring);
 }
 
-.custom-input-dark:focus {
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
+.custom-input:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
 }

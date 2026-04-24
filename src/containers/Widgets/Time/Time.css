@@ -6,16 +6,21 @@
 }
 
 .time {
+    /* Intentionally constant — Time stays white regardless of theme so
+       it always reads against the photo background. */
     color: white;
     font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.32),
+        0 4px 22px rgba(0, 0, 0, 0.28);
     user-select: none;
-
 }
 
 .time-period {
     color: white;
     font-weight: 600;
     opacity: 1;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.32),
+        0 4px 18px rgba(0, 0, 0, 0.28);
 }

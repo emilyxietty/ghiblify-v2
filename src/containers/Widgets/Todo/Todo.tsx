@@ -162,7 +162,12 @@ export const Todo: React.FC = () => {
           mode={todoSettings.darkMode ? "dark" : "light"}
         />
         {inputValue && (
-          <button className="todo-add-btn" onClick={addTodo}>
+          <button
+            className="todo-add-btn"
+            onClick={addTodo}
+            aria-label="Add task"
+            data-tooltip="Add task"
+          >
             +
           </button>
         )}
@@ -188,6 +193,9 @@ export const Todo: React.FC = () => {
                 <button
                   className="todo-checkbox"
                   onClick={() => toggleTodo(todo.id)}
+                  aria-label={todo.checked ? "Mark as not done" : "Mark as done"}
+                  aria-pressed={todo.checked}
+                  data-tooltip={todo.checked ? "Mark not done" : "Mark done"}
                 >
                   {todo.checked && <CheckIcon style={{ fontSize: "14px" }} />}
                 </button>
@@ -214,6 +222,8 @@ export const Todo: React.FC = () => {
                 <button
                   className="todo-delete-btn"
                   onClick={() => deleteTodo(todo.id)}
+                  aria-label={`Delete: ${todo.text}`}
+                  data-tooltip="Delete task"
                 >
                   <ClearIcon style={{ fontSize: "14px" }} />
                 </button>

@@ -1,183 +1,192 @@
-/* Modal styles for background settings */
+/* ===========================================================================
+   Background Settings Modal — theme-aware, polished
+   =========================================================================== */
+
 .background-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 3000;
+    padding: 24px;
+    animation: bg-modal-overlay-in 200ms ease both;
+}
+
+@keyframes bg-modal-overlay-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .background-modal {
-    width: min(860px, 92vw);
-    max-height: 86vh;
-    background: rgba(20, 20, 20, 0.98);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
+    width: min(880px, 100%);
+    max-height: min(86vh, 720px);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.96);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    animation: bg-modal-in 240ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }
+
+@keyframes bg-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Header
+   --------------------------------------------------------------------------- */
 
 .background-modal .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    color: white;
+    gap: 16px;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
 }
 
 .background-modal .modal-header h4 {
     margin: 0;
-    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--light);
+    letter-spacing: 0.02em;
 }
 
-.background-modal .modal-close {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
+.background-modal .modal-header h4::after {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 2px;
+    margin-top: 6px;
+    background: var(--yellow);
+    border-radius: 2px;
+    opacity: 0.8;
 }
 
-/* Modal header action buttons */
+.background-modal .modal-header > div:nth-child(2) {
+    /* "N movies" count */
+    font-size: 12px;
+    color: var(--light-muted);
+    flex: 1;
+    margin-left: 8px;
+}
+
 .modal-actions {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.modal-action-btn {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    background: rgba(255, 255, 255, 0.06);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 6px 8px;
-    border-radius: 6px;
+.background-modal .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--light);
+    font-size: 24px;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: background 140ms ease, opacity 140ms ease;
 }
 
-.modal-action-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
+.background-modal .modal-close:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    opacity: 1;
 }
+
+/* Action buttons in header */
+.modal-action-btn {
+    transition: background 140ms ease, transform 140ms ease;
+}
+
+.modal-action-btn:hover:not(:disabled):not(.btn-disabled) {
+    transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------------------------
+   Body
+   --------------------------------------------------------------------------- */
 
 .background-modal .modal-body {
-    padding: 16px;
+    padding: 16px 20px;
     overflow: auto;
-    color: white;
+    color: var(--light);
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
 }
 
-/* Movie list: make each movie its own row */
+.background-modal .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.background-modal .modal-body::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--light) 25%, transparent);
+    border-radius: 4px;
+}
+
 .background-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
+
+/* ---------------------------------------------------------------------------
+   Movie list item — card-like row, expanding
+   --------------------------------------------------------------------------- */
 
 .background-toggle {
-    /* display: flex;
-    align-items: center;
-    gap: 12px; */
     width: 100%;
-    padding: 8px 10px;
-    border-radius: 6px;
-    background: transparent;
-    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--light) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 8%, transparent);
     box-sizing: border-box;
     overflow: hidden;
+    transition: background 160ms ease, border-color 160ms ease;
 }
 
-.background-toggle input[type="checkbox"] {
-    flex: 0 0 auto;
-    width: 18px;
-    height: 18px;
+.background-toggle:hover {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border-color: color-mix(in srgb, var(--light) 18%, transparent);
 }
 
-.background-title {
-    flex: 1 1 auto;
-    font-size: 14px;
-    color: white;
-}
-
-.background-unavailable {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 12px;
-    margin-left: 6px;
-}
-
-/* Poster dropdown / carousel */
-.poster-dropdown {
-    position: absolute;
-    left: 100%;
-    top: 2px;
-    /* transform: translateX(12px); */
-    min-width: 360px;
-    max-width: 72vw;
-    background: rgba(18, 18, 18, 0.98);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-    padding: 8px;
-    border-radius: 6px;
-    z-index: 10;
-    max-height: 60vh;
-    overflow: auto;
-}
-
-.poster-empty {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 13px;
-    padding: 6px 8px;
-}
-
-.poster-carousel {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 6px;
-}
-
-.poster-carousel::-webkit-scrollbar {
-    height: 8px;
-}
-
-.poster-carousel::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.04);
-}
-
-.poster-carousel::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 6px;
-}
-
-.poster-thumb {
-    width: 140px;
-    height: 84px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    flex: 0 0 auto;
-    /* transition: transform 0.12s ease, box-shadow 0.12s ease; */
-}
-
-.poster-thumb:hover {
-    /* transform: translateY(-4px) scale(1.02); */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+.background-toggle[open] {
+    background: color-mix(in srgb, var(--light) 7%, transparent);
+    border-color: color-mix(in srgb, var(--yellow) 30%, transparent);
 }
 
 .background-summary {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
-    flex-wrap: wrap;
     width: 100%;
+    user-select: none;
 }
 
 .background-summary::marker,
@@ -185,77 +194,135 @@
     display: none;
 }
 
+.background-toggle input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--yellow);
+    cursor: pointer;
+}
+
+.background-toggle input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+}
+
+.background-title {
+    flex: 1 1 auto;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--light);
+}
+
+.background-unavailable {
+    color: var(--light-muted);
+    font-size: 11px;
+    font-style: italic;
+    margin-left: 6px;
+}
+
 .background-summary::after {
-    content: "Show";
+    content: "Show ↓";
     margin-left: auto;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-    padding-left: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--light-muted);
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    transition: background 140ms ease, color 140ms ease;
 }
 
-.background-toggle[open]>.background-summary::after {
-    content: "Hide";
+.background-summary:hover::after {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    color: var(--light);
 }
 
-.background-toggle:hover {
-    background: rgba(255, 255, 255, 0.05);
+.background-toggle[open] > .background-summary::after {
+    content: "Hide ↑";
+    background: color-mix(in srgb, var(--yellow) 22%, transparent);
+    color: var(--light);
 }
+
+/* ---------------------------------------------------------------------------
+   Thumbnails carousel
+   --------------------------------------------------------------------------- */
 
 .summary-images {
     display: flex;
-    gap: 6px;
-    margin-left: 8px;
+    gap: 8px;
+    margin-top: 12px;
     overflow-x: auto;
     align-items: center;
-    padding: 10px 0;
+    padding: 4px 2px 10px;
     min-width: 0;
-    max-width: calc(98%);
+    max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
+    animation: bg-thumbs-fade 240ms ease;
+}
+
+@keyframes bg-thumbs-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .summary-images::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
 }
 
-.summary-thumb {
-    /* Use a fixed thumbnail height and let width scale to preserve
-       the image's natural aspect ratio so thumbnails don't look squashed */
-    height: 96px;
-    width: auto;
-    max-width: 160px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    flex: 0 0 auto;
-    /* transition: transform 0.12s ease, box-shadow 0.12s ease; */
+.summary-images::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--light) 25%, transparent);
+    border-radius: 4px;
 }
 
-.summary-thumb:hover {
-    /* transform: translateY(-3px) scale(1.02); */
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
-}
-
-/* thumbnail wrapper and delete overlay */
 .thumb-wrap {
     position: relative;
     display: inline-block;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.thumb-wrap:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.summary-thumb {
+    height: 96px;
+    width: auto;
+    max-width: 170px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--light) 6%, transparent);
 }
 
 .thumb-delete {
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
     border: none;
     cursor: pointer;
     opacity: 0;
     padding: 0;
+    transition: opacity 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
 .thumb-delete svg {
@@ -264,10 +331,29 @@
 }
 
 .thumb-wrap:hover .thumb-delete,
-.thumb-delete:focus {
+.thumb-delete:focus-visible {
     opacity: 1;
 }
 
-.thumb-delete:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.12);
+.thumb-delete:hover {
+    background: rgba(0, 0, 0, 0.85);
+    transform: scale(1.08);
+}
+
+.thumb-delete:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Footer
+   --------------------------------------------------------------------------- */
+
+.background-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px !important;
+    border-top: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    background: color-mix(in srgb, var(--light) 3%, transparent);
 }

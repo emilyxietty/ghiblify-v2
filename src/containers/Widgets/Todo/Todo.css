@@ -4,7 +4,14 @@
     width: 350px;
     display: flex;
     flex-direction: column;
-    /* gap: 16px; */
+    padding: 12px;
+    box-sizing: border-box;
+    /* Light mode: card surface is cream. Dark mode overrides below. */
+    --surface-rgb: var(--cream-rgb, 240, 227, 196);
+}
+
+.todo-container.todo-dark {
+    --surface-rgb: var(--dark-rgb, 31, 38, 32);
 }
 
 /* when collapsed, keep the same widget width so header doesn't re-center */
@@ -34,7 +41,7 @@
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-    color: white;
+    color: var(--light);
     font-size: 14px;
     outline: none;
     transition: all 0.3s ease;
@@ -42,12 +49,12 @@
 } */
 
 .todo-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--light-muted);
 }
 
 .todo-input:focus {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    border-color: color-mix(in srgb, var(--light) 35%, transparent);
 }
 
 .todo-add-btn {
@@ -57,10 +64,10 @@
     transform: translateY(-50%);
     width: 28px;
     height: 28px;
-    background: rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--light) 18%, transparent);
     border: none;
     border-radius: 6px;
-    color: white;
+    color: var(--light);
     font-size: 18px;
     cursor: pointer;
     display: flex;
@@ -70,26 +77,29 @@
 }
 
 .todo-add-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: color-mix(in srgb, var(--light) 30%, transparent);
 }
 
 .todo-list {
     width: 100%;
     /* Let the list size naturally, but constrain with a max-height so it
-       doesn't grow larger than the popover/widget. Use overflow-y to
-       allow scrolling when there are many items. */
+       doesn't grow larger than the popover/widget. */
     max-height: 240px;
     list-style: none;
     padding: 0;
     margin: 0;
     overflow-y: auto;
+    /* `overflow-x: visible` would otherwise be clobbered by overflow-y
+       (the spec forces both axes to non-visible if either is scroll/auto).
+       To let tooltips escape sideways/below, keep generous bottom padding
+       so the tooltip has somewhere to live within the scrolled box. */
+    padding-bottom: 28px;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
     scrollbar-width: thin;
-    scrollbar-color: #ccc #f5f5f5;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
     text-align: left;
-    /* Ensure all list items are left-aligned */
 }
 
 .todo-list::-webkit-scrollbar {
@@ -105,7 +115,17 @@
 .todo-item {
     margin-bottom: 6px;
     text-align: left;
-    /* Ensure individual items are left-aligned */
+    /* Establish a stacking context so a later sibling can't paint over
+       this item's hover tooltip pseudo-element. */
+    position: relative;
+    z-index: 1;
+}
+
+/* Lift the hovered todo item above its later siblings so its delete
+   tooltip is visible. */
+.todo-item:hover,
+.todo-item:focus-within {
+    z-index: 5;
 }
 
 /* Constrain the popover wrapper so its internal scrolling works and
@@ -117,53 +137,57 @@
     overflow: hidden;
 }
 
+/* Theme-tinted dark surface (text stays readable). */
 .todo-item-content {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 10px 12px;
-    /* semi-opaque so backdrop-filter has visible effect */
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.42);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     border-radius: 8px;
     transition: background 0.18s ease, box-shadow 0.18s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .todo-item:hover .todo-item-content {
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.62);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
+/* Theme-aware: tint comes from --light so it auto-inverts. Unchecked is
+   subtle; checked goes solid with the inverse color for the check icon. */
 .todo-checkbox {
     width: 18px;
     height: 18px;
     min-width: 18px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+    border: 2px solid color-mix(in srgb, var(--light) 45%, transparent);
     border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--dark);
     font-size: 12px;
-    transition: all 0.2s ease;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .todo-checkbox:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: color-mix(in srgb, var(--light) 30%, transparent);
+    border-color: color-mix(in srgb, var(--light) 65%, transparent);
 }
 
 .todo-item.checked .todo-checkbox {
-    background: rgba(255, 255, 255, 0.4);
-    border-color: rgba(255, 255, 255, 0.6);
+    background: var(--light);
+    border-color: var(--light);
+    color: var(--dark);
 }
 
 .todo-text {
     flex: 1;
-    color: white;
+    color: var(--light);
     font-size: 13px;
     font-size: 13px;
     cursor: pointer;
@@ -181,10 +205,10 @@
 .todo-edit-input {
     flex: 1;
     padding: 4px 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 35%, transparent);
     border-radius: 4px;
-    color: white;
+    color: var(--light);
     font-size: 13px;
     outline: none;
     word-break: break-word;
@@ -198,7 +222,7 @@
     background: rgba(255, 0, 0, 0.2);
     border: none;
     border-radius: 4px;
-    color: white;
+    color: var(--light);
     font-size: 16px;
     cursor: pointer;
     display: flex;
@@ -240,28 +264,16 @@
 
 /* .todo-container.todo-dark .todo-input {
     background: #000000a9;
-    color: #f3f3f3;
+    color: var(--light);
     border: none;
 } */
 
-.todo-container.todo-dark .todo-item-content {
-    /* darker translucent background for dark mode + blur */
-    background: rgba(0, 0, 0, 0.55);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-}
+/* (dark-mode .todo-item-content background is set above with the
+   slider-driven formula — leaving this stub so the rule isn't silently
+   re-introduced from elsewhere) */
 
-.todo-container.todo-dark .todo-checkbox {
-    background: #000000a9;
-    /* border: 1px solid #444; */
-    color: white;
-}
-
-.todo-container.todo-dark .todo-add-btn {
-    background: #000000a9;
-    color: #f3f3f3;
-    border: 1px solid #000000a9;
-}
+/* Dark-mode toggle — checkbox + add button now use the theme-aware base
+   styles above and inherit naturally; per-mode overrides removed. */
 
 
 .toto-title-text:hover {

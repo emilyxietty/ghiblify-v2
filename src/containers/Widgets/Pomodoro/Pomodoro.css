@@ -1,132 +1,394 @@
-/* Progress bar styles */
+/* ===========================================================================
+   Pomodoro — themed, modern card
+   =========================================================================== */
+
+.pomodoro-widget {
+    /* Layered background: a soft theme-purple base with a subtle radial
+       highlight in the top-left so the card has a bit of depth instead
+       of a flat plate. */
+    background:
+        radial-gradient(
+            ellipse at top left,
+            color-mix(in srgb, var(--light) 12%, transparent) 0%,
+            transparent 60%
+        ),
+        var(--purple-dark);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    border-radius: 18px;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+    color: var(--light);
+    padding: 22px 24px;
+    text-align: center;
+    width: 300px;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: background 200ms ease, border-color 200ms ease;
+}
+
+.pomodoro-widget.break-mode {
+    background:
+        radial-gradient(
+            ellipse at top left,
+            color-mix(in srgb, var(--light) 12%, transparent) 0%,
+            transparent 60%
+        ),
+        var(--red-dark);
+}
+
+/* ---------------------------------------------------------------------------
+   Mode switch — pill-style segmented control
+   --------------------------------------------------------------------------- */
+
+.pomodoro-switch-header {
+    display: inline-flex;
+    align-items: center;
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 0;
+    margin-bottom: 4px;
+}
+
+.pomodoro-switch-header h2 {
+    font-size: 0.78rem;
+    margin: 0;
+    padding: 5px 14px;
+    border-radius: 999px;
+    transition: background 180ms ease, color 180ms ease, opacity 180ms ease;
+    user-select: none;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pomodoro-switch-header h2.active-mode {
+    background: color-mix(in srgb, var(--light) 22%, transparent);
+    color: var(--light);
+    opacity: 1;
+}
+
+.pomodoro-switch-header h2.inactive-mode {
+    background: transparent;
+    color: var(--light);
+    opacity: 0.55;
+}
+
+.pomodoro-switch-header h2.inactive-mode:hover {
+    opacity: 0.85;
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Timer image (the Ghibli sticker shown during break)
+   --------------------------------------------------------------------------- */
+
+.timer-image {
+    max-height: 56px;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    margin-top: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Time display
+   --------------------------------------------------------------------------- */
+
+.timer-display {
+    font-size: 4.4rem;
+    color: var(--light);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    /* Tabular numerals so the digits don't shift width as they tick. */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    margin: auto 0;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.timer-input-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+}
+
+.timer-input-row input,
+.timer-mins-input {
+    font-size: 4.4rem;
+    text-align: center;
+    background: transparent;
+    border: none;
+    border-bottom: 2px dashed color-mix(in srgb, var(--light) 40%, transparent);
+    border-radius: 0;
+    color: var(--light);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    outline: none;
+    width: 130px;
+    padding: 0 4px;
+    font-variant-numeric: tabular-nums;
+    transition: border-color 160ms ease;
+    /* Hide spin buttons on number input */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.timer-input-row input::-webkit-outer-spin-button,
+.timer-input-row input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.timer-input-row input:focus,
+.timer-mins-input:focus {
+    border-bottom-color: var(--light);
+}
+
+.timer-mins-label {
+    font-size: 0.85rem;
+    color: var(--light);
+    margin-left: 2px;
+    opacity: 0.7;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------------------
+   Controls (Play / Pause / Reset)
+   --------------------------------------------------------------------------- */
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.pomodoro-control-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 16px !important;
+    border-radius: 999px !important;
+    background: color-mix(in srgb, var(--light) 14%, transparent) !important;
+    color: var(--light) !important;
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent) !important;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: background 160ms ease, transform 140ms ease,
+        box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.pomodoro-control-btn svg {
+    font-size: 18px;
+    color: var(--light);
+}
+
+.pomodoro-control-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--light) 26%, transparent) !important;
+    border-color: color-mix(in srgb, var(--light) 45%, transparent) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.pomodoro-control-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pomodoro-control-btn:focus-visible {
+    outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
+    outline-offset: 2px;
+}
+
+.pomodoro-control-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Icon-only variant — square-ish padding for buttons without label text. */
+.pomodoro-control-btn-icon {
+    padding: 8px 10px !important;
+    gap: 0 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Progress bar
+   --------------------------------------------------------------------------- */
+
 .pomodoro-progress-bar-container {
     width: 100%;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    margin: 12px 0 0 0;
+    height: 6px;
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    border-radius: 999px;
+    margin: 4px 0 0;
     overflow: hidden;
     position: relative;
 }
 
 .pomodoro-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ffb347 0%, #ffcc80 100%);
-    border-radius: 6px;
-    transition: width 0.3s;
+    background: linear-gradient(
+        90deg,
+        var(--yellow) 0%,
+        color-mix(in srgb, var(--yellow) 70%, var(--light)) 100%
+    );
+    border-radius: inherit;
+    transition: width 0.4s cubic-bezier(0.32, 0.72, 0.32, 1);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--yellow) 50%, transparent);
 }
 
-.pomodoro-widget {
-    background: var(--purple-dark);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    color: white;
-    padding: 24px;
-    text-align: center;
-    width: 300px;
-    height: 300px;
-    display: flex;
-    flex-direction: column;
-    /* justify-content: space-between; */
-    align-items: center;
-    gap: 8px;
-    position: relative;
-    overflow: hidden;
+.pomodoro-widget.break-mode .pomodoro-progress-bar {
+    background: linear-gradient(
+        90deg,
+        var(--rose, var(--red)) 0%,
+        var(--red) 100%
+    );
+    box-shadow: 0 0 8px color-mix(in srgb, var(--red) 50%, transparent);
 }
 
-.pomodoro-widget.break-mode {
-    background: var(--red-dark);
+/* ===========================================================================
+   Concentration / focus mode
+   ---------------------------------------------------------------------------
+   Triggered from the Focus button on the Pomodoro widget. Body class
+   `pomodoro-focus` hides every other widget and the sidebars, places a
+   subtle scrim over the photo background, and enlarges + centers the
+   Pomodoro card.
+   =========================================================================== */
+
+/* Soft dimming scrim over the photo background. NO blur — the photo
+   should stay crisp, just darkened so the timer reads. Sits at z-index
+   800 in the body stacking context so it covers the photo (z-index 0)
+   but stays below the lifted .background-content (see below). */
+body.pomodoro-focus::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 800;
+    pointer-events: none;
+    animation: pomodoro-focus-scrim-in 240ms ease both;
 }
 
-
-.pomodoro-switch-header {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin-bottom: 8px;
+/* .background-content normally has z-index: 10, which is below the scrim
+   (800) at the body stacking-context level — that's why Pomodoro looked
+   darkened (the scrim was painting over the widget content layer). Lift
+   the entire content layer above the scrim in focus mode so the widget
+   stays crisp and only the photo behind it gets the dim wash. */
+body.pomodoro-focus .background-content {
+    z-index: 850 !important;
 }
 
-.pomodoro-switch-header h2 {
-    font-size: 1rem;
-    margin: 0;
-    padding: 0 8px;
-    transition: color 0.2s;
-    user-select: none;
+@keyframes pomodoro-focus-scrim-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
-.active-mode {
-    color: #ffffff;
-    font-weight: bold;
-    opacity: 1;
+/* Hide every widget that isn't Pomodoro. */
+body.pomodoro-focus .widget:not([data-widget-key="pomodoro"]) {
+    display: none !important;
 }
 
-.inactive-mode {
-    color: #cccccc;
-    opacity: 0.6;
-    font-weight: normal;
+/* Hide both sidebars while in focus mode. */
+body.pomodoro-focus .left-sidebar,
+body.pomodoro-focus .right-sidebar {
+    transform: translateX(-110%) !important;
+    pointer-events: none !important;
 }
 
-
-.timer-display {
-    font-size: 5rem;
-    color: #ffffff;
-    font-weight: bold;
+body.pomodoro-focus .right-sidebar {
+    transform: translateX(110%) !important;
 }
 
-.timer-input-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+/* Center + enlarge the Pomodoro widget. Override the inline left/top
+   from drag positioning. Sits above the scrim. */
+body.pomodoro-focus .widget[data-widget-key="pomodoro"] {
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 900 !important;
+    max-width: none !important;
+    animation: pomodoro-focus-zoom-in 320ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }
 
-.timer-input-row input {
-    font-size: 5rem;
-    width: 100%;
-    padding: 4px;
-    border-radius: 6px;
-    background: transparent;
-    border: 1px solid #ffffff;
-    color: white;
+@keyframes pomodoro-focus-zoom-in {
+    from {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
-.timer-mins-input {
-    width: 100%;
-    text-align: center;
-    background: transparent;
-    border: 1px solid #ffffff;
-    border-radius: 6px;
-    outline: none;
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 5rem;
-}
-
-.timer-mins-label {
-    font-size: 1rem;
-    color: #fff;
-    margin-left: 2px;
-    opacity: 0.8;
-    font-weight: 500;
-}
-
-.controls {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-}
-
-.controls button svg {
-    font-size: 30px;
-    color: white;
-}
-
-.controls button:hover svg {
-    color: #ccc;
-}
-
-.timer-image {
-    max-height: 40px;
+/* Larger card with bigger timer. */
+body.pomodoro-focus .pomodoro-widget {
+    width: min(560px, 92vw);
     height: auto;
-    display: block;
+    min-height: 480px;
+    padding: 44px 48px;
+    border-radius: 24px;
+    gap: 22px;
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.1) inset;
+}
+
+body.pomodoro-focus .pomodoro-widget .timer-display {
+    font-size: 7.2rem;
+}
+
+body.pomodoro-focus .pomodoro-widget .timer-input-row input,
+body.pomodoro-focus .pomodoro-widget .timer-mins-input {
+    font-size: 7.2rem;
+    width: 200px;
+}
+
+body.pomodoro-focus .pomodoro-widget .timer-image {
+    max-height: 88px;
+}
+
+body.pomodoro-focus .pomodoro-widget .controls {
+    gap: 14px;
+    margin-top: 8px;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn {
+    padding: 10px 22px !important;
+    font-size: 13.5px;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn svg {
+    font-size: 22px;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar-container {
+    height: 8px;
+}
+
+/* Hide the floating "Done" edit-mode button in focus, just in case. */
+body.pomodoro-focus .edit-toggle-button {
+    display: none !important;
 }

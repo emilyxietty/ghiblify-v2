@@ -16,18 +16,30 @@ import {
 
 const STORAGE_KEY = "ghiblify_widgets";
 
-export const THEME_NAMES = ["ghibli", "spirited", "howls", "totoro", "ponyo"] as const;
+export const THEME_NAMES = [
+  "ghibli",
+  "spirited",
+  "howls",
+  "totoro",
+  "ponyo",
+  "sky",
+  "sakura",
+  "meadow",
+  "pastel",
+  "cream",
+  "mint",
+  "bloom",
+  "mono",
+] as const;
 export type ThemeName = (typeof THEME_NAMES)[number];
 
 export interface AppearanceSettings {
   theme: ThemeName;
-  widgetOpacity: number; // 0–100
   highContrast: boolean;
 }
 
 const DEFAULT_APPEARANCE: AppearanceSettings = {
   theme: "ghibli",
-  widgetOpacity: 0,
   highContrast: false,
 };
 
@@ -77,12 +89,15 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Widgets that should default to hidden (everything else defaults visible).
+const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>(["bookmarks"]);
+
 const buildDefaultWidgets = (): WidgetsState => {
   const out = {} as WidgetsState;
   for (const key of WIDGET_KEYS) {
     const cfg = WIDGET_CONFIGS[key];
     (out as Record<WidgetKey, unknown>)[key] = {
-      visible: true,
+      visible: !HIDDEN_BY_DEFAULT.has(key),
       position: { ...cfg.position },
       settings: structuredClone(cfg.settings),
     };
@@ -112,7 +127,11 @@ const persistWidgets = (state: WidgetsState) => {
     const cfg = WIDGET_CONFIGS[key];
     const entry = state[key];
     const out: Record<string, unknown> = {};
-    if (entry.visible !== true) out.visible = entry.visible;
+    // Compare visible against the widget's actual default (most default to
+    // true, but bookmarks defaults to false — so toggling it on differs
+    // from default and MUST be persisted).
+    const defaultVisible = !HIDDEN_BY_DEFAULT.has(key);
+    if (entry.visible !== defaultVisible) out.visible = entry.visible;
     if (!positionsEqual(entry.position, cfg.position))
       out.position = entry.position;
     const settingsDiff = diffSettings(entry.settings, cfg.settings);
@@ -310,16 +329,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     return { ...DEFAULT_APPEARANCE, ...saved };
   });
 
-  // Apply appearance to document root: theme class, contrast class, opacity var.
+  // Apply appearance to document root: theme class + contrast class.
   useEffect(() => {
     const root = document.documentElement;
     THEME_NAMES.forEach((t) => root.classList.remove(`theme-${t}`));
     root.classList.add(`theme-${appearance.theme}`);
     root.classList.toggle("high-contrast", appearance.highContrast);
-    root.style.setProperty(
-      "--widget-bg-alpha",
-      String(appearance.widgetOpacity / 100)
-    );
   }, [appearance]);
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);
@@ -394,7 +409,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const resetAllWidgets = () => {
     if (!window.confirm("Are you sure you want to reset all widgets to default?"))
       return;
-    setWidgets(buildDefaultWidgets());
+    setWidgets((prev) => {
+      const next = buildDefaultWidgets();
+      // Preserve user-created content. Links live inside settings (legacy
+      // shape from the localStorage migration) but they're user data, not
+      // config — resetting positions/sizes shouldn't wipe them.
+      next.quicklinks.settings.links = prev.quicklinks.settings.links;
+      return next;
+    });
   };
 
   return (

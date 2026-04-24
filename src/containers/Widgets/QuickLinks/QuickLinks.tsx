@@ -149,7 +149,7 @@ export const QuickLinks: React.FC = () => {
   if (showGrid) {
     return (
       <div
-        className={`quicklinksSettings-grid-wrapper widget-header always-show quicklinks-widget-mode-${
+        className={`quicklinksSettings-grid-wrapper widget-header quicklinks-widget-mode-${
           darkMode ? "dark" : "light"
         } ${themeClass}`}
       >
@@ -197,6 +197,7 @@ export const QuickLinks: React.FC = () => {
                       type="button"
                       className="ql-delete-overlay"
                       aria-label={`Delete ${l.title}`}
+                      data-tooltip={`Delete ${l.title}`}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -215,7 +216,7 @@ export const QuickLinks: React.FC = () => {
                 icon={<AddCircleIcon fontSize="small" />}
                 onClick={() => setAddGridLink(true)}
                 aria-label="Add a new quick link"
-                title="Add link"
+                data-tooltip="Add link"
               />
               {deleteGridLink ? (
                 <Button
@@ -224,7 +225,7 @@ export const QuickLinks: React.FC = () => {
                   onClick={() => setDeleteGridLink(false)}
                   aria-label="Done deleting links"
                   aria-pressed={true}
-                  title="Done"
+                  data-tooltip="Done deleting"
                 />
               ) : (
                 quicklinksSettings.links.length > 0 && (
@@ -234,7 +235,7 @@ export const QuickLinks: React.FC = () => {
                     onClick={() => setDeleteGridLink(true)}
                     aria-label="Show delete buttons"
                     aria-pressed={false}
-                    title="Remove links"
+                    data-tooltip="Remove links"
                   />
                 )
               )}
@@ -279,6 +280,7 @@ export const QuickLinks: React.FC = () => {
               type="submit"
               className="quicklinksSettings-add-btn"
               disabled={!url.trim()}
+              data-tooltip="Save link"
             >
               Add
             </button>
@@ -364,6 +366,7 @@ export const QuickLinks: React.FC = () => {
                 type="submit"
                 className="quicklinksSettings-add-btn"
                 disabled={!url.trim()}
+                data-tooltip="Save link"
               >
                 Add
               </button>
@@ -411,6 +414,7 @@ export const QuickLinks: React.FC = () => {
                         type="button"
                         className="quicklinksSettings-delete"
                         aria-label={`Delete ${l.title}`}
+                        data-tooltip="Delete link"
                         onClick={() => removeLink(l.id)}
                       >
                         <CancelIcon fontSize="small" />

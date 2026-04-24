@@ -44,6 +44,11 @@ export interface SearchBarSettings {
 // Pomodoro is self-contained — it owns its own localStorage and runs a
 // leader-election loop. Nothing in context state for it.
 export type PomodoroSettings = Record<string, never>;
+// Bookmarks is a right-side sliding panel, not a positioned widget. It's in
+// WIDGET_KEYS so its visibility lives in the same state as everything else
+// and the sidebar toggle row can include it. Settings and position are
+// unused.
+export type BookmarksSettings = Record<string, never>;
 
 export interface WidgetSettingsMap {
   time: TimeSettings;
@@ -54,6 +59,7 @@ export interface WidgetSettingsMap {
   quicklinks: QuicklinksSettings;
   searchbar: SearchBarSettings;
   pomodoro: PomodoroSettings;
+  bookmarks: BookmarksSettings;
 }
 
 export type WidgetKey = keyof WidgetSettingsMap;
@@ -67,6 +73,7 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "quicklinks",
   "searchbar",
   "pomodoro",
+  "bookmarks",
 ];
 
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
@@ -169,6 +176,14 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   pomodoro: {
     name: "Pomodoro",
     position: { x: 86.88888888888889, y: 2 },
+    settings: {},
+  },
+  bookmarks: {
+    name: "Bookmarks",
+    // Position unused — bookmarks renders as a right-side panel, not a
+    // positioned tile. Visible defaults to false so existing users don't
+    // suddenly get a new panel.
+    position: { x: 50, y: 50 },
     settings: {},
   },
 };

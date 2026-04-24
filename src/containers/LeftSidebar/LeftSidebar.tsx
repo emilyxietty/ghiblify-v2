@@ -1,15 +1,17 @@
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
+import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import EditIcon from "@mui/icons-material/Edit";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LinkIcon from "@mui/icons-material/Link";
-import MenuIcon from "@mui/icons-material/Menu";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
 import TimerIcon from "@mui/icons-material/Timer";
 import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
+import WelcomeModal from "../../components/WelcomeModal/WelcomeModal";
 
 import { Button } from "../../components/Button/Button";
 import {
@@ -33,6 +35,14 @@ const THEMES: Array<{ name: ThemeName; label: string }> = [
   { name: "howls", label: "Howl's" },
   { name: "totoro", label: "Totoro" },
   { name: "ponyo", label: "Ponyo" },
+  { name: "sky", label: "Sky" },
+  { name: "sakura", label: "Sakura" },
+  { name: "meadow", label: "Meadow" },
+  { name: "pastel", label: "Pastel" },
+  { name: "cream", label: "Cream" },
+  { name: "mint", label: "Mint" },
+  { name: "bloom", label: "Bloom" },
+  { name: "mono", label: "Mono" },
 ];
 
 const WIDGET_TOGGLES: Array<{
@@ -47,6 +57,7 @@ const WIDGET_TOGGLES: Array<{
   { key: "quicklinks", label: "Quick links", icon: <LinkIcon /> },
   { key: "searchbar", label: "Search bar", icon: <SearchIcon /> },
   { key: "pomodoro", label: "Pomodoro timer", icon: <TimerIcon /> },
+  { key: "bookmarks", label: "Bookmarks", icon: <BookmarksIcon /> },
 ];
 
 const FILTER_UNITS: Record<keyof BackgroundFilters, string> = {
@@ -72,6 +83,7 @@ export const LeftSidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
   // Close sidebar when entering edit mode
@@ -90,11 +102,16 @@ export const LeftSidebar: React.FC = () => {
     return () => document.removeEventListener("mousemove", handleMouseMove);
   }, [isOpen]);
 
-  // Escape closes the sidebar (keyboard)
+  // Keyboard shortcuts: Cmd/Ctrl+K toggles the sidebar (keyboard-accessible
+  // entry point now that the visible trigger button is gone). Escape closes.
   useEffect(() => {
-    if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsOpen((v) => !v);
+        return;
+      }
+      if (e.key === "Escape" && isOpen) setIsOpen(false);
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -175,16 +192,6 @@ export const LeftSidebar: React.FC = () => {
 
   return (
     <>
-      <button
-        type="button"
-        className={`sidebar-trigger${isOpen ? " is-hidden" : ""}`}
-        aria-label="Open settings sidebar"
-        aria-expanded={isOpen}
-        aria-controls="settings-sidebar"
-        onClick={() => setIsOpen(true)}
-      >
-        <MenuIcon fontSize="small" />
-      </button>
       <aside
         id="settings-sidebar"
         ref={sidebarRef}
@@ -198,6 +205,16 @@ export const LeftSidebar: React.FC = () => {
             </Button>
             <Button variant="dark" size="small" onClick={() => handleSiteClick(BUYMEACOFFEE_URL)}>
               Buy me a Coffee
+            </Button>
+            <Button
+              variant="dark"
+              size="small"
+              onClick={() => setShowGuide(true)}
+              aria-label="Open the guide"
+              aria-haspopup="dialog"
+            >
+              <HelpOutlineIcon style={{ fontSize: 14, marginRight: 4 }} />
+              Guide
             </Button>
           </div>
 
@@ -220,7 +237,7 @@ export const LeftSidebar: React.FC = () => {
                     onClick={() => toggleWidgetVisibility(key)}
                     aria-label={`${visible ? "Hide" : "Show"} ${label} widget`}
                     aria-pressed={visible}
-                    title={`Toggle ${label}`}
+                    data-tooltip={label}
                   />
                 );
               })}
@@ -244,7 +261,7 @@ export const LeftSidebar: React.FC = () => {
                   widgets.avatar.visible ? "Hide" : "Show"
                 } Avatar widget`}
                 aria-pressed={widgets.avatar.visible}
-                title="Toggle Avatar"
+                data-tooltip="Avatar"
               />
             </div>
             <div className="widget-edits">
@@ -278,7 +295,7 @@ export const LeftSidebar: React.FC = () => {
                         role="radio"
                         aria-checked={selected}
                         aria-label={t.label}
-                        title={t.label}
+                        data-tooltip={t.label}
                         className={`theme-swatch theme-${t.name}${
                           selected ? " is-selected" : ""
                         }`}
@@ -287,25 +304,6 @@ export const LeftSidebar: React.FC = () => {
                     );
                   })}
                 </div>
-              </div>
-
-              <div className="filter-control">
-                <label htmlFor="widget-opacity">
-                  <span>Widget background</span>
-                  <span className="filter-value">{appearance.widgetOpacity}%</span>
-                </label>
-                <input
-                  id="widget-opacity"
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={appearance.widgetOpacity}
-                  aria-valuetext={`${appearance.widgetOpacity} percent`}
-                  onChange={(e) =>
-                    updateAppearance({ widgetOpacity: parseInt(e.target.value) })
-                  }
-                  className="filter-slider"
-                />
               </div>
 
               <div className="filter-control">
@@ -357,6 +355,7 @@ export const LeftSidebar: React.FC = () => {
           setShowBackgroundSettings={setShowBackgroundSettings}
         />
       )}
+      <WelcomeModal open={showGuide} onClose={() => setShowGuide(false)} />
     </>
   );
 };

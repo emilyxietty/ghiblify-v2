@@ -1,0 +1,252 @@
+/* ===========================================================================
+   Right sidebar — Chrome bookmarks
+   Mirrors LeftSidebar UX: hover the right edge to open, Esc to close,
+   inert when closed.
+   =========================================================================== */
+
+.right-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(360px, 100vw);
+    height: 100vh;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(14px) saturate(110%);
+    -webkit-backdrop-filter: blur(14px) saturate(110%);
+    transform: translateX(100%);
+    z-index: 2000;
+    overflow-y: auto;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.25);
+    transition: transform 280ms cubic-bezier(0.32, 0.72, 0.32, 1);
+    border-left: 1px solid rgba(253, 246, 233, 0.08);
+}
+
+.right-sidebar.open {
+    transform: translateX(0);
+}
+
+.right-sidebar-content {
+    padding: 28px 20px 20px;
+    color: var(--light);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+}
+
+.bookmarks-header h4 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+
+.bookmarks-header h4::after {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 2px;
+    margin-top: 6px;
+    background: var(--yellow);
+    border-radius: 2px;
+    opacity: 0.7;
+}
+
+/* ---------------------------------------------------------------------------
+   Search
+   --------------------------------------------------------------------------- */
+
+.bookmarks-search {
+    width: 100%;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: 8px;
+    color: var(--light);
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.bookmarks-search::placeholder {
+    color: color-mix(in srgb, var(--light) 50%, transparent);
+}
+
+.bookmarks-search:focus {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    border-color: var(--focus-ring);
+}
+
+/* ---------------------------------------------------------------------------
+   Tree
+   --------------------------------------------------------------------------- */
+
+.bookmarks-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.bookmarks-root-list {
+    gap: 6px;
+}
+
+.bookmarks-folder {
+    margin: 0;
+}
+
+.bookmarks-folder-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 8px 6px 8px;
+    background: transparent;
+    border: none;
+    color: var(--light);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    text-align: left;
+    transition: background 140ms ease;
+}
+
+.bookmarks-folder-toggle:hover {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+}
+
+.bookmarks-folder-toggle:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+.bookmarks-chevron {
+    transition: transform 160ms ease;
+    opacity: 0.7;
+}
+
+.bookmarks-chevron.is-open {
+    transform: rotate(90deg);
+}
+
+.bookmarks-folder-icon {
+    color: var(--yellow);
+    opacity: 0.85;
+}
+
+.bookmarks-folder-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bookmarks-link-item {
+    margin: 0;
+}
+
+.bookmarks-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    color: var(--light);
+    text-decoration: none;
+    font-size: 12.5px;
+    border-radius: 6px;
+    transition: background 140ms ease;
+    min-width: 0;
+}
+
+.bookmarks-link:hover {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+}
+
+.bookmarks-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+.bookmarks-favicon {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.bookmarks-favicon-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+    color: var(--light);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.bookmarks-link-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Empty / error states
+   --------------------------------------------------------------------------- */
+
+.bookmarks-empty,
+.bookmarks-error {
+    margin: 0;
+    padding: 12px;
+    font-size: 12.5px;
+    text-align: center;
+    color: color-mix(in srgb, var(--light) 60%, transparent);
+    font-style: italic;
+}
+
+.bookmarks-error {
+    color: var(--red);
+    font-style: normal;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--red) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbar
+   --------------------------------------------------------------------------- */
+
+.right-sidebar::-webkit-scrollbar,
+.right-sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.right-sidebar::-webkit-scrollbar-track,
+.right-sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb,
+.right-sidebar-content::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--light) 20%, transparent);
+    border-radius: 3px;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb:hover,
+.right-sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--yellow) 60%, transparent);
+}
+
+.right-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 20%, transparent) transparent;
+}

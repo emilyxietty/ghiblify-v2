@@ -14,40 +14,43 @@ const SearchBar: React.FC = () => {
 
   const isDark = !!searchbarSettings.darkMode;
   const darkClass = isDark ? "dark" : "";
+
+  const submit = () => {
+    const q = query.trim();
+    if (!q) return;
+    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+  };
+
   return (
     <div style={{ width, height }} className="widget-header">
       <form
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit();
+        }}
         className={`searchbar ${darkClass}`}
+        role="search"
       >
         <TextInput
-          type="text"
+          type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Google..."
-        //   className={`searchbar-input ${darkClass}`}
           mode={isDark ? "dark" : "light"}
+          aria-label="Search Google"
         />
-        <a
-          href={
-            query.trim()
-              ? `https://www.google.com/search?q=${encodeURIComponent(query)}`
-              : undefined
-          }
+        <Button
+          type="submit"
+          size="small"
+          variant={isDark ? "dark" : "light"}
+          disabled={!query.trim()}
+          className={`searchbar-search-btn ${darkClass}`}
           style={{ height }}
-          className={`searchbar-search-link ${darkClass}`}
+          aria-label="Search Google"
+          data-tooltip="Search Google"
         >
-          <Button
-            type="button"
-            size="small"
-            variant={isDark ? "dark" : "light"}
-            disabled={!query.trim()}
-            className={`searchbar-search-btn ${darkClass}`}
-            style={{ height }}
-          >
-            <SearchIcon />
-          </Button>
-        </a>
+          <SearchIcon />
+        </Button>
       </form>
     </div>
   );

@@ -105,12 +105,13 @@ export const BackgroundSettingsModal: React.FC<
     available: boolean;
     links: string[];
     disableLast?: boolean;
+    defaultOpen?: boolean;
     onUpdate: (k: string, v: boolean) => void;
   };
 
   const BackgroundListItem: React.FC<ItemProps> = React.memo(
-    ({ movieKey, title, enabled, available, links, disableLast, onUpdate }) => {
-      const [open, setOpen] = React.useState(false);
+    ({ movieKey, title, enabled, available, links, disableLast, defaultOpen, onUpdate }) => {
+      const [open, setOpen] = React.useState(defaultOpen ?? false);
       // log once per item if missing available backgrounds to help debugging
       React.useEffect(() => {
         if (!available) {
@@ -353,6 +354,7 @@ export const BackgroundSettingsModal: React.FC<
                   return acc;
                 }, 0);
 
+                let firstEnabledOpened = false;
                 return movies.map((m) => {
                   const mk = (m.key || "").toLowerCase().trim();
                   const available = availMap.get(m.key) || false;
@@ -371,6 +373,12 @@ export const BackgroundSettingsModal: React.FC<
                   const disableLast =
                     enabled && available && enabledSelectableCount <= 1;
 
+                  // Open the first enabled+available movie by default so users
+                  // see a row of images immediately without having to expand.
+                  const isFirstEnabled =
+                    enabled && available && filteredLinks.length > 0 && !firstEnabledOpened;
+                  if (isFirstEnabled) firstEnabledOpened = true;
+
                   return (
                     <BackgroundListItem
                       key={m.key}
@@ -380,6 +388,7 @@ export const BackgroundSettingsModal: React.FC<
                       available={available}
                       links={filteredLinks}
                       disableLast={disableLast}
+                      defaultOpen={isFirstEnabled}
                       onUpdate={handleUpdateSelection}
                     />
                   );

@@ -1,3 +1,5 @@
+import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
+import CloseIcon from "@mui/icons-material/Close";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite";
 import ReplayCircleFilledIcon from "@mui/icons-material/ReplayCircleFilled";
@@ -20,6 +22,12 @@ const POMODORO_IMAGES = [
 const Pomodoro: React.FC = () => {
   // State for timer input value
   const [inputValue, setInputValue] = useState<string>("");
+  // Concentration / focus mode — hides everything else and centers the
+  // pomodoro widget. Toggled via a button on the widget; Esc exits.
+  // Persisted in localStorage so it stays in sync across every open tab.
+  const [focusMode, setFocusMode] = useState<boolean>(() => {
+    return localStorage.getItem("pomodoro_focus_mode") === "true";
+  });
   // Unique tab ID for leader election
   const [tabId] = useState(() => Math.random().toString(36).slice(2));
   const [isLeader, setIsLeader] = useState(false);
@@ -360,6 +368,46 @@ const Pomodoro: React.FC = () => {
     : pomodoroOriginalSecondsState;
   const progressPercent = 100 * (1 - getCurrentSecondsLeft() / totalSeconds);
 
+  // Toggle the focus-mode body class so app-wide CSS can hide other
+   // widgets and dim the background while concentration mode is on.
+   // Persist to localStorage so other tabs pick up the change.
+  useEffect(() => {
+    if (focusMode) {
+      document.body.classList.add("pomodoro-focus");
+    } else {
+      document.body.classList.remove("pomodoro-focus");
+    }
+    try {
+      localStorage.setItem("pomodoro_focus_mode", focusMode.toString());
+    } catch {
+      /* ignore */
+    }
+    return () => {
+      document.body.classList.remove("pomodoro-focus");
+    };
+  }, [focusMode]);
+
+  // Mirror focus-mode changes from other tabs.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "pomodoro_focus_mode" && e.newValue !== null) {
+        setFocusMode(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // Esc exits focus mode
+  useEffect(() => {
+    if (!focusMode) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFocusMode(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [focusMode]);
+
   // Sync inputValue with timer when timer resets or changes
   useEffect(() => {
     if (!isRunning) {
@@ -500,25 +548,45 @@ const Pomodoro: React.FC = () => {
           <Button
             onClick={pauseTimer}
             disabled={!isRunning}
-            icon={<PauseCircleIcon />}
             variant="transparent"
-          />
+            className="pomodoro-control-btn"
+            aria-label="Pause timer"
+          >
+            <PauseCircleIcon />
+            <span>Pause</span>
+          </Button>
         ) : (
           <Button
             onClick={startTimer}
             disabled={isRunning}
-            icon={<PlayCircleFilledWhiteIcon />}
             variant="transparent"
-          />
+            className="pomodoro-control-btn"
+            aria-label="Start timer"
+          >
+            <PlayCircleFilledWhiteIcon />
+            <span>Play</span>
+          </Button>
         )}
-        {/* {!isRunning && ( */}
         <Button
           onClick={resetTimer}
-          icon={<ReplayCircleFilledIcon />}
           variant="transparent"
           disabled={isRunning}
-        />
-        {/* )} */}
+          className="pomodoro-control-btn pomodoro-control-btn-icon"
+          aria-label="Reset timer"
+          data-tooltip="Reset"
+        >
+          <ReplayCircleFilledIcon />
+        </Button>
+        <Button
+          onClick={() => setFocusMode((f) => !f)}
+          variant="transparent"
+          className="pomodoro-control-btn pomodoro-control-btn-icon pomodoro-focus-btn"
+          aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+          aria-pressed={focusMode}
+          data-tooltip={focusMode ? "Exit focus" : "Focus"}
+        >
+          {focusMode ? <CloseIcon /> : <CenterFocusStrongIcon />}
+        </Button>
       </div>
       <div className="pomodoro-progress-bar-container">
         <div

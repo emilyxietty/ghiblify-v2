@@ -7,9 +7,40 @@ import "./Widget.css";
 interface WidgetProps {
   children: ReactNode;
   storageKey: WidgetKey;
+  /** When false, the widget plays a fade-out then unmounts. */
+  visible?: boolean;
 }
 
-export const Widget: React.FC<WidgetProps> = ({ children, storageKey }) => {
+const FADE_DURATION_MS = 220;
+
+export const Widget: React.FC<WidgetProps> = ({
+  children,
+  storageKey,
+  visible = true,
+}) => {
+  // Delayed-unmount state so a hidden widget can play its fade-out before
+  // disappearing from the DOM. shouldRender follows `visible` with a
+  // FADE_DURATION_MS lag on the way down.
+  const [shouldRender, setShouldRender] = useState(visible);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setShouldRender(true);
+      setIsFadingOut(false);
+      return;
+    }
+    if (!shouldRender) return;
+    setIsFadingOut(true);
+    const t = window.setTimeout(() => {
+      setShouldRender(false);
+      setIsFadingOut(false);
+    }, FADE_DURATION_MS);
+    return () => window.clearTimeout(t);
+  }, [visible, shouldRender]);
+
+  if (!shouldRender) return null;
+
   const {
     showWidgetEdits,
     widgets,
@@ -395,7 +426,10 @@ export const Widget: React.FC<WidgetProps> = ({ children, storageKey }) => {
       ref={widgetRef}
       className={`widget ${isDragging ? "dragging" : ""} ${
         showWidgetEdits ? "edit-mode" : ""
-      } ${isResizing ? "resizing" : ""} draggable widget-align-${alignment}`}
+      } ${isResizing ? "resizing" : ""} ${
+        isFadingOut ? "fade-out" : ""
+      } draggable widget-align-${alignment}`}
+      data-widget-key={storageKey}
       style={{
         left: `${position.x}vw`,
         top: `${position.y}vh`,

@@ -7,25 +7,45 @@
     min-height: 0;
     border-radius: 8px;
     border: none;
+    /* Always use the theme's dark surface so white text stays readable. */
+    --surface-rgb: var(--dark-rgb, 31, 38, 32);
 }
 
-.searchbar.dark {
-    color: #fff;
+/* The input itself is a TextInput, which renders with .custom-input
+   (see src/components/TextInput/TextInput.css) — that's where the
+   theme-aware background lives. Nothing extra needed here. */
+
+/* Hide the browser-native clear button (the blue X on type="search")
+   and the validation tick — they don't follow the palette. We provide
+   a themed search button alongside instead. */
+.searchbar input[type="search"]::-webkit-search-cancel-button,
+.searchbar input[type="search"]::-webkit-search-decoration,
+.searchbar input[type="search"]::-webkit-search-results-button,
+.searchbar input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
 }
 
-.searchbar-input {
-    flex: 1;
-    height: 100%;
-    min-height: 0;
-    padding: 0 12px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(6px);
-    color: #222;
-    border: none;
+/* Button override — the Button component's variant CSS sets its own
+   background, so we override with the same theme surface as the input
+   plus a themed icon color. */
+.searchbar-search-btn {
+    background: rgba(var(--surface-rgb), 0.42) !important;
+    border-color: transparent !important;
+    color: var(--light) !important;
+    transition: background 160ms ease, color 160ms ease;
 }
 
-.searchbar.dark .searchbar-input {
-    background: rgba(0, 0, 0, 0.4);
-    color: #fff;
+.searchbar-search-btn svg {
+    color: var(--light);
+}
+
+.searchbar-search-btn:hover:not(:disabled) {
+    background: rgba(var(--surface-rgb), 0.7) !important;
+}
+
+.searchbar-search-btn:disabled,
+.searchbar-search-btn.btn-disabled {
+    color: var(--light-muted) !important;
 }

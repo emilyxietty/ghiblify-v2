@@ -3,30 +3,21 @@
    Theme: .ql-light / .ql-dark applied to the wrapper.
    =========================================================================== */
 
-.ql-light {
-    --ql-text: #f5f5f5;
-    --ql-text-muted: rgba(245, 245, 245, 0.7);
-    --ql-bg-hover: rgba(255, 255, 255, 0.12);
-    --ql-bg-active: rgba(255, 255, 255, 0.2);
-    --ql-border: rgba(255, 255, 255, 0.18);
-    --ql-border-strong: rgba(255, 255, 255, 0.4);
-    --ql-focus-ring: rgba(255, 255, 255, 0.85);
+/* Both QuickLinks light/dark modes now bridge their text/border vars to
+   the theme — so on light themes (Pastel/Cream/Mint/Bloom) text becomes
+   dark plum/forest/etc., on dark themes it stays cream. */
+.ql-light,
+.ql-dark {
+    --ql-text: var(--light);
+    --ql-text-muted: var(--light-muted);
+    --ql-bg-hover: color-mix(in srgb, var(--light) 12%, transparent);
+    --ql-bg-active: color-mix(in srgb, var(--light) 20%, transparent);
+    --ql-border: color-mix(in srgb, var(--light) 18%, transparent);
+    --ql-border-strong: color-mix(in srgb, var(--light) 40%, transparent);
+    --ql-focus-ring: var(--focus-ring);
     --ql-danger: #ff8a8a;
     --ql-danger-bg: rgba(255, 107, 107, 0.18);
-    --ql-success: #7be08a;
-}
-
-.ql-dark {
-    --ql-text: #1c1c1c;
-    --ql-text-muted: rgba(28, 28, 28, 0.7);
-    --ql-bg-hover: rgba(0, 0, 0, 0.08);
-    --ql-bg-active: rgba(0, 0, 0, 0.16);
-    --ql-border: rgba(0, 0, 0, 0.16);
-    --ql-border-strong: rgba(0, 0, 0, 0.4);
-    --ql-focus-ring: rgba(0, 0, 0, 0.7);
-    --ql-danger: #c62828;
-    --ql-danger-bg: rgba(198, 40, 40, 0.15);
-    --ql-success: #2e7d32;
+    --ql-success: var(--green);
 }
 
 /* Visually-hidden label for screen readers. */
@@ -46,16 +37,14 @@
    Grid mode
    --------------------------------------------------------------------------- */
 
-.quicklinksSettings-grid-wrapper.always-show {
-    background: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
 .quicklinksSettings-grid-wrapper {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 12px;
+    box-sizing: border-box;
+    /* Always dark surface so white tile text reads, regardless of mode. */
+    --surface-rgb: var(--dark-rgb, 31, 38, 32);
 }
 
 .quicklinksSettings-grid-list {
@@ -109,11 +98,14 @@
     color: var(--ql-text);
     text-decoration: none;
     border-radius: 10px;
+    /* Theme-tinted, slider-controlled with 0.6 floor so each tile is
+       visible without touching the slider. */
+    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.42);
     transition: background 120ms ease;
 }
 
 .ql-grid-link:hover {
-    background: var(--ql-bg-hover);
+    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.62);
     backdrop-filter: blur(6px);
 }
 
@@ -201,7 +193,7 @@
 .ql-delete-overlay:hover,
 .ql-delete-overlay:focus-visible {
     background: rgba(0, 0, 0, 0.78);
-    color: #fff;
+    color: var(--light);
     outline: none;
 }
 
@@ -225,7 +217,7 @@
     padding: 7px 14px;
     border-radius: 6px;
     background: rgba(99, 99, 99, 0.55);
-    color: #fff;
+    color: var(--light);
     font-size: 13px;
     font-weight: 500;
     border: 1px solid transparent;
@@ -270,7 +262,7 @@
 }
 
 .quicklinksSettings-title {
-    color: #fff;
+    color: var(--light);
     font-size: 16px;
     font-weight: 600;
     padding: 8px 14px;
@@ -295,8 +287,11 @@
 
 .quicklinksSettings-dropdown {
     min-width: min(420px, 90vw);
-    background: rgba(20, 20, 20, 0.95);
-    color: #fff;
+    /* Floating popover: surface is dark, opacity tracks slider but won't fall
+       below 0.85 — a transparent floating dialog isn't readable. */
+    --surface-rgb: var(--dark-rgb, 31, 38, 32);
+    background: rgba(var(--surface-rgb), 0.92);
+    color: var(--light);
     border-radius: 10px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
     padding: 14px;
@@ -332,8 +327,12 @@
     cursor: grabbing;
 }
 
+.quicklinksSettings-item {
+    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.32);
+}
+
 .quicklinksSettings-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.55);
 }
 
 .quicklinksSettings-item.dragging {
@@ -361,7 +360,7 @@
     gap: 2px;
     border: none;
     background: transparent;
-    color: #fff;
+    color: var(--light);
     text-align: left;
     padding: 8px 10px;
     border-radius: 6px;

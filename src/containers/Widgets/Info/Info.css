@@ -8,14 +8,17 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    /* Intentionally constant — Info stays white regardless of theme so
+       it always reads against the photo background, matching Time/Date. */
     color: white;
-    /* cursor: pointer; */
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.55),
+        0 2px 6px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     transition: background-color 0.3s ease;
     width: min(80vw, 700px);
     text-align: center;
     user-select: none;
-
 }
 
 .info-item {
