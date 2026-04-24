@@ -1,18 +1,167 @@
+/* ===========================================================================
+   Theme system
+   ---------------------------------------------------------------------------
+   `:root` carries the *base* values that every theme inherits (text, focus
+   ring, sidebar surfaces, etc).
+   `.theme-<name>` overrides the palette-specific vars: --dark, --cream,
+   --red, --blue, --yellow, --green, --rose, --purple-dark plus the
+   --dark-rgb / --cream-rgb triples used by widget opacity.
+   `.high-contrast` is an orthogonal modifier that strengthens text +
+   borders + focus and pushes widget opacity to a readable minimum.
+   =========================================================================== */
+
 :root {
-    /* Spirited Medium Theme */
-    --dark: #1f2326;
-    --red: #c85a54;
-    --blue: #5ba8c9;
-    --yellow: #f4e27c;
-    --light: rgba(236, 239, 241, 0.6);
-    --blue-muted: rgba(108, 123, 131, 0.6);
-    --light-muted: rgba(201, 204, 207, 0.6);
-    --dark-muted: rgba(50, 54, 58, 0.6);
-    --disabled-dark: rgba(85, 91, 97, 0.6);
-    --disabled-light: rgba(163, 165, 167, 0.6);
-    --purple-dark: #465994;
-    --red-dark: #ac3e50;
+    /* Text — same across themes (themes can override if they want) */
+    --light: rgba(240, 227, 196, 0.95);
+    --light-muted: rgba(240, 227, 196, 0.6);
+
+    /* Disabled */
+    --disabled-dark: rgba(70, 75, 65, 0.55);
+    --disabled-light: rgba(190, 180, 155, 0.55);
+
+    /* Sidebar surfaces */
+    --sidebar-bg: rgba(31, 38, 32, 0.86);
+    --sidebar-card: rgba(20, 26, 22, 0.55);
+
+    /* Focus ring */
+    --focus-ring: rgba(233, 179, 48, 0.9);
+
+    /* Widget opacity — set imperatively from AppContext via inline style */
+    --widget-bg-alpha: 0;
+
+    /* High-contrast overridable params */
+    --focus-ring-width: 2px;
+    --widget-border-alpha: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   Theme: Ghibli rich (default)
+   --------------------------------------------------------------------------- */
+.theme-ghibli {
+    --dark: #1f2620;
+    --dark-rgb: 31, 38, 32;
+    --dark-muted: rgba(31, 38, 32, 0.7);
+    --cream: #f0e3c4;
+    --cream-rgb: 240, 227, 196;
+    --red: #d54a3e;
+    --red-dark: #9c2e25;
+    --blue: #3a7ba8;
+    --blue-muted: rgba(58, 123, 168, 0.6);
+    --yellow: #e9b330;
+    --green: #5e8a4f;
+    --rose: #d68d8a;
+    --purple-dark: #5a4374;
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Spirited Away — bathhouse crimson, gold, ink
+   --------------------------------------------------------------------------- */
+.theme-spirited {
+    --dark: #1a1612;
+    --dark-rgb: 26, 22, 18;
+    --dark-muted: rgba(26, 22, 18, 0.7);
+    --cream: #f5e8c0;
+    --cream-rgb: 245, 232, 192;
+    --red: #c8342e;
+    --red-dark: #8a1f1c;
+    --blue: #2d5a6e;
+    --blue-muted: rgba(45, 90, 110, 0.6);
+    --yellow: #d4a338;
+    --green: #3d6b5a;
+    --rose: #b85d6a;
+    --purple-dark: #4a2e5a;
+    --sidebar-bg: rgba(26, 22, 18, 0.9);
+    --sidebar-card: rgba(15, 13, 10, 0.6);
+    --focus-ring: rgba(212, 163, 56, 0.95);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Howl's Moving Castle — lavender, sage, dusty rose
+   --------------------------------------------------------------------------- */
+.theme-howls {
+    --dark: #2a2530;
+    --dark-rgb: 42, 37, 48;
+    --dark-muted: rgba(42, 37, 48, 0.7);
+    --cream: #f5ebd9;
+    --cream-rgb: 245, 235, 217;
+    --red: #c47876;
+    --red-dark: #9c5754;
+    --blue: #8a7ab8;
+    --blue-muted: rgba(138, 122, 184, 0.6);
+    --yellow: #e6c668;
+    --green: #7a9171;
+    --rose: #d9a4ad;
+    --purple-dark: #6a4d8a;
+    --sidebar-bg: rgba(42, 37, 48, 0.86);
+    --sidebar-card: rgba(28, 24, 34, 0.55);
+    --focus-ring: rgba(230, 198, 104, 0.9);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Totoro — forest greens, warm earth, sky
+   --------------------------------------------------------------------------- */
+.theme-totoro {
+    --dark: #1f2818;
+    --dark-rgb: 31, 40, 24;
+    --dark-muted: rgba(31, 40, 24, 0.7);
+    --cream: #ede0c4;
+    --cream-rgb: 237, 224, 196;
+    --red: #b0593a;
+    --red-dark: #7c3d27;
+    --blue: #7ba8c4;
+    --blue-muted: rgba(123, 168, 196, 0.6);
+    --yellow: #e9c651;
+    --green: #4a7a3d;
+    --rose: #c89089;
+    --purple-dark: #4f3d6a;
+    --sidebar-bg: rgba(31, 40, 24, 0.86);
+    --sidebar-card: rgba(20, 28, 16, 0.55);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Ponyo — coral, ocean, seafoam
+   --------------------------------------------------------------------------- */
+.theme-ponyo {
+    --dark: #1a2530;
+    --dark-rgb: 26, 37, 48;
+    --dark-muted: rgba(26, 37, 48, 0.7);
+    --cream: #f5e9da;
+    --cream-rgb: 245, 233, 218;
+    --red: #e07560;
+    --red-dark: #b04a3a;
+    --blue: #2e7ba8;
+    --blue-muted: rgba(46, 123, 168, 0.6);
+    --yellow: #f0c870;
+    --green: #6da894;
+    --rose: #f0a89c;
+    --purple-dark: #4a5a8a;
+    --sidebar-bg: rgba(26, 37, 48, 0.86);
+    --sidebar-card: rgba(15, 24, 32, 0.55);
+    --focus-ring: rgba(240, 200, 112, 0.9);
+}
+
+/* ---------------------------------------------------------------------------
+   High-contrast modifier — orthogonal to theme.
+   Strengthens text + borders + focus, forces a minimum widget backing.
+   --------------------------------------------------------------------------- */
+.high-contrast {
+    --light: rgba(255, 250, 235, 1);
+    --light-muted: rgba(255, 250, 235, 0.85);
+    --focus-ring-width: 3px;
+    --widget-border-alpha: 0.6;
+}
+
+.high-contrast .widget {
+    /* Force a readable backing regardless of the opacity slider */
+    --widget-bg-alpha-effective: max(0.85, var(--widget-bg-alpha));
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.85) !important;
+    border-color: rgba(var(--cream-rgb, 240, 227, 196), 0.6) !important;
+    border-width: 1.5px !important;
+}
+
+/* ===========================================================================
+   App shell
+   =========================================================================== */
 
 body {
     margin: 0;

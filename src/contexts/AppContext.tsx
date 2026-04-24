@@ -3,19 +3,33 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
-  AvatarSettings,
-  DateSettings,
-  InfoFields,
-  InfoSettings,
-  QuicklinksSettings,
-  SearchBarSettings,
-  TimeSettings,
-  TodoSettings,
+  WidgetKey,
+  WidgetPosition,
+  WidgetSettingsMap,
   WIDGET_CONFIGS,
+  WIDGET_KEYS,
 } from "../config/widgetConfig";
+
+const STORAGE_KEY = "ghiblify_widgets";
+
+export const THEME_NAMES = ["ghibli", "spirited", "howls", "totoro", "ponyo"] as const;
+export type ThemeName = (typeof THEME_NAMES)[number];
+
+export interface AppearanceSettings {
+  theme: ThemeName;
+  widgetOpacity: number; // 0–100
+  highContrast: boolean;
+}
+
+const DEFAULT_APPEARANCE: AppearanceSettings = {
+  theme: "ghibli",
+  widgetOpacity: 0,
+  highContrast: false,
+};
 
 export interface BackgroundFilters {
   blur: number;
@@ -24,626 +38,383 @@ export interface BackgroundFilters {
   saturation: number;
 }
 
-interface WidgetVisibility {
-  time: boolean;
-  date: boolean;
-  info: boolean;
-  todo: boolean;
-  avatar: boolean;
-  quicklinks: boolean;
-  searchbar: boolean;
-  pomodoro: boolean;
-}
+export type WidgetEntry<K extends WidgetKey> = {
+  visible: boolean;
+  position: WidgetPosition;
+  settings: WidgetSettingsMap[K];
+};
 
-// Widget settings interfaces moved to widgetConfig.ts
+export type WidgetsState = { [K in WidgetKey]: WidgetEntry<K> };
 
 interface AppContextType {
-  //   focusModeOn: boolean;
-  pomodoroSettings: import("../config/widgetConfig").PomodoroSettings;
-  //   updatePomodoroSettings: (
-  //     settings: Partial<import("../config/widgetConfig").PomodoroSettings>
-  //   ) => void;
+  // global UI
   isDragging: boolean;
-  setIsDragging: (dragging: boolean) => void;
+  setIsDragging: (b: boolean) => void;
   showWidgetEdits: boolean;
   toggleEditMode: () => void;
-  backgroundFilters: BackgroundFilters;
-  updateBackgroundFilters: (filters: Partial<BackgroundFilters>) => void;
-  widgetVisibility: WidgetVisibility;
-  toggleWidgetVisibility: (widget: keyof WidgetVisibility) => void;
-  //   setFocusModeOn: (hidden: boolean) => void;
 
-  infoSettings: InfoSettings;
-  updateInfoSettings: (
-    settings: Partial<InfoSettings>,
-    options?: { persist?: boolean }
-  ) => void;
-  timeSettings: TimeSettings;
-  updateTimeSettings: (
-    settings: Partial<TimeSettings>,
-    options?: { persist?: boolean }
-  ) => void;
-  dateSettings: DateSettings;
-  avatarSettings: AvatarSettings;
-  todoSettings: TodoSettings;
-  todoCollapsed: boolean;
-  updateTodoCollapsed: (collapsed: boolean) => void;
-  widgetPositions: Record<string, { x: number; y: number }>;
-  updateWidgetPosition: (
-    storageKey: string,
-    pos: { x: number; y: number }
-  ) => void;
-  updateDateSettings: (
-    settings: Partial<DateSettings>,
-    options?: { persist?: boolean }
-  ) => void;
-  updateAvatarSettings: (
-    settings: Partial<AvatarSettings>,
-    options?: { persist?: boolean }
-  ) => void;
-  updateTodoSettings: (
-    settings: Partial<TodoSettings>,
-    options?: { persist?: boolean }
-  ) => void;
+  // background
+  backgroundFilters: BackgroundFilters;
+  updateBackgroundFilters: (f: Partial<BackgroundFilters>) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
-  quicklinksSettings: QuicklinksSettings;
-  updateQuicklinksSettings: (settings: Partial<QuicklinksSettings>) => void;
-  searchbarSettings: SearchBarSettings;
-  updateSearchbarSettings: (settings: Partial<SearchBarSettings>) => void;
+
+  // appearance (theme, widget opacity, contrast)
+  appearance: AppearanceSettings;
+  updateAppearance: (patch: Partial<AppearanceSettings>) => void;
+
+  // widgets — single source of truth
+  widgets: WidgetsState;
+  toggleWidgetVisibility: (key: WidgetKey) => void;
+  updateWidgetPosition: (key: WidgetKey, pos: WidgetPosition) => void;
+  updateWidgetSettings: <K extends WidgetKey>(
+    key: K,
+    patch: Partial<WidgetSettingsMap[K]>
+  ) => void;
+
+  resetAllWidgets: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const buildDefaultWidgets = (): WidgetsState => {
+  const out = {} as WidgetsState;
+  for (const key of WIDGET_KEYS) {
+    const cfg = WIDGET_CONFIGS[key];
+    (out as Record<WidgetKey, unknown>)[key] = {
+      visible: true,
+      position: { ...cfg.position },
+      settings: structuredClone(cfg.settings),
+    };
+  }
+  return out;
+};
+
+const positionsEqual = (a: WidgetPosition, b: WidgetPosition) =>
+  a.x === b.x && a.y === b.y;
+
+const diffSettings = <K extends WidgetKey>(
+  current: WidgetSettingsMap[K],
+  defaults: WidgetSettingsMap[K]
+): Partial<WidgetSettingsMap[K]> => {
+  const out: Record<string, unknown> = {};
+  for (const k of Object.keys(current) as Array<keyof WidgetSettingsMap[K]>) {
+    if (JSON.stringify(current[k]) !== JSON.stringify(defaults[k])) {
+      out[k as string] = current[k];
+    }
+  }
+  return out as Partial<WidgetSettingsMap[K]>;
+};
+
+const persistWidgets = (state: WidgetsState) => {
+  const minimal: Record<string, unknown> = {};
+  for (const key of WIDGET_KEYS) {
+    const cfg = WIDGET_CONFIGS[key];
+    const entry = state[key];
+    const out: Record<string, unknown> = {};
+    if (entry.visible !== true) out.visible = entry.visible;
+    if (!positionsEqual(entry.position, cfg.position))
+      out.position = entry.position;
+    const settingsDiff = diffSettings(entry.settings, cfg.settings);
+    if (Object.keys(settingsDiff).length > 0) out.settings = settingsDiff;
+    if (Object.keys(out).length > 0) minimal[key] = out;
+  }
+  if (Object.keys(minimal).length === 0) {
+    localStorage.removeItem(STORAGE_KEY);
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+  }
+};
+
+// Read a localStorage int, or fall back. Empty string → fallback.
+const readInt = (key: string, fallback: number): number => {
+  const v = localStorage.getItem(key);
+  if (v == null || v === "") return fallback;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const readBool = (key: string, fallback: boolean): boolean => {
+  const v = localStorage.getItem(key);
+  if (v == null) return fallback;
+  return v === "true";
+};
+
+const readJSON = <T,>(key: string, fallback: T): T => {
+  const v = localStorage.getItem(key);
+  if (v == null) return fallback;
+  try {
+    return JSON.parse(v) as T;
+  } catch {
+    return fallback;
+  }
+};
+
+// One-time migration from the legacy storage layout (per-key + widgets_state
+// blob) to the new ghiblify_widgets blob. After running once, the legacy
+// keys are deleted.
+const migrateLegacy = (defaults: WidgetsState): WidgetsState => {
+  const state = defaults;
+  const legacyBlob = readJSON<Record<string, any> | null>("widgets_state", null);
+
+  for (const key of WIDGET_KEYS) {
+    const entry = state[key];
+    const blobEntry = legacyBlob?.[key];
+
+    // visibility
+    const switchVal = localStorage.getItem(`${key}_switch`);
+    if (blobEntry?.visible !== undefined) entry.visible = !!blobEntry.visible;
+    else if (switchVal !== null) entry.visible = switchVal !== "off";
+
+    // position
+    if (blobEntry?.position?.x != null && blobEntry?.position?.y != null) {
+      entry.position = blobEntry.position;
+    } else {
+      const lx = localStorage.getItem(`${key}_x`);
+      const ly = localStorage.getItem(`${key}_y`);
+      if (lx !== null && ly !== null) {
+        entry.position = { x: parseFloat(lx), y: parseFloat(ly) };
+      }
+    }
+  }
+
+  // per-widget settings
+  const time = state.time.settings;
+  time.fontSize = readInt("time_fontSize", time.fontSize);
+  time.is24Hour = readBool("time_is24Hour", time.is24Hour);
+
+  const date = state.date.settings;
+  date.fontSize = readInt("date_fontSize", date.fontSize);
+
+  const info = state.info.settings;
+  info.fontSize = readInt("info_fontSize", info.fontSize);
+  const savedFields = readJSON<string[] | null>("info_selectedFields", null);
+  if (savedFields) {
+    info.infoFields = {
+      japaneseTitle: savedFields.includes("japaneseTitle"),
+      title: savedFields.includes("title"),
+      year: savedFields.includes("year"),
+      movieLength: savedFields.includes("movieLength"),
+      quote: savedFields.includes("quote"),
+    };
+  }
+
+  const todo = state.todo.settings;
+  todo.width = readInt("todo_width", todo.width);
+  todo.height = readInt("todo_height", todo.height);
+  todo.darkMode = readBool("todo_darkMode", todo.darkMode);
+  todo.collapsed = readBool("todo_collapsed", todo.collapsed);
+
+  const avatar = state.avatar.settings;
+  avatar.selectedAvatar =
+    localStorage.getItem("avatar_selected") || avatar.selectedAvatar;
+  avatar.size = readInt("avatar_size", avatar.size);
+
+  const ql = state.quicklinks.settings;
+  ql.width = readInt("quicklinks_width", ql.width);
+  ql.height = readInt("quicklinks_height", ql.height);
+  ql.darkMode = readBool("quicklinks_darkMode", ql.darkMode);
+  if (localStorage.getItem("quicklinks_grid") !== null) {
+    ql.gridMode = readBool("quicklinks_grid", ql.gridMode);
+  }
+  ql.links = readJSON("quick_links", ql.links);
+
+  const sb = state.searchbar.settings;
+  sb.width = readInt("searchbar_width", sb.width);
+  sb.height = readInt("searchbar_height", sb.height);
+  sb.darkMode = readBool("searchbar_darkMode", sb.darkMode);
+
+  return state;
+};
+
+const LEGACY_KEYS = [
+  "widgets_state",
+  "info_selectedFields",
+  "info_fontSize",
+  "time_fontSize",
+  "time_is24Hour",
+  "date_fontSize",
+  "avatar_selected",
+  "avatar_size",
+  "todo_width",
+  "todo_height",
+  "todo_darkMode",
+  "todo_collapsed",
+  "quick_links",
+  "quicklinks_grid",
+  "quicklinks_darkMode",
+  "quicklinks_width",
+  "quicklinks_height",
+  "searchbar_width",
+  "searchbar_height",
+  "searchbar_darkMode",
+  "pomodoro_settings",
+];
+
+const clearLegacyKeys = () => {
+  for (const key of WIDGET_KEYS) {
+    localStorage.removeItem(`${key}_x`);
+    localStorage.removeItem(`${key}_y`);
+    localStorage.removeItem(`${key}_switch`);
+  }
+  for (const k of LEGACY_KEYS) localStorage.removeItem(k);
+};
+
+const loadInitialWidgets = (): WidgetsState => {
+  const defaults = buildDefaultWidgets();
+
+  // Modern blob — apply diffs onto defaults
+  const blob = readJSON<Record<string, any> | null>(STORAGE_KEY, null);
+  if (blob) {
+    for (const key of WIDGET_KEYS) {
+      const entry = defaults[key];
+      const stored = blob[key];
+      if (!stored) continue;
+      if (stored.visible !== undefined) entry.visible = !!stored.visible;
+      if (stored.position) entry.position = stored.position;
+      if (stored.settings)
+        entry.settings = { ...entry.settings, ...stored.settings };
+    }
+    return defaults;
+  }
+
+  // No modern blob — migrate from legacy (no-op if no legacy keys exist)
+  const migrated = migrateLegacy(defaults);
+  persistWidgets(migrated);
+  clearLegacyKeys();
+  return migrated;
+};
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  // Centralized drag state for all widgets
   const [isDragging, setIsDragging] = useState(false);
   const [showWidgetEdits, setShowWidgetEdits] = useState(false);
+
   const [backgroundFilters, setBackgroundFilters] = useState<BackgroundFilters>(
-    () => {
-      const saved = localStorage.getItem("background_filters");
-      return saved
-        ? JSON.parse(saved)
-        : { blur: 0, brightness: 100, saturation: 100 };
-    }
+    () =>
+      readJSON<BackgroundFilters>("background_filters", {
+        blur: 0,
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+      })
   );
-  const [widgetVisibility, setWidgetVisibility] = useState<WidgetVisibility>(
-    () => {
-      const timeVisible = localStorage.getItem("time_switch") !== "off";
-      const dateVisible = localStorage.getItem("date_switch") !== "off";
-      const infoVisible = localStorage.getItem("info_switch") !== "off";
-      const todoVisible = localStorage.getItem("todo_switch") !== "off";
-      const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
-      const quicklinksVisible =
-        localStorage.getItem("quicklinks_switch") !== "off";
-      const searchbarVisible =
-        localStorage.getItem("searchbar_switch") !== "off";
-      const pomodoroVisible = localStorage.getItem("pomodoro_switch") !== "off";
-      return {
-        time: timeVisible,
-        date: dateVisible,
-        info: infoVisible,
-        todo: todoVisible,
-        avatar: avatarVisible,
-        quicklinks: quicklinksVisible,
-        searchbar: searchbarVisible,
-        pomodoro: pomodoroVisible,
-      };
-    }
-  );
-  // Pomodoro widget settings
-  const [pomodoroSettings, setPomodoroSettings] = useState<
-    import("../config/widgetConfig").PomodoroSettings
-  >(() => {
-    const saved = localStorage.getItem("pomodoro_settings");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          duration: 1500,
-          breakDuration: 300,
-          isActive: false,
-          position: { x: 50, y: 60 },
-        };
-  });
-
-  //   // Hide all widgets except Pomodoro when timer is active
-  //   const [focusModeOn, setFocusModeOnState] = useState(false);
-
-  //   // Provide setFocusModeOn to context consumers
-  //   const setFocusModeOn = (hidden: boolean) => {
-  //     setFocusModeOnState(hidden);
-  //   };
-
-  //   useEffect(() => {
-  //     if (focusModeOn) {
-  //       setWidgetVisibility({
-  //         time: false,
-  //         date: false,
-  //         info: false,
-  //         todo: false,
-  //         avatar: false,
-  //         quicklinks: false,
-  //         searchbar: false,
-  //         pomodoro: true,
-  //       });
-  //     } else {
-  //       const timeVisible = localStorage.getItem("time_switch") !== "off";
-  //       const dateVisible = localStorage.getItem("date_switch") !== "off";
-  //       const infoVisible = localStorage.getItem("info_switch") !== "off";
-  //       const todoVisible = localStorage.getItem("todo_switch") !== "off";
-  //       const avatarVisible = localStorage.getItem("avatar_switch") !== "off";
-  //       const quicklinksVisible =
-  //         localStorage.getItem("quicklinks_switch") !== "off";
-  //       const searchbarVisible =
-  //         localStorage.getItem("searchbar_switch") !== "off";
-  //       const pomodoroVisible = localStorage.getItem("pomodoro_switch") !== "off";
-  //       setWidgetVisibility({
-  //         time: timeVisible,
-  //         date: dateVisible,
-  //         info: infoVisible,
-  //         todo: todoVisible,
-  //         avatar: avatarVisible,
-  //         quicklinks: quicklinksVisible,
-  //         searchbar: searchbarVisible,
-  //         pomodoro: pomodoroVisible,
-  //       });
-  //     }
-  //   }, [focusModeOn]);
-
-  //   const updatePomodoroSettings = (
-  //     settings: Partial<import("../config/widgetConfig").PomodoroSettings>
-  //   ) => {
-  //     setPomodoroSettings((prev) => {
-  //       const next = { ...prev, ...settings };
-  //       localStorage.setItem("pomodoro_settings", JSON.stringify(next));
-  //       return next;
-  //     });
-  //   };
-
-  const [infoSettings, setInfoSettings] = useState<InfoSettings>(() => {
-    // Use WIDGET_CONFIGS.info.defaults as fallback
-    const savedFields = localStorage.getItem("info_selectedFields");
-    const selectedFields = savedFields
-      ? JSON.parse(savedFields)
-      : Object.keys(WIDGET_CONFIGS.info.defaults.infoFields);
-    const infoFields: InfoFields = {
-      japaneseTitle: selectedFields.includes("japaneseTitle"),
-      title: selectedFields.includes("title"),
-      year: selectedFields.includes("year"),
-      movieLength: selectedFields.includes("movieLength"),
-      quote: selectedFields.includes("quote"),
-    };
-    const savedFontSize = localStorage.getItem("info_fontSize");
-    const fontSize = savedFontSize
-      ? parseInt(savedFontSize)
-      : WIDGET_CONFIGS.info.defaults.fontSize;
-    const position = WIDGET_CONFIGS.info.defaults.position;
-    return { infoFields, fontSize, position };
-  });
-  const [timeSettings, setTimeSettings] = useState<TimeSettings>(() => {
-    const savedFontSize = localStorage.getItem("time_fontSize");
-    const fontSize = savedFontSize
-      ? parseInt(savedFontSize)
-      : WIDGET_CONFIGS.time.defaults.fontSize;
-    const is24Hour =
-      localStorage.getItem("time_is24Hour") === "true"
-        ? true
-        : WIDGET_CONFIGS.time.defaults.is24Hour;
-    const position = WIDGET_CONFIGS.time.defaults.position;
-    return { fontSize, is24Hour, position };
-  });
-  const [dateSettings, setDateSettings] = useState<DateSettings>(() => {
-    const savedFontSize = localStorage.getItem("date_fontSize");
-    const fontSize = savedFontSize
-      ? parseInt(savedFontSize)
-      : WIDGET_CONFIGS.date.defaults.fontSize;
-    const position = WIDGET_CONFIGS.date.defaults.position;
-    return { fontSize, position };
-  });
-  const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>(() => {
-    const selected =
-      localStorage.getItem("avatar_selected") ||
-      WIDGET_CONFIGS.avatar.defaults.selectedAvatar;
-    const size = parseInt(
-      localStorage.getItem("avatar_size") ||
-        WIDGET_CONFIGS.avatar.defaults.size.toString()
-    );
-    const position = WIDGET_CONFIGS.avatar.defaults.position;
-    return { selectedAvatar: selected, size, position };
-  });
-  const [todoSettings, setTodoSettings] = useState<TodoSettings>(() => {
-    const width = parseInt(
-      localStorage.getItem("todo_width") ||
-        WIDGET_CONFIGS.todo.defaults.width.toString()
-    );
-    const height = parseInt(
-      localStorage.getItem("todo_height") ||
-        WIDGET_CONFIGS.todo.defaults.height.toString()
-    );
-    const darkMode =
-      localStorage.getItem("todo_darkMode") === "true"
-        ? true
-        : WIDGET_CONFIGS.todo.defaults.darkMode;
-    const position = WIDGET_CONFIGS.todo.defaults.position;
-    return { width, height, darkMode, position };
-  });
-
-  const [quicklinksSettings, setQuicklinksSettings] =
-    useState<QuicklinksSettings>(() => {
-      const width = parseInt(
-        localStorage.getItem("quicklinks_width") ||
-          WIDGET_CONFIGS.quicklinks.defaults.width.toString()
-      );
-      const height = parseInt(
-        localStorage.getItem("quicklinks_height") ||
-          WIDGET_CONFIGS.quicklinks.defaults.height.toString()
-      );
-      const links = JSON.parse(localStorage.getItem("quick_links") || "[]");
-      const gridMode =
-        localStorage.getItem("quicklinks_grid") !== null
-          ? localStorage.getItem("quicklinks_grid") === "true"
-          : WIDGET_CONFIGS.quicklinks.defaults.gridMode;
-      const darkMode =
-        localStorage.getItem("quicklinks_darkMode") === "true"
-          ? true
-          : WIDGET_CONFIGS.quicklinks.defaults.darkMode;
-      const position = WIDGET_CONFIGS.quicklinks.defaults.position;
-      return { width, height, links, gridMode, darkMode, position };
-    });
-  const [searchbarSettings, setSearchbarSettings] = useState<SearchBarSettings>(
-    () => {
-      const width = parseInt(
-        localStorage.getItem("searchbar_width") ||
-          WIDGET_CONFIGS.searchbar.defaults.width.toString()
-      );
-      // Provide fallback if height is undefined
-      const defaultHeight = WIDGET_CONFIGS.searchbar.defaults.height ?? 40;
-      const height = parseInt(
-        localStorage.getItem("searchbar_height") || defaultHeight.toString()
-      );
-      const darkMode =
-        localStorage.getItem("searchbar_darkMode") === "true"
-          ? true
-          : WIDGET_CONFIGS.searchbar.defaults.darkMode;
-      const position = WIDGET_CONFIGS.searchbar.defaults.position;
-      return { width, height, darkMode, position };
-    }
-  );
-
-  const [widgetPositions, setWidgetPositions] = useState<
-    Record<string, { x: number; y: number }>
-  >(() => {
-    const positions: Record<string, { x: number; y: number }> = {};
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-        if (key.endsWith("_x")) {
-          const base = key.slice(0, -2);
-          const xRaw = localStorage.getItem(key);
-          const yRaw = localStorage.getItem(`${base}_y`);
-          const x = xRaw ? parseFloat(xRaw) : NaN;
-          const y = yRaw ? parseFloat(yRaw) : NaN;
-          if (!isNaN(x) && !isNaN(y)) {
-            positions[base] = { x, y };
-          }
-        }
-      }
-    } catch (err) {
-      console.log(
-        "AppContext: error reading widget positions from localStorage",
-        err
-      );
-    }
-    return positions;
-  });
-
-  const updateWidgetPosition = (
-    storageKey: string,
-    pos: { x: number; y: number }
-  ) => {
-    setWidgetPositions((prev) => ({ ...prev, [storageKey]: pos }));
-    try {
-      localStorage.setItem(`${storageKey}_x`, pos.x.toString());
-      localStorage.setItem(`${storageKey}_y`, pos.y.toString());
-      console.log("AppContext: persisted position", storageKey, pos);
-    } catch (err) {
-      console.log("AppContext: failed to persist position", storageKey, err);
-    }
-  };
-
-  // persisted collapsed state for the todo widget (so its open/collapsed
-  // state survives page reloads and is globally accessible)
-  const [todoCollapsed, setTodoCollapsed] = useState<boolean>(() => {
-    return localStorage.getItem("todo_collapsed") === "true";
-  });
-
-  useEffect(() => {
-    console.log("[AppContext] todo_collapsed state changed:", todoCollapsed);
-  }, [todoCollapsed]);
-
-  //   useEffect(() => {
-  //     setFocusModeOn(widgetVisibility.pomodoro && pomodoroSettings.isActive);
-  //   }, [widgetVisibility.pomodoro, pomodoroSettings.isActive]);
-
-  const updateTodoCollapsed = (collapsed: boolean) => {
-    setTodoCollapsed(collapsed);
-    try {
-      localStorage.setItem("todo_collapsed", collapsed.toString());
-      console.log("AppContext: persisted todo_collapsed", collapsed);
-    } catch (err) {
-      console.log("AppContext: failed to persist todo_collapsed", err);
-    }
-  };
 
   const [backgroundSelection, setBackgroundSelection] = useState<
     Record<string, boolean>
-  >(() => {
-    try {
-      const saved = localStorage.getItem("background_selection");
-      return saved ? JSON.parse(saved) : {};
-    } catch (err) {
-      console.log("AppContext: failed to read background_selection", err);
-      return {};
-    }
+  >(() => readJSON<Record<string, boolean>>("background_selection", {}));
+
+  const [appearance, setAppearance] = useState<AppearanceSettings>(() => {
+    const saved = readJSON<Partial<AppearanceSettings>>("ghiblify_appearance", {});
+    return { ...DEFAULT_APPEARANCE, ...saved };
   });
+
+  // Apply appearance to document root: theme class, contrast class, opacity var.
+  useEffect(() => {
+    const root = document.documentElement;
+    THEME_NAMES.forEach((t) => root.classList.remove(`theme-${t}`));
+    root.classList.add(`theme-${appearance.theme}`);
+    root.classList.toggle("high-contrast", appearance.highContrast);
+    root.style.setProperty(
+      "--widget-bg-alpha",
+      String(appearance.widgetOpacity / 100)
+    );
+  }, [appearance]);
+
+  const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);
+
+  // Persist on every widgets change. Skip the very first render so we don't
+  // overwrite the value we just loaded.
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    persistWidgets(widgets);
+  }, [widgets]);
+
+  const toggleEditMode = () => {
+    setShowWidgetEdits((prev) => !prev);
+    setIsDragging(false);
+  };
+
+  const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
+    setBackgroundFilters((prev) => {
+      const next = { ...prev, ...filters };
+      localStorage.setItem("background_filters", JSON.stringify(next));
+      return next;
+    });
+  };
 
   const updateBackgroundSelection = (movieKey: string, value: boolean) => {
     setBackgroundSelection((prev) => {
       const next = { ...prev, [movieKey]: value };
-      try {
-        localStorage.setItem("background_selection", JSON.stringify(next));
-        console.log("AppContext: persisted background_selection", next);
-      } catch (err) {
-        console.log("AppContext: failed to persist background_selection", err);
-      }
+      localStorage.setItem("background_selection", JSON.stringify(next));
       return next;
     });
   };
 
-  const toggleEditMode = () => {
-    setShowWidgetEdits((prev) => !prev);
-    setIsDragging(false); // Always reset drag state on edit mode toggle
-  };
-
-  const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
-    setBackgroundFilters((prev) => ({ ...prev, ...filters }));
-    const newFilters = { ...backgroundFilters, ...filters };
-    localStorage.setItem("background_filters", JSON.stringify(newFilters));
-    console.log("AppContext: updateBackgroundFilters", newFilters);
-  };
-
-  const toggleWidgetVisibility = (widget: keyof WidgetVisibility) => {
-    setWidgetVisibility((prev) => {
-      const newVisibility = {
-        ...prev,
-        [widget]: !prev[widget],
-      };
-      try {
-        const key = `${String(widget).toLowerCase()}_switch`;
-        localStorage.setItem(key, newVisibility[widget] ? "on" : "off");
-      } catch (err) {
-        console.warn("AppContext: failed to persist widget visibility", err);
-      }
-      console.log(
-        "AppContext: toggleWidgetVisibility",
-        widget,
-        newVisibility[widget]
-      );
-      return newVisibility;
+  const updateAppearance = (patch: Partial<AppearanceSettings>) => {
+    setAppearance((prev) => {
+      const next = { ...prev, ...patch };
+      localStorage.setItem("ghiblify_appearance", JSON.stringify(next));
+      return next;
     });
   };
-  const updateInfoSettings = (
-    settings: Partial<InfoSettings>,
-    options?: { persist?: boolean }
+
+  const toggleWidgetVisibility = (key: WidgetKey) => {
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], visible: !prev[key].visible },
+    }));
+  };
+
+  const updateWidgetPosition = (key: WidgetKey, pos: WidgetPosition) => {
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], position: pos },
+    }));
+  };
+
+  const updateWidgetSettings = <K extends WidgetKey>(
+    key: K,
+    patch: Partial<WidgetSettingsMap[K]>
   ) => {
-    console.log("AppContext: updateInfoSettings called", settings);
-    setInfoSettings((prev) => {
-      const next = { ...prev, ...settings };
-      if (settings.infoFields) {
-        const selected: string[] = Object.entries(settings.infoFields)
-          .filter(([_, v]) => v)
-          .map(([k]) => k);
-        localStorage.setItem("info_selectedFields", JSON.stringify(selected));
-        console.log("AppContext: persisted info_selectedFields", selected);
-      }
-      if (settings.fontSize !== undefined) {
-        localStorage.setItem("info_fontSize", next.fontSize.toString());
-        console.log("AppContext: persisted info_fontSize", next.fontSize);
-      }
-      if (settings.position) {
-        localStorage.setItem("info_x", settings.position.x.toString());
-        localStorage.setItem("info_y", settings.position.y.toString());
-      }
-      return next;
-    });
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        settings: { ...prev[key].settings, ...patch },
+      },
+    }));
   };
 
-  const updateTimeSettings = (
-    settings: Partial<TimeSettings>,
-    options?: { persist?: boolean }
-  ) => {
-    console.log("AppContext: updateTimeSettings called", settings);
-    setTimeSettings((prev) => {
-      const next = { ...prev, ...settings };
-      if (settings.fontSize !== undefined) {
-        localStorage.setItem("time_fontSize", next.fontSize.toString());
-        console.log("AppContext: persisted time_fontSize", next.fontSize);
-      }
-      if (settings.is24Hour !== undefined) {
-        localStorage.setItem("time_is24Hour", next.is24Hour.toString());
-        console.log("AppContext: persisted time_is24Hour", next.is24Hour);
-      }
-      if (settings.position) {
-        localStorage.setItem("time_x", settings.position.x.toString());
-        localStorage.setItem("time_y", settings.position.y.toString());
-      }
-      return next;
-    });
-  };
-
-  const updateDateSettings = (
-    settings: Partial<DateSettings>,
-    options?: { persist?: boolean }
-  ) => {
-    console.log("AppContext: updateDateSettings called", settings);
-    setDateSettings((prev) => {
-      const next = { ...prev, ...settings };
-      if (settings.fontSize !== undefined) {
-        localStorage.setItem("date_fontSize", next.fontSize.toString());
-        console.log("AppContext: persisted date_fontSize", next.fontSize);
-      }
-      if (settings.position) {
-        localStorage.setItem("date_x", settings.position.x.toString());
-        localStorage.setItem("date_y", settings.position.y.toString());
-      }
-      return next;
-    });
-  };
-
-  const updateAvatarSettings = (
-    settings: Partial<AvatarSettings>,
-    options?: { persist?: boolean }
-  ) => {
-    console.log("AppContext: updateAvatarSettings called", settings);
-    setAvatarSettings((prev) => {
-      const next = { ...prev, ...settings };
-      if (settings.selectedAvatar !== undefined) {
-        localStorage.setItem("avatar_selected", next.selectedAvatar);
-        console.log(
-          "AppContext: persisted avatar_selected",
-          next.selectedAvatar
-        );
-      }
-      if (settings.size !== undefined) {
-        localStorage.setItem("avatar_size", next.size.toString());
-        console.log("AppContext: persisted avatar_size", next.size);
-      }
-      if (settings.position) {
-        localStorage.setItem("avatar_x", settings.position.x.toString());
-        localStorage.setItem("avatar_y", settings.position.y.toString());
-      }
-      return next;
-    });
-  };
-
-  const updateTodoSettings = (
-    settings: Partial<TodoSettings>,
-    options?: { persist?: boolean }
-  ) => {
-    console.log("AppContext: updateTodoSettings called", settings);
-    setTodoSettings((prev) => {
-      const next = { ...prev, ...settings };
-      if (settings.width !== undefined) {
-        localStorage.setItem("todo_width", next.width.toString());
-        console.log("AppContext: persisted todo_width", next.width);
-      }
-      if (settings.height !== undefined) {
-        localStorage.setItem("todo_height", next.height.toString());
-        console.log("AppContext: persisted todo_height", next.height);
-      }
-      if (settings.darkMode !== undefined) {
-        localStorage.setItem("todo_darkMode", next.darkMode.toString());
-        console.log("AppContext: persisted todo_darkMode", next.darkMode);
-      }
-      if (settings.position) {
-        localStorage.setItem("todo_x", settings.position.x.toString());
-        localStorage.setItem("todo_y", settings.position.y.toString());
-      }
-      return next;
-    });
-  };
-
-  const updateQuicklinksSettings = (settings: Partial<QuicklinksSettings>) => {
-    setQuicklinksSettings((prev) => {
-      const updated = { ...prev, ...settings };
-      if (settings.width !== undefined) {
-        localStorage.setItem("quicklinks_width", updated.width.toString());
-      }
-      if (settings.height !== undefined) {
-        localStorage.setItem("quicklinks_height", updated.height.toString());
-      }
-      if (settings.links !== undefined) {
-        localStorage.setItem("quick_links", JSON.stringify(updated.links));
-      }
-      if (settings.gridMode !== undefined) {
-        localStorage.setItem(
-          "quicklinks_grid",
-          settings.gridMode ? "true" : "false"
-        );
-      }
-      if (settings.darkMode !== undefined) {
-        localStorage.setItem(
-          "quicklinks_darkMode",
-          settings.darkMode ? "true" : "false"
-        );
-      }
-      if (settings.position) {
-        localStorage.setItem("quicklinks_x", settings.position.x.toString());
-        localStorage.setItem("quicklinks_y", settings.position.y.toString());
-      }
-      return updated;
-    });
-  };
-
-  const updateSearchbarSettings = (settings: Partial<SearchBarSettings>) => {
-    setSearchbarSettings((prev) => {
-      const updated = { ...prev, ...settings };
-      console.log("updateSearchbarSettings called", settings, updated);
-      if (settings.width !== undefined) {
-        localStorage.setItem("searchbar_width", updated.width.toString());
-      }
-      if (settings.height !== undefined && updated.height !== undefined) {
-        localStorage.setItem("searchbar_height", String(updated.height));
-      }
-      if (typeof updated.darkMode === "boolean") {
-        localStorage.setItem("searchbar_darkMode", updated.darkMode.toString());
-      }
-      if (settings.position) {
-        localStorage.setItem("searchbar_x", settings.position.x.toString());
-        localStorage.setItem("searchbar_y", settings.position.y.toString());
-      }
-      return updated;
-    });
+  const resetAllWidgets = () => {
+    if (!window.confirm("Are you sure you want to reset all widgets to default?"))
+      return;
+    setWidgets(buildDefaultWidgets());
   };
 
   return (
     <AppContext.Provider
       value={{
+        isDragging,
+        setIsDragging,
         showWidgetEdits,
         toggleEditMode,
         backgroundFilters,
         updateBackgroundFilters,
-        widgetVisibility,
-        toggleWidgetVisibility,
-        widgetPositions,
-        updateWidgetPosition,
-        infoSettings,
         backgroundSelection,
         updateBackgroundSelection,
-        updateInfoSettings,
-        timeSettings,
-        updateTimeSettings,
-        dateSettings,
-        avatarSettings,
-        todoSettings,
-        todoCollapsed,
-        updateTodoCollapsed,
-        updateDateSettings,
-        updateAvatarSettings,
-        updateTodoSettings,
-        quicklinksSettings,
-        updateQuicklinksSettings,
-        searchbarSettings,
-        updateSearchbarSettings,
-        pomodoroSettings,
-        // updatePomodoroSettings,
-        // setFocusModeOn,
-        // focusModeOn,
-        isDragging,
-        setIsDragging,
+        appearance,
+        updateAppearance,
+        widgets,
+        toggleWidgetVisibility,
+        updateWidgetPosition,
+        updateWidgetSettings,
+        resetAllWidgets,
       }}
     >
       {children}
@@ -652,9 +423,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 };
 
 export const useAppContext = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useAppContext must be used within AppProvider");
-  }
-  return context;
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error("useAppContext must be used within AppProvider");
+  return ctx;
 };
+
+// Type-safe accessor for a single widget's settings.
+export const useWidgetSettings = <K extends WidgetKey>(
+  key: K
+): WidgetSettingsMap[K] => useAppContext().widgets[key].settings;

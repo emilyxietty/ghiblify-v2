@@ -8,10 +8,8 @@ interface AvatarProps {
 }
 
 export const Avatar: React.FC<AvatarProps> = () => {
-  const { avatarSettings } = useAppContext();
-
-  const avatar = avatarSettings.selectedAvatar;
-  const avatarSize = avatarSettings.size;
+  const { widgets } = useAppContext();
+  const { selectedAvatar: avatar, size: avatarSize } = widgets.avatar.settings;
 
   const avatarData = AVATAR_OPTIONS.find((a) => a.value === avatar);
 

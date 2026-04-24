@@ -1,6 +1,50 @@
-.quicklinks-widget-mode-light .ql-grid-title {
-    color: #222 !important;
+/* ===========================================================================
+   QuickLinks
+   Theme: .ql-light / .ql-dark applied to the wrapper.
+   =========================================================================== */
+
+.ql-light {
+    --ql-text: #f5f5f5;
+    --ql-text-muted: rgba(245, 245, 245, 0.7);
+    --ql-bg-hover: rgba(255, 255, 255, 0.12);
+    --ql-bg-active: rgba(255, 255, 255, 0.2);
+    --ql-border: rgba(255, 255, 255, 0.18);
+    --ql-border-strong: rgba(255, 255, 255, 0.4);
+    --ql-focus-ring: rgba(255, 255, 255, 0.85);
+    --ql-danger: #ff8a8a;
+    --ql-danger-bg: rgba(255, 107, 107, 0.18);
+    --ql-success: #7be08a;
 }
+
+.ql-dark {
+    --ql-text: #1c1c1c;
+    --ql-text-muted: rgba(28, 28, 28, 0.7);
+    --ql-bg-hover: rgba(0, 0, 0, 0.08);
+    --ql-bg-active: rgba(0, 0, 0, 0.16);
+    --ql-border: rgba(0, 0, 0, 0.16);
+    --ql-border-strong: rgba(0, 0, 0, 0.4);
+    --ql-focus-ring: rgba(0, 0, 0, 0.7);
+    --ql-danger: #c62828;
+    --ql-danger-bg: rgba(198, 40, 40, 0.15);
+    --ql-success: #2e7d32;
+}
+
+/* Visually-hidden label for screen readers. */
+.ql-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Grid mode
+   --------------------------------------------------------------------------- */
 
 .quicklinksSettings-grid-wrapper.always-show {
     background: none !important;
@@ -11,20 +55,7 @@
 .quicklinksSettings-grid-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-}
-
-.quicklinksSettings-grid-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 4px;
-}
-
-.quicklinksSettings-add.grid {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
 }
 
 .quicklinksSettings-grid-list {
@@ -32,163 +63,197 @@
 }
 
 .quicklinksSettings-grid-scroll {
-    display: flex;
-    flex-wrap: wrap;
-    /* gap: 00px; */
-    overflow-y: auto;
-    /* padding-right: 4px; */
-    align-content: flex-start;
-    scrollbar-width: thin;
-    scrollbar-color: #ccc #f5f5f5;
-}
-
-.quicklinksSettings-grid-item {
-    display: flex;
-    align-items: center;
-    /* flex: 0 0 90px; */
-    width: 100px;
-    height: 100px;
-    box-sizing: border-box;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    /* background: rgba(255, 255, 255, 0.04); */
-    border-radius: 8px;
-    padding: 8px 4px 4px 4px;
-    position: relative;
-}
-
-.quicklinksSettings-grid-item-light:hover {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(6px);
-}
-
-.quicklinksSettings-grid-item-dark:hover {
-    background: rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(6px);
-}
-
-.quicklinksSettings-grid-item.control-button {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 8px;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    overflow-y: auto;
+    align-content: flex-start;
+    padding: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ql-border-strong) transparent;
 }
 
-.control-dark {
-    background: rgba(0, 0, 0, 0.1);
-    border: 2px dashed rgba(0, 0, 0, 0.3);
+.ql-grid-cell {
+    position: relative;
+    border-radius: 10px;
+    transition: background 120ms ease, transform 120ms ease;
 }
 
-.control-light {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-
+.ql-grid-cell.draggable {
+    cursor: grab;
 }
 
-.control-dark:hover {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(0, 0, 0, 0.5);
+.ql-grid-cell.draggable:active {
+    cursor: grabbing;
 }
 
-.control-light:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+.ql-grid-cell.dragging {
+    opacity: 0.4;
 }
 
-.quicklinksSettings-grid-wrapper:hover .quicklinksSettings-grid-item.control-button {
-    visibility: visible;
+.ql-grid-cell.drag-over {
+    box-shadow: inset 0 0 0 2px var(--ql-focus-ring);
 }
 
-.quicklinksSettings-grid-link {
+.ql-grid-link {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
-    cursor: pointer;
+    gap: 6px;
     width: 100%;
     height: 100%;
+    min-height: 96px;
+    padding: 10px 6px 8px;
+    box-sizing: border-box;
+    color: var(--ql-text);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: background 120ms ease;
 }
 
-/* ensure grid link sits above overlays when dragging or interacting */
-.quicklinksSettings-grid-link,
-.quicklinksSettings-link {
-    position: relative;
-    z-index: 3100;
+.ql-grid-link:hover {
+    background: var(--ql-bg-hover);
+    backdrop-filter: blur(6px);
+}
+
+.ql-grid-link:focus-visible {
+    outline: 2px solid var(--ql-focus-ring);
+    outline-offset: 2px;
+    background: var(--ql-bg-hover);
 }
 
 .ql-grid-favicon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    margin-bottom: 6px;
-}
-
-.ql-grid-title {
-    font-size: 13px;
-    color: white;
-    text-align: center;
-    word-break: break-word;
-    max-width: 80px;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-}
-
-.quicklinksSettings-delete.grid {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    /* Overlay the entire grid item */
-    height: 100%;
-    background: rgba(0, 0, 0, 0.624);
-    /* Semi-transparent overlay */
-    border: none;
-    color: #ff6b6b;
-    /* Ensure the "X" is visible */
-    font-size: 24px;
-    /* Increase font size for visibility */
-    cursor: pointer;
-    z-index: 9999;
-    /* Ensure it overlays the link and icon */
     border-radius: 8px;
-    /* Match the grid item */
+    flex-shrink: 0;
+}
+
+.ql-favicon-fallback {
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: auto;
+    background: var(--ql-bg-active);
+    color: var(--ql-text);
+    font-weight: 600;
+    font-size: 16px;
 }
 
-.quicklinksSettings-delete:hover {
-    background: rgba(0, 0, 0, 0.901);
-    color: white;
+.ql-grid-title {
+    font-size: 12px;
+    line-height: 1.25;
+    color: var(--ql-text);
+    text-align: center;
+    word-break: break-word;
+    max-width: 88px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.quicklinksSettings-grid-item:hover .quicklinksSettings-delete.grid {
+/* The + / cancel control card */
+.ql-control-cell {
     display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    min-height: 96px;
+    padding: 6px;
+    border-radius: 10px;
+    border: 2px dashed var(--ql-border);
 }
 
-.quicklinksSettings-grid-item .quicklinksSettings-grid-link {
-    pointer-events: none;
+.ql-control-cell.control-dark {
+    border-color: rgba(0, 0, 0, 0.3);
 }
 
-.quicklinksSettings-grid-toggle {
-    margin-left: 8px;
-    background: none;
+.ql-control-cell.control-light {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ql-control-cell:hover {
+    border-color: var(--ql-border-strong);
+    background: var(--ql-bg-hover);
+}
+
+/* Delete overlay shown on each cell when delete-mode is active */
+.ql-delete-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
     border: none;
-    color: #fff;
-    font-size: 18px;
+    border-radius: 10px;
+    color: var(--ql-danger);
     cursor: pointer;
-    padding: 2px 6px;
-    border-radius: 4px;
+    z-index: 2;
+    transition: background 120ms ease;
 }
 
+.ql-delete-overlay:hover,
+.ql-delete-overlay:focus-visible {
+    background: rgba(0, 0, 0, 0.78);
+    color: #fff;
+    outline: none;
+}
+
+.ql-delete-overlay:focus-visible {
+    box-shadow: 0 0 0 2px var(--ql-focus-ring);
+}
+
+/* ---------------------------------------------------------------------------
+   Add form (shared between grid and list modes)
+   --------------------------------------------------------------------------- */
+
+.quicklinksSettings-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.quicklinksSettings-add-btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    background: rgba(99, 99, 99, 0.55);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 120ms ease, transform 120ms ease;
+}
+
+.quicklinksSettings-add-btn:hover:not(:disabled) {
+    background: rgba(99, 99, 99, 0.85);
+}
+
+.quicklinksSettings-add-btn:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.quicklinksSettings-add-btn:focus-visible {
+    outline: 2px solid var(--ql-focus-ring);
+    outline-offset: 2px;
+}
+
+.quicklinksSettings-add-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+   List mode
+   --------------------------------------------------------------------------- */
 
 .quicklinksSettings-container {
     position: relative;
@@ -204,79 +269,39 @@
     z-index: 3000;
 }
 
-/* .quicklinksSettings-header:hover {
-    background: rgba(255, 255, 255, 0.03);
-} */
-
 .quicklinksSettings-title {
-    color: white;
+    color: #fff;
     font-size: 16px;
     font-weight: 600;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
     cursor: pointer;
-    /* user-select: none; */
+    font-family: inherit;
+    transition: background 120ms ease, border-color 120ms ease;
 }
 
 .quicklinksSettings-title:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(6px);
-    cursor: pointer;
-    border-radius: 6px;
+}
+
+.quicklinksSettings-title:focus-visible {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .quicklinksSettings-dropdown {
-    /* Let MUI Popover control positioning — constrain width instead */
-    min-width: min(400px, 90vw);
-    background: rgba(18, 18, 18, 0.95);
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    padding: 10px;
+    min-width: min(420px, 90vw);
+    background: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    padding: 14px;
     box-sizing: border-box;
     z-index: 2001;
-}
-
-.quicklinksSettings-add {
-    width: 100%;
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.quicklinksSettings-input {
-    flex: 1;
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: none;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(6px);
-    color: white;
-    font-size: 13px;
-}
-
-.quicklinksSettings-input:focus {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(6px);
-}
-
-.quicklinksSettings-add-btn {
-    padding: 6px 10px;
-    border-radius: 6px;
-    background: rgba(99, 99, 99, 0.5);
-    backdrop-filter: blur(6px);
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.quicklinksSettings-add-btn:hover {
-    padding: 6px 10px;
-    border-radius: 6px;
-    background: rgba(99, 99, 99, 0.8);
-    color: white;
-    border: none;
-    cursor: pointer;
 }
 
 .quicklinksSettings-list {
@@ -286,34 +311,47 @@
     overflow: auto;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    max-height: 50vh;
 }
 
 .quicklinksSettings-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    /* cursor: grab; */
-    /* transition: background 0.18s, box-shadow 0.18s; */
+    gap: 10px;
+    padding: 4px 4px 4px 8px;
+    border-radius: 8px;
+    transition: background 120ms ease;
+}
+
+.quicklinksSettings-item.draggable {
+    cursor: grab;
+}
+
+.quicklinksSettings-item.draggable:active {
+    cursor: grabbing;
+}
+
+.quicklinksSettings-item:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .quicklinksSettings-item.dragging {
     opacity: 0.5;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
-    z-index: 4000;
 }
 
 .quicklinksSettings-item.drag-over {
-    border-top: 2px solid #1976d2;
+    box-shadow: inset 0 2px 0 0 #1976d2;
 }
 
 .ql-favicon {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     background-size: cover;
     background-position: center;
     border-radius: 4px;
-    flex: 0 0 20px;
+    flex: 0 0 22px;
+    object-fit: contain;
 }
 
 .quicklinksSettings-link {
@@ -323,106 +361,78 @@
     gap: 2px;
     border: none;
     background: transparent;
-    color: white;
+    color: #fff;
     text-align: left;
-    padding: 6px 8px;
+    padding: 8px 10px;
     border-radius: 6px;
     cursor: pointer;
     flex: 1;
+    text-decoration: none;
+    min-width: 0;
 }
 
 .quicklinksSettings-link:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.quicklinksSettings-link:focus-visible {
+    outline: 2px solid var(--ql-focus-ring, rgba(255, 255, 255, 0.85));
+    outline-offset: -2px;
 }
 
 .ql-title {
     font-weight: 600;
     font-size: 13px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
 }
 
 .ql-url {
-    font-size: 12px;
-    opacity: 0.8;
+    font-size: 11px;
+    opacity: 0.7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
 }
-
-/* .quicklinksSettings-delete {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-} */
 
 .quicklinksSettings-empty {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.55);
     font-size: 13px;
-    padding: 6px 8px;
-}
-
-.quicklinks-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.quicklinks-header {
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 8px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 16px 8px;
     text-align: center;
-}
-
-.quicklinks-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 8px;
-    padding: 8px;
-    overflow: auto;
-}
-
-.quicklinks-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    padding: 8px;
-    text-align: center;
-    cursor: pointer;
-}
-
-.quicklinks-item a {
-    color: white;
-    text-decoration: none;
-}
-
-.quicklinks-item a:hover {
-    text-decoration: underline;
-}
-
-.resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
-    background: rgba(255, 255, 255, 0.5);
-    cursor: se-resize;
+    font-style: italic;
 }
 
 .quicklinksSettings-delete {
     background: transparent;
     border: none;
-    color: white;
+    color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     padding: 6px;
     border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
 }
 
 .quicklinksSettings-delete:hover {
-    background: rgba(255, 0, 0, 0.2);
-    color: white;
+    background: rgba(255, 80, 80, 0.18);
+    color: #ff8a8a;
+}
+
+.quicklinksSettings-delete:focus-visible {
+    outline: 2px solid var(--ql-focus-ring, rgba(255, 255, 255, 0.85));
+    outline-offset: 2px;
+}
+
+/* Ensure interactive surfaces sit above any drag overlay */
+.ql-grid-link,
+.quicklinksSettings-link {
+    position: relative;
+    z-index: 1;
 }

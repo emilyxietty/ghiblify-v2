@@ -3,7 +3,8 @@ import { useAppContext } from "../../../contexts/AppContext";
 import "./Date.css";
 
 export const DateDisplay: React.FC = () => {
-  const { dateSettings } = useAppContext();
+  const { widgets } = useAppContext();
+  const dateSettings = widgets.date.settings;
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {

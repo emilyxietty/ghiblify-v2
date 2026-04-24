@@ -2,9 +2,17 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ListIcon from "@mui/icons-material/List";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
-import React, { useEffect, useReducer } from "react";
+import React from "react";
 import { Button } from "../../components/Button/Button";
-import { getWidgetConfig } from "../../config/widgetConfig";
+import {
+  AvatarSettings,
+  getWidgetConfig,
+  InfoFields,
+  InfoSettings,
+  isWidgetKey,
+  QuicklinksSettings,
+  TimeSettings,
+} from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import { AvatarSelector } from "../AvatarSelector/AvatarSelector";
 import { FieldSelector } from "../FieldSelector/FieldSelector";
@@ -29,233 +37,132 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   isResizing,
   storageKey,
 }) => {
-  const {
-    infoSettings,
-    updateInfoSettings,
-    timeSettings,
-    updateTimeSettings,
-    dateSettings,
-    updateDateSettings,
-    avatarSettings,
-    updateAvatarSettings,
-    todoSettings,
-    updateTodoSettings,
-    quicklinksSettings,
-    updateQuicklinksSettings,
-    searchbarSettings,
-    updateSearchbarSettings,
-  } = useAppContext();
+  const { widgets, updateWidgetSettings } = useAppContext();
+
+  if (!showWidgetEdits || isResizing || !isWidgetKey(storageKey)) return null;
+
   const widgetConfig = getWidgetConfig(storageKey);
+  const settings = widgets[storageKey].settings as Record<string, unknown>;
+  const controls = widgetConfig.customControls;
 
-  if (!showWidgetEdits || isResizing || !storageKey) return null;
+  const darkMode = (settings.darkMode as boolean | undefined) ?? false;
 
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
-
-  useEffect(() => {
-    const handler = () => forceUpdate();
-    window.addEventListener("timeSettingsChange", handler);
-    window.addEventListener("infoSettingsChange", handler);
-    window.addEventListener("avatarSettingsChange", handler);
-    window.addEventListener("dateSettingsChange", handler);
-    window.addEventListener("quicklinksSettingsChange", handler);
-    window.addEventListener("searchbarSettingsChange", handler);
-    window.addEventListener(
-      `${storageKey.replace(/$/, "")}SettingsChange`,
-      handler
-    );
-    return () => {
-      window.removeEventListener("timeSettingsChange", handler);
-      window.removeEventListener("infoSettingsChange", handler);
-      window.removeEventListener("avatarSettingsChange", handler);
-      window.removeEventListener("dateSettingsChange", handler);
-      window.removeEventListener("quicklinksSettingsChange", handler);
-      window.removeEventListener("searchbarSettingsChange", handler);
-      window.removeEventListener(
-        `${storageKey.replace(/$/, "")}SettingsChange`,
-        handler
-      );
-    };
-  }, [storageKey]);
-
-  const baseKey = storageKey.replace(/$/, "");
-  let darkMode = false;
-  if (baseKey === "todo") {
-    darkMode = todoSettings.darkMode;
-  } else if (baseKey === "searchbar") {
-    darkMode = searchbarSettings.darkMode ?? false;
-  } else if (baseKey === "quicklinks") {
-    darkMode = quicklinksSettings.darkMode ?? false;
-  } else {
-    darkMode = localStorage.getItem(`${storageKey}_darkMode`) === "true";
-  }
-  const selectedAvatar =
-    avatarSettings.selectedAvatar ||
-    localStorage.getItem("avatar_selected") ||
-    "totoro";
-
-  // Toggles
   const toggleTimeFormat = () => {
-    updateTimeSettings({ is24Hour: !timeSettings.is24Hour });
-    window.dispatchEvent(
-      new CustomEvent("timeSettingsChange", {
-        detail: { is24Hour: !timeSettings.is24Hour },
-      })
-    );
-    forceUpdate();
+    const cur = (widgets.time.settings as TimeSettings).is24Hour;
+    updateWidgetSettings("time", { is24Hour: !cur });
   };
 
-  const handleDarkModeToggle = () => {
-    const newValue = !darkMode;
-    const baseKey = storageKey.replace(/$/, "");
-    if (baseKey === "todo" && updateTodoSettings) {
-      updateTodoSettings({ darkMode: newValue });
-    } else if (baseKey === "searchbar" && updateSearchbarSettings) {
-      updateSearchbarSettings({ darkMode: newValue });
-    } else if (baseKey === "quicklinks" && updateQuicklinksSettings) {
-      updateQuicklinksSettings({ darkMode: newValue });
-    } else {
-      localStorage.setItem(`${storageKey}_darkMode`, newValue.toString());
-      window.dispatchEvent(
-        new CustomEvent(`${baseKey}SettingsChange`, {
-          detail: { darkMode: newValue },
-        })
-      );
-    }
-    forceUpdate();
+  const toggleDarkMode = () => {
+    updateWidgetSettings(storageKey, { darkMode: !darkMode } as never);
+  };
+
+  const toggleQuicklinksGrid = () => {
+    const cur = (widgets.quicklinks.settings as QuicklinksSettings).gridMode;
+    updateWidgetSettings("quicklinks", { gridMode: !cur });
   };
 
   const handleInfoFieldsChange = (fields: string[]) => {
     if (fields.length === 0) return;
-    // Convert array to object for context
-    const fieldsObj = {
+    const infoFields: InfoFields = {
       japaneseTitle: fields.includes("japaneseTitle"),
       title: fields.includes("title"),
       year: fields.includes("year"),
       movieLength: fields.includes("movieLength"),
       quote: fields.includes("quote"),
     };
-    updateInfoSettings({ infoFields: fieldsObj });
-    window.dispatchEvent(
-      new CustomEvent("infoSettingsChange", {
-        detail: { selectedFields: fields },
-      })
-    );
-    forceUpdate();
+    updateWidgetSettings("info", { infoFields });
   };
 
   const handleAvatarChange = (avatar: string) => {
-    updateAvatarSettings({ selectedAvatar: avatar });
-    forceUpdate();
+    updateWidgetSettings("avatar", { selectedAvatar: avatar });
   };
 
-  const defaults = widgetConfig?.defaults || {};
-  const fontSizeEnabled =
-    widgetConfig?.fontSize?.enabled ?? "fontSize" in defaults;
-  const sizeEnabled = widgetConfig?.size?.enabled ?? "size" in defaults;
-  const hasTimeFormat =
-    widgetConfig?.customControls?.timeFormat ?? "is24Hour" in defaults;
-  const hasInfoFields =
-    widgetConfig?.customControls?.infoFields ?? "infoFields" in defaults;
-  const hasAvatarSelector =
-    widgetConfig?.customControls?.avatarSelector ??
-    "selectedAvatar" in defaults;
-  const hasDarkMode =
-    typeof widgetConfig?.darkMode === "object"
-      ? widgetConfig.darkMode
-      : "darkMode" in defaults
-      ? true
-      : !!widgetConfig?.darkMode;
-  const hasAnyControls =
-    fontSizeEnabled ||
-    hasTimeFormat ||
-    hasInfoFields ||
-    sizeEnabled ||
-    hasAvatarSelector ||
-    hasDarkMode;
+  const hasAnyControls = !!(
+    widgetConfig.fontSize ||
+    widgetConfig.size ||
+    widgetConfig.width ||
+    widgetConfig.height ||
+    controls?.timeFormat ||
+    controls?.infoFields ||
+    controls?.avatarSelector ||
+    controls?.darkMode ||
+    controls?.gridMode
+  );
 
-  const isQuicklinks = baseKey === "quicklinks";
-  const quicklinksGrid = quicklinksSettings.gridMode;
+  if (!hasAnyControls) return <div className="widget-overlay" />;
 
-  const toggleQuicklinksGrid = () => {
-    const newFormat = quicklinksGrid ? false : true;
-    updateQuicklinksSettings({ gridMode: newFormat });
-    window.dispatchEvent(
-      new CustomEvent("quicklinksGridChange", { detail: { value: newFormat } })
-    );
-    forceUpdate();
-  };
+  const timeIs24Hour = (widgets.time.settings as TimeSettings).is24Hour;
+  const quicklinksGrid = (widgets.quicklinks.settings as QuicklinksSettings).gridMode;
+  const infoFields = (widgets.info.settings as InfoSettings).infoFields;
+  const avatarSettings = widgets.avatar.settings as AvatarSettings;
 
   return (
     <div className="widget-overlay">
-      {(hasAnyControls || isQuicklinks) && (
-        <>
-          <div className="widget-controls-container">
-            {hasTimeFormat && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleTimeFormat();
-                }}
-                title="Toggle 12/24 hour format"
-                variant="dark"
-                size="small"
-                icon={timeSettings.is24Hour ? "12h" : "24h"}
-              />
-            )}
-            {hasDarkMode && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDarkModeToggle();
-                }}
-                title="Toggle dark mode"
-                variant={darkMode ? "light" : "dark"}
-                size="small"
-                icon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-              />
-            )}
-            {isQuicklinks && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleQuicklinksGrid();
-                }}
-                title={quicklinksGrid ? "Show as list" : "Show as grid"}
-                variant="dark"
-                size="small"
-                icon={quicklinksGrid ? <ListIcon /> : <ViewModuleIcon />}
-              />
-            )}
-          </div>
-          {hasInfoFields && (
-            <div
-              style={{ pointerEvents: "auto" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FieldSelector
-                options={INFO_FIELD_OPTIONS}
-                selectedValues={Object.entries(infoSettings.infoFields)
-                  .filter(([_, v]) => v)
-                  .map(([k]) => k)}
-                onChange={handleInfoFieldsChange}
-                variant="dark"
-                minSelected={1}
-              />
-            </div>
-          )}
-          {hasAvatarSelector && (
-            <div
-              style={{ pointerEvents: "auto" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <AvatarSelector
-                selectedAvatar={selectedAvatar}
-                onChange={handleAvatarChange}
-                avatarSize={avatarSettings.size}
-              />
-            </div>
-          )}
-        </>
+      <div className="widget-controls-container">
+        {controls?.timeFormat && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleTimeFormat();
+            }}
+            title="Toggle 12/24 hour format"
+            variant="dark"
+            size="small"
+            icon={timeIs24Hour ? "12h" : "24h"}
+          />
+        )}
+        {controls?.darkMode && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleDarkMode();
+            }}
+            title="Toggle dark mode"
+            variant={darkMode ? "light" : "dark"}
+            size="small"
+            icon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+          />
+        )}
+        {controls?.gridMode && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleQuicklinksGrid();
+            }}
+            title={quicklinksGrid ? "Show as list" : "Show as grid"}
+            variant="dark"
+            size="small"
+            icon={quicklinksGrid ? <ListIcon /> : <ViewModuleIcon />}
+          />
+        )}
+      </div>
+      {controls?.infoFields && (
+        <div
+          style={{ pointerEvents: "auto" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <FieldSelector
+            options={INFO_FIELD_OPTIONS}
+            selectedValues={Object.entries(infoFields)
+              .filter(([_, v]) => v)
+              .map(([k]) => k)}
+            onChange={handleInfoFieldsChange}
+            variant="dark"
+            minSelected={1}
+          />
+        </div>
+      )}
+      {controls?.avatarSelector && (
+        <div
+          style={{ pointerEvents: "auto" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <AvatarSelector
+            selectedAvatar={avatarSettings.selectedAvatar}
+            onChange={handleAvatarChange}
+            avatarSize={avatarSettings.size}
+          />
+        </div>
       )}
     </div>
   );

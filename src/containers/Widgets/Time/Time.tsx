@@ -4,7 +4,8 @@ import "./Time.css";
 
 export const Time: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { timeSettings } = useAppContext();
+  const { widgets } = useAppContext();
+  const timeSettings = widgets.time.settings;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);

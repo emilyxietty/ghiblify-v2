@@ -31,7 +31,7 @@ const AppContent: React.FC = () => {
     showWidgetEdits,
     toggleEditMode,
     backgroundFilters,
-    widgetVisibility,
+    widgets,
   } = useAppContext();
 
   //   const widgetsContainerRef = useRef<HTMLDivElement>(null);
@@ -40,10 +40,16 @@ const AppContent: React.FC = () => {
     if (!showWidgetEdits) return;
 
     const handleClick = (e: MouseEvent) => {
-      const widget = (e.target as HTMLElement).closest(".widget");
-      if (!widget) {
-        toggleEditMode();
-      }
+      const target = e.target as HTMLElement;
+      // Don't exit edit mode when clicking UI chrome — those buttons own
+      // their own edit-mode toggling and would otherwise double-toggle.
+      if (
+        target.closest(
+          ".widget, .left-sidebar, .sidebar-trigger, .edit-toggle-button, [role='dialog']"
+        )
+      )
+        return;
+      toggleEditMode();
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -52,11 +58,11 @@ const AppContent: React.FC = () => {
       }
     };
 
-    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("click", handleClick);
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("click", handleClick);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [showWidgetEdits, toggleEditMode]);
@@ -82,27 +88,27 @@ const AppContent: React.FC = () => {
         backgroundFilters={backgroundFilters}
         showWidgetEdits={showWidgetEdits}
       >
-        {widgetVisibility.quicklinks && (
+        {widgets.quicklinks.visible && (
           <Widget storageKey="quicklinks">
             <QuickLinks />
           </Widget>
         )}
-        {widgetVisibility.time && (
+        {widgets.time.visible && (
           <Widget storageKey="time">
             <Time />
           </Widget>
         )}
-        {widgetVisibility.date && (
+        {widgets.date.visible && (
           <Widget storageKey="date">
             <DateDisplay />
           </Widget>
         )}
-        {widgetVisibility.todo && (
+        {widgets.todo.visible && (
           <Widget storageKey="todo">
             <Todo />
           </Widget>
         )}
-        {widgetVisibility.info && !bgLoading && !infoLoading && (
+        {widgets.info.visible && !bgLoading && !infoLoading && (
           <Widget storageKey="info">
             <Info
               titlejp={titlejp}
@@ -113,17 +119,17 @@ const AppContent: React.FC = () => {
             />
           </Widget>
         )}
-        {widgetVisibility.avatar && !bgLoading && !infoLoading && (
+        {widgets.avatar.visible && !bgLoading && !infoLoading && (
           <Widget storageKey="avatar">
             <Avatar />
           </Widget>
         )}
-        {widgetVisibility.searchbar && (
+        {widgets.searchbar.visible && (
           <Widget storageKey="searchbar">
             <SearchBar />
           </Widget>
         )}
-        {widgetVisibility.pomodoro && (
+        {widgets.pomodoro.visible && (
           <Widget storageKey="pomodoro">
             <Pomodoro />
           </Widget>

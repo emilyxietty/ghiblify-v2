@@ -2,11 +2,13 @@
     position: fixed;
     z-index: 1000;
     border-radius: 12px;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, background 160ms ease;
     max-width: 80%;
     width: max-content;
     white-space: nowrap;
-    border: 1px solid transparent;
+    border: 1px solid rgba(var(--cream-rgb, 240, 227, 196), var(--widget-border-alpha, 0));
+    /* Opacity slider in the sidebar drives --widget-bg-alpha. */
+    background: rgba(var(--dark-rgb, 31, 38, 32), var(--widget-bg-alpha, 0));
 }
 
 .widget-fallback-header {
@@ -83,5 +85,9 @@
 
 .show-widget-outline .widget {
     outline: 1px solid rgba(255, 255, 255, 0.5) !important;
-    /* outline-offset: 2px; */
+    cursor: grab;
+}
+
+.show-widget-outline .widget:active {
+    cursor: grabbing;
 }

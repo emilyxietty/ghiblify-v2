@@ -6,7 +6,8 @@ import "./SearchBar.css";
 import TextInput from "../../../components/TextInput/TextInput";
 
 const SearchBar: React.FC = () => {
-  const { searchbarSettings } = useAppContext();
+  const { widgets } = useAppContext();
+  const searchbarSettings = widgets.searchbar.settings;
   const [query, setQuery] = useState("");
   const width = searchbarSettings.width;
   const height = searchbarSettings.height;

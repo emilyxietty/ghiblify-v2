@@ -17,9 +17,8 @@ export const Info: React.FC<InfoProps> = ({
   screentime,
   quote,
 }) => {
-  const { infoSettings } = useAppContext();
-
-  const { infoFields, fontSize } = infoSettings;
+  const { widgets } = useAppContext();
+  const { infoFields, fontSize } = widgets.info.settings;
 
   return (
     <div className="info-container" style={{ fontSize: `${fontSize}px` }}>

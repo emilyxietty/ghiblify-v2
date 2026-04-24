@@ -1,56 +1,34 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import EditWidget from "../../components/EditWidget/EditWidget";
-import { getWidgetConfig } from "../../config/widgetConfig";
+import { getWidgetConfig, WidgetKey } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import "./Widget.css";
 
 interface WidgetProps {
   children: ReactNode;
-  initialPosition?: { x: number; y: number };
-  storageKey?: string;
-  onReset?: () => void;
-  showDragHandle?: boolean;
+  storageKey: WidgetKey;
 }
 
-export const Widget: React.FC<WidgetProps> = ({
-  children,
-  initialPosition = { x: 50, y: 50 },
-  storageKey,
-  onReset,
-  showDragHandle,
-}) => {
+export const Widget: React.FC<WidgetProps> = ({ children, storageKey }) => {
   const {
     showWidgetEdits,
-    updateAvatarSettings,
-    updateTodoSettings,
-    updateDateSettings,
-    updateTimeSettings,
-    updateInfoSettings,
-    avatarSettings,
-    todoSettings,
-    dateSettings,
-    timeSettings,
-    infoSettings,
-    widgetPositions,
+    widgets,
     updateWidgetPosition,
-    quicklinksSettings,
-    updateQuicklinksSettings,
-    searchbarSettings,
-    updateSearchbarSettings,
+    updateWidgetSettings,
+    isDragging,
+    setIsDragging,
   } = useAppContext();
   const widgetConfig = getWidgetConfig(storageKey);
+  const widgetSettings = widgets[storageKey].settings as Record<string, unknown>;
 
-  const [position, setPosition] = useState(() => {
-    if (!storageKey) return initialPosition;
+  const [position, setPosition] = useState(() => widgets[storageKey].position);
 
-    // Prefer positions already stored in context
-    if (widgetPositions && widgetPositions[storageKey]) {
-      return widgetPositions[storageKey];
-    }
-    return initialPosition;
-  });
+  // Track context position changes (e.g. from a reset) so the local
+  // drag-state doesn't get stuck on a stale value.
+  useEffect(() => {
+    setPosition(widgets[storageKey].position);
+  }, [widgets, storageKey]);
 
-  const { isDragging, setIsDragging } = useAppContext();
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragButton, setDragButton] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -67,10 +45,8 @@ export const Widget: React.FC<WidgetProps> = ({
 
   const isQuicklinks = storageKey === "quicklinks";
 
-  // Update global context when local drag state changes
   useEffect(() => {
     setIsDragging(isResizing);
-    console.log("[Widget] setIsDragging called (context):", isResizing);
   }, [isResizing, setIsDragging]);
 
   // Show widget outlines when Shift is held
@@ -186,7 +162,6 @@ export const Widget: React.FC<WidgetProps> = ({
         if (!hasMovedWhileMouseDown) {
           setHasMovedWhileMouseDown(true);
           setIsDragging(true);
-          console.log("[Widget] Drag started! isDragging:", true);
         }
 
         const rect = widgetRef.current.getBoundingClientRect();
@@ -202,128 +177,35 @@ export const Widget: React.FC<WidgetProps> = ({
         return;
       }
 
-      // Existing resize logic
+      // Resize logic — translate the bound that's enabled into a settings patch.
       if (isResizing && storageKey) {
-        const baseKey = storageKey.replace(/$/, "");
+        const snap = (start: number, delta: number, b: { min: number; max: number; step: number }) => {
+          const stepsMoved = Math.round(delta / 20);
+          const target = start + stepsMoved * b.step;
+          const snapped = Math.round(target / b.step) * b.step;
+          return Math.max(b.min, Math.min(b.max, snapped));
+        };
 
-        // Avatar: proportional square size
-        if (widgetConfig?.size?.enabled) {
-          const deltaY = e.clientY - resizeStartY;
-          const sizeKey = `${baseKey}_size`;
-          const { min, max, step } = widgetConfig.size;
-
-          // Snap to step
-          const stepsMoved = Math.round(deltaY / 20);
-          const sizeChange = stepsMoved * step;
-          const targetSize = resizeStartSize + sizeChange;
-          const snappedSize = Math.round(targetSize / step) * step;
-          const newSize = Math.max(min, Math.min(max, snappedSize));
-
-          // If this is the avatar widget, update context so consumers using
-          // `avatarSettings` (via useAppContext) update immediately and
-          // persist via the updater.
-          if (baseKey === "avatar" && updateAvatarSettings) {
-            updateAvatarSettings({ size: newSize });
+        if (widgetConfig.size) {
+          const newSize = snap(resizeStartSize, e.clientY - resizeStartY, widgetConfig.size);
+          updateWidgetSettings(storageKey, { size: newSize } as never);
+        } else if (widgetConfig.width || widgetConfig.height) {
+          const patch: Record<string, number> = {};
+          if (widgetConfig.width) {
+            patch.width = snap(resizeStartWidth, e.clientX - resizeStartX, widgetConfig.width);
           }
-
-          const eventName = `${baseKey}SettingsChange`;
-          window.dispatchEvent(
-            new CustomEvent(eventName, { detail: { size: newSize } })
-          );
-        } else if (
-          widgetConfig?.width?.enabled ||
-          widgetConfig?.height?.enabled
-        ) {
-          if (widgetConfig.width?.enabled) {
-            const deltaX = e.clientX - resizeStartX;
-            const widthKey = `${baseKey}_width`;
-            const { min, max, step } = widgetConfig.width;
-
-            const stepsMoved = Math.round(deltaX / 20);
-            const widthChange = stepsMoved * step;
-            const targetWidth = resizeStartWidth + widthChange;
-            const snappedWidth = Math.round(targetWidth / step) * step;
-            const newWidth = Math.max(min, Math.min(max, snappedWidth));
-
-            // If this is the todo widget, update context so consumers using
-            // `todoSettings` update immediately and persist via the updater.
-            if (baseKey === "todo" && updateTodoSettings) {
-              updateTodoSettings({ width: newWidth });
-            }
-            if (baseKey === "quicklinks" && updateQuicklinksSettings) {
-              updateQuicklinksSettings({ width: newWidth });
-            }
-            if (baseKey === "searchbar" && updateSearchbarSettings) {
-              updateSearchbarSettings({ width: newWidth });
-            }
-
-            const eventName = `${baseKey}SettingsChange`;
-            window.dispatchEvent(
-              new CustomEvent(eventName, { detail: { width: newWidth } })
-            );
+          if (widgetConfig.height) {
+            patch.height = snap(resizeStartHeight, e.clientY - resizeStartY, widgetConfig.height);
           }
-
-          if (widgetConfig.height?.enabled) {
-            const deltaY = e.clientY - resizeStartY;
-            const heightKey = `${baseKey}_height`;
-            const { min, max, step } = widgetConfig.height;
-
-            const stepsMoved = Math.round(deltaY / 20);
-            const heightChange = stepsMoved * step;
-            const targetHeight = resizeStartHeight + heightChange;
-            const snappedHeight = Math.round(targetHeight / step) * step;
-            const newHeight = Math.max(min, Math.min(max, snappedHeight));
-
-            if (baseKey === "todo" && updateTodoSettings) {
-              updateTodoSettings({ height: newHeight });
-            }
-            if (baseKey === "quicklinks" && updateQuicklinksSettings) {
-              updateQuicklinksSettings({ height: newHeight });
-            }
-            if (baseKey === "searchbar" && updateSearchbarSettings) {
-              updateSearchbarSettings({ height: newHeight });
-            }
-
-            const eventName = `${baseKey}SettingsChange`;
-            window.dispatchEvent(
-              new CustomEvent(eventName, { detail: { height: newHeight } })
-            );
-          }
-        } else if (widgetConfig?.fontSize?.enabled) {
-          const deltaY = e.clientY - resizeStartY;
-          const { min, max, step } = widgetConfig.fontSize;
-
-          const stepsMoved = Math.round(deltaY / 20);
-          const sizeChange = stepsMoved * (step ?? 1);
-          const targetSize = resizeStartSize + sizeChange;
-          const snappedSize =
-            Math.round(targetSize / (step ?? 1)) * (step ?? 1);
-          const newSize = Math.max(min ?? 1, Math.min(max ?? 1, snappedSize));
-
-          if (baseKey === "date" && updateDateSettings) {
-            updateDateSettings({ fontSize: newSize });
-          }
-          if (baseKey === "time" && updateTimeSettings) {
-            updateTimeSettings({ fontSize: newSize });
-          }
-          if (baseKey === "info" && updateInfoSettings) {
-            updateInfoSettings({ fontSize: newSize });
-          }
-
-          let detail: any = { fontSize: newSize };
-
-          if (widgetConfig.customControls?.timeFormat) {
-            detail.is24Hour = !!timeSettings?.is24Hour;
-          }
-
-          const eventName = `${baseKey}SettingsChange`;
-          window.dispatchEvent(new CustomEvent(eventName, { detail }));
+          updateWidgetSettings(storageKey, patch as never);
+        } else if (widgetConfig.fontSize) {
+          const newSize = snap(resizeStartSize, e.clientY - resizeStartY, widgetConfig.fontSize);
+          updateWidgetSettings(storageKey, { fontSize: newSize } as never);
         }
       } else if (isMouseDown && widgetRef.current) {
         if (!hasMovedWhileMouseDown) {
           setHasMovedWhileMouseDown(true);
           setIsDragging(true);
-          console.log("[Widget] Drag started! isDragging:", true);
         }
 
         // For horizontal positioning we keep center-based coordinates
@@ -418,6 +300,7 @@ export const Widget: React.FC<WidgetProps> = ({
     };
   }, [
     isMouseDown,
+    dragButton,
     isResizing,
     dragOffset,
     resizeStartX,
@@ -429,7 +312,8 @@ export const Widget: React.FC<WidgetProps> = ({
     position,
     widgetConfig,
     setIsDragging,
-    updateAvatarSettings,
+    updateWidgetSettings,
+    updateWidgetPosition,
     hasMovedWhileMouseDown,
   ]);
 
@@ -445,35 +329,16 @@ export const Widget: React.FC<WidgetProps> = ({
   }, [children]);
 
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
-    console.log("[Widget] Attempt to start drag. isDragging:", isDragging);
-    // Only allow drag on Shift + left-click (button === 0)
+    // Shift + left-click is the explicit drag opt-in. Holding shift means the
+    // user wants to move the widget, so don't bail on interactive children
+    // (buttons, inputs) — that was the source of inconsistent drag behavior
+    // in edit mode where overlay controls cover most of the widget surface.
     if (e.button !== 0 || !e.shiftKey) return;
     if (isResizing) return;
-    e.preventDefault();
 
-    // Always allow dragging from any non-interactive area, regardless of header or edit mode
+    // Don't hijack drags that originated on the resize handle.
     const target = e.target as HTMLElement | null;
-    const interactiveSelector =
-      "input, button, textarea, select, a, [role=button], .no-drag";
-    if (target?.closest?.(interactiveSelector)) return;
-
-    // debug: log when the widget receives a mousedown so we can verify which
-    // header areas let the event bubble up. Keep logs short and informative.
-    try {
-      const target = e.target as HTMLElement | null;
-      console.debug("Widget.mousedown", {
-        target:
-          target &&
-          target.tagName + (target.className ? `.${target.className}` : ""),
-        hasChildHeader,
-        isResizing,
-        isMouseDown,
-        clickedHeader:
-          target && target.closest && Boolean(target.closest(".widget-header")),
-      });
-    } catch (err) {
-      // ignore
-    }
+    if (target?.closest?.(".widget-resize-handle")) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -500,84 +365,30 @@ export const Widget: React.FC<WidgetProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (storageKey && widgetConfig) {
-      const baseKey = storageKey.replace(/$/, "");
-      const defaults = widgetConfig.defaults || {};
-
-      if (widgetConfig.fontSize?.enabled) {
-        const contextMap = {
-          date: dateSettings,
-          time: timeSettings,
-          info: infoSettings,
-        };
-        const currentSize = getCurrentValue(
-          baseKey,
-          contextMap,
-          defaults.fontSize,
-          "fontSize"
-        );
-        setResizeStartSize(currentSize);
-      } else if (widgetConfig.size?.enabled) {
-        const contextMap = { avatar: avatarSettings };
-        const currentSize = getCurrentValue(
-          baseKey,
-          contextMap,
-          defaults.size,
-          "size"
-        );
-        setResizeStartSize(currentSize);
-      } else if (widgetConfig.width?.enabled || widgetConfig.height?.enabled) {
-        const contextMap = {
-          todo: todoSettings,
-          quicklinks: quicklinksSettings,
-          searchbar: searchbarSettings,
-        };
-        if (widgetConfig.width?.enabled) {
-          const currentWidth = getCurrentValue(
-            baseKey,
-            contextMap,
-            defaults.width,
-            "width"
-          );
-          setResizeStartWidth(currentWidth);
-        }
-        if (widgetConfig.height?.enabled) {
-          const currentHeight = getCurrentValue(
-            baseKey,
-            contextMap,
-            defaults.height,
-            "height"
-          );
-          setResizeStartHeight(currentHeight);
-        }
-      }
-
-      setIsResizing(true);
-      setResizeStartX(e.clientX);
-      setResizeStartY(e.clientY);
-      setIsDragging(true);
+    if (widgetConfig.fontSize) {
+      setResizeStartSize(Number(widgetSettings.fontSize) || 0);
+    } else if (widgetConfig.size) {
+      setResizeStartSize(Number(widgetSettings.size) || 0);
+    } else {
+      if (widgetConfig.width)
+        setResizeStartWidth(Number(widgetSettings.width) || 0);
+      if (widgetConfig.height)
+        setResizeStartHeight(Number(widgetSettings.height) || 0);
     }
+
+    setIsResizing(true);
+    setResizeStartX(e.clientX);
+    setResizeStartY(e.clientY);
+    setIsDragging(true);
   };
 
-  // Helper to get current value from context or default
-  function getCurrentValue(
-    key: string,
-    contextMap: Record<string, any>,
-    defaultValue: any,
-    prop: string
-  ) {
-    return contextMap[key] && contextMap[key][prop] !== undefined
-      ? contextMap[key][prop]
-      : defaultValue;
-  }
-
   const alignment = getAlignment();
-  const fontSizeEnabled = widgetConfig?.fontSize?.enabled ?? false;
-  const widthEnabled = widgetConfig?.width?.enabled ?? false;
-  const heightEnabled = widgetConfig?.height?.enabled ?? false;
-  const sizeEnabled = widgetConfig?.size?.enabled ?? false;
-  const hasResizeHandle =
-    fontSizeEnabled || sizeEnabled || widthEnabled || heightEnabled;
+  const hasResizeHandle = !!(
+    widgetConfig.fontSize ||
+    widgetConfig.size ||
+    widgetConfig.width ||
+    widgetConfig.height
+  );
 
   return (
     <div
@@ -611,7 +422,7 @@ export const Widget: React.FC<WidgetProps> = ({
       />
       {showWidgetEdits &&
         hasResizeHandle &&
-        !(isQuicklinks && !quicklinksSettings.gridMode) && (
+        !(isQuicklinks && !widgets.quicklinks.settings.gridMode) && (
           <div
             ref={resizeHandleRef}
             className="widget-resize-handle"

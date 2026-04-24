@@ -1,25 +1,6 @@
-// Shared types
-// WidgetConfigMap type for dynamic access
-export type WidgetConfigMap = {
-  time: WidgetConfig<TimeSettings>;
-  date: WidgetConfig<DateSettings>;
-  info: WidgetConfig<InfoSettings>;
-  todo: WidgetConfig<TodoSettings>;
-  avatar: WidgetConfig<AvatarSettings>;
-  quicklinks: WidgetConfig<QuicklinksSettings>;
-  searchbar: WidgetConfig<SearchBarSettings>;
-  pomodoro: WidgetConfig<PomodoroSettings>;
-  [key: string]: WidgetConfig<any>;
-};
-
 export interface WidgetPosition {
   x: number;
   y: number;
-}
-
-export interface BaseWidgetSettings {
-  position?: WidgetPosition;
-  darkMode?: boolean;
 }
 
 export interface InfoFields {
@@ -30,130 +11,113 @@ export interface InfoFields {
   quote: boolean;
 }
 
-export interface InfoSettings extends BaseWidgetSettings {
-  infoFields: InfoFields;
-  fontSize: number;
+export interface QuicklinkItem {
+  id: string;
+  title: string;
+  url: string;
 }
 
-export interface TimeSettings extends BaseWidgetSettings {
-  fontSize: number;
-  is24Hour: boolean;
+// Per-widget settings: only widget-specific fields. Position and visibility
+// belong to the widget shell (see WidgetEntry in AppContext), not in here.
+export interface TimeSettings { fontSize: number; is24Hour: boolean }
+export interface DateSettings { fontSize: number }
+export interface InfoSettings { fontSize: number; infoFields: InfoFields }
+export interface TodoSettings {
+  width: number;
+  height: number;
+  darkMode: boolean;
+  collapsed: boolean;
 }
-
-export interface DateSettings extends BaseWidgetSettings {
-  fontSize: number;
+export interface AvatarSettings { selectedAvatar: string; size: number }
+export interface QuicklinksSettings {
+  width: number;
+  height: number;
+  gridMode: boolean;
+  darkMode: boolean;
+  links: QuicklinkItem[];
 }
-
-export interface TodoSettings extends BaseWidgetSettings {
+export interface SearchBarSettings {
   width: number;
   height: number;
   darkMode: boolean;
 }
+// Pomodoro is self-contained — it owns its own localStorage and runs a
+// leader-election loop. Nothing in context state for it.
+export type PomodoroSettings = Record<string, never>;
 
-export interface PomodoroSettings extends BaseWidgetSettings {
-  duration: number;
-  breakDuration: number;
-  isActive: boolean;
+export interface WidgetSettingsMap {
+  time: TimeSettings;
+  date: DateSettings;
+  info: InfoSettings;
+  todo: TodoSettings;
+  avatar: AvatarSettings;
+  quicklinks: QuicklinksSettings;
+  searchbar: SearchBarSettings;
+  pomodoro: PomodoroSettings;
 }
 
-export interface AvatarSettings extends BaseWidgetSettings {
-  selectedAvatar: string;
-  size: number;
+export type WidgetKey = keyof WidgetSettingsMap;
+
+export const WIDGET_KEYS: readonly WidgetKey[] = [
+  "time",
+  "date",
+  "info",
+  "todo",
+  "avatar",
+  "quicklinks",
+  "searchbar",
+  "pomodoro",
+];
+
+export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
+  !!s && (WIDGET_KEYS as readonly string[]).includes(s);
+
+export interface ResizeBound {
+  min: number;
+  max: number;
+  step: number;
 }
 
-export interface QuicklinksSettings extends BaseWidgetSettings {
-  width: number;
-  height: number;
-  links: Array<{ id: string; title: string; url: string }>;
+export interface CustomControls {
+  timeFormat?: boolean;
+  infoFields?: boolean;
+  avatarSelector?: boolean;
   gridMode?: boolean;
-}
-
-export interface SearchBarSettings extends BaseWidgetSettings {
-  width: number;
-  height?: number;
-}
-
-export interface WidgetConfig<TSettings> {
-  name: string;
-  storageKey: string;
-  fontSize?: {
-    min?: number;
-    max?: number;
-    step?: number;
-    enabled: boolean;
-  };
   darkMode?: boolean;
-  width?: {
-    min: number;
-    max: number;
-    step: number;
-    enabled: boolean;
-  };
-  height?: {
-    min: number;
-    max: number;
-    step: number;
-    enabled: boolean;
-  };
-  size?: {
-    min: number;
-    max: number;
-    step: number;
-    enabled: boolean;
-  };
-  customControls?: {
-    timeFormat?: boolean;
-    infoFields?: boolean;
-    avatarSelector?: boolean;
-    gridMode?: boolean;
-  };
-  localStorageKeys?: string[];
-  defaults: TSettings;
 }
 
-export const WIDGET_CONFIGS: WidgetConfigMap = {
+export interface WidgetConfig<K extends WidgetKey> {
+  name: string;
+  position: WidgetPosition;
+  settings: WidgetSettingsMap[K];
+  fontSize?: ResizeBound;
+  width?: ResizeBound;
+  height?: ResizeBound;
+  size?: ResizeBound;
+  customControls?: CustomControls;
+}
+
+type WidgetConfigsType = { [K in WidgetKey]: WidgetConfig<K> };
+
+export const WIDGET_CONFIGS: WidgetConfigsType = {
   time: {
     name: "Time",
-    storageKey: "time",
-    fontSize: {
-      min: 20,
-      max: 250,
-      step: 20,
-      enabled: true,
-    },
-    defaults: {
-      fontSize: 200,
-      is24Hour: false,
-      position: { x: 50, y: 9.609292502639917 },
-    } as TimeSettings,
-  } as WidgetConfig<TimeSettings>,
+    position: { x: 50, y: 9.609292502639917 },
+    settings: { fontSize: 200, is24Hour: false },
+    fontSize: { min: 20, max: 250, step: 20 },
+    customControls: { timeFormat: true },
+  },
   date: {
     name: "Date",
-    storageKey: "date",
-    fontSize: {
-      min: 10,
-      max: 50,
-      step: 5,
-      enabled: true,
-    },
-    defaults: {
-      fontSize: 24,
-      position: { x: 50, y: 32.89334741288279 },
-    } as DateSettings,
-  } as WidgetConfig<DateSettings>,
+    position: { x: 50, y: 32.89334741288279 },
+    settings: { fontSize: 24 },
+    fontSize: { min: 10, max: 50, step: 5 },
+  },
   info: {
     name: "Info",
-    storageKey: "info",
-    fontSize: {
-      min: 10,
-      max: 50,
-      step: 5,
-      enabled: true,
-    },
-    customControls: {
-      infoFields: true,
-    },
-    defaults: {
+    position: { x: 50, y: 78.08870116156282 },
+    settings: {
+      fontSize: 16,
       infoFields: {
         japaneseTitle: true,
         title: true,
@@ -161,121 +125,53 @@ export const WIDGET_CONFIGS: WidgetConfigMap = {
         movieLength: true,
         quote: true,
       },
-      fontSize: 16,
-      position: { x: 50, y: 78.08870116156282 },
-    } as InfoSettings,
-  } as WidgetConfig<InfoSettings>,
+    },
+    fontSize: { min: 10, max: 50, step: 5 },
+    customControls: { infoFields: true },
+  },
   todo: {
     name: "Todo",
-    storageKey: "todo",
-    fontSize: {
-      enabled: false,
-    },
-    darkMode: true,
-    width: {
-      min: 250,
-      max: 600,
-      step: 50,
-      enabled: true,
-    },
-    height: {
-      min: 200,
-      max: 700,
-      step: 50,
-      enabled: true,
-    },
-    defaults: {
-      width: 350,
-      height: 200,
-      darkMode: false,
-      position: { x: 13.169590643274855, y: 2 },
-    } as TodoSettings,
-  } as WidgetConfig<TodoSettings>,
+    position: { x: 13.169590643274855, y: 2 },
+    settings: { width: 350, height: 200, darkMode: false, collapsed: false },
+    width: { min: 250, max: 600, step: 50 },
+    height: { min: 200, max: 700, step: 50 },
+    customControls: { darkMode: true },
+  },
   avatar: {
     name: "Avatar",
-    storageKey: "avatar",
-    size: {
-      min: 50,
-      max: 400,
-      step: 50,
-      enabled: true,
-    },
-    customControls: {
-      avatarSelector: true,
-    },
-    defaults: {
-      selectedAvatar: "chihiro",
-      size: 100,
-      position: { x: 5.859649122807017, y: 86.06124604012672 },
-    } as AvatarSettings,
-  } as WidgetConfig<AvatarSettings>,
+    position: { x: 5.859649122807017, y: 86.06124604012672 },
+    settings: { selectedAvatar: "chihiro", size: 100 },
+    size: { min: 50, max: 400, step: 50 },
+    customControls: { avatarSelector: true },
+  },
   quicklinks: {
     name: "Quick Links",
-    storageKey: "quicklinks",
-    width: {
-      min: 200,
-      max: 600,
-      step: 100,
-      enabled: true,
-    },
-    height: {
-      min: 200,
-      max: 700,
-      step: 100,
-      enabled: true,
-    },
-    customControls: {
-      gridMode: true,
-    },
-    localStorageKeys: ["quicklinks_grid", "quicklinks_size"],
-    darkMode: true,
-    defaults: {
+    position: { x: 50, y: 50 },
+    settings: {
       width: 600,
       height: 200,
       gridMode: true,
-      position: { x: 50, y: 50 },
       darkMode: false,
-    } as QuicklinksSettings,
-  } as WidgetConfig<QuicklinksSettings>,
+      links: [],
+    },
+    width: { min: 200, max: 600, step: 100 },
+    height: { min: 200, max: 700, step: 100 },
+    customControls: { gridMode: true, darkMode: true },
+  },
   searchbar: {
     name: "Search Bar",
-    storageKey: "searchbar",
-    width: {
-      min: 200,
-      max: 800,
-      step: 25,
-      enabled: true,
-    },
-    height: {
-      min: 20,
-      max: 40,
-      step: 2,
-      enabled: true,
-    },
-    darkMode: true,
-    defaults: {
-      width: 550,
-      height: 40,
-      darkMode: false,
-      position: { x: 50, y: 39.54593453009504 },
-    } as SearchBarSettings,
-  } as WidgetConfig<SearchBarSettings>,
+    position: { x: 50, y: 39.54593453009504 },
+    settings: { width: 550, height: 40, darkMode: false },
+    width: { min: 200, max: 800, step: 25 },
+    height: { min: 20, max: 40, step: 2 },
+    customControls: { darkMode: true },
+  },
   pomodoro: {
     name: "Pomodoro",
-    storageKey: "pomodoro",
-    defaults: {
-      duration: 1500, // 25 min
-      breakDuration: 300, // 5 min
-      isActive: false,
-      position: { x: 50, y: 60 },
-    } as PomodoroSettings,
-  } as WidgetConfig<PomodoroSettings>,
+    position: { x: 86.88888888888889, y: 2 },
+    settings: {},
+  },
 };
 
-export const getWidgetConfig = (
-  storageKey?: string
-): WidgetConfig<any> | null => {
-  if (!storageKey) return null;
-  const baseKey = storageKey.replace(/$/, "");
-  return WIDGET_CONFIGS[baseKey] || null;
-};
+export const getWidgetConfig = <K extends WidgetKey>(key: K): WidgetConfig<K> =>
+  WIDGET_CONFIGS[key];

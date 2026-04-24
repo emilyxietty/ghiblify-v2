@@ -15,7 +15,8 @@ export const Todo: React.FC = () => {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { todoSettings } = useAppContext();
+  const { widgets } = useAppContext();
+  const todoSettings = widgets.todo.settings;
   const width = todoSettings.width;
   const height = todoSettings.height;
   const inputRef = useRef<HTMLInputElement>(null);

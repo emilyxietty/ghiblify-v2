@@ -4,12 +4,12 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import EditIcon from "@mui/icons-material/Edit";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
+import MenuIcon from "@mui/icons-material/Menu";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
 import TimerIcon from "@mui/icons-material/Timer";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
-import { WIDGET_CONFIGS } from "../../config/widgetConfig";
 
 import { Button } from "../../components/Button/Button";
 import {
@@ -19,113 +19,103 @@ import {
   SIDEBAR_WIDTH,
 } from "../../config/appConfig";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
-import { BackgroundFilters, useAppContext } from "../../contexts/AppContext";
+import { WidgetKey } from "../../config/widgetConfig";
+import {
+  BackgroundFilters,
+  ThemeName,
+  useAppContext,
+} from "../../contexts/AppContext";
 import "./LeftSidebar.css";
 
+const THEMES: Array<{ name: ThemeName; label: string }> = [
+  { name: "ghibli", label: "Ghibli" },
+  { name: "spirited", label: "Spirited Away" },
+  { name: "howls", label: "Howl's" },
+  { name: "totoro", label: "Totoro" },
+  { name: "ponyo", label: "Ponyo" },
+];
+
+const WIDGET_TOGGLES: Array<{
+  key: WidgetKey;
+  label: string;
+  icon: React.ReactElement;
+}> = [
+  { key: "time", label: "Time", icon: <AccessTimeFilledIcon /> },
+  { key: "date", label: "Date", icon: <CalendarTodayIcon /> },
+  { key: "info", label: "Film info", icon: <FormatQuoteIcon /> },
+  { key: "todo", label: "Todo list", icon: <CheckBoxIcon /> },
+  { key: "quicklinks", label: "Quick links", icon: <LinkIcon /> },
+  { key: "searchbar", label: "Search bar", icon: <SearchIcon /> },
+  { key: "pomodoro", label: "Pomodoro timer", icon: <TimerIcon /> },
+];
+
+const FILTER_UNITS: Record<keyof BackgroundFilters, string> = {
+  blur: "px",
+  brightness: "%",
+  contrast: "%",
+  saturation: "%",
+};
+
 export const LeftSidebar: React.FC = () => {
-  // Reset all widget settings to default
   const {
-    updateAvatarSettings,
-    updateTodoSettings,
-    updateDateSettings,
-    updateTimeSettings,
-    updateInfoSettings,
-    updateQuicklinksSettings,
-    updateSearchbarSettings,
-    quicklinksSettings,
-    updateWidgetPosition,
-  } = useAppContext();
-
-  function handleResetAllWidgets() {
-    if (
-      window.confirm("Are you sure you want to reset all widgets to default?")
-    ) {
-      // List of widget keys and their update functions
-      const widgetUpdaters: {
-        key: string;
-        updater: (settings: any) => void;
-      }[] = [
-        { key: "avatar", updater: updateAvatarSettings },
-        { key: "todo", updater: updateTodoSettings },
-        { key: "date", updater: updateDateSettings },
-        { key: "time", updater: updateTimeSettings },
-        { key: "info", updater: updateInfoSettings },
-        { key: "quicklinks", updater: updateQuicklinksSettings },
-        { key: "searchbar", updater: updateSearchbarSettings },
-      ];
-
-      widgetUpdaters.forEach(({ key, updater }) => {
-        updater(WIDGET_CONFIGS[key].defaults);
-        if (WIDGET_CONFIGS[key].defaults.position) {
-          updateWidgetPosition(
-            `${key}_position`,
-            WIDGET_CONFIGS[key].defaults.position
-          );
-        }
-      });
-
-      // Reload the page after reset
-      window.location.reload();
-    }
-  }
-  const {
+    widgets,
+    toggleWidgetVisibility,
+    resetAllWidgets,
     backgroundFilters,
     updateBackgroundFilters,
-    backgroundSelection,
-    updateBackgroundSelection,
+    appearance,
+    updateAppearance,
     showWidgetEdits,
     toggleEditMode,
-    widgetVisibility,
-    toggleWidgetVisibility,
   } = useAppContext();
 
-  // Close sidebar when edit mode changes
+  const [isOpen, setIsOpen] = useState(false);
+  const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
+  const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
+  const sidebarRef = useRef<HTMLElement | null>(null);
+
+  // Close sidebar when entering edit mode
   useEffect(() => {
     setIsOpen(false);
   }, [showWidgetEdits]);
+
+  // Edge-hover open + outside close (mouse UX preserved)
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
+      if (e.clientX < SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
+      else if (isOpen && e.clientX > sidebarWidth) setIsOpen(false);
+    };
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => document.removeEventListener("mousemove", handleMouseMove);
+  }, [isOpen]);
+
+  // Escape closes the sidebar (keyboard)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isOpen]);
+
+  // Make the sidebar inert (untabbable + hidden from AT) while closed.
+  // Done via ref because @types/react v18 doesn't yet type the `inert` prop.
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return;
+    if (isOpen) el.removeAttribute("inert");
+    else el.setAttribute("inert", "");
+  }, [isOpen]);
+
+  const selectedAvatar = widgets.avatar.settings.selectedAvatar;
+  const avatarData = AVATAR_OPTIONS.find((a) => a.value === selectedAvatar);
 
   const handleEditToggle = () => {
     toggleEditMode();
     setIsOpen(false);
   };
-
-  // Get the selected avatar from localStorage
-  const [selectedAvatar, setSelectedAvatar] = useState(() =>
-    localStorage.getItem("avatar_selected")
-  );
-
-  useEffect(() => {
-    const handleChange = () => {
-      setSelectedAvatar(localStorage.getItem("avatar_selected"));
-    };
-    window.addEventListener("avatarSettingsChange", handleChange);
-    return () =>
-      window.removeEventListener("avatarSettingsChange", handleChange);
-  }, []);
-
-  const avatarData = AVATAR_OPTIONS.find((a) => a.value === selectedAvatar);
-  const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
-  const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
-  const [movies, setMovies] = useState<Array<{ key: string; title: string }>>(
-    []
-  );
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
-
-      if (e.clientX < SIDEBAR_EDGE_TRIGGER) {
-        setIsOpen(true);
-      } else if (isOpen && e.clientX > sidebarWidth) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [isOpen]);
 
   const handleSiteClick = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
@@ -141,7 +131,7 @@ export const LeftSidebar: React.FC = () => {
   };
 
   const resetFilters = () => {
-    const defaultFilters = {
+    const defaultFilters: BackgroundFilters = {
       blur: 0,
       brightness: 100,
       contrast: 100,
@@ -151,228 +141,197 @@ export const LeftSidebar: React.FC = () => {
     updateBackgroundFilters(defaultFilters);
   };
 
-  type ItemProps = {
-    movieKey: string;
-    title: string;
-    enabled: boolean;
-    available: boolean;
-    links: string[];
-    disableLast?: boolean;
-    onUpdate: (k: string, v: boolean) => void;
+  const renderFilter = (
+    name: keyof BackgroundFilters,
+    label: string,
+    min: number,
+    max: number
+  ) => {
+    const value = filters[name] ?? (name === "blur" ? 0 : 100);
+    const unit = FILTER_UNITS[name];
+    const sliderId = `filter-${name}`;
+    return (
+      <div className="filter-control" key={name}>
+        <label htmlFor={sliderId}>
+          <span>{label}</span>
+          <span className="filter-value">
+            {value}
+            {unit}
+          </span>
+        </label>
+        <input
+          id={sliderId}
+          type="range"
+          min={min}
+          max={max}
+          value={value}
+          aria-valuetext={`${value}${unit === "px" ? " pixels" : " percent"}`}
+          onChange={(e) => handleFilterChange(name, parseInt(e.target.value))}
+          className="filter-slider"
+        />
+      </div>
+    );
   };
 
   return (
     <>
-      <div className={`left-sidebar ${isOpen ? "open" : ""}`}>
+      <button
+        type="button"
+        className={`sidebar-trigger${isOpen ? " is-hidden" : ""}`}
+        aria-label="Open settings sidebar"
+        aria-expanded={isOpen}
+        aria-controls="settings-sidebar"
+        onClick={() => setIsOpen(true)}
+      >
+        <MenuIcon fontSize="small" />
+      </button>
+      <aside
+        id="settings-sidebar"
+        ref={sidebarRef}
+        className={`left-sidebar ${isOpen ? "open" : ""}`}
+        aria-label="Settings"
+      >
         <div className="sidebar-content">
-          <div className="sidebar-section button-group">
-            <Button
-              variant="dark"
-              size="small"
-              onClick={() => handleSiteClick(GITHUB_REPO_URL)}
-            >
+          <div className="sidebar-section button-group" role="group" aria-label="External links">
+            <Button variant="dark" size="small" onClick={() => handleSiteClick(GITHUB_REPO_URL)}>
               Github Repo
             </Button>
-            <Button
-              variant="dark"
-              size="small"
-              onClick={() => handleSiteClick(BUYMEACOFFEE_URL)}
-            >
+            <Button variant="dark" size="small" onClick={() => handleSiteClick(BUYMEACOFFEE_URL)}>
               Buy me a Coffee
             </Button>
           </div>
-          <div className="sidebar-section">
-            <h4>Widgets</h4>
-            <div className="widget-section">
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.time ? " active" : ""
-                }`}
-                icon={<AccessTimeFilledIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("time")}
-                title="Toggle Time Widget"
-                variant="transparent"
-              ></Button>
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.date ? " active" : ""
-                }`}
-                icon={<CalendarTodayIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("date")}
-                title="Toggle Date Widget"
-                variant="transparent"
-              ></Button>
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.info ? " active" : ""
-                }`}
-                icon={<FormatQuoteIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("info")}
-                title="Toggle Info Widget"
-                variant="transparent"
-              ></Button>
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.todo ? " active" : ""
-                }`}
-                icon={<CheckBoxIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("todo")}
-                title="Toggle Todo Widget"
-                variant="transparent"
-              ></Button>
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.quicklinks ? " active" : ""
-                }`}
-                icon={<LinkIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("quicklinks")}
-                title="Toggle Quicklinks Widget"
-                variant="transparent"
-              ></Button>
+
+          <section className="sidebar-section" aria-labelledby="widgets-heading">
+            <h4 id="widgets-heading">Widgets</h4>
+            <div
+              className="widget-section"
+              role="group"
+              aria-labelledby="widgets-heading"
+            >
+              {WIDGET_TOGGLES.map(({ key, label, icon }) => {
+                const visible = widgets[key].visible;
+                return (
+                  <Button
+                    key={key}
+                    className={`widget-icon${visible ? " active" : ""}`}
+                    icon={icon}
+                    size="medium"
+                    variant="transparent"
+                    onClick={() => toggleWidgetVisibility(key)}
+                    aria-label={`${visible ? "Hide" : "Show"} ${label} widget`}
+                    aria-pressed={visible}
+                    title={`Toggle ${label}`}
+                  />
+                );
+              })}
               <Button
                 className={`widget-icon avatar-with-overlay${
-                  widgetVisibility.avatar ? " active" : ""
+                  widgets.avatar.visible ? " active" : ""
                 }`}
                 variant="transparent"
                 icon={
                   avatarData ? (
-                    <img src={avatarData.src} alt={avatarData.label} />
+                    <img src={avatarData.src} alt="" />
                   ) : (
-                    <span
-                      style={{ width: 28, height: 28, display: "inline-block" }}
-                    >
+                    <span style={{ width: 28, height: 28, display: "inline-block" }}>
                       A
                     </span>
                   )
                 }
                 size="medium"
                 onClick={() => toggleWidgetVisibility("avatar")}
-                title="Toggle Avatar Widget"
-              ></Button>
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.searchbar ? " active" : ""
-                }`}
-                variant="transparent"
-                icon={<SearchIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("searchbar")}
-                title="Toggle Searchbar Widget"
-              ></Button>
-              <Button
-                className={`widget-icon${
-                  widgetVisibility.pomodoro ? " active" : ""
-                }`}
-                variant="transparent"
-                icon={<TimerIcon />}
-                size="medium"
-                onClick={() => toggleWidgetVisibility("pomodoro")}
-                title="Toggle Pomodoro Widget"
-              ></Button>
+                aria-label={`${
+                  widgets.avatar.visible ? "Hide" : "Show"
+                } Avatar widget`}
+                aria-pressed={widgets.avatar.visible}
+                title="Toggle Avatar"
+              />
             </div>
             <div className="widget-edits">
-              <Button
-                variant="dark"
-                size="medium"
-                pill
-                onClick={handleEditToggle}
-              >
-                <EditIcon
-                  style={{
-                    fontSize: 14,
-                  }}
-                />
+              <Button variant="dark" size="medium" pill onClick={handleEditToggle}>
+                <EditIcon style={{ fontSize: 14 }} />
                 {showWidgetEdits ? "Done" : "Edit Widgets"}
               </Button>
-              <Button
-                variant="dark"
-                size="medium"
-                pill
-                onClick={handleResetAllWidgets}
-              >
-                <RestoreIcon style={{ fontSize: "14px" }} />
+              <Button variant="dark" size="medium" pill onClick={resetAllWidgets}>
+                <RestoreIcon style={{ fontSize: 14 }} />
                 Reset All Widgets
               </Button>
             </div>
-          </div>
-          <div className="sidebar-section">
-            <h4>Background</h4>
-            <div className="filter-group">
+          </section>
+
+          <section className="sidebar-section" aria-labelledby="appearance-heading">
+            <h4 id="appearance-heading">Appearance</h4>
+            <div className="filter-group" role="group" aria-labelledby="appearance-heading">
               <div className="filter-control">
-                <label>
-                  <span>Blur</span>
-                  <span className="filter-value">{filters.blur}px</span>
+                <span className="filter-control-label">Palette</span>
+                <div
+                  className="theme-swatches"
+                  role="radiogroup"
+                  aria-label="Color palette"
+                >
+                  {THEMES.map((t) => {
+                    const selected = appearance.theme === t.name;
+                    return (
+                      <button
+                        key={t.name}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        aria-label={t.label}
+                        title={t.label}
+                        className={`theme-swatch theme-${t.name}${
+                          selected ? " is-selected" : ""
+                        }`}
+                        onClick={() => updateAppearance({ theme: t.name })}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="filter-control">
+                <label htmlFor="widget-opacity">
+                  <span>Widget background</span>
+                  <span className="filter-value">{appearance.widgetOpacity}%</span>
                 </label>
                 <input
+                  id="widget-opacity"
                   type="range"
-                  min="0"
-                  max="20"
-                  value={filters.blur}
+                  min={0}
+                  max={100}
+                  value={appearance.widgetOpacity}
+                  aria-valuetext={`${appearance.widgetOpacity} percent`}
                   onChange={(e) =>
-                    handleFilterChange("blur", parseInt(e.target.value))
+                    updateAppearance({ widgetOpacity: parseInt(e.target.value) })
                   }
                   className="filter-slider"
                 />
               </div>
 
               <div className="filter-control">
-                <label>
-                  <span>Brightness</span>
-                  <span className="filter-value">{filters.brightness}%</span>
+                <label className="contrast-toggle">
+                  <span>High contrast</span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    checked={appearance.highContrast}
+                    onChange={(e) =>
+                      updateAppearance({ highContrast: e.target.checked })
+                    }
+                  />
+                  <span className="contrast-switch" aria-hidden="true" />
                 </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="200"
-                  value={filters.brightness}
-                  onChange={(e) =>
-                    handleFilterChange("brightness", parseInt(e.target.value))
-                  }
-                  className="filter-slider"
-                />
               </div>
+            </div>
+          </section>
 
-              <div className="filter-control">
-                <label>
-                  <span>Contrast</span>
-                  <span className="filter-value">
-                    {filters.contrast ?? 100}%
-                  </span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="200"
-                  value={filters.contrast ?? 100}
-                  onChange={(e) =>
-                    handleFilterChange("contrast", parseInt(e.target.value))
-                  }
-                  className="filter-slider"
-                />
-              </div>
-
-              <div className="filter-control">
-                <label>
-                  <span>Saturation</span>
-                  <span className="filter-value">{filters.saturation}%</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="200"
-                  value={filters.saturation}
-                  onChange={(e) =>
-                    handleFilterChange("saturation", parseInt(e.target.value))
-                  }
-                  className="filter-slider"
-                />
-              </div>
-
+          <section className="sidebar-section" aria-labelledby="background-heading">
+            <h4 id="background-heading">Background</h4>
+            <div className="filter-group" role="group" aria-labelledby="background-heading">
+              {renderFilter("blur", "Blur", 0, 20)}
+              {renderFilter("brightness", "Brightness", 0, 200)}
+              {renderFilter("contrast", "Contrast", 0, 200)}
+              {renderFilter("saturation", "Saturation", 0, 200)}
               <div className="filter-actions">
                 <Button variant="dark" size="small" onClick={resetFilters}>
                   <RestoreIcon style={{ fontSize: 16, marginRight: 8 }} />
@@ -381,15 +340,17 @@ export const LeftSidebar: React.FC = () => {
               </div>
             </div>
             <Button
-              variant={"dark"}
-              fullWidth={true}
+              variant="dark"
+              fullWidth
               onClick={() => setShowBackgroundSettings((s) => !s)}
+              aria-haspopup="dialog"
+              aria-expanded={showBackgroundSettings}
             >
               Select Backgrounds
             </Button>
-          </div>
+          </section>
         </div>
-      </div>
+      </aside>
       {showBackgroundSettings && (
         <BackgroundSettingsModal
           showBackgroundSettings={showBackgroundSettings}
