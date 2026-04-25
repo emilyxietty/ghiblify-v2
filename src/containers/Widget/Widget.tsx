@@ -1,3 +1,4 @@
+import EditIcon from "@mui/icons-material/Edit";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import EditWidget from "../../components/EditWidget/EditWidget";
 import { getWidgetConfig, WidgetKey } from "../../config/widgetConfig";
@@ -48,7 +49,12 @@ export const Widget: React.FC<WidgetProps> = ({
     updateWidgetSettings,
     isDragging,
     setIsDragging,
+    editingWidgetKey,
+    setEditingWidgetKey,
   } = useAppContext();
+  // The widget is "in edit mode" if either the global edit toggle is on,
+  // or this specific widget was singled out via the Shift+pencil button.
+  const isEditingThis = showWidgetEdits || editingWidgetKey === storageKey;
   const widgetConfig = getWidgetConfig(storageKey);
   const widgetSettings = widgets[storageKey].settings as Record<string, unknown>;
 
@@ -367,9 +373,12 @@ export const Widget: React.FC<WidgetProps> = ({
     if (e.button !== 0 || !e.shiftKey) return;
     if (isResizing) return;
 
-    // Don't hijack drags that originated on the resize handle.
+    // Don't hijack mousedowns that originated on the resize handle or
+    // the Shift+pencil quick-edit button — those have their own click
+    // handlers and the drag flow swallows the click.
     const target = e.target as HTMLElement | null;
     if (target?.closest?.(".widget-resize-handle")) return;
+    if (target?.closest?.(".widget-quick-edit")) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -450,11 +459,11 @@ export const Widget: React.FC<WidgetProps> = ({
         />
       )}
       <EditWidget
-        showWidgetEdits={showWidgetEdits}
+        showWidgetEdits={isEditingThis}
         isResizing={isResizing}
         storageKey={storageKey}
       />
-      {showWidgetEdits &&
+      {isEditingThis &&
         hasResizeHandle &&
         !(isQuicklinks && !widgets.quicklinks.settings.gridMode) && (
           <div
@@ -464,6 +473,24 @@ export const Widget: React.FC<WidgetProps> = ({
             title="Drag to resize"
           ></div>
         )}
+      {/* Shift-only quick-edit pencil — only visible while Shift is held
+          and the widget isn't already in edit mode. Lets you jump straight
+          into editing one widget without going through the sidebar. */}
+      {!isEditingThis && (
+        <button
+          type="button"
+          className="widget-quick-edit"
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingWidgetKey(storageKey);
+          }}
+          aria-label={`Edit ${storageKey} widget`}
+          data-tooltip="Edit"
+          tabIndex={-1}
+        >
+          <EditIcon style={{ fontSize: 14 }} />
+        </button>
+      )}
       <div className="widget-content">{children}</div>
     </div>
   );

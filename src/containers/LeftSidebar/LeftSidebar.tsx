@@ -11,7 +11,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import TimerIcon from "@mui/icons-material/Timer";
 import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
-import WelcomeModal from "../../components/WelcomeModal/WelcomeModal";
 
 import { Button } from "../../components/Button/Button";
 import {
@@ -42,6 +41,7 @@ const THEMES: Array<{ name: ThemeName; label: string }> = [
   { name: "cream", label: "Cream" },
   { name: "mint", label: "Mint" },
   { name: "bloom", label: "Bloom" },
+  { name: "cotton", label: "Cotton Candy" },
   { name: "mono", label: "Mono" },
 ];
 
@@ -78,12 +78,12 @@ export const LeftSidebar: React.FC = () => {
     updateAppearance,
     showWidgetEdits,
     toggleEditMode,
+    setShowGuide,
   } = useAppContext();
 
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
   // Close sidebar when entering edit mode
@@ -213,7 +213,7 @@ export const LeftSidebar: React.FC = () => {
               aria-label="Open the guide"
               aria-haspopup="dialog"
             >
-              <HelpOutlineIcon style={{ fontSize: 14, marginRight: 4 }} />
+              <HelpOutlineIcon style={{ fontSize: 14 }} />
               Guide
             </Button>
           </div>
@@ -332,7 +332,7 @@ export const LeftSidebar: React.FC = () => {
               {renderFilter("saturation", "Saturation", 0, 200)}
               <div className="filter-actions">
                 <Button variant="dark" size="small" onClick={resetFilters}>
-                  <RestoreIcon style={{ fontSize: 16, marginRight: 8 }} />
+                  <RestoreIcon style={{ fontSize: 16 }} />
                   Reset Filters
                 </Button>
               </div>
@@ -355,7 +355,6 @@ export const LeftSidebar: React.FC = () => {
           setShowBackgroundSettings={setShowBackgroundSettings}
         />
       )}
-      <WelcomeModal open={showGuide} onClose={() => setShowGuide(false)} />
     </>
   );
 };

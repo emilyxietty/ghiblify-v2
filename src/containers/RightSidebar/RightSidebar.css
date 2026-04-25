@@ -4,6 +4,45 @@
    inert when closed.
    =========================================================================== */
 
+/* Transient callout shown when bookmarks is first toggled on. */
+.bookmarks-toggle-callout {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: 9000;
+    pointer-events: none;
+    animation: bookmarks-callout 3.5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes bookmarks-callout {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px);
+    }
+    8% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
+}
+
 .right-sidebar {
     position: fixed;
     top: 0;

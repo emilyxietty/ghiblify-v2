@@ -1,9 +1,9 @@
 import SearchIcon from "@mui/icons-material/Search";
 import React, { useState } from "react";
 import { Button } from "../../../components/Button/Button";
+import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import "./SearchBar.css";
-import TextInput from "../../../components/TextInput/TextInput";
 
 const SearchBar: React.FC = () => {
   const { widgets } = useAppContext();
@@ -18,11 +18,39 @@ const SearchBar: React.FC = () => {
   const submit = () => {
     const q = query.trim();
     if (!q) return;
-    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+    // Use chrome.search.query() so the search routes through the user's
+    // selected default search engine (Chrome Web Store policy: a new-tab
+    // extension's search must respect the user's choice, not hardcode a
+    // provider). Falls back to a direct Google URL only if the API
+    // isn't available (e.g. running outside the extension context).
+    const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
+    if (chromeNs?.search?.query) {
+      try {
+        chromeNs.search.query({ text: q, disposition: "CURRENT_TAB" });
+        return;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          "[SearchBar] chrome.search.query failed, falling back",
+          err
+        );
+      }
+    }
+    return;
   };
 
   return (
-    <div style={{ width, height }} className="widget-header">
+    <div
+      style={{
+        width,
+        height,
+        ["--sb-opacity" as any]:
+          ((searchbarSettings as any).opacity ?? 50) / 100,
+        ["--input-opacity" as any]:
+          ((searchbarSettings as any).opacity ?? 50) / 100,
+      }}
+      className="widget-header"
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -35,9 +63,9 @@ const SearchBar: React.FC = () => {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search Google..."
+          placeholder="Search the web..."
           mode={isDark ? "dark" : "light"}
-          aria-label="Search Google"
+          aria-label="Search the web"
         />
         <Button
           type="submit"
@@ -46,8 +74,8 @@ const SearchBar: React.FC = () => {
           disabled={!query.trim()}
           className={`searchbar-search-btn ${darkClass}`}
           style={{ height }}
-          aria-label="Search Google"
-          data-tooltip="Search Google"
+          aria-label="Search"
+          data-tooltip="Search"
         >
           <SearchIcon />
         </Button>

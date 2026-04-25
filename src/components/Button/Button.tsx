@@ -29,6 +29,10 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   ...props
 }) => {
+  // Only treat as icon-only when there are no text children — otherwise
+  // .btn-icon's uniform padding + no-border override makes text look
+  // off-center inside the button.
+  const isIconOnly = !!icon && !children;
   const classes = [
     "btn",
     `btn-${variant}`,
@@ -36,7 +40,7 @@ export const Button: React.FC<ButtonProps> = ({
     fullWidth ? "btn-full-width" : "",
     pill ? "btn-pill" : "",
     disabled ? "btn-disabled" : "",
-    icon && "btn-icon",
+    isIconOnly ? "btn-icon" : "",
     className,
   ]
     .filter(Boolean)

@@ -3,20 +3,34 @@
    Theme: .ql-light / .ql-dark applied to the wrapper.
    =========================================================================== */
 
-/* Both QuickLinks light/dark modes now bridge their text/border vars to
-   the theme — so on light themes (Pastel/Cream/Mint/Bloom) text becomes
-   dark plum/forest/etc., on dark themes it stays cream. */
-.ql-light,
-.ql-dark {
-    --ql-text: var(--light);
-    --ql-text-muted: var(--light-muted);
-    --ql-bg-hover: color-mix(in srgb, var(--light) 12%, transparent);
-    --ql-bg-active: color-mix(in srgb, var(--light) 20%, transparent);
-    --ql-border: color-mix(in srgb, var(--light) 18%, transparent);
-    --ql-border-strong: color-mix(in srgb, var(--light) 40%, transparent);
+/* "Light mode" = light text on dark surface (what the user sees as
+   light = bright text on a dim card). "Dark mode" = dark text on light
+   surface. Swapped from the previous mapping. */
+.ql-light {
+    --ql-text: rgba(255, 254, 245, 0.94);
+    --ql-text-muted: rgba(255, 254, 245, 0.55);
+    --ql-bg: rgba(0, 0, 0, 0.42);
+    --ql-bg-hover: rgba(0, 0, 0, 0.62);
+    --ql-bg-active: rgba(0, 0, 0, 0.78);
+    --ql-border: rgba(255, 255, 255, 0.16);
+    --ql-border-strong: rgba(255, 255, 255, 0.4);
     --ql-focus-ring: var(--focus-ring);
     --ql-danger: #ff8a8a;
     --ql-danger-bg: rgba(255, 107, 107, 0.18);
+    --ql-success: var(--green);
+}
+
+.ql-dark {
+    --ql-text: rgba(24, 24, 24, 0.92);
+    --ql-text-muted: rgba(24, 24, 24, 0.55);
+    --ql-bg: rgba(255, 255, 255, 0.42);
+    --ql-bg-hover: rgba(255, 255, 255, 0.62);
+    --ql-bg-active: rgba(255, 255, 255, 0.78);
+    --ql-border: rgba(0, 0, 0, 0.14);
+    --ql-border-strong: rgba(0, 0, 0, 0.32);
+    --ql-focus-ring: var(--focus-ring);
+    --ql-danger: #c62828;
+    --ql-danger-bg: rgba(198, 40, 40, 0.12);
     --ql-success: var(--green);
 }
 
@@ -65,6 +79,9 @@
 .ql-grid-cell {
     position: relative;
     border-radius: 10px;
+    /* Force square tiles regardless of column width (columns are
+       auto-fill minmax(96px, 1fr), so they grow with the widget). */
+    aspect-ratio: 1 / 1;
     transition: background 120ms ease, transform 120ms ease;
 }
 
@@ -92,20 +109,19 @@
     gap: 6px;
     width: 100%;
     height: 100%;
-    min-height: 96px;
     padding: 10px 6px 8px;
     box-sizing: border-box;
-    color: var(--ql-text);
     text-decoration: none;
     border-radius: 10px;
-    /* Theme-tinted, slider-controlled with 0.6 floor so each tile is
-       visible without touching the slider. */
-    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.42);
+    /* Link tiles always dark + white text. Alpha controlled by the
+       opacity slider via --ql-opacity (set inline). */
+    background: rgba(0, 0, 0, var(--ql-opacity, 0.5));
+    color: #ffffff;
     transition: background 120ms ease;
 }
 
 .ql-grid-link:hover {
-    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.62);
+    background: rgba(0, 0, 0, calc(var(--ql-opacity, 0.5) + 0.2));
     backdrop-filter: blur(6px);
 }
 
@@ -138,7 +154,12 @@
 .ql-grid-title {
     font-size: 12px;
     line-height: 1.25;
-    color: var(--ql-text);
+    /* Always white with a subtle dark text-shadow so the title reads
+       cleanly against any photo / tile-opacity combination. */
+    color: #ffffff;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.55),
+        0 2px 6px rgba(0, 0, 0, 0.35);
     text-align: center;
     word-break: break-word;
     max-width: 88px;
@@ -148,17 +169,60 @@
     overflow: hidden;
 }
 
-/* The + / cancel control card */
+/* The + add control card. Hidden by default — only shown while Shift is
+   held. Exception: when the grid is empty, show it always so the user
+   has an obvious way to add their first link. */
 .ql-control-cell {
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
+    display: none;
     align-items: center;
     justify-content: center;
-    min-height: 96px;
-    padding: 6px;
+    padding: 8px;
     border-radius: 10px;
     border: 2px dashed var(--ql-border);
+    background: color-mix(in srgb, var(--ql-text) 4%, transparent);
+    transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    /* Square — matches the link tiles. */
+    aspect-ratio: 1 / 1;
+}
+
+.show-widget-outline .ql-control-cell,
+.ql-control-cell:only-child {
+    display: flex;
+}
+
+.ql-control-cell:hover {
+    background: color-mix(in srgb, var(--ql-text) 10%, transparent);
+    border-color: var(--ql-border-strong);
+    transform: scale(1.02);
+}
+
+/* The + button inside the control cell — make it a soft pill that fills
+   the card and reads as the primary action. */
+.ql-control-cell .btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--ql-text) !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 140ms ease, color 140ms ease;
+}
+
+.ql-control-cell .btn svg {
+    font-size: 32px !important;
+    color: color-mix(in srgb, var(--ql-text) 70%, transparent);
+    transition: color 140ms ease;
+}
+
+.ql-control-cell:hover .btn svg,
+.ql-control-cell .btn:hover svg {
+    color: var(--ql-text);
 }
 
 .ql-control-cell.control-dark {
@@ -174,11 +238,13 @@
     background: var(--ql-bg-hover);
 }
 
-/* Delete overlay shown on each cell when delete-mode is active */
+/* Delete overlay on each tile — hidden by default, shown only while
+   Shift is held (body.show-widget-outline). User clicks the X to remove
+   the link. */
 .ql-delete-overlay {
     position: absolute;
     inset: 0;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.55);
@@ -190,10 +256,17 @@
     transition: background 120ms ease;
 }
 
+.show-widget-outline .ql-delete-overlay {
+    display: flex;
+}
+
+/* (Per-element tooltip overrides removed — the global TooltipPortal
+   handles positioning + viewport edge detection automatically.) */
+
 .ql-delete-overlay:hover,
 .ql-delete-overlay:focus-visible {
     background: rgba(0, 0, 0, 0.78);
-    color: var(--light);
+    color: #ffffff;
     outline: none;
 }
 
@@ -213,24 +286,42 @@
     margin-bottom: 8px;
 }
 
+/* Circular palette-themed save button — matches the SearchBar circular
+   button. Theme --dark surface, --light icon, theme-yellow ring on hover. */
 .quicklinksSettings-add-btn {
-    padding: 7px 14px;
-    border-radius: 6px;
-    background: rgba(99, 99, 99, 0.55);
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--dark);
     color: var(--light);
-    font-size: 13px;
-    font-weight: 500;
-    border: 1px solid transparent;
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
     cursor: pointer;
-    transition: background 120ms ease, transform 120ms ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 160ms ease, border-color 160ms ease,
+        transform 140ms ease, box-shadow 160ms ease;
+}
+
+.quicklinksSettings-add-btn svg {
+    color: var(--light);
+    font-size: 20px;
 }
 
 .quicklinksSettings-add-btn:hover:not(:disabled) {
-    background: rgba(99, 99, 99, 0.85);
+    background: var(--dark-muted);
+    border-color: var(--focus-ring);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .quicklinksSettings-add-btn:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .quicklinksSettings-add-btn:focus-visible {
@@ -241,6 +332,7 @@
 .quicklinksSettings-add-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* ---------------------------------------------------------------------------
@@ -262,7 +354,12 @@
 }
 
 .quicklinksSettings-title {
-    color: var(--light);
+    /* Always white with a soft drop shadow so it reads on any photo
+       background, like the Time / Date widgets. */
+    color: #ffffff;
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.55),
+        0 2px 8px rgba(0, 0, 0, 0.4);
     font-size: 16px;
     font-weight: 600;
     padding: 8px 14px;
@@ -287,16 +384,27 @@
 
 .quicklinksSettings-dropdown {
     min-width: min(420px, 90vw);
-    /* Floating popover: surface is dark, opacity tracks slider but won't fall
-       below 0.85 — a transparent floating dialog isn't readable. */
-    --surface-rgb: var(--dark-rgb, 31, 38, 32);
-    background: rgba(var(--surface-rgb), 0.92);
-    color: var(--light);
+    /* Always genuinely dark — popover content inside (links, inputs, empty
+       state) uses white text, so the surface needs to stay dark on every
+       palette including the light ones (Pastel/Cream/Mint/Bloom/Mono).
+       Don't tie this to theme --dark-rgb (which goes light on those). */
+    background: rgba(20, 22, 26, 0.92);
+    color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
     padding: 14px;
     box-sizing: border-box;
     z-index: 2001;
+}
+
+/* Lift the QuickLinks widget itself above sibling widgets while its
+   dropdown is rendered. Other widgets all live at z-index: 1000 in the
+   parent stacking context, and z-index: 2001 on the dropdown alone
+   doesn't escape its own widget's stacking context — so without this
+   rule the popover would stay visually behind any later-rendered
+   widget. */
+.widget[data-widget-key="quicklinks"]:has(.quicklinksSettings-dropdown) {
+    z-index: 2000;
 }
 
 .quicklinksSettings-list {
@@ -328,11 +436,21 @@
 }
 
 .quicklinksSettings-item {
-    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.32);
+    /* Dark tile + white text always (matches grid mode). */
+    background: rgba(0, 0, 0, var(--ql-opacity, 0.5));
 }
 
 .quicklinksSettings-item:hover {
-    background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.55);
+    background: rgba(0, 0, 0, calc(var(--ql-opacity, 0.5) + 0.2));
+}
+
+.quicklinksSettings-item .quicklinksSettings-link,
+.quicklinksSettings-item .ql-title,
+.quicklinksSettings-item .ql-url {
+    color: #ffffff;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.55),
+        0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .quicklinksSettings-item.dragging {
@@ -391,7 +509,6 @@
 
 .ql-url {
     font-size: 11px;
-    opacity: 0.7;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

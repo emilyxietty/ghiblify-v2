@@ -387,6 +387,21 @@ const Pomodoro: React.FC = () => {
     };
   }, [focusMode]);
 
+  // When Pomodoro unmounts (the user hides the widget entirely), make sure
+  // focus mode is fully cleared — otherwise the body class can be stuck
+  // with no Pomodoro available to dismiss it from, and the rest of the
+  // app stays hidden behind the scrim.
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove("pomodoro-focus");
+      try {
+        localStorage.setItem("pomodoro_focus_mode", "false");
+      } catch {
+        /* ignore */
+      }
+    };
+  }, []);
+
   // Mirror focus-mode changes from other tabs.
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {

@@ -77,6 +77,13 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     updateWidgetSettings("avatar", { selectedAvatar: avatar });
   };
 
+  const supportsOpacity = "opacity" in settings;
+  const opacity =
+    supportsOpacity ? Math.round(Number(settings.opacity) || 0) : 50;
+  const handleOpacityChange = (value: number) => {
+    updateWidgetSettings(storageKey, { opacity: value } as never);
+  };
+
   const hasAnyControls = !!(
     widgetConfig.fontSize ||
     widgetConfig.size ||
@@ -86,7 +93,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.infoFields ||
     controls?.avatarSelector ||
     controls?.darkMode ||
-    controls?.gridMode
+    controls?.gridMode ||
+    supportsOpacity
   );
 
   if (!hasAnyControls) return <div className="widget-overlay" />;
@@ -161,6 +169,27 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             selectedAvatar={avatarSettings.selectedAvatar}
             onChange={handleAvatarChange}
             avatarSize={avatarSettings.size}
+          />
+        </div>
+      )}
+      {supportsOpacity && (
+        <div
+          className="widget-opacity-control"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <label className="widget-opacity-label">
+            <span>Opacity</span>
+            <span>{opacity}%</span>
+          </label>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={opacity}
+            aria-valuetext={`${opacity} percent`}
+            aria-label="Widget opacity"
+            onChange={(e) => handleOpacityChange(parseInt(e.target.value))}
+            className="widget-opacity-slider"
           />
         </div>
       )}

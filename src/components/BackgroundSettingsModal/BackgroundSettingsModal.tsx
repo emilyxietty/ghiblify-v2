@@ -407,7 +407,7 @@ export const BackgroundSettingsModal: React.FC<
             }}
             variant="dark"
           >
-            <RestoreIcon style={{ fontSize: 16, marginRight: 8 }} />
+            <RestoreIcon style={{ fontSize: 16 }} />
             Restore Deleted
           </Button>
         </div>

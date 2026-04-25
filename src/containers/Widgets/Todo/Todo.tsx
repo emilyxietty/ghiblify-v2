@@ -148,7 +148,14 @@ export const Todo: React.FC = () => {
       className={`todo-container widget-header ${
         todoSettings.darkMode ? "todo-dark" : ""
       }`}
-      style={{ width: `${width}px`, height: `${height}px` }}
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        ["--todo-opacity" as any]:
+          ((todoSettings as any).opacity ?? 50) / 100,
+        ["--input-opacity" as any]:
+          ((todoSettings as any).opacity ?? 50) / 100,
+      }}
     >
       <div className="todo-input-wrapper">
         <TextInput

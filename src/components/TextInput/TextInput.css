@@ -1,22 +1,10 @@
-/* Placeholder uses the theme's muted text so it auto-inverts: dark on
-   light themes (Pastel/Cream/Mint/Bloom/Mono), pale on dark themes. */
-.custom-input::placeholder,
-.custom-input-light::placeholder,
-.custom-input-dark::placeholder {
-    color: var(--light-muted);
-    opacity: 1;
-}
-
-/* Base input. Surface uses the theme's --dark-rgb; border + text inherit
-   var(--light) so they auto-invert on light themes. */
+/* Base input — shared layout. Light/dark mode determines surface + text
+   color; theme palette tints the border and focus ring. */
 .custom-input {
     width: 100%;
     padding: 12px 36px 12px 10px;
-    background: rgba(var(--dark-rgb, 31, 38, 32), 0.42);
     backdrop-filter: blur(6px);
-    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
     border-radius: 8px;
-    color: var(--light);
     font-size: 14px;
     outline: none;
     transition: background 160ms ease, border-color 160ms ease,
@@ -28,17 +16,39 @@
     font-size: 10px;
 }
 
-/* Light + dark variants now share the same theme-aware border. Keeping the
-   classes around so existing markup stays valid. */
-.custom-input-light,
-.custom-input-dark {
-    color: var(--light);
-    border-color: color-mix(in srgb, var(--light) 22%, transparent);
+/* Light mode — pale surface, dark text. Alpha follows --input-opacity
+   set by the parent widget (so the per-widget opacity slider also
+   tints the input, not just the button/tile). */
+.custom-input-light {
+    background: rgba(255, 255, 255, var(--input-opacity, 0.5));
+    color: rgba(24, 24, 24, 0.92);
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
 }
 
-.custom-input:focus {
-    background: rgba(var(--dark-rgb, 31, 38, 32), 0.65);
-    color: var(--light);
+.custom-input-light::placeholder {
+    color: rgba(24, 24, 24, 0.5);
+    opacity: 1;
+}
+
+.custom-input-light:focus {
+    background: rgba(255, 255, 255, calc(var(--input-opacity, 0.5) + 0.2));
+    border-color: var(--focus-ring);
+}
+
+/* Dark mode — dark surface, light text. */
+.custom-input-dark {
+    background: rgba(0, 0, 0, var(--input-opacity, 0.5));
+    color: rgba(255, 254, 245, 0.94);
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
+}
+
+.custom-input-dark::placeholder {
+    color: rgba(255, 254, 245, 0.55);
+    opacity: 1;
+}
+
+.custom-input-dark:focus {
+    background: rgba(0, 0, 0, calc(var(--input-opacity, 0.5) + 0.2));
     border-color: var(--focus-ring);
 }
 

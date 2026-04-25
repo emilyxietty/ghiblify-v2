@@ -7,8 +7,15 @@
     min-height: 0;
     border-radius: 8px;
     border: none;
-    /* Always use the theme's dark surface so white text stays readable. */
-    --surface-rgb: var(--dark-rgb, 31, 38, 32);
+    /* Light mode (default) — pale surface, dark icon. Alpha is driven
+       by the --sb-opacity var set inline by SearchBar.tsx (0–1). */
+    --sb-surface-rgb: 255, 255, 255;
+    --sb-text: rgba(24, 24, 24, 0.92);
+}
+
+.searchbar.dark {
+    --sb-surface-rgb: 0, 0, 0;
+    --sb-text: rgba(255, 254, 245, 0.94);
 }
 
 /* The input itself is a TextInput, which renders with .custom-input
@@ -30,22 +37,46 @@
 /* Button override — the Button component's variant CSS sets its own
    background, so we override with the same theme surface as the input
    plus a themed icon color. */
+/* Circular search button — palette-themed (theme's --dark surface, --light
+   icon). Subtle theme-tinted border, soft yellow accent only on hover.
+   Matches the rest of the palette-driven buttons. */
 .searchbar-search-btn {
-    background: rgba(var(--surface-rgb), 0.42) !important;
-    border-color: transparent !important;
+    background: var(--dark) !important;
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent) !important;
     color: var(--light) !important;
-    transition: background 160ms ease, color 160ms ease;
+    border-radius: 50% !important;
+    width: 38px;
+    min-width: 38px !important;
+    height: 38px;
+    min-height: 38px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 160ms ease, border-color 160ms ease,
+        transform 140ms ease, box-shadow 160ms ease;
 }
 
 .searchbar-search-btn svg {
     color: var(--light);
+    font-size: 20px !important;
 }
 
-.searchbar-search-btn:hover:not(:disabled) {
-    background: rgba(var(--surface-rgb), 0.7) !important;
+.searchbar-search-btn:hover:not(:disabled):not(.btn-disabled) {
+    background: var(--dark-muted) !important;
+    border-color: var(--focus-ring) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.searchbar-search-btn:active:not(:disabled):not(.btn-disabled) {
+    transform: translateY(0) scale(0.96);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .searchbar-search-btn:disabled,
 .searchbar-search-btn.btn-disabled {
-    color: var(--light-muted) !important;
+    opacity: 0.5;
+    box-shadow: none;
 }

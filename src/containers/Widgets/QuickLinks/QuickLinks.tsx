@@ -1,6 +1,6 @@
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import AddIcon from "@mui/icons-material/Add";
 import CancelIcon from "@mui/icons-material/Cancel";
-import CheckIcon from "@mui/icons-material/Check";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button/Button";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
@@ -15,20 +15,32 @@ const normalizeUrl = (raw: string) => {
   return `https://${t}`;
 };
 
-const getFavicon = (rawUrl: string) => {
+const getFavicon = (rawUrl: string, size = 64) => {
   if (!rawUrl) return "";
-  try {
-    const url = new URL(normalizeUrl(rawUrl));
-    return `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(
-      url.hostname
-    )}`;
-  } catch {
-    return "";
+  const fullUrl = normalizeUrl(rawUrl);
+  // Prefer Chrome's built-in favicon cache (MV3 _favicon API). Requires
+  // "favicon" in manifest permissions. Only available inside an extension
+  // context (chrome-extension:// pages); falls back to Google's s2 service
+  // for dev preview / non-extension contexts.
+  const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
+  if (chromeNs?.runtime?.getURL) {
+    try {
+      const faviconUrl = new URL(chromeNs.runtime.getURL("/_favicon/"));
+      faviconUrl.searchParams.set("pageUrl", fullUrl);
+      faviconUrl.searchParams.set("size", String(size));
+      return faviconUrl.toString();
+    } catch {
+      /* fall through */
+    }
   }
+  return;
 };
 
 export const QuickLinks: React.FC = () => {
-  const { widgets, updateWidgetSettings, showWidgetEdits } = useAppContext();
+  const { widgets, updateWidgetSettings, showWidgetEdits, editingWidgetKey } =
+    useAppContext();
+  // True when QuickLinks is in any kind of edit mode — global or per-widget.
+  const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
   const quicklinksSettings = widgets.quicklinks.settings;
   const darkMode = !!quicklinksSettings.darkMode;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -42,32 +54,11 @@ export const QuickLinks: React.FC = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [addGridLink, setAddGridLink] = useState(false);
-  const [deleteGridLink, setDeleteGridLink] = useState(false);
   const showGrid = !!quicklinksSettings.gridMode;
 
   const width = quicklinksSettings.width;
   const height = quicklinksSettings.height;
   const themeClass = darkMode ? "ql-dark" : "ql-light";
-
-  // Exit delete mode when clicking outside grid or pressing Enter/Escape
-  useEffect(() => {
-    if (!deleteGridLink) return;
-    function handleClick(e: MouseEvent) {
-      const grid = document.querySelector(".quicklinksSettings-grid-list");
-      if (grid && !grid.contains(e.target as Node)) {
-        setDeleteGridLink(false);
-      }
-    }
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Enter" || e.key === "Escape") setDeleteGridLink(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
-    };
-  }, [deleteGridLink]);
 
   useEffect(() => {
     if (anchorEl) setTimeout(() => urlInputRef.current?.focus(), 0);
@@ -152,6 +143,12 @@ export const QuickLinks: React.FC = () => {
         className={`quicklinksSettings-grid-wrapper widget-header quicklinks-widget-mode-${
           darkMode ? "dark" : "light"
         } ${themeClass}`}
+        style={{
+          ["--ql-opacity" as any]:
+            ((quicklinksSettings as any).opacity ?? 50) / 100,
+          ["--input-opacity" as any]:
+            ((quicklinksSettings as any).opacity ?? 50) / 100,
+        }}
       >
         <div className="quicklinksSettings-grid-list">
           <div
@@ -186,31 +183,41 @@ export const QuickLinks: React.FC = () => {
                         draggable={false}
                       />
                     ) : (
-                      <div className="ql-grid-favicon ql-favicon-fallback" aria-hidden="true">
+                      <div
+                        className="ql-grid-favicon ql-favicon-fallback"
+                        aria-hidden="true"
+                      >
                         {l.title.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <span className="ql-grid-title">{l.title}</span>
                   </a>
-                  {deleteGridLink && (
-                    <button
-                      type="button"
-                      className="ql-delete-overlay"
-                      aria-label={`Delete ${l.title}`}
-                      data-tooltip={`Delete ${l.title}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        removeLink(l.id);
-                      }}
-                    >
-                      <CancelIcon fontSize="small" />
-                    </button>
-                  )}
+                  {/* Always rendered; CSS hides it unless Shift is held
+                      (body.show-widget-outline). */}
+                  <button
+                    type="button"
+                    className="ql-delete-overlay"
+                    aria-label={`Delete ${l.title}`}
+                    data-tooltip={`Delete ${l.title}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeLink(l.id);
+                    }}
+                  >
+                    <CancelIcon fontSize="small" />
+                  </button>
                 </div>
               );
             })}
-            <div className={`ql-grid-cell ql-control-cell ${darkMode ? "control-dark" : "control-light"}`}>
+            {/* Add control — only visible while Shift is held (body class
+                .show-widget-outline). Delete X overlays on each tile follow
+                the same pattern. */}
+            <div
+              className={`ql-grid-cell ql-control-cell ${
+                darkMode ? "control-dark" : "control-light"
+              }`}
+            >
               <Button
                 variant={darkMode ? "dark" : "light"}
                 icon={<AddCircleIcon fontSize="small" />}
@@ -218,27 +225,6 @@ export const QuickLinks: React.FC = () => {
                 aria-label="Add a new quick link"
                 data-tooltip="Add link"
               />
-              {deleteGridLink ? (
-                <Button
-                  variant={darkMode ? "dark" : "light"}
-                  icon={<CheckIcon fontSize="small" />}
-                  onClick={() => setDeleteGridLink(false)}
-                  aria-label="Done deleting links"
-                  aria-pressed={true}
-                  data-tooltip="Done deleting"
-                />
-              ) : (
-                quicklinksSettings.links.length > 0 && (
-                  <Button
-                    variant={darkMode ? "dark" : "light"}
-                    icon={<CancelIcon fontSize="small" />}
-                    onClick={() => setDeleteGridLink(true)}
-                    aria-label="Show delete buttons"
-                    aria-pressed={false}
-                    data-tooltip="Remove links"
-                  />
-                )
-              )}
             </div>
           </div>
         </div>
@@ -280,9 +266,10 @@ export const QuickLinks: React.FC = () => {
               type="submit"
               className="quicklinksSettings-add-btn"
               disabled={!url.trim()}
+              aria-label="Save link"
               data-tooltip="Save link"
             >
-              Add
+              <AddIcon fontSize="small" />
             </button>
           </form>
         )}
@@ -290,44 +277,23 @@ export const QuickLinks: React.FC = () => {
     );
   }
 
-  // List mode
-  return (
-    <div className={`quicklinksSettings-container ${themeClass}`} ref={containerRef}>
-      <div className="quicklinksSettings-header" ref={headerRef}>
-        <InlinePopover
-          trigger={
-            <button
-              ref={triggerRef}
-              type="button"
-              className="quicklinksSettings-title"
-              aria-haspopup="dialog"
-              aria-expanded={Boolean(anchorEl)}
-              onClick={() => {
-                const widgetEl = headerRef.current?.closest?.(".widget") as HTMLElement | null;
-                if (widgetEl?.dataset.justDragged === "true") return;
-                if (anchorEl) setAnchorEl(null);
-                else setAnchorEl(triggerRef.current);
-              }}
-            >
-              Links
-            </button>
-          }
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          inline={true}
-          disabled={
-            (headerRef.current?.closest(".widget") as HTMLElement | null)?.dataset
-              .justDragged === "true"
-          }
-        >
-          <div
-            className="quicklinksSettings-dropdown"
-            role="dialog"
-            aria-modal={false}
-            aria-label="Quick links"
-            ref={popperRef}
-          >
+  // The dropdown contents are reused in two render paths: as InlinePopover
+  // children for normal mode, and inline (in flow) when editing so the
+  // widget grows and the EditWidget overlay properly covers everything.
+  const dropdownContent = (
+    <div
+      className="quicklinksSettings-dropdown"
+      role="dialog"
+      aria-modal={false}
+      aria-label="Quick links"
+      ref={popperRef}
+      style={{
+        ["--ql-opacity" as any]:
+          ((quicklinksSettings as any).opacity ?? 50) / 100,
+        ["--input-opacity" as any]:
+          ((quicklinksSettings as any).opacity ?? 50) / 100,
+      }}
+    >
             <form
               className="quicklinksSettings-add"
               onSubmit={(e) => {
@@ -346,7 +312,9 @@ export const QuickLinks: React.FC = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 mode={darkMode ? "dark" : "light"}
-                key={`popover-title-${darkMode}-${anchorEl ? "open" : "closed"}`}
+                key={`popover-title-${darkMode}-${
+                  anchorEl ? "open" : "closed"
+                }`}
               />
               <label className="ql-sr-only" htmlFor="ql-list-url-input">
                 URL
@@ -366,9 +334,10 @@ export const QuickLinks: React.FC = () => {
                 type="submit"
                 className="quicklinksSettings-add-btn"
                 disabled={!url.trim()}
+                aria-label="Save link"
                 data-tooltip="Save link"
               >
-                Add
+                <AddIcon fontSize="small" />
               </button>
             </form>
             <ul className="quicklinksSettings-list">
@@ -398,7 +367,10 @@ export const QuickLinks: React.FC = () => {
                           draggable={false}
                         />
                       ) : (
-                        <div className="ql-favicon ql-favicon-fallback" aria-hidden="true">
+                        <div
+                          className="ql-favicon ql-favicon-fallback"
+                          aria-hidden="true"
+                        >
                           {l.title.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -425,7 +397,66 @@ export const QuickLinks: React.FC = () => {
               )}
             </ul>
           </div>
-        </InlinePopover>
+  );
+
+  // List mode — when editing, render the trigger + dropdown inline (in
+  // normal flow) so the widget container grows and the EditWidget
+  // overlay covers the whole expanded surface. When NOT editing, use
+  // InlinePopover so the dropdown opens/closes via trigger click.
+  return (
+    <div
+      className={`quicklinksSettings-container ${themeClass} ${
+        isEditing ? "is-editing" : ""
+      }`}
+      ref={containerRef}
+    >
+      <div className="quicklinksSettings-header" ref={headerRef}>
+        {isEditing ? (
+          <>
+            <button
+              ref={triggerRef}
+              type="button"
+              className="quicklinksSettings-title"
+              aria-haspopup="dialog"
+              aria-expanded={true}
+            >
+              Links
+            </button>
+            {dropdownContent}
+          </>
+        ) : (
+          <InlinePopover
+            trigger={
+              <button
+                ref={triggerRef}
+                type="button"
+                className="quicklinksSettings-title"
+                aria-haspopup="dialog"
+                aria-expanded={Boolean(anchorEl)}
+                onClick={() => {
+                  const widgetEl = headerRef.current?.closest?.(
+                    ".widget"
+                  ) as HTMLElement | null;
+                  if (widgetEl?.dataset.justDragged === "true") return;
+                  if (anchorEl) setAnchorEl(null);
+                  else setAnchorEl(triggerRef.current);
+                }}
+              >
+                Links
+              </button>
+            }
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl ?? triggerRef.current}
+            onClose={() => setAnchorEl(null)}
+            inline={true}
+            disabled={
+              (headerRef.current?.closest(".widget") as HTMLElement | null)
+                ?.dataset.justDragged === "true"
+            }
+          >
+            {dropdownContent}
+          </InlinePopover>
+        )}
       </div>
     </div>
   );

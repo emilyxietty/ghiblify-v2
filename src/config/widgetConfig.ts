@@ -27,6 +27,8 @@ export interface TodoSettings {
   height: number;
   darkMode: boolean;
   collapsed: boolean;
+  /** 0–100 — controls the alpha of the surface tint. Default 50. */
+  opacity: number;
 }
 export interface AvatarSettings { selectedAvatar: string; size: number }
 export interface QuicklinksSettings {
@@ -35,11 +37,15 @@ export interface QuicklinksSettings {
   gridMode: boolean;
   darkMode: boolean;
   links: QuicklinkItem[];
+  /** 0–100 — controls the alpha of link tile surfaces. */
+  opacity: number;
 }
 export interface SearchBarSettings {
   width: number;
   height: number;
   darkMode: boolean;
+  /** 0–100 — controls the alpha of input + button surface. */
+  opacity: number;
 }
 // Pomodoro is self-contained — it owns its own localStorage and runs a
 // leader-election loop. Nothing in context state for it.
@@ -139,7 +145,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   todo: {
     name: "Todo",
     position: { x: 13.169590643274855, y: 2 },
-    settings: { width: 350, height: 200, darkMode: false, collapsed: false },
+    settings: { width: 350, height: 200, darkMode: false, collapsed: false, opacity: 50 },
     width: { min: 250, max: 600, step: 50 },
     height: { min: 200, max: 700, step: 50 },
     customControls: { darkMode: true },
@@ -160,6 +166,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       gridMode: true,
       darkMode: false,
       links: [],
+      opacity: 50,
     },
     width: { min: 200, max: 600, step: 100 },
     height: { min: 200, max: 700, step: 100 },
@@ -168,7 +175,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   searchbar: {
     name: "Search Bar",
     position: { x: 50, y: 39.54593453009504 },
-    settings: { width: 550, height: 40, darkMode: false },
+    settings: { width: 550, height: 40, darkMode: false, opacity: 50 },
     width: { min: 200, max: 800, step: 25 },
     height: { min: 20, max: 40, step: 2 },
     customControls: { darkMode: true },

@@ -287,6 +287,47 @@ body.pomodoro-focus::before {
     animation: pomodoro-focus-scrim-in 240ms ease both;
 }
 
+/* Callout banner at the top — only shown briefly on entry then fades.
+   The user just needs the cue once; after that it's just clutter. */
+body.pomodoro-focus::after {
+    content: "Press Esc to exit focus mode";
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: 950;
+    pointer-events: none;
+    animation: pomodoro-focus-callout 3.6s cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes pomodoro-focus-callout {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px);
+    }
+    8% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
+}
+
 /* .background-content normally has z-index: 10, which is below the scrim
    (800) at the body stacking-context level — that's why Pomodoro looked
    darkened (the scrim was painting over the widget content layer). Lift
@@ -310,15 +351,12 @@ body.pomodoro-focus .widget:not([data-widget-key="pomodoro"]) {
     display: none !important;
 }
 
-/* Hide both sidebars while in focus mode. */
+/* Both sidebars stay accessible during focus mode. They slide in via
+   their normal edge-hover behavior, but z-index is bumped above the
+   scrim so they paint clearly on top of the dim wash. */
 body.pomodoro-focus .left-sidebar,
 body.pomodoro-focus .right-sidebar {
-    transform: translateX(-110%) !important;
-    pointer-events: none !important;
-}
-
-body.pomodoro-focus .right-sidebar {
-    transform: translateX(110%) !important;
+    z-index: 950 !important;
 }
 
 /* Center + enlarge the Pomodoro widget. Override the inline left/top
@@ -343,27 +381,157 @@ body.pomodoro-focus .widget[data-widget-key="pomodoro"] {
     }
 }
 
-/* Larger card with bigger timer. */
+/* In focus mode the card chrome falls away — Pomodoro becomes pure
+   typography floating over the dim scrim, scaled near-full-screen. */
 body.pomodoro-focus .pomodoro-widget {
-    width: min(560px, 92vw);
+    width: min(96vw, 1100px);
     height: auto;
-    min-height: 480px;
-    padding: 44px 48px;
-    border-radius: 24px;
-    gap: 22px;
-    box-shadow:
-        0 24px 80px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(0, 0, 0, 0.1) inset;
+    min-height: min(82vh, 720px);
+    padding: 4vh 6vw;
+    gap: 4vh;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+    /* Center every child both axes. */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Force every direct child to honor the centering. */
+body.pomodoro-focus .pomodoro-widget > * {
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Timer display + input row centered. */
+body.pomodoro-focus .pomodoro-widget .timer-display,
+body.pomodoro-focus .pomodoro-widget .timer-input-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Mode switch + controls already use flex; explicitly center. */
+body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header,
+body.pomodoro-focus .pomodoro-widget .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body.pomodoro-focus .pomodoro-widget,
+body.pomodoro-focus .pomodoro-widget .timer-display,
+body.pomodoro-focus .pomodoro-widget .timer-mins-label,
+body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2,
+body.pomodoro-focus .pomodoro-widget .timer-input-row input,
+body.pomodoro-focus .pomodoro-widget .timer-mins-input,
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn,
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn svg {
+    color: #ffffff !important;
 }
 
 body.pomodoro-focus .pomodoro-widget .timer-display {
-    font-size: 7.2rem;
+    /* Responsive — clamps so it scales from comfortably big on small
+       windows up to massive on a desktop monitor. */
+    font-size: clamp(7rem, 22vw, 18rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.7),
+        0 8px 60px rgba(0, 0, 0, 0.45);
 }
 
 body.pomodoro-focus .pomodoro-widget .timer-input-row input,
 body.pomodoro-focus .pomodoro-widget .timer-mins-input {
-    font-size: 7.2rem;
-    width: 200px;
+    font-size: clamp(7rem, 22vw, 18rem);
+    width: clamp(220px, 40vw, 460px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    background: transparent !important;
+    border-bottom-color: rgba(255, 255, 255, 0.5) !important;
+    text-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.7),
+        0 8px 60px rgba(0, 0, 0, 0.45);
+}
+
+body.pomodoro-focus .pomodoro-widget .timer-input-row input:focus,
+body.pomodoro-focus .pomodoro-widget .timer-mins-input:focus {
+    border-bottom-color: #ffffff !important;
+}
+
+body.pomodoro-focus .pomodoro-widget .timer-mins-label {
+    font-size: 1.4rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2 {
+    font-size: 1rem;
+    padding: 8px 22px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* Mode switch — translucent black pill instead of theme-colored. */
+body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2.active-mode {
+    background: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Control buttons — larger translucent black pills. */
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    padding: 14px 28px !important;
+    font-size: 14px;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn svg {
+    font-size: 24px;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.62) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.pomodoro-focus .pomodoro-widget .controls {
+    gap: 18px;
+}
+
+/* Timer image — bigger when present. */
+body.pomodoro-focus .pomodoro-widget .timer-image {
+    max-height: clamp(80px, 12vh, 160px);
+}
+
+/* Progress bar — taller in focus mode. */
+body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar-container {
+    height: 10px !important;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto !important;
+}
+
+/* Progress bar — white track + white fill so it stays neutral. */
+body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar-container {
+    background: rgba(255, 255, 255, 0.18) !important;
+}
+
+body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.85) 0%,
+        #ffffff 100%
+    ) !important;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5) !important;
 }
 
 body.pomodoro-focus .pomodoro-widget .timer-image {

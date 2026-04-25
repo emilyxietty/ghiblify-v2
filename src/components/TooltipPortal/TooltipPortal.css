@@ -1,0 +1,60 @@
+/* Portal-rendered tooltip — rendered via createPortal at <body>, so it
+   escapes any ancestor overflow:hidden/auto and any clipping container.
+   Positioned via fixed coordinates computed from the target's bounding
+   rect (see TooltipPortal.tsx). */
+.tooltip-portal {
+    position: fixed;
+    background: var(--dark);
+    color: var(--light);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    z-index: 99999;
+    pointer-events: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    animation: tooltip-portal-in 140ms ease both;
+}
+
+.tooltip-portal.is-bottom {
+    transform: translate(-50%, 0);
+}
+
+.tooltip-portal.is-top {
+    transform: translate(-50%, -100%);
+}
+
+/* Small arrow pointing at the target. */
+.tooltip-portal::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+}
+
+.tooltip-portal.is-bottom::before {
+    top: -5px;
+    transform: translateX(-50%);
+    border-bottom: 6px solid var(--dark);
+}
+
+.tooltip-portal.is-top::before {
+    bottom: -5px;
+    transform: translateX(-50%);
+    border-top: 6px solid var(--dark);
+}
+
+@keyframes tooltip-portal-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

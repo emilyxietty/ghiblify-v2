@@ -1,10 +1,13 @@
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React, { useEffect } from "react";
 import "./App.css";
 import { Button } from "./components/Button/Button";
+import WelcomeModal from "./components/WelcomeModal/WelcomeModal";
 import { Background } from "./containers/Background/Background";
 import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
 import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
 import { Widget } from "./containers/Widget/Widget";
+import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Info } from "./containers/Widgets/Info/Info";
@@ -33,17 +36,20 @@ const AppContent: React.FC = () => {
     toggleEditMode,
     backgroundFilters,
     widgets,
+    showGuide,
+    setShowGuide,
+    editingWidgetKey,
+    setEditingWidgetKey,
   } = useAppContext();
 
   //   const widgetsContainerRef = useRef<HTMLDivElement>(null);
 
+  // Exit GLOBAL edit mode on outside click / Esc / Enter.
   useEffect(() => {
     if (!showWidgetEdits) return;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Don't exit edit mode when clicking UI chrome — those buttons own
-      // their own edit-mode toggling and would otherwise double-toggle.
       if (
         target.closest(
           ".widget, .left-sidebar, .edit-toggle-button, [role='dialog']"
@@ -68,22 +74,63 @@ const AppContent: React.FC = () => {
     };
   }, [showWidgetEdits, toggleEditMode]);
 
+  // Exit per-widget edit mode on outside click / Esc / Enter.
+  useEffect(() => {
+    if (!editingWidgetKey) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Stay editing if the click landed inside the editing widget itself
+      // or other UI chrome.
+      const widget = target.closest(".widget") as HTMLElement | null;
+      if (widget?.dataset.widgetKey === editingWidgetKey) return;
+      if (target.closest(".left-sidebar, .edit-toggle-button, [role='dialog']"))
+        return;
+      setEditingWidgetKey(null);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter") setEditingWidgetKey(null);
+    };
+    document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [editingWidgetKey, setEditingWidgetKey]);
+
   return (
     <>
       <LeftSidebar />
       <RightSidebar visible={widgets.bookmarks.visible} />
-      {showWidgetEdits && (
+      {(showWidgetEdits || editingWidgetKey) && (
         <div className="edit-toggle-button">
           <Button
-            variant={"outline-light"}
+            variant="outline-light"
             size="small"
             pill
-            onClick={toggleEditMode}
+            onClick={() => setShowGuide(true)}
+            aria-label="Open the guide"
+            aria-haspopup="dialog"
+            data-tooltip="Guide"
+          >
+            <HelpOutlineIcon style={{ fontSize: 14 }} />
+            Guide
+          </Button>
+          <Button
+            variant="outline-light"
+            size="small"
+            pill
+            onClick={() => {
+              if (showWidgetEdits) toggleEditMode();
+              if (editingWidgetKey) setEditingWidgetKey(null);
+            }}
           >
             Done
           </Button>
         </div>
       )}
+      <WelcomeModal open={showGuide} onClose={() => setShowGuide(false)} />
+      <TooltipPortal />
       <Background
         currentBackground={currentBackground}
         loading={bgLoading}

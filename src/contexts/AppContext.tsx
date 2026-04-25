@@ -29,6 +29,7 @@ export const THEME_NAMES = [
   "cream",
   "mint",
   "bloom",
+  "cotton",
   "mono",
 ] as const;
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -64,6 +65,14 @@ interface AppContextType {
   setIsDragging: (b: boolean) => void;
   showWidgetEdits: boolean;
   toggleEditMode: () => void;
+  showGuide: boolean;
+  setShowGuide: (b: boolean) => void;
+  /** When non-null, only this single widget shows its EditWidget overlay
+   *  (triggered by the Shift+pencil affordance on a single widget).
+   *  showWidgetEdits is the global "edit all widgets" mode and is
+   *  independent. */
+  editingWidgetKey: WidgetKey | null;
+  setEditingWidgetKey: (k: WidgetKey | null) => void;
 
   // background
   backgroundFilters: BackgroundFilters;
@@ -90,7 +99,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Widgets that should default to hidden (everything else defaults visible).
-const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>(["bookmarks"]);
+// (Currently empty — bookmarks defaults to visible now.)
+const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>();
 
 const buildDefaultWidgets = (): WidgetsState => {
   const out = {} as WidgetsState;
@@ -309,6 +319,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [showWidgetEdits, setShowWidgetEdits] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [editingWidgetKey, setEditingWidgetKey] = useState<WidgetKey | null>(
+    null
+  );
 
   const [backgroundFilters, setBackgroundFilters] = useState<BackgroundFilters>(
     () =>
@@ -426,6 +440,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setIsDragging,
         showWidgetEdits,
         toggleEditMode,
+        showGuide,
+        setShowGuide,
+        editingWidgetKey,
+        setEditingWidgetKey,
         backgroundFilters,
         updateBackgroundFilters,
         backgroundSelection,
