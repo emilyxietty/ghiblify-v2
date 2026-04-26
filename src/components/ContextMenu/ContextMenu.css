@@ -5,12 +5,14 @@
    =========================================================================== */
 
 .ctx-menu {
-    /* Sized to content (with a sensible min for tap targets and a max
-       for very long labels). Earlier we forced 180px min, which left
-       a wide gap between short labels and the cascade chevron. */
-    min-width: 140px;
-    max-width: 260px;
-    width: max-content;
+    /* Fixed 160px width for every menu and cascade so the parent and
+       its submenu always look like the same component. Long labels
+       fall back to text-overflow:ellipsis on .ctx-menu-label.
+       border-box so 160px is the total outer width including the
+       4px padding — otherwise the row's `width: 100%` + padding
+       would overflow to 180px. */
+    box-sizing: border-box;
+    width: 160px;
     padding: 4px;
     background: rgba(10, 14, 20, 0.96);
     color: #ffffff;
@@ -43,6 +45,7 @@
 
 .ctx-menu-row {
     appearance: none;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 4px;
