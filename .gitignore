@@ -1,3 +1,7 @@
 /node_modules
 /dist
 /.env
+
+# Legacy v1 (jQuery) Ghiblify extension kept locally for reference
+# during the migration. Not part of the new build — 112MB of deps.
+/ghiblify

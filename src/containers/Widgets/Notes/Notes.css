@@ -1,0 +1,54 @@
+/* ===========================================================================
+   Notes — blank note with a custom border PNG behind it
+   ===========================================================================
+   Visual: a clean rectangle that uses /assets/notes/cardborder.png as
+   the background image, sized to fit the widget. The textarea sits
+   on top with no extra chrome (no tape, no rule lines, no
+   watercolor wash — just paper + handwriting).
+   =========================================================================== */
+
+.notes-widget {
+    position: relative;
+    box-sizing: border-box;
+    /* Generous padding so the textarea text sits well INSIDE the
+       painted border and doesn't crowd the decorative edge of
+       cardborder.png. Bumped up after the border art turned out to
+       be wider than the original 28px allowance. */
+    padding: 48px 44px;
+    /* Off-white cream fill sits behind the border PNG so the area
+       around (and inside) the rectangle reads as paper. */
+    background-color: #fbf3df;
+    background-image: url("/assets/notes/cardborder.svg");
+    /* `contain` preserves the PNG's natural square ratio — never
+       stretched. If the user resizes to a non-square footprint, the
+       cream background fills the letterboxed gaps. */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* Rounded corners on the cream backing so the card reads as a
+       soft-cornered piece of paper rather than a hard rectangle.
+       The PNG's painted corners sit on top of this. */
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.notes-textarea {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: #4a3826;
+    border: none;
+    outline: none;
+    resize: none;
+    /* Inherit the same system sans the rest of the app uses (set on
+       <body> in App.css) — no handwritten override here. */
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.notes-textarea::placeholder {
+    color: rgba(74, 56, 38, 0.45);
+}
