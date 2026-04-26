@@ -83,6 +83,12 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
             type="checkbox"
             checked={enabled}
             disabled={!available || !!disableLast}
+            // stopPropagation so the click never reaches <summary>'s
+            // onClick — that handler calls preventDefault() to block
+            // the native <details> toggle, but bubbled preventDefault
+            // also kills the checkbox's own toggle, leaving the
+            // selected state stuck.
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) => onUpdate(movieKey, e.target.checked)}
           />
           <span className="background-title">{title}</span>

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Ghiblify",
   "version": "2.0.0",
-  "description": "Studio Ghibli inspired new tab",
+  "description": "A Studio Ghibli–inspired new tab with widgets, themes, weather, pomodoro, sticky notes, quick links, and bookmarks.",
   "permissions": ["storage", "bookmarks", "search", "favicon", "geolocation"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"

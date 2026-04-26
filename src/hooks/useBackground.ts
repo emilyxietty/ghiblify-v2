@@ -67,8 +67,13 @@ export const useBackground = () => {
             (backgroundSelection && backgroundSelection[s.title]) ?? true
         );
 
-        const sourcesToUse =
-          allowedSources.length > 0 ? allowedSources : bgData.sources;
+        // No fallback to "all sources" when allowedSources is empty —
+        // that would silently re-enable every movie when the user only
+        // wants favorites in the rotation. If both allowedSources AND
+        // favorites are empty, the self-heal block below catches the
+        // empty pool and auto-enables a source so the user is never
+        // stranded with nothing to display.
+        const sourcesToUse = allowedSources;
 
         console.log("useBackground: backgroundSelection", backgroundSelection);
         console.log(
