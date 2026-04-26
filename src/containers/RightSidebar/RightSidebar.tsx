@@ -1,6 +1,12 @@
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import FolderIcon from "@mui/icons-material/Folder";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ContextMenu,
+  ContextMenuItem,
+} from "../../components/ContextMenu/ContextMenu";
+import { useT } from "../../i18n/i18n";
 import "./RightSidebar.css";
 
 interface BookmarkNode {
@@ -13,24 +19,26 @@ interface BookmarkNode {
 const SIDEBAR_WIDTH = 360;
 const SIDEBAR_EDGE_TRIGGER = 10;
 
+type BookmarksError =
+  | { key: "bookmarks.errorNoChrome" }
+  | { key: "bookmarks.errorNoBookmarks" }
+  | { key: "bookmarks.errorBookmarksApi"; message: string }
+  | { key: "bookmarks.errorLoad"; message: string };
+
 const useChromeBookmarks = (active: boolean) => {
   const [tree, setTree] = useState<BookmarkNode[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<BookmarksError | null>(null);
 
   useEffect(() => {
     if (!active) return;
     const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
     if (!chromeNs) {
-      setError(
-        "This page isn't running as a Chrome extension — chrome.* APIs are unavailable. Open the new tab inside the installed extension (URL should start with chrome-extension://)."
-      );
+      setError({ key: "bookmarks.errorNoChrome" });
       return;
     }
     const api = chromeNs.bookmarks;
     if (!api?.getTree) {
-      setError(
-        "chrome.bookmarks is missing. Either the bookmarks permission isn't active, or the extension isn't fully installed. Try: chrome://extensions → remove Ghiblify → Load unpacked → select dist/."
-      );
+      setError({ key: "bookmarks.errorNoBookmarks" });
       return;
     }
     let cancelled = false;
@@ -57,16 +65,17 @@ const useChromeBookmarks = (active: boolean) => {
         // Surface lastError if it was set during a callback path.
         const err = chromeNs.runtime?.lastError;
         if (err) {
-          setError(`Bookmarks error: ${err.message}`);
+          setError({ key: "bookmarks.errorBookmarksApi", message: err.message });
           return;
         }
         setTree(nodes ?? []);
         setError(null);
       } catch (err) {
         if (cancelled) return;
-        setError(
-          `Failed to load bookmarks: ${(err as Error).message ?? "unknown"}`
-        );
+        setError({
+          key: "bookmarks.errorLoad",
+          message: (err as Error).message ?? "unknown",
+        });
         // Helpful for debugging — also log to console.
         // eslint-disable-next-line no-console
         console.error("[RightSidebar] bookmarks error:", err);
@@ -122,8 +131,114 @@ const matches = (node: BookmarkNode, query: string): boolean => {
   return !!node.children?.some((c) => matches(c, q));
 };
 
+// Move a bookmark via the chrome.bookmarks API. Chrome handles the
+// index shift internally for same-parent moves and accepts an
+// omitted index to append to the end of a destination folder.
+const moveBookmark = (id: string, parentId: string, index?: number) => {
+  const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
+  if (!chromeNs?.bookmarks?.move) return;
+  try {
+    const dest: { parentId: string; index?: number } = { parentId };
+    if (index !== undefined && index >= 0) dest.index = index;
+    chromeNs.bookmarks.move(id, dest);
+  } catch {
+    /* ignore — onChanged listener will refresh on success */
+  }
+};
+
+const removeBookmark = (id: string) => {
+  const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
+  if (!chromeNs?.bookmarks?.remove) return;
+  try {
+    chromeNs.bookmarks.remove(id);
+  } catch {
+    /* ignore */
+  }
+};
+
+// Shared drag state for the bookmarks tree. Hoisted above
+// BookmarkFolder/Link via Context so a link can be dropped onto a
+// sibling, onto another folder, or onto any folder elsewhere in the
+// tree (matching Chrome's own bookmarks bar). Refs mirror state so
+// the synchronous onDrop handler reads the latest values even before
+// React commits the dragOver render.
+interface BookmarkDragApi {
+  draggedId: string | null;
+  hoveredId: string | null;
+  hoveredKind: "link" | "folder" | null;
+  hoveredPos: "before" | "after" | null;
+  startDrag: (id: string) => void;
+  hoverLink: (id: string, pos: "before" | "after") => void;
+  hoverFolder: (id: string) => void;
+  clearHover: () => void;
+  endDrag: () => void;
+  // refs for synchronous reads inside onDrop
+  draggedRef: React.MutableRefObject<string | null>;
+  hoveredRef: React.MutableRefObject<{
+    id: string;
+    kind: "link" | "folder";
+    pos?: "before" | "after";
+  } | null>;
+}
+
+const BookmarkDragContext = React.createContext<BookmarkDragApi | null>(null);
+const useBmDrag = (): BookmarkDragApi => {
+  const ctx = React.useContext(BookmarkDragContext);
+  if (!ctx) throw new Error("useBmDrag outside provider");
+  return ctx;
+};
+
+const useBookmarkDragState = (): BookmarkDragApi => {
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<{
+    id: string;
+    kind: "link" | "folder";
+    pos?: "before" | "after";
+  } | null>(null);
+  const draggedRef = useRef<string | null>(null);
+  const hoveredRef = useRef<{
+    id: string;
+    kind: "link" | "folder";
+    pos?: "before" | "after";
+  } | null>(null);
+
+  return {
+    draggedId,
+    hoveredId: hovered?.id ?? null,
+    hoveredKind: hovered?.kind ?? null,
+    hoveredPos: hovered?.pos ?? null,
+    draggedRef,
+    hoveredRef,
+    startDrag: (id) => {
+      draggedRef.current = id;
+      setDraggedId(id);
+    },
+    hoverLink: (id, pos) => {
+      const next = { id, kind: "link" as const, pos };
+      hoveredRef.current = next;
+      setHovered(next);
+    },
+    hoverFolder: (id) => {
+      const next = { id, kind: "folder" as const };
+      hoveredRef.current = next;
+      setHovered(next);
+    },
+    clearHover: () => {
+      hoveredRef.current = null;
+      setHovered(null);
+    },
+    endDrag: () => {
+      draggedRef.current = null;
+      hoveredRef.current = null;
+      setDraggedId(null);
+      setHovered(null);
+    },
+  };
+};
+
 interface BookmarkFolderProps {
   node: BookmarkNode;
+  parentId: string | null;
   depth: number;
   filter: string;
   defaultOpen?: boolean;
@@ -131,11 +246,13 @@ interface BookmarkFolderProps {
 
 const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
   node,
+  parentId,
   depth,
   filter,
   defaultOpen = true,
 }) => {
-  // When filtering, force-open every folder so matches are visible.
+  const t = useT();
+  const drag = useBmDrag();
   const filtering = filter.length > 0;
   const [open, setOpen] = useState(defaultOpen || filtering);
 
@@ -149,10 +266,77 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
     return node.children.filter((c) => matches(c, filter));
   }, [node.children, filter, filtering]);
 
+  // Drop INTO this folder — append the dragged bookmark to the end.
+  const handleFolderDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const dragged = drag.draggedRef.current;
+    if (!dragged || dragged === node.id || filtering) {
+      drag.endDrag();
+      return;
+    }
+    moveBookmark(dragged, node.id);
+    drag.endDrag();
+  };
+
+  // Drop ON a child link — insert at the link's position with
+  // before/after offset. Reads from refs so the latest hover is
+  // always correct even before React commits the dragOver render.
+  const handleChildDrop = (childId: string) => {
+    const dragged = drag.draggedRef.current;
+    const hover = drag.hoveredRef.current;
+    if (
+      !dragged ||
+      dragged === childId ||
+      filtering ||
+      !node.children ||
+      hover?.kind !== "link"
+    ) {
+      drag.endDrag();
+      return;
+    }
+    const targetIdx = node.children.findIndex((c) => c.id === childId);
+    if (targetIdx < 0) {
+      drag.endDrag();
+      return;
+    }
+    const newIndex = hover.pos === "after" ? targetIdx + 1 : targetIdx;
+    moveBookmark(dragged, node.id, newIndex);
+    drag.endDrag();
+  };
+
+  const isFolderDropTarget =
+    drag.hoveredKind === "folder" &&
+    drag.hoveredId === node.id &&
+    drag.draggedId !== node.id;
+
   if (filtering && visibleChildren.length === 0) return null;
 
   return (
-    <li className="bookmarks-folder">
+    <li
+      className={`bookmarks-folder${
+        isFolderDropTarget ? " is-folder-drop-target" : ""
+      }`}
+      // Drop handlers live on the <li> wrapper (not the toggle
+      // button) so the button's onClick fires reliably. Browsers
+      // can get fussy when a button has both click + drag handlers.
+      onDragOver={(e) => {
+        if (!drag.draggedId || drag.draggedId === node.id || filtering)
+          return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        drag.hoverFolder(node.id);
+      }}
+      onDragLeave={(e) => {
+        // Only clear if the leave is leaving this folder entirely
+        // (relatedTarget is outside the li). Prevents flicker as the
+        // cursor moves from the button to its child icon/text.
+        const next = e.relatedTarget as Node | null;
+        if (next && e.currentTarget.contains(next)) return;
+        if (drag.hoveredKind === "folder" && drag.hoveredId === node.id)
+          drag.clearHover();
+      }}
+      onDrop={handleFolderDrop}
+    >
       <button
         type="button"
         className="bookmarks-folder-toggle"
@@ -166,18 +350,24 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
         />
         <FolderIcon fontSize="small" className="bookmarks-folder-icon" />
         <span className="bookmarks-folder-name">
-          {node.title || "Bookmarks"}
+          {node.title || t("bookmarks.heading")}
         </span>
       </button>
       {open && (
         <ul className="bookmarks-list">
           {visibleChildren.map((child) =>
             child.url ? (
-              <BookmarkLink key={child.id} node={child} depth={depth + 1} />
+              <BookmarkLink
+                key={child.id}
+                node={child}
+                draggable={!filtering}
+                onDrop={() => handleChildDrop(child.id)}
+              />
             ) : (
               <BookmarkFolder
                 key={child.id}
                 node={child}
+                parentId={node.id}
                 depth={depth + 1}
                 filter={filter}
               />
@@ -189,18 +379,88 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
   );
 };
 
-const BookmarkLink: React.FC<{ node: BookmarkNode; depth: number }> = ({
+interface BookmarkLinkProps {
+  node: BookmarkNode;
+  draggable: boolean;
+  onDrop: () => void;
+}
+
+const BookmarkLink: React.FC<BookmarkLinkProps> = ({
   node,
-  depth,
+  draggable,
+  onDrop,
 }) => {
+  const t = useT();
+  const drag = useBmDrag();
   const favicon = node.url ? getFavicon(node.url) : "";
+  const [contextMenuPos, setContextMenuPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const isDragging = drag.draggedId === node.id;
+  const isDropTarget =
+    drag.hoveredKind === "link" &&
+    drag.hoveredId === node.id &&
+    drag.draggedId !== node.id;
+
+  const menuItems: ContextMenuItem[] = [
+    {
+      type: "action",
+      label: t("bookmarks.delete"),
+      onClick: () => removeBookmark(node.id),
+      icon: <DeleteOutlineIcon style={{ fontSize: 14 }} />,
+    },
+  ];
+
   return (
-    <li className="bookmarks-link-item">
+    <li
+      className={[
+        "bookmarks-link-item",
+        isDragging ? "is-dragging" : "",
+        isDropTarget ? `drop-target drop-${drag.hoveredPos ?? "before"}` : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      draggable={draggable}
+      onDragStart={(e) => {
+        try {
+          e.dataTransfer.setData("text/plain", node.id);
+          e.dataTransfer.effectAllowed = "move";
+        } catch {
+          /* ignore */
+        }
+        drag.startDrag(node.id);
+      }}
+      onDragOver={(e) => {
+        if (!drag.draggedId || drag.draggedId === node.id) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pos: "before" | "after" =
+          e.clientY - rect.top < rect.height / 2 ? "before" : "after";
+        drag.hoverLink(node.id, pos);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDrop();
+      }}
+      onDragEnd={drag.endDrag}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setContextMenuPos({ x: e.clientX, y: e.clientY });
+      }}
+    >
       <a
         href={node.url}
         className="bookmarks-link"
         title={node.url}
-        style={{ paddingLeft: 8 + depth * 12 }}
+        // Suppress click navigation while a drag is in flight so the
+        // mousedown that starts the drag doesn't also follow the link.
+        onClick={(e) => {
+          if (drag.draggedId) e.preventDefault();
+        }}
       >
         {favicon ? (
           <img
@@ -217,6 +477,13 @@ const BookmarkLink: React.FC<{ node: BookmarkNode; depth: number }> = ({
         )}
         <span className="bookmarks-link-title">{node.title || node.url}</span>
       </a>
+      {contextMenuPos && (
+        <ContextMenu
+          position={contextMenuPos}
+          onClose={() => setContextMenuPos(null)}
+          items={menuItems}
+        />
+      )}
     </li>
   );
 };
@@ -226,10 +493,17 @@ interface RightSidebarProps {
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const sidebarRef = useRef<HTMLElement | null>(null);
   const { tree, error } = useChromeBookmarks(visible);
+  const dragApi = useBookmarkDragState();
+  const errorMessage = error
+    ? "message" in error
+      ? t(error.key, { message: error.message })
+      : t(error.key)
+    : null;
 
   // Track previous visible so we can show a transient callout when the
   // user toggles bookmarks on (not on every reload, only the transition).
@@ -273,6 +547,22 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
+  // Cmd/Ctrl+B toggles the bookmarks panel — mirrors the Cmd/Ctrl+K
+  // sidebar shortcut on the left. Only active when bookmarks widget
+  // is enabled, otherwise pressing the combo would have no visible
+  // effect.
+  useEffect(() => {
+    if (!visible) return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsOpen((v) => !v);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [visible]);
+
   // inert when closed
   useEffect(() => {
     const el = sidebarRef.current;
@@ -291,51 +581,54 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
     <>
       {showCallout && (
         <div className="bookmarks-toggle-callout" role="status" aria-live="polite">
-          Bookmarks panel — hover the right edge to open
+          {t("bookmarks.callout")}
         </div>
       )}
       <aside
       ref={sidebarRef}
       id="bookmarks-sidebar"
       className={`right-sidebar ${isOpen ? "open" : ""}`}
-      aria-label="Bookmarks"
+      aria-label={t("bookmarks.ariaLabel")}
     >
       <div className="right-sidebar-content">
         <header className="bookmarks-header">
-          <h4>Bookmarks</h4>
+          <h4>{t("bookmarks.heading")}</h4>
         </header>
 
         <input
           type="search"
           className="bookmarks-search"
-          placeholder="Search bookmarks..."
+          placeholder={t("bookmarks.searchPlaceholder")}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          aria-label="Search bookmarks"
+          aria-label={t("bookmarks.searchAria")}
         />
 
-        {error && <p className="bookmarks-error">{error}</p>}
+        {errorMessage && <p className="bookmarks-error">{errorMessage}</p>}
 
         {!error && tree === null && (
-          <p className="bookmarks-empty">Loading bookmarks…</p>
+          <p className="bookmarks-empty">{t("bookmarks.loading")}</p>
         )}
 
         {!error && tree !== null && topLevel.length === 0 && (
-          <p className="bookmarks-empty">No bookmarks yet.</p>
+          <p className="bookmarks-empty">{t("bookmarks.empty")}</p>
         )}
 
         {!error && topLevel.length > 0 && (
-          <ul className="bookmarks-list bookmarks-root-list">
-            {topLevel.map((node) => (
-              <BookmarkFolder
-                key={node.id}
-                node={node}
-                depth={0}
-                filter={filter}
-                defaultOpen
-              />
-            ))}
-          </ul>
+          <BookmarkDragContext.Provider value={dragApi}>
+            <ul className="bookmarks-list bookmarks-root-list">
+              {topLevel.map((node) => (
+                <BookmarkFolder
+                  key={node.id}
+                  node={node}
+                  parentId={null}
+                  depth={0}
+                  filter={filter}
+                  defaultOpen
+                />
+              ))}
+            </ul>
+          </BookmarkDragContext.Provider>
         )}
       </div>
     </aside>

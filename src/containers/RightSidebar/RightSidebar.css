@@ -13,7 +13,7 @@
     background: rgba(0, 0, 0, 0.78);
     color: #ffffff;
     padding: 8px 18px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 12.5px;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -90,7 +90,7 @@
     height: 2px;
     margin-top: 6px;
     background: var(--yellow);
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     opacity: 0.7;
 }
 
@@ -103,7 +103,7 @@
     padding: 8px 12px;
     background: color-mix(in srgb, var(--light) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     color: var(--light);
     font-size: 13px;
     outline: none;
@@ -152,7 +152,7 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     text-align: left;
     transition: background 140ms ease;
 }
@@ -189,6 +189,45 @@
 
 .bookmarks-link-item {
     margin: 0;
+    position: relative;
+}
+
+/* Drag-to-reorder visual cues. The dragged item dims; the drop
+   target gets a thin accent line at the top or bottom edge based on
+   where the cursor is in the row. */
+.bookmarks-link-item.is-dragging {
+    opacity: 0.4;
+}
+
+.bookmarks-link-item.drop-target::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: var(--yellow, #e9b330);
+    border-radius: 2px;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--yellow) 60%, transparent);
+    pointer-events: none;
+    z-index: 6;
+}
+
+.bookmarks-link-item.drop-target.drop-before::before {
+    top: -2px;
+}
+
+.bookmarks-link-item.drop-target.drop-after::before {
+    bottom: -2px;
+}
+
+/* Folder as drop target — highlight the toggle when a bookmark is
+   being dragged over this folder (not over its child links). The
+   class lives on the .bookmarks-folder <li> now, so we target the
+   button via descendant selector. */
+.bookmarks-folder.is-folder-drop-target > .bookmarks-folder-toggle {
+    background: color-mix(in srgb, var(--yellow) 22%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--yellow) 60%, transparent);
+    border-radius: var(--radius-sm);
 }
 
 .bookmarks-link {
@@ -199,7 +238,7 @@
     color: var(--light);
     text-decoration: none;
     font-size: 12.5px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     transition: background 140ms ease;
     min-width: 0;
 }
@@ -216,7 +255,7 @@
 .bookmarks-favicon {
     width: 16px;
     height: 16px;
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
     object-fit: contain;
     flex-shrink: 0;
 }
@@ -255,7 +294,7 @@
 .bookmarks-error {
     color: var(--red);
     font-style: normal;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--red) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
@@ -277,7 +316,7 @@
 .right-sidebar::-webkit-scrollbar-thumb,
 .right-sidebar-content::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--light) 20%, transparent);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 .right-sidebar::-webkit-scrollbar-thumb:hover,
