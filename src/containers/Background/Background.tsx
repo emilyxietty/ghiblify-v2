@@ -1,5 +1,6 @@
 import React from "react";
 import { BackgroundFilters, useAppContext } from "../../contexts/AppContext";
+import { useT } from "../../i18n/i18n";
 import "./Background.css";
 
 interface BackgroundProps {
@@ -17,6 +18,7 @@ export const Background: React.FC<BackgroundProps> = ({
   backgroundFilters,
   showWidgetEdits,
 }) => {
+  const t = useT();
   const { isDragging } = useAppContext();
 
   if (loading) {
@@ -26,7 +28,7 @@ export const Background: React.FC<BackgroundProps> = ({
   if (!currentBackground) {
     return (
       <div className="background-error">
-        <p>No background found. Check console for errors.</p>
+        <p>{t("background.loadingError")}</p>
       </div>
     );
   }
@@ -38,6 +40,11 @@ export const Background: React.FC<BackgroundProps> = ({
 
   return (
     <div className="background">
+      {/* No onContextMenu here — right-click on the empty background
+          area falls through to Chrome's native menu (back / forward
+          / reload / save image / inspect). Widgets still get our
+          custom menu via their own onContextMenu (which calls
+          stopPropagation so this never fires for widget right-clicks). */}
       {isDragging && <div className="grid-overlay" />}
       <div className="background-filter" style={backgroundFilterStyle} />
       <div className="background-content">

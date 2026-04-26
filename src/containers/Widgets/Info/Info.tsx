@@ -26,11 +26,11 @@ export const Info: React.FC<InfoProps> = ({
         <div className="info-item">{titlejp}</div>
       )}
       {infoFields.title && title && <div className="info-item">{title}</div>}
+      {infoFields.quote && quote && <div className="info-item">{quote}</div>}
       {infoFields.year && year && <div className="info-item">{year}</div>}
       {infoFields.movieLength && screentime && (
         <div className="info-item">{screentime}</div>
       )}
-      {infoFields.quote && quote && <div className="info-item">{quote}</div>}
     </div>
   );
 };

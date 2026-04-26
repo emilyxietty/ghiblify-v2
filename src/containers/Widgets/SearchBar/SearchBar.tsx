@@ -3,17 +3,16 @@ import React, { useState } from "react";
 import { Button } from "../../../components/Button/Button";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
+import { useT } from "../../../i18n/i18n";
 import "./SearchBar.css";
 
 const SearchBar: React.FC = () => {
+  const t = useT();
   const { widgets } = useAppContext();
   const searchbarSettings = widgets.searchbar.settings;
   const [query, setQuery] = useState("");
   const width = searchbarSettings.width;
   const height = searchbarSettings.height;
-
-  const isDark = !!searchbarSettings.darkMode;
-  const darkClass = isDark ? "dark" : "";
 
   const submit = () => {
     const q = query.trim();
@@ -56,26 +55,25 @@ const SearchBar: React.FC = () => {
           e.preventDefault();
           submit();
         }}
-        className={`searchbar ${darkClass}`}
+        className="searchbar"
         role="search"
       >
         <TextInput
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search the web..."
-          mode={isDark ? "dark" : "light"}
-          aria-label="Search the web"
+          placeholder={t("searchbar.placeholder")}
+          aria-label={t("searchbar.ariaLabelInput")}
         />
         <Button
           type="submit"
           size="small"
-          variant={isDark ? "dark" : "light"}
+          variant="dark"
           disabled={!query.trim()}
-          className={`searchbar-search-btn ${darkClass}`}
+          className="searchbar-search-btn"
           style={{ height }}
-          aria-label="Search"
-          data-tooltip="Search"
+          aria-label={t("searchbar.ariaLabelButton")}
+          data-tooltip={t("searchbar.tooltipButton")}
         >
           <SearchIcon />
         </Button>

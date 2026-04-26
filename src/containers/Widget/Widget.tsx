@@ -1,8 +1,22 @@
 import EditIcon from "@mui/icons-material/Edit";
+import OpenWithIcon from "@mui/icons-material/OpenWith";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
+import {
+  ContextMenu,
+  ContextMenuItem,
+} from "../../components/ContextMenu/ContextMenu";
 import EditWidget from "../../components/EditWidget/EditWidget";
-import { getWidgetConfig, WidgetKey } from "../../config/widgetConfig";
+import {
+  getWidgetConfig,
+  InfoSettings,
+  QuicklinksSettings,
+  TimeSettings,
+  WeatherSettings,
+  WidgetKey,
+} from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
+import { useT } from "../../i18n/i18n";
 import "./Widget.css";
 
 interface WidgetProps {
@@ -40,7 +54,11 @@ export const Widget: React.FC<WidgetProps> = ({
     return () => window.clearTimeout(t);
   }, [visible, shouldRender]);
 
-  if (!shouldRender) return null;
+  // NOTE: do NOT early-return here. All hooks below must run on every
+  // render (Rules of Hooks) — otherwise toggling visibility off (which
+  // flips `shouldRender` to false 220ms later) changes the hook count
+  // mid-mount, React throws, the whole tree unmounts, and the user is
+  // left staring at body's #000 background until they refresh.
 
   const {
     showWidgetEdits,
@@ -51,7 +69,11 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging,
     editingWidgetKey,
     setEditingWidgetKey,
+    toggleWidgetVisibility,
+    dragMode,
+    setDragMode,
   } = useAppContext();
+  const t = useT();
   // The widget is "in edit mode" if either the global edit toggle is on,
   // or this specific widget was singled out via the Shift+pencil button.
   const isEditingThis = showWidgetEdits || editingWidgetKey === storageKey;
@@ -65,6 +87,48 @@ export const Widget: React.FC<WidgetProps> = ({
   useEffect(() => {
     setPosition(widgets[storageKey].position);
   }, [widgets, storageKey]);
+
+  // Right-click context menu — viewport-relative position (clientX/Y),
+  // null = closed. ContextMenu handles its own outside-click / Escape /
+  // scroll dismissal.
+  const [contextMenuPos, setContextMenuPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // Listen for programmatic open/close (used by the welcome guide's
+  // "right-click for quick actions" slide so the Time widget's menu
+  // appears as a live demo). Detail shape:
+  //   { key: WidgetKey, x?: number, y?: number }
+  // If x/y are omitted on open, position over the widget itself.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const detail = (e as CustomEvent).detail as
+        | { key: string; x?: number; y?: number }
+        | undefined;
+      if (!detail || detail.key !== storageKey) return;
+      let { x, y } = detail;
+      if ((x == null || y == null) && widgetRef.current) {
+        const rect = widgetRef.current.getBoundingClientRect();
+        x = rect.right + 8;
+        y = rect.top + 8;
+      }
+      if (x != null && y != null) setContextMenuPos({ x, y });
+    };
+    const onClose = (e: Event) => {
+      const detail = (e as CustomEvent).detail as
+        | { key: string }
+        | undefined;
+      if (!detail || detail.key !== storageKey) return;
+      setContextMenuPos(null);
+    };
+    window.addEventListener("ghiblify:open-context-menu", onOpen);
+    window.addEventListener("ghiblify:close-context-menu", onClose);
+    return () => {
+      window.removeEventListener("ghiblify:open-context-menu", onOpen);
+      window.removeEventListener("ghiblify:close-context-menu", onClose);
+    };
+  }, [storageKey]);
 
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragButton, setDragButton] = useState<number | null>(null);
@@ -366,11 +430,15 @@ export const Widget: React.FC<WidgetProps> = ({
   }, [children]);
 
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
-    // Shift + left-click is the explicit drag opt-in. Holding shift means the
-    // user wants to move the widget, so don't bail on interactive children
-    // (buttons, inputs) — that was the source of inconsistent drag behavior
-    // in edit mode where overlay controls cover most of the widget surface.
-    if (e.button !== 0 || !e.shiftKey) return;
+    // Two ways to opt into widget dragging:
+    //   1. Shift + left-click (one-shot drag without leaving normal mode)
+    //   2. Drag Mode is on (sticky mode toggled from sidebar / right-click)
+    // Holding shift OR being in drag mode means the user wants to move
+    // the widget, so we don't bail on interactive children (buttons,
+    // inputs) — that was the source of inconsistent drag behavior in
+    // edit mode where overlay controls cover most of the widget surface.
+    if (e.button !== 0) return;
+    if (!e.shiftKey && !dragMode) return;
     if (isResizing) return;
 
     // Don't hijack mousedowns that originated on the resize handle or
@@ -430,11 +498,27 @@ export const Widget: React.FC<WidgetProps> = ({
     widgetConfig.height
   );
 
+  // Safe to early-return now — all hooks above have already run.
+  if (!shouldRender) return null;
+
+  // Surface up the widget's opacity + blur settings (when present) as
+  // shared CSS vars on the shell. Non-Frost themes use --widget-opacity
+  // for surface alpha; Frost uses --widget-blur for glass intensity.
+  // Each is set as a 0–1 fraction.
+  const opacityFraction =
+    "opacity" in widgetSettings
+      ? Math.max(0, Math.min(1, Number(widgetSettings.opacity) / 100))
+      : undefined;
+  const blurFraction =
+    "blur" in widgetSettings
+      ? Math.max(0, Math.min(1, Number(widgetSettings.blur) / 100))
+      : undefined;
+
   return (
     <div
       ref={widgetRef}
       className={`widget ${isDragging ? "dragging" : ""} ${
-        showWidgetEdits ? "edit-mode" : ""
+        isEditingThis ? "edit-mode" : ""
       } ${isResizing ? "resizing" : ""} ${
         isFadingOut ? "fade-out" : ""
       } draggable widget-align-${alignment}`}
@@ -443,11 +527,35 @@ export const Widget: React.FC<WidgetProps> = ({
         left: `${position.x}vw`,
         top: `${position.y}vh`,
         transform: getTransform(),
+        ...(opacityFraction !== undefined
+          ? { ["--widget-opacity" as any]: opacityFraction }
+          : {}),
+        ...(blurFraction !== undefined
+          ? { ["--widget-blur" as any]: blurFraction }
+          : {}),
       }}
       onMouseDown={handleWidgetMouseDown}
       onContextMenu={(e) => {
-        // Prevent default context menu
+        // Let the browser's native context menu (copy / cut / paste /
+        // spell-check / undo) fire when the right-click is inside a
+        // text input, textarea, or any contentEditable element —
+        // hijacking those would break basic editing UX. We DO still
+        // stop propagation so the background's right-click handler
+        // doesn't fire either.
+        const target = e.target as HTMLElement | null;
+        const isEditable = !!(
+          target &&
+          (target.matches?.(
+            "input, textarea, [contenteditable], [contenteditable='true']"
+          ) ||
+            target.closest?.(
+              "input, textarea, [contenteditable], [contenteditable='true']"
+            ))
+        );
+        e.stopPropagation();
+        if (isEditable) return;
         e.preventDefault();
+        setContextMenuPos({ x: e.clientX, y: e.clientY });
       }}
     >
       {/* if child doesn't render a '.widget-header', show a small invisible
@@ -470,7 +578,7 @@ export const Widget: React.FC<WidgetProps> = ({
             ref={resizeHandleRef}
             className="widget-resize-handle"
             onMouseDown={handleResizeMouseDown}
-            title="Drag to resize"
+            title={t("widgets.edit.resizeTitle")}
           ></div>
         )}
       {/* Shift-only quick-edit pencil — only visible while Shift is held
@@ -484,14 +592,193 @@ export const Widget: React.FC<WidgetProps> = ({
             e.stopPropagation();
             setEditingWidgetKey(storageKey);
           }}
-          aria-label={`Edit ${storageKey} widget`}
-          data-tooltip="Edit"
+          aria-label={t("widgets.edit.ariaEdit", { key: storageKey })}
+          data-tooltip={t("widgets.edit.tooltipEdit")}
           tabIndex={-1}
         >
           <EditIcon style={{ fontSize: 14 }} />
         </button>
       )}
       <div className="widget-content">{children}</div>
+      {contextMenuPos && (
+        <ContextMenu
+          position={contextMenuPos}
+          onClose={() => setContextMenuPos(null)}
+          items={buildContextMenuItems({
+            storageKey,
+            widgets,
+            t,
+            setEditingWidgetKey,
+            toggleWidgetVisibility,
+            updateWidgetSettings,
+            setDragMode,
+          })}
+        />
+      )}
     </div>
   );
 };
+
+const INFO_FIELD_KEYS = [
+  "japaneseTitle",
+  "title",
+  "year",
+  "movieLength",
+  "quote",
+] as const;
+
+// Per-widget right-click menu builder. Mirrors the controls available
+// in EditWidget so users get the same toggles without entering edit
+// mode. Multi-select options become cascading submenus to keep the
+// root menu compact.
+function buildContextMenuItems(args: {
+  storageKey: WidgetKey;
+  widgets: ReturnType<typeof useAppContext>["widgets"];
+  t: (key: string, vars?: Record<string, string | number>) => string;
+  setEditingWidgetKey: (k: WidgetKey | null) => void;
+  toggleWidgetVisibility: (k: WidgetKey) => void;
+  updateWidgetSettings: ReturnType<
+    typeof useAppContext
+  >["updateWidgetSettings"];
+  setDragMode: (b: boolean) => void;
+}): ContextMenuItem[] {
+  const {
+    storageKey,
+    widgets,
+    t,
+    setEditingWidgetKey,
+    toggleWidgetVisibility,
+    updateWidgetSettings,
+    setDragMode,
+  } = args;
+
+  const universal: ContextMenuItem[] = [
+    {
+      type: "action",
+      label: t("widgets.contextMenu.edit"),
+      onClick: () => setEditingWidgetKey(storageKey),
+      icon: <EditIcon style={{ fontSize: 14 }} />,
+    },
+    {
+      type: "action",
+      label: t("widgets.contextMenu.drag"),
+      onClick: () => setDragMode(true),
+      icon: <OpenWithIcon style={{ fontSize: 14 }} />,
+    },
+    {
+      type: "action",
+      label: t("widgets.contextMenu.hide"),
+      onClick: () => toggleWidgetVisibility(storageKey),
+      icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
+    },
+  ];
+
+  let extras: ContextMenuItem[] = [];
+
+  if (storageKey === "time") {
+    const s = widgets.time.settings as TimeSettings;
+    extras = [
+      {
+        type: "radio",
+        label: t("widgets.contextMenu.time12"),
+        selected: !s.is24Hour,
+        onClick: () => updateWidgetSettings("time", { is24Hour: false }),
+      },
+      {
+        type: "radio",
+        label: t("widgets.contextMenu.time24"),
+        selected: !!s.is24Hour,
+        onClick: () => updateWidgetSettings("time", { is24Hour: true }),
+      },
+    ];
+  } else if (storageKey === "quicklinks") {
+    const s = widgets.quicklinks.settings as QuicklinksSettings;
+    extras = [
+      {
+        type: "action",
+        label: t("widgets.contextMenu.addLink"),
+        onClick: () =>
+          window.dispatchEvent(new CustomEvent("ghiblify:quicklinks:add")),
+      },
+      { type: "separator" },
+      {
+        type: "radio",
+        label: t("widgets.edit.gridShow"),
+        selected: !!s.gridMode,
+        onClick: () => updateWidgetSettings("quicklinks", { gridMode: true }),
+      },
+      {
+        type: "radio",
+        label: t("widgets.edit.gridShowList"),
+        selected: !s.gridMode,
+        onClick: () =>
+          updateWidgetSettings("quicklinks", { gridMode: false }),
+      },
+    ];
+  } else if (storageKey === "weather") {
+    const s = widgets.weather.settings as WeatherSettings;
+    const sectionKeys = ["now", "hourly", "daily"] as const;
+    const onlyOneOn =
+      sectionKeys.filter((k) => s.sections[k]).length <= 1;
+    extras = [
+      {
+        type: "radio",
+        label: t("widgets.edit.weatherUnitC"),
+        selected: s.unit === "C",
+        onClick: () => updateWidgetSettings("weather", { unit: "C" }),
+      },
+      {
+        type: "radio",
+        label: t("widgets.edit.weatherUnitF"),
+        selected: s.unit === "F",
+        onClick: () => updateWidgetSettings("weather", { unit: "F" }),
+      },
+      {
+        type: "submenu",
+        label: t("widgets.edit.weatherSectionsLabel"),
+        items: sectionKeys.map((k) => ({
+          type: "checkbox" as const,
+          label: t(`widgets.edit.weatherSections.${k}`),
+          checked: !!s.sections[k],
+          // Keep the min-one-selected rule from EditWidget — disable
+          // the lone enabled option so it can't be turned off.
+          disabled: onlyOneOn && !!s.sections[k],
+          onClick: () => {
+            const next = { ...s.sections, [k]: !s.sections[k] };
+            const remaining = sectionKeys.filter((sk) => next[sk]).length;
+            if (remaining === 0) return;
+            updateWidgetSettings("weather", { sections: next });
+          },
+        })),
+      },
+    ];
+  } else if (storageKey === "info") {
+    const s = widgets.info.settings as InfoSettings;
+    const onlyOneOn =
+      INFO_FIELD_KEYS.filter((k) => s.infoFields[k]).length <= 1;
+    extras = [
+      {
+        type: "submenu",
+        label: t("widgets.edit.infoFieldsLabel"),
+        items: INFO_FIELD_KEYS.map((k) => ({
+          type: "checkbox" as const,
+          label: t(`widgets.edit.infoFields.${k}`),
+          checked: !!s.infoFields[k],
+          disabled: onlyOneOn && !!s.infoFields[k],
+          onClick: () => {
+            const nextFields = { ...s.infoFields, [k]: !s.infoFields[k] };
+            const remaining = INFO_FIELD_KEYS.filter(
+              (fk) => nextFields[fk]
+            ).length;
+            if (remaining === 0) return;
+            updateWidgetSettings("info", { infoFields: nextFields });
+          },
+        })),
+      },
+    ];
+  }
+
+  return extras.length
+    ? [...universal, { type: "separator" }, ...extras]
+    : universal;
+}

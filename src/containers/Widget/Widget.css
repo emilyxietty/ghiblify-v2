@@ -1,7 +1,7 @@
 .widget {
     position: fixed;
     z-index: 1000;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     transition: box-shadow 0.2s ease, background 160ms ease;
     max-width: 80%;
     width: max-content;
@@ -56,7 +56,7 @@
    who want a fully-solid card on a busy photo background. */
 .widget-card {
     background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.6);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     transition: background 160ms ease;
 }
 
@@ -131,12 +131,16 @@
     flex-direction: row;
 }
 
-.show-widget-outline .widget {
+/* Either the transient Shift-held state OR the sticky Drag Mode
+   gives widgets the same draggable cue (outline + grab cursor). */
+.show-widget-outline .widget,
+.drag-mode-on .widget {
     outline: 1px solid rgba(255, 255, 255, 0.5) !important;
     cursor: grab;
 }
 
-.show-widget-outline .widget:active {
+.show-widget-outline .widget:active,
+.drag-mode-on .widget:active {
     cursor: grabbing;
 }
 
@@ -155,7 +159,7 @@
     background: rgba(0, 0, 0, 0.78);
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
     opacity: 0;
@@ -180,3 +184,6 @@
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
 }
+
+/* Right-click menu styles moved to ContextMenu.css (shared with the
+   background's context menu). */
