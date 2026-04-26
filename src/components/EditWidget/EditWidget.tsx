@@ -1,5 +1,3 @@
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import LightModeIcon from "@mui/icons-material/LightMode";
 import ListIcon from "@mui/icons-material/List";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import React from "react";
@@ -12,10 +10,11 @@ import {
   isWidgetKey,
   QuicklinksSettings,
   TimeSettings,
+  WeatherSettings,
 } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
-import { AvatarSelector } from "../AvatarSelector/AvatarSelector";
-import { FieldSelector } from "../FieldSelector/FieldSelector";
+import { useT } from "../../i18n/i18n";
+import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
 import "./EditWidget.css";
 
 interface EditWidgetProps {
@@ -24,20 +23,21 @@ interface EditWidgetProps {
   storageKey?: string;
 }
 
-const INFO_FIELD_OPTIONS = [
-  { value: "japaneseTitle", label: "Japanese Title" },
-  { value: "title", label: "Title" },
-  { value: "year", label: "Year" },
-  { value: "movieLength", label: "Movie Length" },
-  { value: "quote", label: "Quote" },
-];
+const INFO_FIELD_VALUES = [
+  "japaneseTitle",
+  "title",
+  "year",
+  "movieLength",
+  "quote",
+] as const;
 
 const EditWidget: React.FC<EditWidgetProps> = ({
   showWidgetEdits,
   isResizing,
   storageKey,
 }) => {
-  const { widgets, updateWidgetSettings } = useAppContext();
+  const t = useT();
+  const { widgets, updateWidgetSettings, appearance } = useAppContext();
 
   if (!showWidgetEdits || isResizing || !isWidgetKey(storageKey)) return null;
 
@@ -45,20 +45,37 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const settings = widgets[storageKey].settings as Record<string, unknown>;
   const controls = widgetConfig.customControls;
 
-  const darkMode = (settings.darkMode as boolean | undefined) ?? false;
-
   const toggleTimeFormat = () => {
     const cur = (widgets.time.settings as TimeSettings).is24Hour;
     updateWidgetSettings("time", { is24Hour: !cur });
   };
 
-  const toggleDarkMode = () => {
-    updateWidgetSettings(storageKey, { darkMode: !darkMode } as never);
-  };
-
   const toggleQuicklinksGrid = () => {
     const cur = (widgets.quicklinks.settings as QuicklinksSettings).gridMode;
     updateWidgetSettings("quicklinks", { gridMode: !cur });
+  };
+
+  const toggleWeatherIconStyle = () => {
+    const cur = (widgets.weather.settings as WeatherSettings).iconStyle;
+    updateWidgetSettings("weather", {
+      iconStyle: cur === "animated" ? "still" : "animated",
+    });
+  };
+
+  const toggleWeatherUnit = () => {
+    const cur = (widgets.weather.settings as WeatherSettings).unit;
+    updateWidgetSettings("weather", { unit: cur === "C" ? "F" : "C" });
+  };
+
+  const handleWeatherSectionsChange = (selected: string[]) => {
+    if (selected.length === 0) return;
+    updateWidgetSettings("weather", {
+      sections: {
+        now: selected.includes("now"),
+        hourly: selected.includes("hourly"),
+        daily: selected.includes("daily"),
+      },
+    });
   };
 
   const handleInfoFieldsChange = (fields: string[]) => {
@@ -77,11 +94,33 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     updateWidgetSettings("avatar", { selectedAvatar: avatar });
   };
 
-  const supportsOpacity = "opacity" in settings;
-  const opacity =
-    supportsOpacity ? Math.round(Number(settings.opacity) || 0) : 50;
-  const handleOpacityChange = (value: number) => {
-    updateWidgetSettings(storageKey, { opacity: value } as never);
+  // Source-of-truth is the static widget config — not the merged
+  // settings, since legacy localStorage may carry opacity for widgets
+  // that no longer support it.
+  const isFrost = appearance.theme === "frost";
+  // The single slider drives `blur` on Frost (since the widget renders
+  // as glass with no surface alpha to tune), and `opacity` everywhere
+  // else (where the surface alpha is the visible knob).
+  const sliderField: "blur" | "opacity" = isFrost ? "blur" : "opacity";
+  let supportsSlider =
+    sliderField in (widgetConfig.settings as Record<string, unknown>);
+  // Weather's opacity slider only tints the hourly/daily forecast cells.
+  // If neither strip is enabled, opacity is a no-op — hide it. Blur
+  // applies to the widget shell on Frost regardless.
+  if (
+    supportsSlider &&
+    !isFrost &&
+    storageKey === "weather" &&
+    !(widgets.weather.settings as WeatherSettings).sections.hourly &&
+    !(widgets.weather.settings as WeatherSettings).sections.daily
+  ) {
+    supportsSlider = false;
+  }
+  const sliderValue = supportsSlider
+    ? Math.round(Number(settings[sliderField]) || 0)
+    : 50;
+  const handleSliderChange = (value: number) => {
+    updateWidgetSettings(storageKey, { [sliderField]: value } as never);
   };
 
   const hasAnyControls = !!(
@@ -92,17 +131,28 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.timeFormat ||
     controls?.infoFields ||
     controls?.avatarSelector ||
-    controls?.darkMode ||
     controls?.gridMode ||
-    supportsOpacity
+    controls?.weatherUnit ||
+    controls?.weatherSections ||
+    controls?.weatherIconStyle ||
+    supportsSlider
   );
 
-  if (!hasAnyControls) return <div className="widget-overlay" />;
+  if (!hasAnyControls) {
+    return (
+      <div className="widget-overlay widget-overlay-empty">
+        <span className="widget-overlay-empty-message">
+          {t("widgets.edit.noCustomization")}
+        </span>
+      </div>
+    );
+  }
 
   const timeIs24Hour = (widgets.time.settings as TimeSettings).is24Hour;
   const quicklinksGrid = (widgets.quicklinks.settings as QuicklinksSettings).gridMode;
   const infoFields = (widgets.info.settings as InfoSettings).infoFields;
   const avatarSettings = widgets.avatar.settings as AvatarSettings;
+  const weatherSettings = widgets.weather.settings as WeatherSettings;
 
   return (
     <div className="widget-overlay">
@@ -113,22 +163,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               e.stopPropagation();
               toggleTimeFormat();
             }}
-            title="Toggle 12/24 hour format"
+            title={t("widgets.edit.timeFormatAria")}
             variant="dark"
             size="small"
             icon={timeIs24Hour ? "12h" : "24h"}
-          />
-        )}
-        {controls?.darkMode && (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleDarkMode();
-            }}
-            title="Toggle dark mode"
-            variant={darkMode ? "light" : "dark"}
-            size="small"
-            icon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
           />
         )}
         {controls?.gridMode && (
@@ -137,58 +175,115 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               e.stopPropagation();
               toggleQuicklinksGrid();
             }}
-            title={quicklinksGrid ? "Show as list" : "Show as grid"}
+            title={quicklinksGrid ? t("widgets.edit.gridShowList") : t("widgets.edit.gridShow")}
             variant="dark"
             size="small"
             icon={quicklinksGrid ? <ListIcon /> : <ViewModuleIcon />}
           />
         )}
-      </div>
-      {controls?.infoFields && (
-        <div
-          style={{ pointerEvents: "auto" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <FieldSelector
-            options={INFO_FIELD_OPTIONS}
-            selectedValues={Object.entries(infoFields)
-              .filter(([_, v]) => v)
-              .map(([k]) => k)}
-            onChange={handleInfoFieldsChange}
+        {controls?.weatherUnit && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWeatherUnit();
+            }}
+            title={t("widgets.edit.weatherUnitAria")}
             variant="dark"
-            minSelected={1}
+            size="small"
+            className="btn-text-toggle"
+            icon={
+              weatherSettings.unit === "C"
+                ? t("widgets.edit.weatherUnitF")
+                : t("widgets.edit.weatherUnitC")
+            }
           />
-        </div>
-      )}
-      {controls?.avatarSelector && (
-        <div
-          style={{ pointerEvents: "auto" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <AvatarSelector
-            selectedAvatar={avatarSettings.selectedAvatar}
-            onChange={handleAvatarChange}
-            avatarSize={avatarSettings.size}
+        )}
+        {controls?.weatherIconStyle && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWeatherIconStyle();
+            }}
+            title={t(
+              `widgets.edit.weatherIconStyleAria.${weatherSettings.iconStyle}`
+            )}
+            // Variant reflects CURRENT state (light = animated is on);
+            // label shows the OPPOSITE — i.e. what clicking will
+            // switch to. The previous "label shows current" pattern
+            // read as flipped because clicking the "Animated" button
+            // would switch the icons to still.
+            variant={weatherSettings.iconStyle === "animated" ? "light" : "dark"}
+            size="small"
+            className="btn-text-toggle"
+            icon={t(
+              `widgets.edit.weatherIconStyle.${
+                weatherSettings.iconStyle === "animated" ? "still" : "animated"
+              }`
+            )}
           />
-        </div>
-      )}
-      {supportsOpacity && (
+        )}
+        {controls?.weatherSections && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <MultiSelectDropdown
+              options={(["now", "hourly", "daily"] as const).map((v) => ({
+                value: v,
+                label: t(`widgets.edit.weatherSections.${v}`),
+              }))}
+              selectedValues={(["now", "hourly", "daily"] as const).filter(
+                (k) => weatherSettings.sections[k]
+              )}
+              onChange={(vals) => {
+                // Enforce min 1 selection (FieldSelector did this for us;
+                // MultiSelectDropdown doesn't, so we wrap the handler).
+                if (vals.length === 0) return;
+                handleWeatherSectionsChange(vals);
+              }}
+              buttonText={t("widgets.edit.weatherSectionsLabel")}
+            />
+          </div>
+        )}
+        {controls?.infoFields && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <MultiSelectDropdown
+              options={INFO_FIELD_VALUES.map((v) => ({
+                value: v,
+                label: t(`widgets.edit.infoFields.${v}`),
+              }))}
+              selectedValues={Object.entries(infoFields)
+                .filter(([_, v]) => v)
+                .map(([k]) => k)}
+              onChange={(vals) => {
+                if (vals.length === 0) return;
+                handleInfoFieldsChange(vals);
+              }}
+              buttonText={t("widgets.edit.infoFieldsLabel")}
+            />
+          </div>
+        )}
+      </div>
+      {supportsSlider && (
         <div
           className="widget-opacity-control"
           onClick={(e) => e.stopPropagation()}
         >
           <label className="widget-opacity-label">
-            <span>Opacity</span>
-            <span>{opacity}%</span>
+            <span>
+              {isFrost ? t("widgets.edit.blur") : t("widgets.edit.opacity")}
+            </span>
+            <span>{sliderValue}%</span>
           </label>
           <input
             type="range"
             min={0}
             max={100}
-            value={opacity}
-            aria-valuetext={`${opacity} percent`}
-            aria-label="Widget opacity"
-            onChange={(e) => handleOpacityChange(parseInt(e.target.value))}
+            value={sliderValue}
+            aria-valuetext={`${sliderValue} percent`}
+            aria-label={
+              isFrost
+                ? t("widgets.edit.blurAria")
+                : t("widgets.edit.opacityAria")
+            }
+            onChange={(e) => handleSliderChange(parseInt(e.target.value))}
             className="widget-opacity-slider"
           />
         </div>

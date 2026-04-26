@@ -21,35 +21,66 @@ export interface QuicklinkItem {
 // belong to the widget shell (see WidgetEntry in AppContext), not in here.
 export interface TimeSettings { fontSize: number; is24Hour: boolean }
 export interface DateSettings { fontSize: number }
+export interface GreetingSettings { fontSize: number; name: string }
 export interface InfoSettings { fontSize: number; infoFields: InfoFields }
 export interface TodoSettings {
   width: number;
   height: number;
-  darkMode: boolean;
   collapsed: boolean;
-  /** 0–100 — controls the alpha of the surface tint. Default 50. */
+  /** 0–100 — controls the alpha of the surface tint on non-Frost
+   *  themes. Default 75. */
   opacity: number;
+  /** 0–100 — controls Frost glass blur intensity. Independent from
+   *  opacity so each can have its own ergonomic default. Default 25. */
+  blur: number;
 }
 export interface AvatarSettings { selectedAvatar: string; size: number }
 export interface QuicklinksSettings {
   width: number;
   height: number;
   gridMode: boolean;
-  darkMode: boolean;
   links: QuicklinkItem[];
-  /** 0–100 — controls the alpha of link tile surfaces. */
+  /** 0–100 — controls the alpha of link tile surfaces (non-Frost). */
   opacity: number;
+  /** 0–100 — Frost blur intensity for tiles. */
+  blur: number;
 }
 export interface SearchBarSettings {
   width: number;
   height: number;
-  darkMode: boolean;
-  /** 0–100 — controls the alpha of input + button surface. */
+  /** 0–100 — controls the alpha of input + button surface (non-Frost). */
   opacity: number;
+  /** 0–100 — Frost blur intensity. */
+  blur: number;
 }
 // Pomodoro is self-contained — it owns its own localStorage and runs a
 // leader-election loop. Nothing in context state for it.
 export type PomodoroSettings = Record<string, never>;
+export interface WeatherSections {
+  /** Current conditions (location + temp + condition). */
+  now: boolean;
+  /** 6-hour mini-forecast strip. */
+  hourly: boolean;
+  /** 7-day forecast strip. */
+  daily: boolean;
+}
+export interface WeatherSettings {
+  /** "C" = Celsius, "F" = Fahrenheit. */
+  unit: "C" | "F";
+  /** Independent toggles — any combination of now / hourly / daily.
+   *  At least one must be on (enforced by the FieldSelector minSelected). */
+  sections: WeatherSections;
+  /** 0–100 — alpha of the hourly/daily forecast cell backgrounds
+   *  (non-Frost). The widget itself stays transparent; only the cells
+   *  use this. */
+  opacity: number;
+  /** 0–100 — Frost blur intensity for the widget shell. */
+  blur: number;
+  /** "animated" = Meteocons SMIL-animated SVG (default — sun glints,
+   *  rain falls). "still" = single-frame static variant for users who
+   *  prefer no motion (or to save battery). */
+  iconStyle: "animated" | "still";
+}
 // Bookmarks is a right-side sliding panel, not a positioned widget. It's in
 // WIDGET_KEYS so its visibility lives in the same state as everything else
 // and the sidebar toggle row can include it. Settings and position are
@@ -59,6 +90,7 @@ export type BookmarksSettings = Record<string, never>;
 export interface WidgetSettingsMap {
   time: TimeSettings;
   date: DateSettings;
+  greeting: GreetingSettings;
   info: InfoSettings;
   todo: TodoSettings;
   avatar: AvatarSettings;
@@ -66,6 +98,7 @@ export interface WidgetSettingsMap {
   searchbar: SearchBarSettings;
   pomodoro: PomodoroSettings;
   bookmarks: BookmarksSettings;
+  weather: WeatherSettings;
 }
 
 export type WidgetKey = keyof WidgetSettingsMap;
@@ -73,6 +106,7 @@ export type WidgetKey = keyof WidgetSettingsMap;
 export const WIDGET_KEYS: readonly WidgetKey[] = [
   "time",
   "date",
+  "greeting",
   "info",
   "todo",
   "avatar",
@@ -80,6 +114,7 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "searchbar",
   "pomodoro",
   "bookmarks",
+  "weather",
 ];
 
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
@@ -97,6 +132,9 @@ export interface CustomControls {
   avatarSelector?: boolean;
   gridMode?: boolean;
   darkMode?: boolean;
+  weatherUnit?: boolean;
+  weatherSections?: boolean;
+  weatherIconStyle?: boolean;
 }
 
 export interface WidgetConfig<K extends WidgetKey> {
@@ -115,16 +153,22 @@ type WidgetConfigsType = { [K in WidgetKey]: WidgetConfig<K> };
 export const WIDGET_CONFIGS: WidgetConfigsType = {
   time: {
     name: "Time",
-    position: { x: 50, y: 9.609292502639917 },
+    position: { x: 50, y: 24.77064220183486 },
     settings: { fontSize: 200, is24Hour: false },
     fontSize: { min: 20, max: 250, step: 20 },
     customControls: { timeFormat: true },
   },
   date: {
     name: "Date",
-    position: { x: 50, y: 32.89334741288279 },
+    position: { x: 50, y: 50 },
     settings: { fontSize: 24 },
     fontSize: { min: 10, max: 50, step: 5 },
+  },
+  greeting: {
+    name: "Greeting",
+    position: { x: 50, y: 21.498311671763506 },
+    settings: { fontSize: 28, name: "" },
+    fontSize: { min: 14, max: 60, step: 4 },
   },
   info: {
     name: "Info",
@@ -145,10 +189,15 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   todo: {
     name: "Todo",
     position: { x: 13.169590643274855, y: 2 },
-    settings: { width: 350, height: 200, darkMode: false, collapsed: false, opacity: 50 },
+    settings: {
+      width: 350,
+      height: 200,
+      collapsed: false,
+      opacity: 75,
+      blur: 10,
+    },
     width: { min: 250, max: 600, step: 50 },
     height: { min: 200, max: 700, step: 50 },
-    customControls: { darkMode: true },
   },
   avatar: {
     name: "Avatar",
@@ -164,25 +213,24 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       width: 600,
       height: 200,
       gridMode: true,
-      darkMode: false,
       links: [],
-      opacity: 50,
+      opacity: 75,
+      blur: 10,
     },
     width: { min: 200, max: 600, step: 100 },
     height: { min: 200, max: 700, step: 100 },
-    customControls: { gridMode: true, darkMode: true },
+    customControls: { gridMode: true },
   },
   searchbar: {
     name: "Search Bar",
     position: { x: 50, y: 39.54593453009504 },
-    settings: { width: 550, height: 40, darkMode: false, opacity: 50 },
+    settings: { width: 550, height: 40, opacity: 75, blur: 10 },
     width: { min: 200, max: 800, step: 25 },
     height: { min: 20, max: 40, step: 2 },
-    customControls: { darkMode: true },
   },
   pomodoro: {
     name: "Pomodoro",
-    position: { x: 86.88888888888889, y: 2 },
+    position: { x: 86.83040935672514, y: 57.429153924566776 },
     settings: {},
   },
   bookmarks: {
@@ -192,6 +240,23 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // suddenly get a new panel.
     position: { x: 50, y: 50 },
     settings: {},
+  },
+  weather: {
+    name: "Weather",
+    position: { x: 92.44901315789474, y: 2 },
+    settings: {
+      unit: "C",
+      sections: { now: true, hourly: false, daily: false },
+      opacity: 75,
+      blur: 10,
+      iconStyle: "animated",
+    },
+    // No width/height ResizeBound — widget auto-sizes to content.
+    customControls: {
+      weatherUnit: true,
+      weatherSections: true,
+      weatherIconStyle: true,
+    },
   },
 };
 

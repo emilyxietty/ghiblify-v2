@@ -27,6 +27,71 @@
     transform: translateX(0);
 }
 
+/* ---------------------------------------------------------------------------
+   Welcome-modal spotlight tour. The sidebar is force-opened, lifted
+   above the modal backdrop (z-index 6000), and a per-target pulse
+   animation highlights the relevant area. The sidebar stays fully
+   interactive — users can click the highlighted control without
+   closing the guide modal behind it.
+   --------------------------------------------------------------------------- */
+
+.left-sidebar.sidebar-spotlight {
+    z-index: 6500;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+/* "guide" target — pulse the Guide button at the top. */
+.left-sidebar.spotlight-guide .sidebar-guide-btn {
+    animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+/* "widgets" target — pulse the entire widget toggle grid so the user
+   sees where to click to show/hide widgets. */
+.left-sidebar.spotlight-widgets .widget-section {
+    animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+/* "background" target — pulse the heart / delete / select-backgrounds
+   row so the user knows where these live in the sidebar going forward. */
+.left-sidebar.spotlight-background .background-actions {
+    animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+    border-radius: var(--radius-md);
+}
+
+/* "palette" target — pulse only the swatch grid itself so the user's
+   eye lands on the actionable bit, not the section title or the
+   adjacent high-contrast toggle. */
+.left-sidebar.spotlight-palette .theme-swatches {
+    animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+    border-radius: var(--radius-md);
+    padding: 6px;
+    margin: -6px;
+}
+
+@keyframes sidebar-spotlight-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 80%, transparent),
+            0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow:
+            0 0 0 10px color-mix(in srgb, var(--yellow) 0%, transparent),
+            0 0 18px 4px color-mix(in srgb, var(--yellow) 70%, transparent);
+        transform: scale(1.02);
+    }
+}
+
 .sidebar-content {
     padding: 32px 24px;
     color: var(--light);
@@ -34,12 +99,22 @@
     flex-direction: column;
     gap: 24px;
     overflow-y: auto;
+    min-height: 100vh;
+    box-sizing: border-box;
 }
 
 .sidebar-section {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+/* Push the bottom button-group (Guide / Report Issue) flush to the
+   bottom of the sidebar regardless of how much content sits above. */
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
 }
 
 /* ---------------------------------------------------------------------------
@@ -64,7 +139,7 @@
     height: 2px;
     margin-top: 6px;
     background: var(--yellow);
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     opacity: 0.7;
 }
 
@@ -105,14 +180,16 @@
    --------------------------------------------------------------------------- */
 
 .left-sidebar .widget-section {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 14px;
+    /* Grid layout — fixed column count, square cells. Icon size
+       derives from card width / column count, so adding/removing
+       widgets keeps the grid tidy automatically. */
+    --widget-cols: 6;
+    display: grid;
+    grid-template-columns: repeat(var(--widget-cols), 1fr);
+    gap: 8px;
     background: var(--sidebar-card);
-    align-items: center;
-    padding: 18px;
-    border-radius: 16px;
+    padding: 16px;
+    border-radius: var(--radius-xl);
     border: 1px solid rgba(253, 246, 233, 0.06);
 }
 
@@ -120,9 +197,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    /* Fill the grid cell, stay square. */
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
     background: transparent;
@@ -157,9 +235,10 @@
     outline-offset: 2px;
 }
 
-/* Active = widget visible. Theme-yellow glow + cream icon. */
+/* Active = widget visible. Green glow reads as "on" without competing
+   with the warm yellow used for decorative accents elsewhere. */
 .widget-icon.active {
-    background: color-mix(in srgb, var(--yellow) 22%, transparent);
+    background: color-mix(in srgb, var(--green) 22%, transparent);
 }
 
 .widget-icon.active svg {
@@ -167,13 +246,14 @@
 }
 
 .widget-icon.active:hover {
-    background: color-mix(in srgb, var(--yellow) 36%, transparent);
+    background: color-mix(in srgb, var(--green) 36%, transparent);
 }
 
-/* Avatar tile — rounded image with a subtle dim when inactive */
+/* Avatar tile — rounded image with a subtle dim when inactive.
+   Sized to match the smaller 36px widget-icon footprint. */
 .widget-icon img {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
@@ -211,11 +291,105 @@
 .filter-group {
     background: var(--sidebar-card);
     border: 1px solid rgba(253, 246, 233, 0.06);
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
     padding: 18px;
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+/* Collapsible Filters card. Wraps the same .filter-group contents
+   inside a <details> so it defaults closed and exposes just a header
+   row + chevron. Keeps the rounded card silhouette in both states. */
+.filter-collapsible {
+    background: var(--sidebar-card);
+    border: 1px solid rgba(253, 246, 233, 0.06);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.filter-collapsible[open] {
+    background: transparent;
+    border-color: transparent;
+}
+
+.filter-collapsible[open] .filter-group {
+    margin-top: 0;
+}
+
+.filter-collapsible-summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    color: var(--light);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    user-select: none;
+    transition: background 140ms ease;
+}
+
+.filter-collapsible-summary::-webkit-details-marker {
+    display: none;
+}
+
+.filter-collapsible-summary:hover {
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+}
+
+.filter-collapsible-chevron {
+    color: var(--light-muted);
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0.32, 1);
+}
+
+.filter-collapsible[open] .filter-collapsible-chevron {
+    transform: rotate(180deg);
+}
+
+.filter-collapsible[open] .filter-collapsible-summary {
+    background: var(--sidebar-card);
+    border: 1px solid rgba(253, 246, 233, 0.06);
+    border-bottom: none;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.filter-collapsible[open] .filter-group {
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    border-top: none;
+}
+
+/* Action row beneath the Filters card — Select Backgrounds takes the
+   remaining width, the trash icon sits beside it as a square. */
+.background-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.background-actions-select {
+    flex: 1;
+}
+
+.background-actions-delete,
+.background-actions-fav {
+    flex: 0 0 auto;
+    aspect-ratio: 1 / 1;
+    padding: 0 !important;
+    min-width: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* When the current background is favorited, tint the heart pink so
+   the filled-state reads at a glance regardless of palette. */
+.background-actions-fav.is-favorited svg {
+    color: #ff6b8a !important;
+    filter: drop-shadow(0 0 4px rgba(255, 107, 138, 0.5));
 }
 
 .filter-control {
@@ -239,31 +413,40 @@
    --------------------------------------------------------------------------- */
 
 .theme-swatches {
-    display: flex;
-    gap: 10px;
+    /* Grid — fixed column count, square cells. Swatch diameter is
+       derived from the container width / column count. */
+    --swatch-cols: 10;
+    display: grid;
+    grid-template-columns: repeat(var(--swatch-cols), 1fr);
+    gap: 8px;
     margin-top: 8px;
-    flex-wrap: wrap;
 }
 
 .theme-swatch {
-    width: 32px;
-    height: 32px;
+    /* Fill the grid cell, stay perfectly circular. */
+    width: 100%;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
-    border: 2px solid rgba(253, 246, 233, 0.25);
+    border: 1.5px solid rgba(253, 246, 233, 0.25);
     cursor: pointer;
     padding: 0;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
-    /* Each swatch carries its own theme-<name> class which locally rebinds
-       --red / --yellow / --blue / --green, so this gradient literally shows
-       what gets applied when the swatch is picked. */
+    box-sizing: border-box;
+    /* Each swatch carries its own theme-<name> class which locally
+       rebinds --dark / --red / --yellow / --blue. The dominant half
+       of the swatch is the palette's actual surface color (--dark) —
+       that's the color the user will see most of when the palette is
+       applied. The other half cycles through three accent colors so
+       palettes with similar accents (Ghibli vs Spirited vs Totoro)
+       still look distinct because their --dark differs. */
     background:
         conic-gradient(
-            from 210deg,
-            var(--red) 0deg 90deg,
-            var(--yellow) 90deg 180deg,
-            var(--green) 180deg 270deg,
-            var(--blue) 270deg 360deg
+            from 0deg,
+            var(--dark) 0deg 180deg,
+            var(--red) 180deg 240deg,
+            var(--yellow) 240deg 300deg,
+            var(--blue) 300deg 360deg
         );
 }
 
@@ -280,6 +463,21 @@
 .theme-swatch.is-selected {
     border-color: var(--light);
     box-shadow: 0 0 0 2px var(--focus-ring), 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Frost swatch — Frost itself is a "dark glass" palette (charcoal
+   surfaces, white text), but its --dark var is white (the surface is
+   the photo behind, blurred). Override the swatch's dominant half to
+   black so the swatch reads as a dark palette at a glance. */
+.theme-swatch.theme-frost {
+    background:
+        conic-gradient(
+            from 0deg,
+            #0a0e14 0deg 180deg,
+            var(--red) 180deg 240deg,
+            var(--yellow) 240deg 300deg,
+            var(--blue) 300deg 360deg
+        );
 }
 
 /* ---------------------------------------------------------------------------
@@ -313,7 +511,7 @@
     width: 36px;
     height: 20px;
     background: color-mix(in srgb, var(--light) 22%, transparent);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     transition: background 160ms ease;
     flex-shrink: 0;
 }
@@ -331,7 +529,7 @@
 }
 
 .contrast-toggle input:checked + .contrast-switch {
-    background: var(--yellow);
+    background: var(--green);
 }
 
 .contrast-toggle input:checked + .contrast-switch::after {
@@ -359,7 +557,7 @@
 .filter-slider {
     width: 100%;
     height: 4px;
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     background: color-mix(in srgb, var(--light) 22%, transparent);
     outline: none;
     -webkit-appearance: none;
@@ -368,7 +566,7 @@
 
 .filter-slider:focus-visible {
     box-shadow: 0 0 0 2px var(--focus-ring);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .filter-slider::-webkit-slider-thumb {
@@ -422,7 +620,7 @@
 .left-sidebar::-webkit-scrollbar-thumb,
 .sidebar-content::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--light) 22%, transparent);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 .left-sidebar::-webkit-scrollbar-thumb:hover,

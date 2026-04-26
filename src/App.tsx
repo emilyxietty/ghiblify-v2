@@ -1,4 +1,6 @@
+import EditIcon from "@mui/icons-material/Edit";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import OpenWithIcon from "@mui/icons-material/OpenWith";
 import React, { useEffect } from "react";
 import "./App.css";
 import { Button } from "./components/Button/Button";
@@ -10,17 +12,21 @@ import { Widget } from "./containers/Widget/Widget";
 import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
+import { Greeting } from "./containers/Widgets/Greeting/Greeting";
 import { Info } from "./containers/Widgets/Info/Info";
 import Pomodoro from "./containers/Widgets/Pomodoro/Pomodoro";
 import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
 import SearchBar from "./containers/Widgets/SearchBar/SearchBar";
 import { Time } from "./containers/Widgets/Time/Time";
 import { Todo } from "./containers/Widgets/Todo/Todo";
+import Weather from "./containers/Widgets/Weather/Weather";
 import { AppProvider, useAppContext } from "./contexts/AppContext";
 import { useBackground } from "./hooks/useBackground";
 import { useInfoConfig } from "./hooks/useInfoConfig";
+import { useT } from "./i18n/i18n";
 
 const AppContent: React.FC = () => {
+  const t = useT();
   const { currentBackground, filmTitle, loading: bgLoading } = useBackground();
   const {
     titlejp,
@@ -40,7 +46,57 @@ const AppContent: React.FC = () => {
     setShowGuide,
     editingWidgetKey,
     setEditingWidgetKey,
+    setCurrentBackground,
+    dragMode,
+    setDragMode,
   } = useAppContext();
+
+  // While Drag Mode is on, mark the body so widgets get the same
+  // visual cues they get on Shift (outline, grab cursor, quick-edit
+  // pencils visible). Distinct from `.show-widget-outline` (which is
+  // the transient Shift-held state) so the keyup handler in Widget.tsx
+  // doesn't tear it off when Shift is released.
+  useEffect(() => {
+    if (dragMode) {
+      document.body.classList.add("drag-mode-on");
+      return () => document.body.classList.remove("drag-mode-on");
+    }
+  }, [dragMode]);
+
+  // Exit Drag Mode on outside click / Esc / Enter — same dismissal
+  // model as global Edit Mode. Clicks on widgets, the sidebar, the
+  // top edit-toggle bar (where the Drag Mode toggle lives), the
+  // right-click ContextMenu, and modals don't count as "outside" so
+  // the user can interact with all of those without losing drag mode.
+  useEffect(() => {
+    if (!dragMode) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest(
+          ".widget, .left-sidebar, .edit-toggle-button, .ctx-menu, [role='dialog']"
+        )
+      )
+        return;
+      setDragMode(false);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter") setDragMode(false);
+    };
+    document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [dragMode, setDragMode]);
+
+  // Mirror the resolved background URL into context so consumers
+  // outside the App tree (e.g. the LeftSidebar's delete-background
+  // button) can act on it.
+  useEffect(() => {
+    setCurrentBackground(currentBackground);
+  }, [currentBackground, setCurrentBackground]);
 
   //   const widgetsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +139,16 @@ const AppContent: React.FC = () => {
       // or other UI chrome.
       const widget = target.closest(".widget") as HTMLElement | null;
       if (widget?.dataset.widgetKey === editingWidgetKey) return;
-      if (target.closest(".left-sidebar, .edit-toggle-button, [role='dialog']"))
+      // Stay editing if the click landed inside any chrome that isn't
+       // a `.widget` itself: sidebar, dialog overlays, the global edit
+       // toggle, OR the right-click ContextMenu (portal'd to <body>,
+       // which means a click on its "Edit widget" item would otherwise
+       // clear the state we just set).
+      if (
+        target.closest(
+          ".left-sidebar, .edit-toggle-button, [role='dialog'], .ctx-menu"
+        )
+      )
         return;
       setEditingWidgetKey(null);
     };
@@ -102,20 +167,60 @@ const AppContent: React.FC = () => {
     <>
       <LeftSidebar />
       <RightSidebar visible={widgets.bookmarks.visible} />
-      {(showWidgetEdits || editingWidgetKey) && (
+      {(showWidgetEdits || editingWidgetKey || dragMode) && (
         <div className="edit-toggle-button">
           <Button
             variant="outline-light"
             size="small"
             pill
             onClick={() => setShowGuide(true)}
-            aria-label="Open the guide"
+            aria-label={t("sidebar.buttons.guideAria")}
             aria-haspopup="dialog"
-            data-tooltip="Guide"
+            data-tooltip={t("common.guide")}
           >
             <HelpOutlineIcon style={{ fontSize: 14 }} />
-            Guide
+            {t("common.guide")}
           </Button>
+          {/* Mode segmented toggle — Edit Widgets and Drag Mode are
+              mutually exclusive (enforced in AppContext). Rendering
+              them as one connected pill with a filled "active" half
+              makes the current mode unmistakable; the previous pair
+              of similarly-styled outline buttons made it hard to tell
+              which was on. */}
+          <div
+            className="mode-toggle"
+            role="tablist"
+            aria-label={t("sidebar.buttons.modeToggleAria")}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={showWidgetEdits}
+              className={`mode-toggle-segment${
+                showWidgetEdits ? " is-active" : ""
+              }`}
+              onClick={() => {
+                if (!showWidgetEdits) toggleEditMode();
+              }}
+            >
+              <EditIcon style={{ fontSize: 14 }} />
+              {t("sidebar.buttons.editWidgets")}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={dragMode}
+              className={`mode-toggle-segment${
+                dragMode ? " is-active" : ""
+              }`}
+              onClick={() => {
+                if (!dragMode) setDragMode(true);
+              }}
+            >
+              <OpenWithIcon style={{ fontSize: 14 }} />
+              {t("sidebar.buttons.dragMode")}
+            </button>
+          </div>
           <Button
             variant="outline-light"
             size="small"
@@ -123,9 +228,10 @@ const AppContent: React.FC = () => {
             onClick={() => {
               if (showWidgetEdits) toggleEditMode();
               if (editingWidgetKey) setEditingWidgetKey(null);
+              if (dragMode) setDragMode(false);
             }}
           >
-            Done
+            {t("common.done")}
           </Button>
         </div>
       )}
@@ -140,11 +246,22 @@ const AppContent: React.FC = () => {
         <Widget storageKey="quicklinks" visible={widgets.quicklinks.visible}>
           <QuickLinks />
         </Widget>
-        <Widget storageKey="time" visible={widgets.time.visible}>
+        {/* Force the Time widget mounted while the welcome guide is
+            running so the adjustTime / drag / rightClick demo slides
+            always have a Time widget to point at, even if the user
+            hid it via the sidebar toggles. Reverts to the user's
+            choice as soon as the guide closes. */}
+        <Widget
+          storageKey="time"
+          visible={widgets.time.visible || showGuide}
+        >
           <Time />
         </Widget>
         <Widget storageKey="date" visible={widgets.date.visible}>
           <DateDisplay />
+        </Widget>
+        <Widget storageKey="greeting" visible={widgets.greeting.visible}>
+          <Greeting />
         </Widget>
         <Widget storageKey="todo" visible={widgets.todo.visible}>
           <Todo />
@@ -172,6 +289,9 @@ const AppContent: React.FC = () => {
         </Widget>
         <Widget storageKey="pomodoro" visible={widgets.pomodoro.visible}>
           <Pomodoro />
+        </Widget>
+        <Widget storageKey="weather" visible={widgets.weather.visible}>
+          <Weather />
         </Widget>
       </Background>
     </>

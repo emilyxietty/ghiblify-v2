@@ -30,9 +30,24 @@ export const THEME_NAMES = [
   "mint",
   "bloom",
   "cotton",
-  "mono",
+  "light",
+  "dark",
+  "frost",
 ] as const;
 export type ThemeName = (typeof THEME_NAMES)[number];
+
+/** Palettes whose `--dark` surface is actually a soft/light tone, with
+ *  `--light` set to a dark text color. Determines which mode flag the
+ *  app applies to <html> so widget surfaces can pick contrast-safe
+ *  text + accents (CSS only — no new vars needed at the call site). */
+export const LIGHT_MODE_THEMES: ReadonlySet<ThemeName> = new Set<ThemeName>([
+  "pastel",
+  "cream",
+  "mint",
+  "bloom",
+  "cotton",
+  "light",
+]);
 
 export interface AppearanceSettings {
   theme: ThemeName;
@@ -65,8 +80,23 @@ interface AppContextType {
   setIsDragging: (b: boolean) => void;
   showWidgetEdits: boolean;
   toggleEditMode: () => void;
+  /** Drag Mode lets the user reposition any widget by left-click +
+   *  drag — no Shift required. Toggled from the sidebar's "Drag Mode"
+   *  button or any widget's right-click "Drag widget" item. Stays on
+   *  until "Done" is clicked. Independent of edit mode (the two
+   *  modes are visual-cue siblings; either can be on alone). */
+  dragMode: boolean;
+  setDragMode: (b: boolean) => void;
+  toggleDragMode: () => void;
   showGuide: boolean;
   setShowGuide: (b: boolean) => void;
+  /** Drives a "spotlight" tour effect on the LeftSidebar: when set,
+   *  the sidebar force-opens itself above any modal backdrop and a
+   *  CSS pulse animation highlights the relevant region (the Guide
+   *  button, the widget toggle grid, etc.). Welcome modal slides set
+   *  this; null clears it. */
+  sidebarSpotlight: "guide" | "widgets" | "palette" | "background" | null;
+  setSidebarSpotlight: (s: "guide" | "widgets" | "palette" | "background" | null) => void;
   /** When non-null, only this single widget shows its EditWidget overlay
    *  (triggered by the Shift+pencil affordance on a single widget).
    *  showWidgetEdits is the global "edit all widgets" mode and is
@@ -79,6 +109,11 @@ interface AppContextType {
   updateBackgroundFilters: (f: Partial<BackgroundFilters>) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
+  /** URL of the photo currently painted by `<Background>`. Set by
+   *  `AppContent` whenever `useBackground` resolves a new image, so
+   *  any consumer (e.g. the sidebar trash button) can act on it. */
+  currentBackground: string;
+  setCurrentBackground: (url: string) => void;
 
   // appearance (theme, widget opacity, contrast)
   appearance: AppearanceSettings;
@@ -98,9 +133,14 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Widgets that should default to hidden (everything else defaults visible).
-// (Currently empty — bookmarks defaults to visible now.)
-const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>();
+// Widgets that default to hidden — keeps the first-load page calm and
+// uncluttered. Users opt them in via the sidebar toggles.
+const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
+  "searchbar",
+  "quicklinks",
+  "avatar",
+  "pomodoro",
+]);
 
 const buildDefaultWidgets = (): WidgetsState => {
   const out = {} as WidgetsState;
@@ -231,7 +271,6 @@ const migrateLegacy = (defaults: WidgetsState): WidgetsState => {
   const todo = state.todo.settings;
   todo.width = readInt("todo_width", todo.width);
   todo.height = readInt("todo_height", todo.height);
-  todo.darkMode = readBool("todo_darkMode", todo.darkMode);
   todo.collapsed = readBool("todo_collapsed", todo.collapsed);
 
   const avatar = state.avatar.settings;
@@ -242,7 +281,6 @@ const migrateLegacy = (defaults: WidgetsState): WidgetsState => {
   const ql = state.quicklinks.settings;
   ql.width = readInt("quicklinks_width", ql.width);
   ql.height = readInt("quicklinks_height", ql.height);
-  ql.darkMode = readBool("quicklinks_darkMode", ql.darkMode);
   if (localStorage.getItem("quicklinks_grid") !== null) {
     ql.gridMode = readBool("quicklinks_grid", ql.gridMode);
   }
@@ -251,7 +289,6 @@ const migrateLegacy = (defaults: WidgetsState): WidgetsState => {
   const sb = state.searchbar.settings;
   sb.width = readInt("searchbar_width", sb.width);
   sb.height = readInt("searchbar_height", sb.height);
-  sb.darkMode = readBool("searchbar_darkMode", sb.darkMode);
 
   return state;
 };
@@ -319,7 +356,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [showWidgetEdits, setShowWidgetEdits] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
+  const [dragMode, setDragMode] = useState(false);
+  // Open the guide automatically the first time a user ever opens this
+  // extension, then flip a localStorage flag so it stays closed thereafter.
+  const [sidebarSpotlight, setSidebarSpotlight] = useState<
+    "guide" | "widgets" | "palette" | "background" | null
+  >(null);
+  const [currentBackground, setCurrentBackground] = useState<string>("");
+  const [showGuide, setShowGuide] = useState(() => {
+    try {
+      return localStorage.getItem("ghiblify_guide_seen") !== "true";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!showGuide) return;
+    try {
+      localStorage.setItem("ghiblify_guide_seen", "true");
+    } catch {
+      /* ignore */
+    }
+  }, [showGuide]);
   const [editingWidgetKey, setEditingWidgetKey] = useState<WidgetKey | null>(
     null
   );
@@ -340,15 +398,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const [appearance, setAppearance] = useState<AppearanceSettings>(() => {
     const saved = readJSON<Partial<AppearanceSettings>>("ghiblify_appearance", {});
+    // Migrate the old "mono" theme name → "light" (palette renamed
+    // when its dark counterpart was added).
+    if ((saved.theme as string) === "mono") saved.theme = "light";
     return { ...DEFAULT_APPEARANCE, ...saved };
   });
 
-  // Apply appearance to document root: theme class + contrast class.
+  // Apply appearance to document root: theme class + contrast class +
+  // palette mode (light/dark) so widget surfaces can pick the right
+  // text contrast without each widget needing its own toggle.
   useEffect(() => {
     const root = document.documentElement;
     THEME_NAMES.forEach((t) => root.classList.remove(`theme-${t}`));
     root.classList.add(`theme-${appearance.theme}`);
     root.classList.toggle("high-contrast", appearance.highContrast);
+    root.classList.toggle(
+      "palette-light",
+      LIGHT_MODE_THEMES.has(appearance.theme)
+    );
+    root.classList.toggle(
+      "palette-dark",
+      !LIGHT_MODE_THEMES.has(appearance.theme)
+    );
   }, [appearance]);
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);
@@ -364,9 +435,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     persistWidgets(widgets);
   }, [widgets]);
 
+  // Edit mode and Drag mode are mutually exclusive — turning one on
+  // turns the other off. Single-widget edit mode (`editingWidgetKey`)
+  // is a peer of edit mode, so entering drag mode also clears it.
   const toggleEditMode = () => {
-    setShowWidgetEdits((prev) => !prev);
-    setIsDragging(false);
+    setShowWidgetEdits((prev) => {
+      const next = !prev;
+      if (next) setDragMode(false);
+      setIsDragging(false);
+      return next;
+    });
+  };
+
+  const setDragModeExclusive = (b: boolean) => {
+    setDragMode(b);
+    if (b) {
+      setShowWidgetEdits(false);
+      setEditingWidgetKey(null);
+    }
+  };
+
+  const toggleDragMode = () => setDragModeExclusive(!dragMode);
+
+  const setEditingWidgetKeyExclusive = (k: WidgetKey | null) => {
+    setEditingWidgetKey(k);
+    if (k) setDragMode(false);
   };
 
   const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
@@ -425,10 +518,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       return;
     setWidgets((prev) => {
       const next = buildDefaultWidgets();
-      // Preserve user-created content. Links live inside settings (legacy
-      // shape from the localStorage migration) but they're user data, not
-      // config — resetting positions/sizes shouldn't wipe them.
+      // Preserve user-created content — links and the greeting name
+      // are user data, not config. Resetting positions/sizes
+      // shouldn't make the user retype their name or rebuild their
+      // bookmark grid.
       next.quicklinks.settings.links = prev.quicklinks.settings.links;
+      next.greeting.settings.name = prev.greeting.settings.name;
       return next;
     });
   };
@@ -440,14 +535,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setIsDragging,
         showWidgetEdits,
         toggleEditMode,
+        dragMode,
+        setDragMode: setDragModeExclusive,
+        toggleDragMode,
         showGuide,
         setShowGuide,
+        sidebarSpotlight,
+        setSidebarSpotlight,
         editingWidgetKey,
-        setEditingWidgetKey,
+        setEditingWidgetKey: setEditingWidgetKeyExclusive,
         backgroundFilters,
         updateBackgroundFilters,
         backgroundSelection,
         updateBackgroundSelection,
+        currentBackground,
+        setCurrentBackground,
         appearance,
         updateAppearance,
         widgets,

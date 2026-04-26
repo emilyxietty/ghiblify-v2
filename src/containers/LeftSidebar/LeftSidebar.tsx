@@ -3,19 +3,36 @@ import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import BugReportIcon from "@mui/icons-material/BugReport";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LinkIcon from "@mui/icons-material/Link";
+import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+import StarIcon from "@mui/icons-material/Star";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
 import TimerIcon from "@mui/icons-material/Timer";
+import WbSunnyIcon from "@mui/icons-material/WbSunny";
+import {
+  codeToIconName,
+  iconUrl as weatherIconUrl,
+} from "../Widgets/Weather/Weather";
+import { useWeather } from "../../hooks/useWeather";
+import { WeatherSettings } from "../../config/widgetConfig";
 import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
+import ReportModal from "../../components/ReportModal/ReportModal";
+import SocialsModal from "../../components/SocialsModal/SocialsModal";
 
 import { Button } from "../../components/Button/Button";
 import {
   BUYMEACOFFEE_URL,
-  GITHUB_REPO_URL,
+  CHROME_WEBSTORE_REVIEW_URL,
   SIDEBAR_EDGE_TRIGGER,
   SIDEBAR_WIDTH,
 } from "../../config/appConfig";
@@ -26,48 +43,54 @@ import {
   ThemeName,
   useAppContext,
 } from "../../contexts/AppContext";
+import { useT } from "../../i18n/i18n";
 import "./LeftSidebar.css";
 
-const THEMES: Array<{ name: ThemeName; label: string }> = [
-  { name: "ghibli", label: "Ghibli" },
-  { name: "spirited", label: "Spirited Away" },
-  { name: "howls", label: "Howl's" },
-  { name: "totoro", label: "Totoro" },
-  { name: "ponyo", label: "Ponyo" },
-  { name: "sky", label: "Sky" },
-  { name: "sakura", label: "Sakura" },
-  { name: "meadow", label: "Meadow" },
-  { name: "pastel", label: "Pastel" },
-  { name: "cream", label: "Cream" },
-  { name: "mint", label: "Mint" },
-  { name: "bloom", label: "Bloom" },
-  { name: "cotton", label: "Cotton Candy" },
-  { name: "mono", label: "Mono" },
+// Theme keys — labels come from i18n at render time so they translate.
+const THEME_KEYS: ThemeName[] = [
+  "ghibli",
+  "spirited",
+  "howls",
+  "totoro",
+  "ponyo",
+  "sky",
+  "sakura",
+  "meadow",
+  "pastel",
+  "cream",
+  "mint",
+  "bloom",
+  "cotton",
+  "light",
+  "dark",
+  "frost",
 ];
 
 const WIDGET_TOGGLES: Array<{
   key: WidgetKey;
-  label: string;
   icon: React.ReactElement;
 }> = [
-  { key: "time", label: "Time", icon: <AccessTimeFilledIcon /> },
-  { key: "date", label: "Date", icon: <CalendarTodayIcon /> },
-  { key: "info", label: "Film info", icon: <FormatQuoteIcon /> },
-  { key: "todo", label: "Todo list", icon: <CheckBoxIcon /> },
-  { key: "quicklinks", label: "Quick links", icon: <LinkIcon /> },
-  { key: "searchbar", label: "Search bar", icon: <SearchIcon /> },
-  { key: "pomodoro", label: "Pomodoro timer", icon: <TimerIcon /> },
-  { key: "bookmarks", label: "Bookmarks", icon: <BookmarksIcon /> },
+  { key: "time", icon: <AccessTimeFilledIcon /> },
+  { key: "date", icon: <CalendarTodayIcon /> },
+  { key: "greeting", icon: <EmojiEmotionsIcon /> },
+  { key: "info", icon: <FormatQuoteIcon /> },
+  { key: "todo", icon: <CheckBoxIcon /> },
+  { key: "quicklinks", icon: <LinkIcon /> },
+  { key: "searchbar", icon: <SearchIcon /> },
+  { key: "pomodoro", icon: <TimerIcon /> },
+  { key: "bookmarks", icon: <BookmarksIcon /> },
+  { key: "weather", icon: <WbSunnyIcon /> },
 ];
 
-const FILTER_UNITS: Record<keyof BackgroundFilters, string> = {
+const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
   blur: "px",
-  brightness: "%",
-  contrast: "%",
-  saturation: "%",
+  brightness: "percent",
+  contrast: "percent",
+  saturation: "percent",
 };
 
 export const LeftSidebar: React.FC = () => {
+  const t = useT();
   const {
     widgets,
     toggleWidgetVisibility,
@@ -79,11 +102,123 @@ export const LeftSidebar: React.FC = () => {
     showWidgetEdits,
     toggleEditMode,
     setShowGuide,
+    showGuide,
+    sidebarSpotlight,
+    currentBackground,
   } = useAppContext();
 
+  // Blacklist the currently displayed background. Persists to the
+  // shared `ghiblify_blacklist` localStorage key + dispatches the same
+  // event the BackgroundSettingsModal listens to, so any open modal
+  // updates and `useBackground` immediately picks a new image.
+  const deleteCurrentBackground = () => {
+    if (!currentBackground) return;
+    try {
+      const raw = localStorage.getItem("ghiblify_blacklist");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      const set = new Set<string>(Array.isArray(list) ? list : []);
+      if (set.has(currentBackground)) return;
+      set.add(currentBackground);
+      localStorage.setItem(
+        "ghiblify_blacklist",
+        JSON.stringify(Array.from(set))
+      );
+    } catch {
+      /* ignore */
+    }
+    window.dispatchEvent(
+      new CustomEvent("ghiblify:blacklist:add", { detail: currentBackground })
+    );
+  };
+
+  // Favorites — read on mount, refresh whenever any consumer broadcasts
+  // a change. Tracked in localStorage at `ghiblify_favorites` (array
+  // of URL strings). Heart button toggles membership for the current
+  // background and dispatches `ghiblify:favorites:change` so the
+  // settings modal + useBackground stay in sync.
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("ghiblify_favorites");
+      const arr = raw ? (JSON.parse(raw) as string[]) : [];
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch {
+      return new Set();
+    }
+  });
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        const raw = localStorage.getItem("ghiblify_favorites");
+        const arr = raw ? (JSON.parse(raw) as string[]) : [];
+        setFavorites(new Set(Array.isArray(arr) ? arr : []));
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener("ghiblify:favorites:change", refresh);
+    return () =>
+      window.removeEventListener("ghiblify:favorites:change", refresh);
+  }, []);
+  const isFavorited = !!currentBackground && favorites.has(currentBackground);
+  const toggleFavoriteCurrent = () => {
+    if (!currentBackground) return;
+    const next = new Set(favorites);
+    if (next.has(currentBackground)) next.delete(currentBackground);
+    else next.add(currentBackground);
+    setFavorites(next);
+    try {
+      if (next.size === 0) localStorage.removeItem("ghiblify_favorites");
+      else
+        localStorage.setItem(
+          "ghiblify_favorites",
+          JSON.stringify(Array.from(next))
+        );
+    } catch {
+      /* ignore */
+    }
+    window.dispatchEvent(new CustomEvent("ghiblify:favorites:change"));
+  };
+
+  // Live weather icon for the toggle — mirrors whatever Meteocons
+  // glyph is currently showing in the Weather widget. The hook is
+  // already cached, so calling it from the sidebar doesn't trigger a
+  // second API request.
+  const weatherSettings = widgets.weather.settings as WeatherSettings;
+  const { data: weatherData } = useWeather(weatherSettings.unit);
+  const liveWeatherIcon = weatherData ? (
+    <img
+      src={weatherIconUrl(
+        codeToIconName(
+          weatherData.current.weatherCode,
+          weatherData.current.isDay
+        ),
+        weatherSettings.iconStyle ?? "animated"
+      )}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      style={{ width: 22, height: 22 }}
+    />
+  ) : (
+    <WbSunnyIcon />
+  );
+
   const [isOpen, setIsOpen] = useState(false);
+
+  // Welcome-modal tour: keep the sidebar force-open for the entire
+  // duration of the guide. Tracking just `sidebarSpotlight` wasn't
+  // enough — going from one non-spotlit slide to another (e.g.
+  // adjustTime → drag, both spotlight=null) didn't change the value,
+  // so the open-on-spotlight effect didn't re-fire. Combined with the
+  // mouse-move auto-close handler below, that left the sidebar shut
+  // and unreachable when navigating back through the guide.
+  useEffect(() => {
+    if (showGuide || sidebarSpotlight) setIsOpen(true);
+  }, [showGuide, sidebarSpotlight]);
   const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showSocialsModal, setShowSocialsModal] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
   // Close sidebar when entering edit mode
@@ -91,16 +226,20 @@ export const LeftSidebar: React.FC = () => {
     setIsOpen(false);
   }, [showWidgetEdits]);
 
-  // Edge-hover open + outside close (mouse UX preserved)
+  // Edge-hover open + outside close (mouse UX preserved). While the
+  // welcome guide is open the auto-close branch is skipped so the
+  // sidebar stays put for the spotlight tour — the user shouldn't
+  // have to chase it after every accidental mouse drift.
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
       if (e.clientX < SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
-      else if (isOpen && e.clientX > sidebarWidth) setIsOpen(false);
+      else if (isOpen && !showGuide && e.clientX > sidebarWidth)
+        setIsOpen(false);
     };
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [isOpen]);
+  }, [isOpen, showGuide]);
 
   // Keyboard shortcuts: Cmd/Ctrl+K toggles the sidebar (keyboard-accessible
   // entry point now that the visible trigger button is gone). Escape closes.
@@ -165,7 +304,8 @@ export const LeftSidebar: React.FC = () => {
     max: number
   ) => {
     const value = filters[name] ?? (name === "blur" ? 0 : 100);
-    const unit = FILTER_UNITS[name];
+    const unitKey = FILTER_UNITS[name];
+    const unit = t(`sidebar.filterUnits.${unitKey}`);
     const sliderId = `filter-${name}`;
     return (
       <div className="filter-control" key={name}>
@@ -182,7 +322,7 @@ export const LeftSidebar: React.FC = () => {
           min={min}
           max={max}
           value={value}
-          aria-valuetext={`${value}${unit === "px" ? " pixels" : " percent"}`}
+          aria-valuetext={`${value}${unit}`}
           onChange={(e) => handleFilterChange(name, parseInt(e.target.value))}
           className="filter-slider"
         />
@@ -195,49 +335,67 @@ export const LeftSidebar: React.FC = () => {
       <aside
         id="settings-sidebar"
         ref={sidebarRef}
-        className={`left-sidebar ${isOpen ? "open" : ""}`}
-        aria-label="Settings"
+        className={`left-sidebar ${isOpen ? "open" : ""}${
+          showGuide || sidebarSpotlight ? " sidebar-spotlight" : ""
+        }${sidebarSpotlight ? ` spotlight-${sidebarSpotlight}` : ""}`}
+        aria-label={t("sidebar.ariaLabel")}
       >
         <div className="sidebar-content">
-          <div className="sidebar-section button-group" role="group" aria-label="External links">
-            <Button variant="dark" size="small" onClick={() => handleSiteClick(GITHUB_REPO_URL)}>
-              Github Repo
-            </Button>
-            <Button variant="dark" size="small" onClick={() => handleSiteClick(BUYMEACOFFEE_URL)}>
-              Buy me a Coffee
+          <div className="sidebar-section button-group" role="group">
+            <Button
+              className="sidebar-guide-btn"
+              variant="dark"
+              size="small"
+              onClick={() => setShowGuide(true)}
+              aria-label={t("sidebar.buttons.guideAria")}
+              aria-haspopup="dialog"
+            >
+              <HelpOutlineIcon style={{ fontSize: 14 }} />
+              {t("sidebar.buttons.guide")}
             </Button>
             <Button
               variant="dark"
               size="small"
-              onClick={() => setShowGuide(true)}
-              aria-label="Open the guide"
+              onClick={() => setShowSocialsModal(true)}
               aria-haspopup="dialog"
             >
-              <HelpOutlineIcon style={{ fontSize: 14 }} />
-              Guide
+              <FavoriteIcon style={{ fontSize: 14 }} />
+              {t("socials.buttonLabel")}
+            </Button>
+            <Button
+              variant="dark"
+              size="small"
+              onClick={() => handleSiteClick(BUYMEACOFFEE_URL)}
+            >
+              <LocalCafeIcon style={{ fontSize: 14 }} />
+              {t("sidebar.buttons.buyCoffee")}
             </Button>
           </div>
 
           <section className="sidebar-section" aria-labelledby="widgets-heading">
-            <h4 id="widgets-heading">Widgets</h4>
+            <h4 id="widgets-heading">{t("sidebar.headings.widgets")}</h4>
             <div
               className="widget-section"
               role="group"
               aria-labelledby="widgets-heading"
             >
-              {WIDGET_TOGGLES.map(({ key, label, icon }) => {
+              {WIDGET_TOGGLES.map(({ key, icon }) => {
                 const visible = widgets[key].visible;
+                const name = t(`widgets.names.${key}`);
+                // Weather toggle gets a live Meteocons icon matching
+                // current conditions, instead of the static sun fallback.
+                const renderedIcon = key === "weather" ? liveWeatherIcon : icon;
                 return (
                   <Button
                     key={key}
                     className={`widget-icon${visible ? " active" : ""}`}
-                    icon={icon}
+                    icon={renderedIcon}
                     size="medium"
                     variant="transparent"
                     onClick={() => toggleWidgetVisibility(key)}
-                    aria-label={`${visible ? "Hide" : "Show"} ${label} widget`}
+                    aria-label={t(visible ? "widgets.tooltip.hide" : "widgets.tooltip.show", { name })}
                     aria-pressed={visible}
-                    data-tooltip={label}
+                    data-tooltip={name}
                   />
                 );
               })}
@@ -257,49 +415,50 @@ export const LeftSidebar: React.FC = () => {
                 }
                 size="medium"
                 onClick={() => toggleWidgetVisibility("avatar")}
-                aria-label={`${
-                  widgets.avatar.visible ? "Hide" : "Show"
-                } Avatar widget`}
+                aria-label={t(widgets.avatar.visible ? "widgets.tooltip.hide" : "widgets.tooltip.show", {
+                  name: t("widgets.names.avatar"),
+                })}
                 aria-pressed={widgets.avatar.visible}
-                data-tooltip="Avatar"
+                data-tooltip={t("widgets.names.avatar")}
               />
             </div>
             <div className="widget-edits">
               <Button variant="dark" size="medium" pill onClick={handleEditToggle}>
                 <EditIcon style={{ fontSize: 14 }} />
-                {showWidgetEdits ? "Done" : "Edit Widgets"}
+                {showWidgetEdits ? t("common.done") : t("sidebar.buttons.editWidgets")}
               </Button>
               <Button variant="dark" size="medium" pill onClick={resetAllWidgets}>
                 <RestoreIcon style={{ fontSize: 14 }} />
-                Reset All Widgets
+                {t("sidebar.buttons.resetAllWidgets")}
               </Button>
             </div>
           </section>
 
           <section className="sidebar-section" aria-labelledby="appearance-heading">
-            <h4 id="appearance-heading">Appearance</h4>
+            <h4 id="appearance-heading">{t("sidebar.headings.appearance")}</h4>
             <div className="filter-group" role="group" aria-labelledby="appearance-heading">
               <div className="filter-control">
-                <span className="filter-control-label">Palette</span>
+                <span className="filter-control-label">{t("sidebar.appearance.palette")}</span>
                 <div
                   className="theme-swatches"
                   role="radiogroup"
-                  aria-label="Color palette"
+                  aria-label={t("sidebar.appearance.paletteAria")}
                 >
-                  {THEMES.map((t) => {
-                    const selected = appearance.theme === t.name;
+                  {THEME_KEYS.map((name) => {
+                    const selected = appearance.theme === name;
+                    const label = t(`themes.${name}`);
                     return (
                       <button
-                        key={t.name}
+                        key={name}
                         type="button"
                         role="radio"
                         aria-checked={selected}
-                        aria-label={t.label}
-                        data-tooltip={t.label}
-                        className={`theme-swatch theme-${t.name}${
+                        aria-label={label}
+                        data-tooltip={label}
+                        className={`theme-swatch theme-${name}${
                           selected ? " is-selected" : ""
                         }`}
-                        onClick={() => updateAppearance({ theme: t.name })}
+                        onClick={() => updateAppearance({ theme: name })}
                       />
                     );
                   })}
@@ -308,7 +467,7 @@ export const LeftSidebar: React.FC = () => {
 
               <div className="filter-control">
                 <label className="contrast-toggle">
-                  <span>High contrast</span>
+                  <span>{t("sidebar.appearance.highContrast")}</span>
                   <input
                     type="checkbox"
                     role="switch"
@@ -324,29 +483,101 @@ export const LeftSidebar: React.FC = () => {
           </section>
 
           <section className="sidebar-section" aria-labelledby="background-heading">
-            <h4 id="background-heading">Background</h4>
-            <div className="filter-group" role="group" aria-labelledby="background-heading">
-              {renderFilter("blur", "Blur", 0, 20)}
-              {renderFilter("brightness", "Brightness", 0, 200)}
-              {renderFilter("contrast", "Contrast", 0, 200)}
-              {renderFilter("saturation", "Saturation", 0, 200)}
-              <div className="filter-actions">
-                <Button variant="dark" size="small" onClick={resetFilters}>
-                  <RestoreIcon style={{ fontSize: 16 }} />
-                  Reset Filters
-                </Button>
+            <h4 id="background-heading">{t("sidebar.headings.background")}</h4>
+            <details className="filter-collapsible">
+              <summary className="filter-collapsible-summary">
+                <span>{t("sidebar.filters.heading")}</span>
+                <ExpandMoreIcon
+                  className="filter-collapsible-chevron"
+                  fontSize="small"
+                />
+              </summary>
+              <div className="filter-group" role="group">
+                {renderFilter("blur", t("sidebar.filters.blur"), 0, 20)}
+                {renderFilter("brightness", t("sidebar.filters.brightness"), 0, 200)}
+                {renderFilter("contrast", t("sidebar.filters.contrast"), 0, 200)}
+                {renderFilter("saturation", t("sidebar.filters.saturation"), 0, 200)}
+                <div className="filter-actions">
+                  <Button variant="dark" size="small" onClick={resetFilters}>
+                    <RestoreIcon style={{ fontSize: 16 }} />
+                    {t("sidebar.buttons.resetFilters")}
+                  </Button>
+                </div>
               </div>
+            </details>
+            <div className="background-actions">
+              <Button
+                variant="dark"
+                onClick={() => setShowBackgroundSettings((s) => !s)}
+                aria-haspopup="dialog"
+                aria-expanded={showBackgroundSettings}
+                className="background-actions-select"
+              >
+                {t("sidebar.buttons.selectBackgrounds")}
+              </Button>
+              <Button
+                variant="dark"
+                onClick={toggleFavoriteCurrent}
+                aria-label={
+                  isFavorited
+                    ? t("sidebar.buttons.unfavoriteBackgroundAria")
+                    : t("sidebar.buttons.favoriteBackgroundAria")
+                }
+                data-tooltip={
+                  isFavorited
+                    ? t("sidebar.buttons.unfavoriteBackground")
+                    : t("sidebar.buttons.favoriteBackground")
+                }
+                aria-pressed={isFavorited}
+                disabled={!currentBackground}
+                className={`background-actions-fav${
+                  isFavorited ? " is-favorited" : ""
+                }`}
+              >
+                {isFavorited ? (
+                  <FavoriteIcon style={{ fontSize: 16 }} />
+                ) : (
+                  <FavoriteBorderIcon style={{ fontSize: 16 }} />
+                )}
+              </Button>
+              <Button
+                variant="dark"
+                onClick={deleteCurrentBackground}
+                aria-label={t("sidebar.buttons.deleteBackgroundAria")}
+                data-tooltip={t("sidebar.buttons.deleteBackground")}
+                disabled={!currentBackground}
+                className="background-actions-delete"
+              >
+                <DeleteOutlineIcon style={{ fontSize: 16 }} />
+              </Button>
             </div>
+          </section>
+
+          <div
+            className="sidebar-section button-group sidebar-bottom"
+            role="group"
+            aria-label={t("sidebar.externalLinksLabel")}
+          >
             <Button
               variant="dark"
-              fullWidth
-              onClick={() => setShowBackgroundSettings((s) => !s)}
+              size="small"
+              onClick={() => setShowReportModal(true)}
+              aria-label={t("report.buttonAria")}
               aria-haspopup="dialog"
-              aria-expanded={showBackgroundSettings}
             >
-              Select Backgrounds
+              <BugReportIcon style={{ fontSize: 14 }} />
+              {t("report.buttonLabel")}
             </Button>
-          </section>
+            <Button
+              variant="dark"
+              size="small"
+              onClick={() => handleSiteClick(CHROME_WEBSTORE_REVIEW_URL)}
+              aria-label={t("sidebar.buttons.rateAria")}
+            >
+              <StarIcon style={{ fontSize: 14 }} />
+              {t("sidebar.buttons.rate")}
+            </Button>
+          </div>
         </div>
       </aside>
       {showBackgroundSettings && (
@@ -355,6 +586,14 @@ export const LeftSidebar: React.FC = () => {
           setShowBackgroundSettings={setShowBackgroundSettings}
         />
       )}
+      <ReportModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+      />
+      <SocialsModal
+        open={showSocialsModal}
+        onClose={() => setShowSocialsModal(false)}
+      />
     </>
   );
 };
