@@ -1,191 +1,66 @@
+import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
+import BookmarksIcon from "@mui/icons-material/Bookmarks";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import LinkIcon from "@mui/icons-material/Link";
+import SearchIcon from "@mui/icons-material/Search";
+import TimerIcon from "@mui/icons-material/Timer";
+import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { BackgroundSettingsModal } from "../BackgroundSettingsModal/BackgroundSettingsModal";
+import { AVATAR_OPTIONS } from "../../config/avatarConfig";
+import {
+  TimeSettings,
+  WidgetKey,
+  getWidgetConfig,
+} from "../../config/widgetConfig";
+import { THEME_NAMES, ThemeName, useAppContext } from "../../contexts/AppContext";
+import { useT } from "../../i18n/i18n";
 import "./WelcomeModal.css";
-
-interface Slide {
-  id: string;
-  title: string;
-  body: React.ReactNode;
-}
 
 const Key: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <kbd className="welcome-kbd">{children}</kbd>
 );
 
-const SLIDES: Slide[] = [
-  {
-    id: "welcome",
-    title: "Welcome to Ghiblify",
-    body: (
-      <>
-        <p>
-          A Studio Ghibli–inspired new tab page. Drop in a clock, todo list,
-          quick links, search, a pomodoro timer — over a rotating gallery of
-          Ghibli film backgrounds.
-        </p>
-        <p className="welcome-hint">
-          Use <Key>←</Key> <Key>→</Key> or the dots to flip through this guide.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "widgets",
-    title: "Show or hide widgets",
-    body: (
-      <>
-        <p>
-          Hover the left edge of the screen (or press{" "}
-          <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>) to open the sidebar.
-        </p>
-        <p>
-          Tap any of the widget icons to show or hide it. Active widgets glow
-          with the current palette's accent color.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "drag",
-    title: "Move widgets around",
-    body: (
-      <>
-        <p>
-          Hold <Key>Shift</Key> and click‑drag any widget to reposition it.
-          Widgets snap to grid lines (left edge, center, right edge) so they
-          stay tidy.
-        </p>
-        <p className="welcome-hint">
-          The cursor turns into a grab hand when Shift is down — that's your
-          cue.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "edit",
-    title: "Customize each widget",
-    body: (
-      <>
-        <p>
-          Click <em>Edit Widgets</em> in the sidebar (or use the floating
-          Done button) to enter edit mode. Each widget exposes its own
-          controls — font size, dark mode, 12/24 hour, which fields to show,
-          which avatar.
-        </p>
-        <p>
-          A handle in the bottom‑right corner resizes the widget. Press{" "}
-          <Key>Esc</Key> or click outside any widget to leave edit mode.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "appearance",
-    title: "Themes &amp; appearance",
-    body: (
-      <>
-        <p>
-          The <em>Appearance</em> section has 13 palettes — Ghibli, Spirited
-          Away, Howl's, Totoro, Ponyo, Sky, Sakura, Meadow, Bloom, Pastel,
-          Cream, Mint, Mono. Pick one and the entire UI retints.
-        </p>
-        <p>
-          The "Widget background" slider tints the inner surfaces (Todo
-          rows, SearchBar input, QuickLinks tiles). High contrast forces
-          everything to a readable minimum.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "background",
-    title: "Backgrounds &amp; filters",
-    body: (
-      <>
-        <p>
-          Adjust blur, brightness, contrast, and saturation of the rotating
-          photo background — useful when text gets hard to read against a
-          busy frame.
-        </p>
-        <p>
-          Click <em>Select Backgrounds</em> to limit the rotation to your
-          favorite Ghibli films.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "quicklinks",
-    title: "Quick links",
-    body: (
-      <>
-        <p>
-          Click <strong>+</strong> to add a bookmark — optionally with a
-          label, or just the URL. Drag tiles to reorder. The X icon enters
-          delete mode; click any link to remove it, then click the check to
-          finish.
-        </p>
-        <p>
-          Switch between grid and list layouts from the widget's edit
-          controls.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "pomodoro",
-    title: "Pomodoro across tabs",
-    body: (
-      <p>
-        The pomodoro timer stays in sync across every open tab. Only one tab
-        actually runs the countdown — the others mirror it via storage
-        events. Close the leader tab and another tab silently takes over.
-      </p>
-    ),
-  },
-  {
-    id: "shortcuts",
-    title: "Keyboard shortcuts",
-    body: (
-      <ul className="welcome-shortcut-list">
-        <li>
-          <span className="welcome-shortcut-keys">
-            <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>
-          </span>
-          <span>Open or close the sidebar</span>
-        </li>
-        <li>
-          <span className="welcome-shortcut-keys">
-            <Key>Shift</Key> + drag
-          </span>
-          <span>Move a widget around</span>
-        </li>
-        <li>
-          <span className="welcome-shortcut-keys">
-            <Key>Esc</Key>
-          </span>
-          <span>
-            Close the sidebar, popovers, edit mode, or this guide
-          </span>
-        </li>
-        <li>
-          <span className="welcome-shortcut-keys">
-            <Key>Enter</Key>
-          </span>
-          <span>Confirm an edit, or exit edit mode</span>
-        </li>
-        <li>
-          <span className="welcome-shortcut-keys">
-            <Key>←</Key> <Key>→</Key>
-          </span>
-          <span>Navigate slides in this guide</span>
-        </li>
-      </ul>
-    ),
-  },
+// Each slide refers to keys under `welcome.slides.<id>` in the locale dict.
+// Interactive slides (widgets / palette / adjustTime / background) embed the
+// real controls so changes persist immediately, while spotlight slides also
+// pulse the equivalent area in the sidebar so the user learns where the
+// control lives long-term.
+const SLIDE_IDS = [
+  "welcome",
+  "findGuide",
+  "widgets",
+  "palette",
+  "adjustTime",
+  "drag",
+  "rightClick",
+  "background",
+  "shortcuts",
+] as const;
+
+type SlideId = (typeof SLIDE_IDS)[number];
+
+const WIDGET_TUTORIAL_TOGGLES: Array<{
+  key: WidgetKey;
+  icon: React.ReactElement;
+}> = [
+  { key: "time", icon: <AccessTimeFilledIcon /> },
+  { key: "date", icon: <CalendarTodayIcon /> },
+  { key: "greeting", icon: <EmojiEmotionsIcon /> },
+  { key: "info", icon: <FormatQuoteIcon /> },
+  { key: "todo", icon: <CheckBoxIcon /> },
+  { key: "quicklinks", icon: <LinkIcon /> },
+  { key: "searchbar", icon: <SearchIcon /> },
+  { key: "pomodoro", icon: <TimerIcon /> },
+  { key: "bookmarks", icon: <BookmarksIcon /> },
+  { key: "weather", icon: <WbSunnyIcon /> },
 ];
 
 interface WelcomeModalProps {
@@ -194,17 +69,94 @@ interface WelcomeModalProps {
 }
 
 export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => {
+  const t = useT();
+  const {
+    setSidebarSpotlight,
+    widgets,
+    toggleWidgetVisibility,
+    appearance,
+    updateAppearance,
+    updateWidgetSettings,
+    setEditingWidgetKey,
+  } = useAppContext();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (open) setIndex(0);
   }, [open]);
 
+  // Toggle the sidebar spotlight based on which slide is showing. Each
+  // interactive slide that mirrors a sidebar region also pulses that
+  // region so users learn where the control lives long-term.
+  useEffect(() => {
+    if (!open) {
+      setSidebarSpotlight(null);
+      return;
+    }
+    const slide = SLIDE_IDS[index];
+    if (slide === "findGuide") {
+      setSidebarSpotlight("guide");
+    } else if (slide === "widgets") {
+      setSidebarSpotlight("widgets");
+    } else if (slide === "palette") {
+      setSidebarSpotlight("palette");
+    } else if (slide === "background") {
+      setSidebarSpotlight("background");
+    } else {
+      setSidebarSpotlight(null);
+    }
+    return () => setSidebarSpotlight(null);
+  }, [open, index, setSidebarSpotlight]);
+
+  // Drop the Time widget into edit mode while the adjustTime slide is
+  // showing, so the user sees the widget's actual edit-mode chrome
+  // (resize handle + EditWidget overlay) on the page above the dialog.
+  // Cleanup runs when the slide changes or the modal closes.
+  // Also flips a body class so CSS can pulse the 12/24h toggle and
+  // the resize handle on the Time widget — pure visual cue that lives
+  // alongside the existing sidebar spotlight rules.
+  useEffect(() => {
+    if (!open) return;
+    if (SLIDE_IDS[index] !== "adjustTime") return;
+    setEditingWidgetKey("time");
+    document.body.classList.add("tutorial-adjust-time");
+    return () => {
+      setEditingWidgetKey(null);
+      document.body.classList.remove("tutorial-adjust-time");
+    };
+  }, [open, index, setEditingWidgetKey]);
+
+  // On the "right-click for quick actions" slide, programmatically
+  // open the Time widget's context menu so the user can see it as a
+  // live demo. Widget.tsx listens for these custom events.
+  useEffect(() => {
+    if (!open) return;
+    if (SLIDE_IDS[index] !== "rightClick") return;
+    // Defer one frame so the cornered modal layout is committed
+    // first, otherwise the widget's bounding rect could be stale.
+    const raf = window.requestAnimationFrame(() => {
+      window.dispatchEvent(
+        new CustomEvent("ghiblify:open-context-menu", {
+          detail: { key: "time" },
+        })
+      );
+    });
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.dispatchEvent(
+        new CustomEvent("ghiblify:close-context-menu", {
+          detail: { key: "time" },
+        })
+      );
+    };
+  }, [open, index]);
+
   const go = useCallback(
     (next: number) => {
-      if (next < 0 || next >= SLIDES.length) return;
+      if (next < 0 || next >= SLIDE_IDS.length) return;
       setDirection(next > index ? "forward" : "back");
       setIndex(next);
     },
@@ -233,25 +185,349 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
 
   if (!open) return null;
 
-  const slide = SLIDES[index];
+  const slideId: SlideId = SLIDE_IDS[index];
+  const title = t(`welcome.slides.${slideId}.title`);
   const isFirst = index === 0;
-  const isLast = index === SLIDES.length - 1;
+  const isLast = index === SLIDE_IDS.length - 1;
+
+  const renderWidgetTutorial = () => {
+    return (
+      <div
+        className="welcome-widget-grid"
+        role="group"
+        aria-label={t("welcome.slides.widgets.title")}
+      >
+        {WIDGET_TUTORIAL_TOGGLES.map(({ key, icon }) => {
+          const visible = widgets[key].visible;
+          const name = t(`widgets.names.${key}`);
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`welcome-widget-toggle${visible ? " is-active" : ""}`}
+              onClick={() => toggleWidgetVisibility(key)}
+              aria-pressed={visible}
+              aria-label={t(
+                visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
+                { name }
+              )}
+              data-tooltip={name}
+            >
+              <span className="welcome-widget-toggle-icon">{icon}</span>
+              <span className="welcome-widget-toggle-label">{name}</span>
+            </button>
+          );
+        })}
+        {(() => {
+          const visible = widgets.avatar.visible;
+          const avatarData = AVATAR_OPTIONS.find(
+            (a) => a.value === widgets.avatar.settings.selectedAvatar
+          );
+          const name = t("widgets.names.avatar");
+          return (
+            <button
+              type="button"
+              className={`welcome-widget-toggle${visible ? " is-active" : ""}`}
+              onClick={() => toggleWidgetVisibility("avatar")}
+              aria-pressed={visible}
+              aria-label={t(
+                visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
+                { name }
+              )}
+              data-tooltip={name}
+            >
+              <span className="welcome-widget-toggle-icon">
+                {avatarData ? <img src={avatarData.src} alt="" /> : "A"}
+              </span>
+              <span className="welcome-widget-toggle-label">{name}</span>
+            </button>
+          );
+        })()}
+      </div>
+    );
+  };
+
+  const renderPaletteTutorial = () => (
+    <div
+      className="welcome-theme-swatches"
+      role="radiogroup"
+      aria-label={t("welcome.slides.palette.title")}
+    >
+      {THEME_NAMES.map((name: ThemeName) => {
+        const selected = appearance.theme === name;
+        const label = t(`themes.${name}`);
+        return (
+          <button
+            key={name}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            aria-label={label}
+            data-tooltip={label}
+            className={`welcome-theme-swatch theme-${name}${
+              selected ? " is-selected" : ""
+            }`}
+            onClick={() => updateAppearance({ theme: name })}
+          />
+        );
+      })}
+    </div>
+  );
+
+  const renderAdjustTimeTutorial = () => {
+    const time = widgets.time.settings as TimeSettings;
+    const cfg = getWidgetConfig("time");
+    const bound = cfg.fontSize!;
+    return (
+      <div className="welcome-adjust-time">
+        <div className="welcome-adjust-row">
+          <div
+            className="welcome-format-toggle"
+            role="radiogroup"
+            aria-label={t("welcome.slides.adjustTime.fontSizeLabel")}
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!time.is24Hour}
+              className={`welcome-format-btn${
+                !time.is24Hour ? " is-selected" : ""
+              }`}
+              onClick={() =>
+                updateWidgetSettings("time", { is24Hour: false })
+              }
+            >
+              {t("welcome.slides.adjustTime.format12")}
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={time.is24Hour}
+              className={`welcome-format-btn${
+                time.is24Hour ? " is-selected" : ""
+              }`}
+              onClick={() =>
+                updateWidgetSettings("time", { is24Hour: true })
+              }
+            >
+              {t("welcome.slides.adjustTime.format24")}
+            </button>
+          </div>
+        </div>
+        <label className="welcome-slider-row">
+          <span className="welcome-slider-label">
+            <span>{t("welcome.slides.adjustTime.fontSizeLabel")}</span>
+            <span>{time.fontSize}px</span>
+          </span>
+          <input
+            type="range"
+            min={bound.min}
+            max={bound.max}
+            step={bound.step}
+            value={time.fontSize}
+            onChange={(e) =>
+              updateWidgetSettings("time", {
+                fontSize: parseInt(e.target.value),
+              })
+            }
+            className="welcome-slider"
+          />
+        </label>
+      </div>
+    );
+  };
+
+  const renderBackgroundTutorial = () => (
+    <div className="welcome-bg-actions">
+      <button
+        type="button"
+        className="welcome-bg-btn welcome-bg-btn-primary"
+        onClick={() => setShowBackgroundPicker(true)}
+      >
+        {t("welcome.slides.background.open")}
+      </button>
+    </div>
+  );
+
+  const renderBody = () => {
+    switch (slideId) {
+      case "welcome":
+        return (
+          <>
+            <p>{t("welcome.slides.welcome.body1")}</p>
+            <p>{t("welcome.slides.welcome.body2")}</p>
+            <p>{t("welcome.slides.welcome.body3")}</p>
+            <p className="welcome-hint">
+              {t("welcome.slides.welcome.hint")
+                .split(/(\s+)/)
+                .map((part, i) =>
+                  part === "←" || part === "→" ? <Key key={i}>{part}</Key> : part
+                )}
+            </p>
+          </>
+        );
+      case "findGuide":
+        return (
+          <>
+            <p>
+              {t("welcome.slides.findGuide.body1Pre")}
+              <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>
+              {t("welcome.slides.findGuide.body1Post")}
+            </p>
+            <p className="welcome-hint">
+              {t("welcome.slides.findGuide.hint")}
+            </p>
+          </>
+        );
+      case "widgets":
+        return (
+          <>
+            <p>{t("welcome.slides.widgets.body1")}</p>
+            {renderWidgetTutorial()}
+            <p className="welcome-hint">
+              {t("welcome.slides.widgets.body2Pre")}
+              <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>
+              {t("welcome.slides.widgets.body2Post")}
+            </p>
+          </>
+        );
+      case "palette":
+        return (
+          <>
+            <p>{t("welcome.slides.palette.body1")}</p>
+            {renderPaletteTutorial()}
+            <p className="welcome-hint">{t("welcome.slides.palette.hint")}</p>
+          </>
+        );
+      case "adjustTime":
+        return (
+          <>
+            <p>{t("welcome.slides.adjustTime.body1")}</p>
+            {renderAdjustTimeTutorial()}
+            <p>
+              {t("welcome.slides.adjustTime.body2Pre")}
+              <Key>Shift</Key>
+              {t("welcome.slides.adjustTime.body2Post")}
+            </p>
+          </>
+        );
+      case "drag":
+        return (
+          <>
+            <p>
+              {t("welcome.slides.drag.body1Pre")}
+              <Key>Shift</Key>
+              {t("welcome.slides.drag.body1Post")}
+            </p>
+            <p>{t("welcome.slides.drag.body2")}</p>
+            <p className="welcome-hint">{t("welcome.slides.drag.hint")}</p>
+          </>
+        );
+      case "rightClick":
+        return (
+          <>
+            <p>{t("welcome.slides.rightClick.body1")}</p>
+            <p>{t("welcome.slides.rightClick.body2")}</p>
+          </>
+        );
+      case "background":
+        return (
+          <>
+            <p>{t("welcome.slides.background.body1")}</p>
+            <p>{t("welcome.slides.background.body2")}</p>
+            {renderBackgroundTutorial()}
+            <p className="welcome-hint">{t("welcome.slides.background.hint")}</p>
+          </>
+        );
+      case "shortcuts":
+        return (
+          <ul className="welcome-shortcut-list">
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>
+              </span>
+              <span>{t("welcome.slides.shortcuts.openSidebar")}</span>
+            </li>
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>B</Key>
+              </span>
+              <span>{t("welcome.slides.shortcuts.openBookmarks")}</span>
+            </li>
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>Shift</Key> + drag
+              </span>
+              <span>{t("welcome.slides.shortcuts.moveWidget")}</span>
+            </li>
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>Shift</Key> +{" "}
+                <span className="welcome-icon-key" aria-label="edit pencil icon">
+                  <EditIcon style={{ fontSize: 14 }} />
+                </span>
+              </span>
+              <span>{t("welcome.slides.shortcuts.editWidget")}</span>
+            </li>
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>Esc</Key>
+              </span>
+              <span>{t("welcome.slides.shortcuts.escape")}</span>
+            </li>
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>Enter</Key>
+              </span>
+              <span>{t("welcome.slides.shortcuts.enter")}</span>
+            </li>
+            <li>
+              <span className="welcome-shortcut-keys">
+                <Key>←</Key> <Key>→</Key>
+              </span>
+              <span>{t("welcome.slides.shortcuts.navigateGuide")}</span>
+            </li>
+          </ul>
+        );
+    }
+  };
+
+  // adjustTime, drag, and rightClick all need the dialog moved out of
+  // the viewport center so the Time widget (and its open context
+  // menu) is fully visible above the dialog.
+  const isAdjustTime = slideId === "adjustTime";
+  const isDragSlide = slideId === "drag";
+  const isRightClickSlide = slideId === "rightClick";
+  const isPaletteSlide = slideId === "palette";
+  const isBackgroundSlide = slideId === "background";
+  const isCorneredMode = isAdjustTime || isDragSlide || isRightClickSlide;
+  // Passthrough lets clicks land on the underlying surfaces (Time
+  // widget edit chrome, sidebar, demo context menu) instead of the
+  // backdrop. Palette and background slides keep their dim/blur
+  // visually but need passthrough so the user can click the spotlit
+  // sidebar regions.
+  const isPassthrough =
+    isCorneredMode || isPaletteSlide || isBackgroundSlide;
 
   return (
-    <div className="welcome-backdrop" onClick={onClose}>
+    <>
+    <div
+      className={`welcome-backdrop${
+        isCorneredMode ? " is-cornered-mode" : ""
+      }${isPassthrough ? " is-passthrough" : ""}`}
+    >
       <div
         ref={dialogRef}
         className="welcome-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="welcome-title"
-        onClick={(e) => e.stopPropagation()}
         tabIndex={-1}
       >
         <button
           type="button"
           className="welcome-close"
-          aria-label="Close guide"
+          aria-label={t("welcome.closeAria")}
           onClick={onClose}
         >
           <CloseIcon fontSize="small" />
@@ -259,13 +535,13 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
 
         <div className="welcome-slide-area">
           <div
-            key={slide.id}
+            key={slideId}
             className={`welcome-slide ${direction === "back" ? "from-left" : "from-right"}`}
           >
             <h2 id="welcome-title" className="welcome-title">
-              {slide.title}
+              {title}
             </h2>
-            <div className="welcome-body">{slide.body}</div>
+            <div className="welcome-body">{renderBody()}</div>
           </div>
         </div>
 
@@ -275,19 +551,19 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             className="welcome-nav-btn"
             onClick={() => go(index - 1)}
             disabled={isFirst}
-            aria-label="Previous slide"
+            aria-label={t("welcome.previousAria")}
           >
             <ChevronLeftIcon fontSize="small" />
           </button>
 
-          <div className="welcome-dots" role="tablist" aria-label="Guide pages">
-            {SLIDES.map((s, i) => (
+          <div className="welcome-dots" role="tablist" aria-label={t("welcome.tabsAria")}>
+            {SLIDE_IDS.map((id, i) => (
               <button
-                key={s.id}
+                key={id}
                 type="button"
                 role="tab"
                 aria-selected={i === index}
-                aria-label={s.title}
+                aria-label={t(`welcome.slides.${id}.title`)}
                 className={`welcome-dot ${i === index ? "is-active" : ""}`}
                 onClick={() => go(i)}
               />
@@ -300,14 +576,14 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
               className="welcome-done-btn"
               onClick={onClose}
             >
-              Done
+              {t("welcome.doneButton")}
             </button>
           ) : (
             <button
               type="button"
               className="welcome-nav-btn"
               onClick={() => go(index + 1)}
-              aria-label="Next slide"
+              aria-label={t("welcome.nextAria")}
             >
               <ChevronRightIcon fontSize="small" />
             </button>
@@ -315,6 +591,16 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         </div>
       </div>
     </div>
+    {/* Rendered as a sibling (not a child) of the welcome-backdrop so
+        that pointer-events: none on the backdrop during passthrough
+        slides doesn't cascade into the picker and make it un-clickable. */}
+    {showBackgroundPicker && (
+      <BackgroundSettingsModal
+        showBackgroundSettings={showBackgroundPicker}
+        setShowBackgroundSettings={setShowBackgroundPicker}
+      />
+    )}
+    </>
   );
 };
 

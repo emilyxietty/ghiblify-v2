@@ -14,6 +14,32 @@
     justify-content: center;
     padding: 24px;
     animation: welcome-backdrop-in 200ms ease both;
+    transition: background 220ms ease, backdrop-filter 220ms ease,
+        -webkit-backdrop-filter 220ms ease;
+}
+
+/* Cornered mode — adjustTime + drag slides park the dialog in the
+   bottom-right of the viewport so the Time widget at top-center stays
+   fully visible above it. The backdrop drops its dim/blur so the
+   photo + widget read clearly. */
+.welcome-backdrop.is-cornered-mode {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+/* Drag-passthrough — the drag slide needs the user to actually
+   shift+drag the underlying widget, so the backdrop must let pointer
+   events through. The dialog itself re-claims pointer events so its
+   buttons stay clickable. */
+.welcome-backdrop.is-passthrough {
+    pointer-events: none;
+}
+
+.welcome-backdrop.is-passthrough .welcome-dialog {
+    pointer-events: auto;
 }
 
 @keyframes welcome-backdrop-in {
@@ -32,7 +58,7 @@
     background: rgba(var(--dark-rgb, 31, 38, 32), 0.96);
     color: var(--light);
     border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
         0 0 0 1px rgba(0, 0, 0, 0.4);
     padding: 32px 32px 20px;
@@ -42,6 +68,15 @@
     box-sizing: border-box;
     animation: welcome-dialog-in 240ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
     outline: none;
+    transition: width 220ms ease, max-height 220ms ease;
+}
+
+/* Cornered dialog — narrower so the Time widget at top has room to
+   breathe and (on drag) so the user can swing the widget across most
+   of the viewport without the dialog getting in the way. */
+.welcome-backdrop.is-cornered-mode .welcome-dialog {
+    width: min(420px, 100%);
+    max-height: min(55vh, 540px);
 }
 
 @keyframes welcome-dialog-in {
@@ -144,7 +179,7 @@
     height: 3px;
     margin-top: 10px;
     background: var(--yellow, #e9b330);
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     opacity: 0.8;
 }
 
@@ -191,7 +226,7 @@
     background: color-mix(in srgb, var(--light) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 25%, transparent);
     border-bottom-width: 2px;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 11px;
     line-height: 1.4;
@@ -199,6 +234,25 @@
     text-align: center;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
     vertical-align: middle;
+}
+
+/* Inline pill that wraps an MUI icon so it visually matches a kbd chip
+   (used in the shortcut list to represent the edit-pencil button). */
+.welcome-icon-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    margin: 0 1px;
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 25%, transparent);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm);
+    color: var(--light);
+    vertical-align: middle;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* ---------------------------------------------------------------------------
@@ -221,7 +275,7 @@
     gap: 16px;
     padding: 10px 14px;
     background: color-mix(in srgb, var(--light) 5%, transparent);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid color-mix(in srgb, var(--light) 8%, transparent);
 }
 
@@ -276,19 +330,21 @@
 
 .welcome-done-btn {
     padding: 8px 22px;
-    background: var(--yellow, #e9b330);
-    color: var(--dark, #1f2620);
-    border: none;
-    border-radius: 999px;
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 26%, transparent);
+    border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 140ms ease, transform 140ms ease;
+    transition: background 140ms ease, border-color 140ms ease,
+        transform 140ms ease;
 }
 
 .welcome-done-btn:hover {
+    background: color-mix(in srgb, var(--light) 24%, transparent);
+    border-color: color-mix(in srgb, var(--light) 40%, transparent);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .welcome-done-btn:focus-visible {
@@ -325,4 +381,337 @@
 .welcome-dot:focus-visible {
     outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
     outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Interactive tutorial controls — embedded inside slides so the user can
+   try things without leaving the dialog. Visually distinct from the rest
+   of the dialog (subtle inset card) so the embedded surface reads as
+   "live, click me" rather than text content.
+   --------------------------------------------------------------------------- */
+
+/* Widget toggle grid — mirrors the sidebar's WIDGET_TOGGLES grid but
+   stacked with labels for clarity in the tutorial context. */
+.welcome-widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 8px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--light) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    border-radius: var(--radius-md);
+}
+
+.welcome-widget-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 6px;
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 65%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease,
+        color 140ms ease, transform 140ms ease;
+}
+
+.welcome-widget-toggle:hover {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border-color: color-mix(in srgb, var(--light) 22%, transparent);
+    color: var(--light);
+    transform: translateY(-1px);
+}
+
+.welcome-widget-toggle.is-active {
+    background: color-mix(in srgb, var(--green) 18%, transparent);
+    border-color: color-mix(in srgb, var(--green) 60%, transparent);
+    color: var(--green, #5e8a4f);
+}
+
+.welcome-widget-toggle:focus-visible {
+    outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
+    outline-offset: 2px;
+}
+
+.welcome-widget-toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+}
+
+.welcome-widget-toggle-icon img {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.welcome-widget-toggle-label {
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* Theme swatches — same idea as the sidebar's, scaled so a 16-tile grid
+   reads cleanly inside the dialog. Each swatch shows its palette via the
+   `theme-<name>` class, which the global theme CSS already defines. */
+.welcome-theme-swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 8px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--light) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    border-radius: var(--radius-md);
+}
+
+.welcome-theme-swatch {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-sm);
+    border: 2px solid color-mix(in srgb, var(--light) 18%, transparent);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 140ms ease, border-color 140ms ease,
+        box-shadow 140ms ease;
+    /* Same conic-gradient treatment as the sidebar swatches so the
+       preview matches what the user sees there long-term: dominant
+       half = palette --dark, then three accent slices for distinction. */
+    background:
+        conic-gradient(
+            from 0deg,
+            var(--dark) 0deg 180deg,
+            var(--red) 180deg 240deg,
+            var(--yellow) 240deg 300deg,
+            var(--blue) 300deg 360deg
+        );
+}
+
+.welcome-theme-swatch:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--light) 35%, transparent);
+}
+
+.welcome-theme-swatch.is-selected {
+    border-color: var(--yellow, #e9b330);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--yellow) 40%, transparent);
+}
+
+.welcome-theme-swatch:focus-visible {
+    outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
+    outline-offset: 2px;
+}
+
+/* Frost override — Frost binds --dark to white (the actual surface is
+   the photo behind, blurred), so the default conic gradient renders
+   nearly all-white. Force the dominant half to charcoal so the swatch
+   reads as the dark glass palette it actually is. */
+.welcome-theme-swatch.theme-frost {
+    background:
+        conic-gradient(
+            from 0deg,
+            #0a0e14 0deg 180deg,
+            var(--red) 180deg 240deg,
+            var(--yellow) 240deg 300deg,
+            var(--blue) 300deg 360deg
+        );
+}
+
+/* Adjust-time tutorial — 12/24 toggle + font-size slider */
+.welcome-adjust-time {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--light) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    border-radius: var(--radius-md);
+}
+
+.welcome-adjust-row {
+    display: flex;
+    justify-content: center;
+}
+
+.welcome-format-toggle {
+    display: inline-flex;
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+}
+
+.welcome-format-btn {
+    padding: 6px 16px;
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 70%, transparent);
+    border: none;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.welcome-format-btn:hover {
+    color: var(--light);
+}
+
+.welcome-format-btn.is-selected {
+    background: color-mix(in srgb, var(--green) 88%, transparent);
+    color: var(--dark);
+}
+
+.welcome-format-btn:focus-visible {
+    outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
+    outline-offset: 2px;
+}
+
+.welcome-slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.welcome-slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: color-mix(in srgb, var(--light) 80%, transparent);
+}
+
+.welcome-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.welcome-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--yellow, #e9b330);
+    border: 2px solid var(--dark);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.welcome-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--yellow, #e9b330);
+    border: 2px solid var(--dark);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Background tutorial actions — heart, trash, open-picker. */
+.welcome-bg-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--light) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    border-radius: var(--radius-md);
+}
+
+.welcome-bg-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease,
+        color 140ms ease;
+}
+
+.welcome-bg-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--light) 16%, transparent);
+    border-color: color-mix(in srgb, var(--light) 28%, transparent);
+}
+
+.welcome-bg-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.welcome-bg-btn.is-favorited {
+    color: #ff6b9d;
+    border-color: color-mix(in srgb, #ff6b9d 50%, transparent);
+}
+
+.welcome-bg-btn-primary {
+    background: color-mix(in srgb, var(--yellow) 22%, transparent);
+    border-color: color-mix(in srgb, var(--yellow) 60%, transparent);
+    color: var(--yellow, #e9b330);
+}
+
+.welcome-bg-btn-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--yellow) 32%, transparent);
+}
+
+.welcome-bg-btn:focus-visible {
+    outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
+    outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   adjustTime tutorial spotlight — pulses the two interactive bits of
+   the Time widget's edit-mode chrome (the 12/24h toggle button and
+   the resize-corner handle) so the user's eye lands on them. The
+   body class is set/cleared by WelcomeModal.tsx alongside the
+   editingWidgetKey="time" effect.
+   --------------------------------------------------------------------------- */
+
+/* Pulse on the buttons (where `position: relative` is fine) and on
+   the resize handle (which is `position: absolute; bottom:0; right:0`
+   from EditWidget.css — DO NOT override its position here, or the
+   handle reflows back to the widget's top-left). */
+body.tutorial-adjust-time
+    .widget[data-widget-key="time"]
+    .widget-controls-container
+    .btn {
+    animation: tutorial-time-pulse 1.6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+body.tutorial-adjust-time
+    .widget[data-widget-key="time"]
+    .widget-resize-handle {
+    animation: tutorial-time-pulse 1.6s ease-in-out infinite;
+    z-index: 20000000001;
+}
+
+@keyframes tutorial-time-pulse {
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 0 color-mix(in srgb, var(--yellow) 80%, transparent),
+            0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow:
+            0 0 0 10px color-mix(in srgb, var(--yellow) 0%, transparent),
+            0 0 18px 4px color-mix(in srgb, var(--yellow) 70%, transparent);
+        transform: scale(1.06);
+    }
 }
