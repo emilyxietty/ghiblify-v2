@@ -13,6 +13,7 @@ import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Greeting } from "./containers/Widgets/Greeting/Greeting";
+import { Notes } from "./containers/Widgets/Notes/Notes";
 import { Info } from "./containers/Widgets/Info/Info";
 import Pomodoro from "./containers/Widgets/Pomodoro/Pomodoro";
 import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
@@ -292,6 +293,9 @@ const AppContent: React.FC = () => {
         </Widget>
         <Widget storageKey="weather" visible={widgets.weather.visible}>
           <Weather />
+        </Widget>
+        <Widget storageKey="notes" visible={widgets.notes.visible}>
+          <Notes />
         </Widget>
       </Background>
     </>

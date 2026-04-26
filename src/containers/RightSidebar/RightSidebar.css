@@ -230,6 +230,40 @@
     border-radius: var(--radius-sm);
 }
 
+/* Empty-search state — shown when the user types a query that
+   doesn't match anything in the bookmarks tree. A small Ghibli
+   avatar keeps the panel feeling alive instead of just empty. */
+.bookmarks-no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    gap: 6px;
+    text-align: center;
+}
+
+.bookmarks-no-results-avatar {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+
+.bookmarks-no-results-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--light);
+}
+
+.bookmarks-no-results-sub {
+    margin: 0;
+    font-size: 12px;
+    color: color-mix(in srgb, var(--light) 65%, transparent);
+}
+
 .bookmarks-link {
     display: flex;
     align-items: center;

@@ -577,6 +577,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   // Skip the synthetic root, render its children as top-level folders.
   const topLevel = tree?.[0]?.children ?? [];
 
+  // Whether the active search has any matching node anywhere in the
+  // tree. Used to swap the folder list for a "no results" empty
+  // state when nothing matches.
+  const filtering = filter.length > 0;
+  const hasResults = filtering
+    ? topLevel.some((node) => matches(node, filter))
+    : true;
+
   return (
     <>
       {showCallout && (
@@ -614,7 +622,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
           <p className="bookmarks-empty">{t("bookmarks.empty")}</p>
         )}
 
-        {!error && topLevel.length > 0 && (
+        {!error && topLevel.length > 0 && hasResults && (
           <BookmarkDragContext.Provider value={dragApi}>
             <ul className="bookmarks-list bookmarks-root-list">
               {topLevel.map((node) => (
@@ -629,6 +637,24 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
               ))}
             </ul>
           </BookmarkDragContext.Provider>
+        )}
+
+        {!error && topLevel.length > 0 && !hasResults && (
+          <div className="bookmarks-no-results" role="status" aria-live="polite">
+            <img
+              src="/assets/avatars/boh.gif"
+              alt=""
+              aria-hidden="true"
+              className="bookmarks-no-results-avatar"
+              draggable={false}
+            />
+            <p className="bookmarks-no-results-title">
+              {t("bookmarks.noResultsTitle")}
+            </p>
+            <p className="bookmarks-no-results-sub">
+              {t("bookmarks.noResultsSub", { query: filter })}
+            </p>
+          </div>
         )}
       </div>
     </aside>

@@ -19,10 +19,21 @@ export interface QuicklinkItem {
 
 // Per-widget settings: only widget-specific fields. Position and visibility
 // belong to the widget shell (see WidgetEntry in AppContext), not in here.
-export interface TimeSettings { fontSize: number; is24Hour: boolean }
-export interface DateSettings { fontSize: number }
-export interface GreetingSettings { fontSize: number; name: string }
-export interface InfoSettings { fontSize: number; infoFields: InfoFields }
+export interface TimeSettings {
+  fontSize: number;
+  is24Hour: boolean;
+}
+export interface DateSettings {
+  fontSize: number;
+}
+export interface GreetingSettings {
+  fontSize: number;
+  name: string;
+}
+export interface InfoSettings {
+  fontSize: number;
+  infoFields: InfoFields;
+}
 export interface TodoSettings {
   width: number;
   height: number;
@@ -34,7 +45,10 @@ export interface TodoSettings {
    *  opacity so each can have its own ergonomic default. Default 25. */
   blur: number;
 }
-export interface AvatarSettings { selectedAvatar: string; size: number }
+export interface AvatarSettings {
+  selectedAvatar: string;
+  size: number;
+}
 export interface QuicklinksSettings {
   width: number;
   height: number;
@@ -86,6 +100,13 @@ export interface WeatherSettings {
 // and the sidebar toggle row can include it. Settings and position are
 // unused.
 export type BookmarksSettings = Record<string, never>;
+export interface NotesSettings {
+  width: number;
+  height: number;
+  /** Free-form note body. Plain text (newlines preserved). Persisted
+   *  alongside the widget. */
+  content: string;
+}
 
 export interface WidgetSettingsMap {
   time: TimeSettings;
@@ -99,6 +120,7 @@ export interface WidgetSettingsMap {
   pomodoro: PomodoroSettings;
   bookmarks: BookmarksSettings;
   weather: WeatherSettings;
+  notes: NotesSettings;
 }
 
 export type WidgetKey = keyof WidgetSettingsMap;
@@ -115,6 +137,7 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "pomodoro",
   "bookmarks",
   "weather",
+  "notes",
 ];
 
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
@@ -223,7 +246,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   searchbar: {
     name: "Search Bar",
-    position: { x: 50, y: 39.54593453009504 },
+    position: { x: 50, y: 2 },
     settings: { width: 550, height: 40, opacity: 75, blur: 10 },
     width: { min: 200, max: 800, step: 25 },
     height: { min: 20, max: 40, step: 2 },
@@ -257,6 +280,16 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       weatherSections: true,
       weatherIconStyle: true,
     },
+  },
+  notes: {
+    name: "Notes",
+    position: { x: 80, y: 30 },
+    // Default to a square footprint so the cardborder.png (square)
+    // sits flush against the widget's edges with no letterboxing
+    // cream gap around it.
+    settings: { width: 260, height: 260, content: "" },
+    width: { min: 180, max: 480, step: 20 },
+    height: { min: 180, max: 480, step: 20 },
   },
 };
 
