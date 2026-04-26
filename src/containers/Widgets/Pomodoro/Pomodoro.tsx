@@ -546,6 +546,7 @@ const Pomodoro: React.FC = () => {
           getCurrentSecondsLeft() === totalSeconds) ? (
           <div className="timer-input-row">
             <input
+              id="pomodoro-minutes"
               type="number"
               value={inputValue}
               placeholder={minutesLeft.toString()}

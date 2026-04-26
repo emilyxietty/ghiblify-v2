@@ -302,6 +302,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             <span>{sliderValue}%</span>
           </label>
           <input
+            id={`widget-${storageKey}-${sliderField}`}
             type="range"
             min={0}
             max={100}

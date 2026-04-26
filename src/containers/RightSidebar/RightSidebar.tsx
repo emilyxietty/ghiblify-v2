@@ -268,8 +268,14 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
   }, [node.children, filter, filtering]);
 
   // Drop INTO this folder — append the dragged bookmark to the end.
+  // stopPropagation is critical: drag events bubble, so a drop on a
+  // nested folder would otherwise also fire every ancestor folder's
+  // handleFolderDrop, and the outermost ancestor's moveBookmark call
+  // would win — bookmarks always landing in the root-level folder
+  // regardless of where you actually dropped.
   const handleFolderDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const dragged = drag.draggedRef.current;
     if (!dragged || dragged === node.id || filtering) {
       drag.endDrag();
@@ -324,6 +330,11 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
         if (!drag.draggedId || drag.draggedId === node.id || filtering)
           return;
         e.preventDefault();
+        // stopPropagation so an ancestor folder's onDragOver doesn't
+        // overwrite the deepest folder's hover state. Without this,
+        // hovering a nested folder always shows the root folder as
+        // the drop target.
+        e.stopPropagation();
         e.dataTransfer.dropEffect = "move";
         drag.hoverFolder(node.id);
       }}
@@ -362,6 +373,7 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
                 key={child.id}
                 node={child}
                 draggable={!filtering}
+                depth={depth + 1}
                 onDrop={() => handleChildDrop(child.id)}
               />
             ) : (
@@ -384,12 +396,17 @@ interface BookmarkLinkProps {
   node: BookmarkNode;
   draggable: boolean;
   onDrop: () => void;
+  /** Folder nesting level — used to indent the link tile so it lines
+   *  up under its sibling folders' chevrons (which already use
+   *  `paddingLeft: 8 + depth * 12`). */
+  depth: number;
 }
 
 const BookmarkLink: React.FC<BookmarkLinkProps> = ({
   node,
   draggable,
   onDrop,
+  depth,
 }) => {
   const t = useT();
   const drag = useBmDrag();
@@ -436,6 +453,13 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
       onDragOver={(e) => {
         if (!drag.draggedId || drag.draggedId === node.id) return;
         e.preventDefault();
+        // stopPropagation so the parent folder's onDragOver doesn't
+        // overwrite this link's hover state with hoverFolder. Without
+        // it, hover.kind ends up "folder" and handleChildDrop bails
+        // (it requires hover.kind === "link") — same-folder reorders
+        // silently fall through to the parent's handleFolderDrop which
+        // appends to the end instead of inserting at position.
+        e.stopPropagation();
         e.dataTransfer.dropEffect = "move";
         const rect = e.currentTarget.getBoundingClientRect();
         const pos: "before" | "after" =
@@ -457,6 +481,11 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
         href={node.url}
         className="bookmarks-link"
         title={node.url}
+        // Indent matches the parent folder toggle's `8 + depth * 12`,
+        // so links visually line up under (and inside of) their
+        // sibling folders' chevrons rather than hugging the panel
+        // edge regardless of nesting.
+        style={{ paddingLeft: 8 + depth * 12 }}
         // <a href> is implicitly draggable, which would steal the drag
         // from the wrapping <li> and turn it into a "drag the URL"
         // link-drag (browser owns dataTransfer + dropEffect). Pin it
@@ -615,6 +644,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
         </header>
 
         <input
+          id="bookmarks-search"
           type="search"
           className="bookmarks-search"
           placeholder={t("bookmarks.searchPlaceholder")}

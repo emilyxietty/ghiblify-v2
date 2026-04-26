@@ -91,6 +91,7 @@ export const Notes: React.FC = () => {
       style={{ width: settings.width, height: settings.height }}
     >
       <textarea
+        id="notes-textarea"
         className="notes-textarea"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}

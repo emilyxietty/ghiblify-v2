@@ -320,6 +320,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             <span>{time.fontSize}px</span>
           </span>
           <input
+            id="welcome-time-fontsize"
             type="range"
             min={bound.min}
             max={bound.max}

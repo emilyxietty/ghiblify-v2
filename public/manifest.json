@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ghiblify",
-  "version": "2.3.0",
+  "version": "2.0.0",
   "description": "Studio Ghibli inspired new tab",
   "permissions": ["storage", "bookmarks", "search", "favicon", "geolocation"],
   "chrome_url_overrides": {

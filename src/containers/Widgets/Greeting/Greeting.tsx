@@ -67,6 +67,7 @@ export const Greeting: React.FC = () => {
         {", "}
         {editing ? (
           <input
+            id="greeting-name"
             ref={inputRef}
             className="greeting-name-input"
             type="text"

@@ -79,6 +79,7 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
           }}
         >
           <input
+            id={`background-toggle-${movieKey}`}
             type="checkbox"
             checked={enabled}
             disabled={!available || !!disableLast}
@@ -473,6 +474,7 @@ export const BackgroundSettingsModal: React.FC<
                         checkbox is shown so it visually matches the
                         movie rows, but locked + always checked. */}
                     <input
+                      id="background-favorites-locked"
                       type="checkbox"
                       checked
                       disabled

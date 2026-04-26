@@ -447,6 +447,7 @@ export const LeftSidebar: React.FC = () => {
                 <label className="contrast-toggle">
                   <span>{t("sidebar.appearance.highContrast")}</span>
                   <input
+                    id="appearance-high-contrast"
                     type="checkbox"
                     role="switch"
                     checked={appearance.highContrast}
