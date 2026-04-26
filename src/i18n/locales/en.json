@@ -1,0 +1,410 @@
+{
+  "common": {
+    "done": "Done",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "add": "Add",
+    "edit": "Edit",
+    "reset": "Reset",
+    "guide": "Guide",
+    "search": "Search",
+    "exit": "Exit"
+  },
+  "themes": {
+    "ghibli": "Ghibli",
+    "spirited": "Spirited Away",
+    "howls": "Howl's",
+    "totoro": "Totoro",
+    "ponyo": "Ponyo",
+    "sky": "Sky",
+    "sakura": "Sakura",
+    "meadow": "Meadow",
+    "bloom": "Bloom",
+    "pastel": "Pastel",
+    "cream": "Cream",
+    "mint": "Mint",
+    "cotton": "Cotton Candy",
+    "light": "Light",
+    "dark": "Dark",
+    "frost": "Frost"
+  },
+  "sidebar": {
+    "ariaLabel": "Settings",
+    "externalLinksLabel": "External links",
+    "headings": {
+      "widgets": "Widgets",
+      "appearance": "Appearance",
+      "background": "Background"
+    },
+    "buttons": {
+      "githubRepo": "Github Repo",
+      "buyCoffee": "Buy me a Coffee",
+      "guide": "Guide",
+      "guideAria": "Open the guide",
+      "rate": "Rate",
+      "rateAria": "Rate Ghiblify on the Chrome Web Store",
+      "dragMode": "Drag Mode",
+      "dragModeDone": "Done dragging",
+      "dragModeAria": "Enter drag mode (move widgets without holding Shift)",
+      "dragModeOnAria": "Exit drag mode",
+      "modeToggleAria": "Switch between Edit Widgets and Drag Mode",
+      "editWidgets": "Edit Mode",
+      "resetAllWidgets": "Reset All Widgets",
+      "resetFilters": "Reset Filters",
+      "selectBackgrounds": "Select Backgrounds",
+      "deleteBackground": "Delete background",
+      "deleteBackgroundAria": "Remove the current background from the rotation",
+      "favoriteBackground": "Favorite background",
+      "favoriteBackgroundAria": "Add the current background to favorites",
+      "unfavoriteBackground": "Unfavorite background",
+      "unfavoriteBackgroundAria": "Remove the current background from favorites"
+    },
+    "appearance": {
+      "palette": "Palette",
+      "paletteAria": "Color palette",
+      "highContrast": "High contrast"
+    },
+    "filters": {
+      "heading": "Filters",
+      "blur": "Blur",
+      "brightness": "Brightness",
+      "contrast": "Contrast",
+      "saturation": "Saturation"
+    },
+    "filterUnits": {
+      "px": "px",
+      "percent": "%"
+    }
+  },
+  "widgets": {
+    "names": {
+      "time": "Time",
+      "date": "Date",
+      "greeting": "Greeting",
+      "info": "Film info",
+      "todo": "Todo list",
+      "quicklinks": "Quick links",
+      "searchbar": "Search bar",
+      "pomodoro": "Pomodoro timer",
+      "avatar": "Avatar",
+      "bookmarks": "Bookmarks",
+      "weather": "Weather"
+    },
+    "tooltip": {
+      "show": "Show {{name}} widget",
+      "hide": "Hide {{name}} widget"
+    },
+    "contextMenu": {
+      "edit": "Edit widget",
+      "drag": "Drag widget",
+      "hide": "Hide widget",
+      "time12": "12-hour",
+      "time24": "24-hour",
+      "addLink": "Add new link"
+    },
+    "edit": {
+      "ariaEdit": "Edit {{key}} widget",
+      "tooltipEdit": "Edit",
+      "opacity": "Opacity",
+      "opacityAria": "Widget opacity",
+      "blur": "Blur",
+      "blurAria": "Widget blur amount",
+      "noCustomization": "No customization available",
+      "darkModeAria": "Toggle dark mode",
+      "timeFormatAria": "Toggle 12/24 hour format",
+      "gridShow": "Show as grid",
+      "gridShowList": "Show as list",
+      "resizeTitle": "Drag to resize",
+      "infoFields": {
+        "japaneseTitle": "Japanese Title",
+        "title": "Title",
+        "year": "Year",
+        "movieLength": "Movie Length",
+        "quote": "Quote"
+      },
+      "infoFieldsLabel": "Fields",
+      "weatherUnitAria": "Toggle Celsius / Fahrenheit",
+      "weatherUnitC": "°C",
+      "weatherUnitF": "°F",
+      "weatherSections": {
+        "now": "Now",
+        "hourly": "Hourly",
+        "daily": "Daily"
+      },
+      "weatherSectionsLabel": "Sections",
+      "weatherIconStyle": {
+        "animated": "Animated",
+        "still": "Still"
+      },
+      "weatherIconStyleAria": {
+        "animated": "Icons animate — click to switch to still",
+        "still": "Icons are still — click to switch to animated"
+      }
+    }
+  },
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "namePlaceholder": "your name",
+    "editNameAria": "Edit your name"
+  },
+  "todo": {
+    "addPlaceholder": "Add a task...",
+    "addAria": "Add task",
+    "addTooltip": "Add task",
+    "deleteAria": "Delete: {{text}}",
+    "deleteTooltip": "Delete task",
+    "editAria": "Edit: {{text}}",
+    "editTooltip": "Edit task",
+    "dragHandleTooltip": "Drag to reorder",
+    "checkboxAriaDone": "Mark as not done",
+    "checkboxAriaNotDone": "Mark as done",
+    "checkboxTooltipDone": "Mark not done",
+    "checkboxTooltipNotDone": "Mark done",
+    "emptyTitle": "Nothing on your plate.",
+    "emptySub": "Add a task above to get started."
+  },
+  "searchbar": {
+    "placeholder": "Search the web...",
+    "ariaLabelInput": "Search the web",
+    "ariaLabelButton": "Search",
+    "tooltipButton": "Search"
+  },
+  "quicklinks": {
+    "trigger": "Links",
+    "ariaDialog": "Quick links",
+    "addAria": "Add a new quick link",
+    "addTooltip": "Add link",
+    "saveAria": "Save link",
+    "saveTooltip": "Save link",
+    "editLink": "Edit link",
+    "deleteLink": "Delete link",
+    "deleteAria": "Delete {{title}}",
+    "deleteGridTooltip": "Delete {{title}}",
+    "deleteListTooltip": "Delete link",
+    "removeTooltip": "Remove links",
+    "doneDeleteTooltip": "Done deleting",
+    "labelPlaceholder": "Label (optional)",
+    "labelSrOnly": "Label (optional)",
+    "urlPlaceholder": "https://example.com",
+    "urlSrOnly": "URL",
+    "emptyMessage": "No quick links yet. Add one above to get started."
+  },
+  "pomodoro": {
+    "modeFocus": "Pomodoro",
+    "modeBreak": "Break",
+    "minsLabel": "mins",
+    "play": "Start",
+    "pause": "Pause",
+    "reset": "Reset",
+    "focus": "Focus",
+    "exit": "Exit",
+    "playAria": "Start timer",
+    "pauseAria": "Pause timer",
+    "resetAria": "Reset timer",
+    "focusAriaEnter": "Enter focus mode",
+    "focusAriaExit": "Exit focus mode",
+    "focusTooltipEnter": "Focus",
+    "focusTooltipExit": "Exit focus"
+  },
+  "bookmarks": {
+    "ariaLabel": "Bookmarks",
+    "heading": "Bookmarks",
+    "searchPlaceholder": "Search bookmarks...",
+    "searchAria": "Search bookmarks",
+    "loading": "Loading bookmarks…",
+    "empty": "No bookmarks yet.",
+    "callout": "Bookmarks panel — hover the right edge to open",
+    "errorNoChrome": "This page isn't running as a Chrome extension — chrome.* APIs are unavailable. Open the new tab inside the installed extension (URL should start with chrome-extension://).",
+    "errorNoBookmarks": "chrome.bookmarks is missing. Either the bookmarks permission isn't active, or the extension isn't fully installed. Try: chrome://extensions → remove Ghiblify → Load unpacked → select dist/.",
+    "errorBookmarksApi": "Bookmarks error: {{message}}",
+    "errorLoad": "Failed to load bookmarks: {{message}}",
+    "delete": "Delete bookmark"
+  },
+  "weather": {
+    "loading": "Loading weather…",
+    "permissionDenied": "Location permission denied. Enable it in Chrome to see local weather.",
+    "permissionUnavailable": "Geolocation isn't available in this context.",
+    "fetchError": "Couldn't load weather. Try again later.",
+    "feelsLike": "Feels like {{temp}}",
+    "hi": "H {{temp}}",
+    "lo": "L {{temp}}",
+    "now": "Now",
+    "wmo": {
+      "0": "Clear",
+      "1": "Mostly clear",
+      "2": "Partly cloudy",
+      "3": "Overcast",
+      "45": "Fog",
+      "48": "Rime fog",
+      "51": "Light drizzle",
+      "53": "Drizzle",
+      "55": "Heavy drizzle",
+      "56": "Freezing drizzle",
+      "57": "Freezing drizzle",
+      "61": "Light rain",
+      "63": "Rain",
+      "65": "Heavy rain",
+      "66": "Freezing rain",
+      "67": "Freezing rain",
+      "71": "Light snow",
+      "73": "Snow",
+      "75": "Heavy snow",
+      "77": "Snow grains",
+      "80": "Light showers",
+      "81": "Showers",
+      "82": "Heavy showers",
+      "85": "Light snow showers",
+      "86": "Snow showers",
+      "95": "Thunderstorm",
+      "96": "Thunderstorm with hail",
+      "99": "Thunderstorm with hail"
+    },
+    "weekday": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    }
+  },
+  "socials": {
+    "buttonLabel": "My socials",
+    "modalTitle": "Find me online",
+    "modalIntro": "Say hi! I'd love to connect."
+  },
+  "report": {
+    "buttonLabel": "Report Issue",
+    "buttonAria": "Open report-issue dialog",
+    "modalTitle": "Report an issue",
+    "modalIntro": "Found a bug or have feedback? Please email me or contact me on my other socials.",
+    "emailLabel": "Email",
+    "copyLabel": "Copy",
+    "copyAria": "Copy email address",
+    "copied": "Copied!",
+    "openMailAria": "Open in mail app",
+    "openMail": "Open mail app"
+  },
+  "background": {
+    "modal": {
+      "title": "Background Settings",
+      "moviesCount": "{{count}} movies",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All (except 1)",
+      "noBackgrounds": "(no backgrounds)",
+      "show": "Show ↓",
+      "hide": "Hide ↑",
+      "removeImageTitle": "Remove image",
+      "restoreDeleted": "Restore Deleted",
+      "restoreConfirm": "Clear deleted and restore all images?",
+      "deletedTitle": "Deleted",
+      "restoreAll": "Restore all",
+      "restoreOne": "Restore",
+      "restoreOneAria": "Restore this image to the rotation",
+      "favoritesTitle": "Favorites",
+      "favoritesAlwaysOn": "Favorites are always included in the rotation",
+      "favoriteOne": "Favorite",
+      "favoriteOneAria": "Add this image to favorites",
+      "unfavoriteOne": "Unfavorite",
+      "unfavoriteOneAria": "Remove this image from favorites"
+    },
+    "loadingError": "No background found. Check console for errors.",
+    "contextMenu": {
+      "open": "Select Backgrounds...",
+      "favorite": "Favorite this photo",
+      "unfavorite": "Unfavorite this photo",
+      "delete": "Trash this photo"
+    }
+  },
+  "modal": {
+    "common": {
+      "closeAria": "Close"
+    }
+  },
+  "callouts": {
+    "shiftDrag": "Widgets are now draggable — click and drag to move",
+    "focusMode": "Press Esc to exit focus mode"
+  },
+  "welcome": {
+    "previousAria": "Previous slide",
+    "nextAria": "Next slide",
+    "closeAria": "Close guide",
+    "doneButton": "Done",
+    "tabsAria": "Guide pages",
+    "slides": {
+      "welcome": {
+        "title": "Welcome to Ghiblify",
+        "body1": "A Studio Ghibli–inspired new tab page. These images are generously provided for free for non-commercial use by Studio Ghibli. Please enjoy this labor of love, and consider supporting the studio by purchasing official merchandise or media.",
+        "body2": "As this extension has been newly revamped, please bear with me as I fix bugs and add features in the near future. If you notice any issues, please report them to me. I'm very grateful for your support. Thank you!",
+        "body3": "Click Next to take a quick tour of the new features.",
+        "hint": "Use ← → or the dots to flip through this guide."
+      },
+      "findGuide": {
+        "title": "You can come back to this guide anytime",
+        "body1Pre": "Hover the left edge of the screen — or press ",
+        "body1Post": " — to open the sidebar. The Guide button at the top brings this tour right back. Look for the pulsing button there now.",
+        "hint": "The sidebar is open behind this dialog so you can see exactly where to find it later."
+      },
+      "widgets": {
+        "title": "Pick your widgets",
+        "body1": "Tap any icon to show or hide it on the page. Active widgets glow with the palette's accent color.",
+        "body2Pre": "These same toggles live in the sidebar — hover the left edge of the screen or press ",
+        "body2Post": " to find them later.",
+        "tryItNow": "Try it now!"
+      },
+      "palette": {
+        "title": "Choose a palette",
+        "body1": "Click a swatch to retint the entire UI. Light palettes flip text and surfaces dark; the Frost palette gives every widget a glass treatment.",
+        "hint": "You can switch palettes anytime from the sidebar's Appearance section."
+      },
+      "adjustTime": {
+        "title": "Customize widgets",
+        "body1": "Every widget has its own controls. The Time widget above is now in edit mode — flip between 12 / 24-hour, and drag the slider to size the clock.",
+        "body2Pre": "Three ways to edit any widget: click Edit Mode in the sidebar, hold ",
+        "body2Post": " + click the pencil that appears on hover, or right-click the widget and pick Edit widget.",
+        "format12": "12-hour",
+        "format24": "24-hour",
+        "fontSizeLabel": "Clock size"
+      },
+      "drag": {
+        "title": "Move widgets around",
+        "body1Pre": "Hold ",
+        "body1Post": " and click-drag the Time widget above to reposition it. Widgets snap to grid lines (left edge, center, right edge) so they stay tidy.",
+        "body2": "Don't want to keep holding Shift? Toggle Drag Mode from Edit Mode's top bar (or right-click any widget → Drag widget) and every widget becomes draggable until you click Done.",
+        "hint": "The cursor turns into a grab hand when Shift is down — that's your cue. This works on every widget."
+      },
+      "rightClick": {
+        "title": "Right-click for quick actions",
+        "body1": "Right-click any widget for a menu of quick actions — Edit widget, Drag widget, Hide widget, plus shortcuts specific to that widget (12/24-hour for Time, °C/°F for Weather, sections, fields, grid/list, and so on).",
+        "body2": "Submenus open as cascading panels for multi-select options (Weather sections, Info fields). Right-clicking the empty background area gives you Chrome's native menu (back, reload, save image, inspect)."
+      },
+      "appearance": {
+        "title": "Themes & appearance",
+        "body1": "The Appearance section has many palettes to pick from. Pick one and the entire UI retints.",
+        "body2": "The Widget background slider tints the inner surfaces (Todo rows, SearchBar input, QuickLinks tiles). High contrast forces everything to a readable minimum."
+      },
+      "background": {
+        "title": "Curate the photos",
+        "body1": "Heart the current photo to add it to your favorites — favorites stay in the rotation no matter what. Trash it to never see it again.",
+        "body2": "Open Select Backgrounds to choose which films appear, or browse and heart any photo from any film.",
+        "open": "Select Backgrounds",
+        "hint": "Heart and trash buttons for the current photo live in the sidebar — pulsing now."
+      },
+      "shortcuts": {
+        "title": "Keyboard shortcuts",
+        "openSidebar": "Open or close the sidebar",
+        "openBookmarks": "Open or close the bookmarks panel",
+        "moveWidget": "Move a widget around",
+        "editWidget": "Edit a single widget (hold Shift, click the pencil)",
+        "escape": "Close the sidebar, popovers, edit mode, or this guide",
+        "enter": "Confirm an edit, or exit edit mode",
+        "navigateGuide": "Navigate slides in this guide"
+      }
+    }
+  }
+}

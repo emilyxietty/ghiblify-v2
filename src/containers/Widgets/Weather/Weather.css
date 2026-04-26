@@ -1,0 +1,161 @@
+/* Weather widget — no background panel, no dark/light mode. Text and
+   icons are always white with a soft halo so they read on any photo. */
+
+.weather-widget {
+    /* Auto-size: width and height shrink/grow to fit whatever the
+       current `display` mode renders. No scrollbars, no clipping. */
+    display: inline-flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    width: max-content;
+    max-width: 90vw;
+    background: transparent;
+    overflow: visible;
+}
+
+/* In edit mode, just give the shell a minimum width so the EditWidget
+   overlay buttons have somewhere to lay out — but DON'T stretch the
+   inner weather-widget to fill, otherwise the content slides to a
+   corner of a giant box and the padding around it visually evaporates.
+   The overlay controls wrap when narrow (see EditWidget.css). */
+.widget.edit-mode[data-widget-key="weather"] {
+    min-width: 240px;
+}
+
+/* Location + current-conditions block sits over the bare photo, so
+   text is always white with a halo for legibility. The forecast strip
+   cells get their own theme-tinted surface and use --light for text
+   (see .weather-strip-cell below). */
+.weather-location,
+.weather-current,
+.weather-current * {
+    color: #ffffff;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.55),
+        0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+
+/* Meteocons SVG icons render as <img>. They're not text — strip the
+   universal text-shadow override (it would only affect alt text), and
+   use filter:drop-shadow so the icon halos cleanly on busy photos. */
+.weather-icon,
+.weather-strip-icon {
+    text-shadow: none !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55))
+        drop-shadow(0 0 6px rgba(0, 0, 0, 0.3));
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.weather-location {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.95;
+}
+
+.weather-current {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Current-conditions icon — Meteocons SVG rendered as <img>. */
+.weather-icon {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    object-fit: contain;
+}
+
+.weather-current-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.weather-temp {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+}
+
+.weather-condition {
+    font-size: 13px;
+}
+
+.weather-feels {
+    font-size: 11px;
+    opacity: 0.85;
+}
+
+.weather-strip {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    padding-bottom: 2px;
+}
+
+.weather-strip-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    min-width: 52px;
+    border-radius: var(--radius-lg);
+    /* Theme-tinted button surface. The active palette's --dark-rgb
+       supplies the color; --weather-cell-opacity (set inline from the
+       widget settings) controls the alpha. Border + text use --light
+       so contrast is guaranteed across all 14 palettes. */
+    background: rgba(
+        var(--dark-rgb),
+        min(var(--weather-cell-opacity, 0.35), var(--surface-alpha-cap, 1))
+    );
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.weather-strip-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.85;
+}
+
+/* Forecast strip icon — smaller Meteocons SVG. */
+.weather-strip-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.weather-strip-temp {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.weather-strip-low {
+    opacity: 0.7;
+    margin-left: 2px;
+}
+
+.weather-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    font-size: 12.5px;
+    padding: 8px 4px;
+}

@@ -1,0 +1,117 @@
+/* Report-issue modal — same visual language as the welcome modal but
+   smaller. Backdrop click and Esc both close. */
+
+.report-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: report-backdrop-in 200ms ease both;
+}
+
+@keyframes report-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.report-dialog {
+    position: relative;
+    width: min(440px, 100%);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.96);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: 28px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    animation: report-dialog-in 240ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+    outline: none;
+}
+
+@keyframes report-dialog-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.report-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--light-muted);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.report-close:hover,
+.report-close:focus-visible {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+    outline: none;
+}
+
+.report-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.report-intro {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    opacity: 0.85;
+}
+
+.report-email-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.report-email-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+}
+
+.report-email {
+    color: var(--light);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.report-email:hover {
+    text-decoration: underline;
+}
+
+.report-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}

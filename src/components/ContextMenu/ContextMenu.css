@@ -1,0 +1,138 @@
+/* ===========================================================================
+   ContextMenu — shared right-click dropdown used by widgets and the
+   background. Portal'd to <body>, so positioning is purely viewport-
+   relative (no ancestor transforms can shift it).
+   =========================================================================== */
+
+.ctx-menu {
+    /* Sized to content (with a sensible min for tap targets and a max
+       for very long labels). Earlier we forced 180px min, which left
+       a wide gap between short labels and the cascade chevron. */
+    min-width: 140px;
+    max-width: 260px;
+    width: max-content;
+    padding: 4px;
+    background: rgba(10, 14, 20, 0.96);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-md);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    z-index: 5500;
+    font-size: 13px;
+    font-family: inherit;
+    animation: ctx-menu-in 110ms ease both;
+    user-select: none;
+}
+
+@keyframes ctx-menu-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.ctx-menu-row {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    background: transparent;
+    color: inherit;
+    border: none;
+    padding: 7px 10px;
+    text-align: left;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 110ms ease;
+    position: relative;
+    font: inherit;
+}
+
+.ctx-menu-row:hover,
+.ctx-menu-row:focus-visible,
+.ctx-menu-submenu-row.is-open {
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+.ctx-menu-row.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.ctx-menu-row.is-disabled:hover {
+    background: transparent;
+}
+
+/* Leading icon slot — always reserved (even for action items) so
+   labels line up vertically across rows of mixed types. */
+.ctx-menu-icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.ctx-menu-row.is-selected .ctx-menu-icon {
+    color: var(--yellow, #e9b330);
+}
+
+.ctx-menu-label {
+    /* Content-sized rather than flex:1 so the cascade chevron sits
+       right next to the label instead of being pushed to the menu's
+       far right edge. The menu itself uses `width: max-content` so
+       all rows still align to the longest label width. */
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ctx-menu-sep {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 4px 6px;
+}
+
+/* Chevron sits flush to the right of the row label; the gap between
+   label and chevron is the row's normal flex gap, no extra spacing. */
+.ctx-menu-chevron {
+    font-size: 14px !important;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+/* Submenu — pops out to one side of its parent row, matching the
+   parent menu's styling exactly. The small horizontal overlap is
+   intentional so the cursor can travel from row → submenu without
+   slipping through a gap (which would dismiss it via mouseleave).
+   Both side (left/right) and top offset are computed by SubmenuRow
+   based on viewport room — the side picks a class, the top is
+   applied inline. */
+.ctx-menu-submenu {
+    position: absolute;
+    z-index: 1;
+}
+
+.ctx-menu-submenu-right {
+    left: calc(100% + 2px);
+}
+
+.ctx-menu-submenu-left {
+    right: calc(100% + 2px);
+}

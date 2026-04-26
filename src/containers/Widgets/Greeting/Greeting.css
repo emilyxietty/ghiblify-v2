@@ -1,0 +1,96 @@
+/* Greeting widget — plain text over the photo, white with a soft halo
+   so it reads against any background. The name segment is a button
+   that turns into an inline input on click. */
+
+.greeting-widget {
+    color: #ffffff;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.55),
+        0 0 12px rgba(0, 0, 0, 0.35);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.greeting-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+}
+
+/* Shared baseline for the view-mode button and the edit-mode input.
+   The button auto-sizes to its content; the input below has its own
+   fixed width while editing. Keeping padding/font in sync prevents
+   alignment jumps between the two states. */
+.greeting-name,
+.greeting-name-input {
+    box-sizing: border-box;
+    text-align: center;
+    font: inherit;
+    color: inherit;
+    text-shadow: inherit;
+    padding: 0 4px 2px;
+    margin: 0;
+    line-height: inherit;
+    vertical-align: baseline;
+}
+
+.greeting-name {
+    background: transparent;
+    border: none;
+    /* No persistent underline — the name reads as plain text. The
+       underline only appears on hover/focus to signal it's editable. */
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 140ms ease;
+    /* Hug the name; only show width when empty (see -empty rule). */
+    width: auto;
+}
+
+.greeting-name:hover,
+.greeting-name:focus-visible {
+    border-bottom-color: var(--yellow, #ffe082);
+    outline: none;
+}
+
+/* Empty button still needs a visible affordance — keep a subtle
+   dashed underline + a clickable target width. */
+.greeting-name-empty {
+    display: inline-block;
+    min-width: 5em;
+    border-bottom-style: dashed;
+    border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+/* The input has a fixed width while editing (room to type). */
+.greeting-name-input {
+    width: 6.5em;
+}
+
+/* Cuter edit-mode input: rounded pill, soft translucent fill, dashed
+   border so it reads as a friendly editable field rather than a
+   browser <input>. Matches the button's footprint exactly. */
+.greeting-name-input {
+    background: rgba(255, 255, 255, 0.18);
+    border: 1.5px dashed rgba(255, 255, 255, 0.85);
+    border-radius: var(--radius-pill);
+    outline: none;
+    transition: background 140ms ease, border-color 140ms ease,
+        box-shadow 140ms ease;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+.greeting-name-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.greeting-name-input:focus {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: var(--yellow, #ffe082);
+    border-style: solid;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+}
