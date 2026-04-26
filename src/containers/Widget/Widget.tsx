@@ -10,6 +10,7 @@ import EditWidget from "../../components/EditWidget/EditWidget";
 import {
   getWidgetConfig,
   InfoSettings,
+  NotesSettings,
   QuicklinksSettings,
   TimeSettings,
   WeatherSettings,
@@ -72,6 +73,7 @@ export const Widget: React.FC<WidgetProps> = ({
     toggleWidgetVisibility,
     dragMode,
     setDragMode,
+    appearance,
   } = useAppContext();
   const t = useT();
   // The widget is "in edit mode" if either the global edit toggle is on,
@@ -293,10 +295,30 @@ export const Widget: React.FC<WidgetProps> = ({
         } else if (widgetConfig.width || widgetConfig.height) {
           const patch: Record<string, number> = {};
           if (widgetConfig.width) {
-            patch.width = snap(resizeStartWidth, e.clientX - resizeStartX, widgetConfig.width);
+            patch.width = snap(
+              resizeStartWidth,
+              e.clientX - resizeStartX,
+              widgetConfig.width
+            );
           }
           if (widgetConfig.height) {
-            patch.height = snap(resizeStartHeight, e.clientY - resizeStartY, widgetConfig.height);
+            patch.height = snap(
+              resizeStartHeight,
+              e.clientY - resizeStartY,
+              widgetConfig.height
+            );
+          }
+          // squareLock — width and height stay tied. Take the larger
+          // of the two so the user can drag in either direction and
+          // the widget always grows / shrinks as a square.
+          if (
+            widgetConfig.squareLock &&
+            patch.width != null &&
+            patch.height != null
+          ) {
+            const larger = Math.max(patch.width, patch.height);
+            patch.width = larger;
+            patch.height = larger;
           }
           updateWidgetSettings(storageKey, patch as never);
         } else if (widgetConfig.fontSize) {
@@ -612,6 +634,7 @@ export const Widget: React.FC<WidgetProps> = ({
             toggleWidgetVisibility,
             updateWidgetSettings,
             setDragMode,
+            isFrost: appearance.theme === "frost",
           })}
         />
       )}
@@ -641,6 +664,7 @@ function buildContextMenuItems(args: {
     typeof useAppContext
   >["updateWidgetSettings"];
   setDragMode: (b: boolean) => void;
+  isFrost: boolean;
 }): ContextMenuItem[] {
   const {
     storageKey,
@@ -650,6 +674,7 @@ function buildContextMenuItems(args: {
     toggleWidgetVisibility,
     updateWidgetSettings,
     setDragMode,
+    isFrost,
   } = args;
 
   const universal: ContextMenuItem[] = [
@@ -750,6 +775,18 @@ function buildContextMenuItems(args: {
             updateWidgetSettings("weather", { sections: next });
           },
         })),
+      },
+    ];
+  } else if (storageKey === "notes") {
+    const s = widgets.notes.settings as NotesSettings;
+    const showBorder = s.showBorder !== false;
+    extras = [
+      {
+        type: "checkbox",
+        label: t("widgets.edit.notesShowBorder"),
+        checked: showBorder,
+        onClick: () =>
+          updateWidgetSettings("notes", { showBorder: !showBorder }),
       },
     ];
   } else if (storageKey === "info") {

@@ -6,6 +6,7 @@ import {
   ContextMenu,
   ContextMenuItem,
 } from "../../components/ContextMenu/ContextMenu";
+import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
 import "./RightSidebar.css";
 
@@ -456,6 +457,11 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
         href={node.url}
         className="bookmarks-link"
         title={node.url}
+        // <a href> is implicitly draggable, which would steal the drag
+        // from the wrapping <li> and turn it into a "drag the URL"
+        // link-drag (browser owns dataTransfer + dropEffect). Pin it
+        // off so the <li> is the unambiguous drag source.
+        draggable={false}
         // Suppress click navigation while a drag is in flight so the
         // mousedown that starts the drag doesn't also follow the link.
         onClick={(e) => {
@@ -494,6 +500,7 @@ interface RightSidebarProps {
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   const t = useT();
+  const { isDragging } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -524,10 +531,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
     if (!visible) setIsOpen(false);
   }, [visible]);
 
-  // Edge-hover open + outside close (mirror of LeftSidebar).
+  // Edge-hover open + outside close (mirror of LeftSidebar). While
+  // a widget drag is in flight both branches bail so swinging the
+  // cursor past the right edge can't hijack the drag with a sidebar
+  // reveal, and a sidebar that's already open stays put.
   useEffect(() => {
     if (!visible) return;
     const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) return;
       const w = window.innerWidth;
       const sidebarWidth = Math.min(SIDEBAR_WIDTH, w);
       if (e.clientX > w - SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
@@ -535,7 +546,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
     };
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [visible, isOpen]);
+  }, [visible, isOpen, isDragging]);
 
   // Escape closes
   useEffect(() => {

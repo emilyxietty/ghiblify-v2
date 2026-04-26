@@ -90,29 +90,40 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Spirited Away — Haku-river indigo + No-Face white-violet, with
-   the soot-sprite pinks and the bathhouse-lantern green-ish glints.
-   Pulled away from the old crimson/gold bathhouse palette so the four
-   accent slots read as pink / purple / blue / green rather than red /
-   yellow / blue / green.
+   Theme: Spirited Away — light-mode palette. Soft pink-cream paper
+   for widget surfaces, deep plum text for legibility, with vivid
+   soot-sprite pink as the dominant accent and herb-bath green as
+   the secondary. Sidebar uses a coral-pink → light-green gradient
+   so both accent colors read at a glance.
    --------------------------------------------------------------------------- */
 .theme-spirited {
-    --dark: #1f2244;
-    --dark-rgb: 31, 34, 68;
-    --dark-muted: rgba(31, 34, 68, 0.7);
-    --cream: #ece4f4;
-    --cream-rgb: 236, 228, 244;
-    --red: #f08ab8;
-    --red-dark: #b34d80;
-    --blue: #6a8fd8;
-    --blue-muted: rgba(106, 143, 216, 0.6);
-    --yellow: #c9b8e8;
-    --green: #6dc4a8;
-    --rose: #f4a8c8;
-    --purple-dark: #5a3a8a;
-    --sidebar-bg: rgba(28, 30, 64, 0.92);
-    --sidebar-card: rgba(18, 20, 42, 0.6);
-    --focus-ring: rgba(245, 130, 195, 0.95);
+    --dark: #fce0db;
+    --dark-rgb: 252, 224, 219;
+    --dark-muted: rgba(252, 224, 219, 0.7);
+    --cream: #fdf2ee;
+    --cream-rgb: 253, 242, 238;
+    --red: #e85d8a;
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds —
+       on this LIGHT theme they need to be LIGHT so dark text reads. */
+    --red-dark: #f5c4d2;
+    --blue: #7aa3b8;
+    --blue-muted: rgba(122, 163, 184, 0.6);
+    --yellow: #e8a888;
+    --green: #6ab075;
+    --rose: #f08aaa;
+    --purple-dark: #e8d4dc;
+    /* Inverted text — deep plum on the light pink/green surfaces. */
+    --light: rgba(74, 38, 50, 0.95);
+    --light-muted: rgba(74, 38, 50, 0.6);
+    --text-shadow-color: rgba(253, 242, 238, 0.85);
+    --sidebar-bg: linear-gradient(
+        160deg,
+        rgba(250, 184, 200, 0.92) 0%,
+        rgba(204, 232, 184, 0.92) 100%
+    );
+    --sidebar-card: rgba(255, 255, 255, 0.45);
+    --focus-ring: rgba(232, 93, 138, 0.95);
+    --disabled-light: rgba(110, 60, 80, 0.5);
 }
 
 /* ---------------------------------------------------------------------------
@@ -334,6 +345,47 @@
 
 .theme-spring .widget-icon.active:hover {
     background: color-mix(in srgb, var(--green) 48%, transparent);
+}
+
+/* Dark-palette break-mode pomodoro — drops the calming break blue
+   from #9bc8db → #3a6480 (deep slate-blue) so the white text
+   inherited from var(--light) (which every palette-dark theme
+   binds to near-white) reads with proper contrast. The base rule
+   pins parent text to dark navy, but interior rows resolve color
+   through var(--light) directly — hence the bg darkens instead of
+   trying to re-tint each nested element. Targets .palette-dark
+   (applied to <html> for any non-light-mode theme) so the fix
+   covers Ghibli / Howl's / Totoro / Ponyo / Sky / Dark / Frost. */
+.palette-dark .pomodoro-widget.break-mode {
+    background:
+        radial-gradient(
+            ellipse at top left,
+            rgba(255, 255, 255, 0.18) 0%,
+            transparent 60%
+        ),
+        #3a6480;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2,
+.palette-dark
+    .pomodoro-widget.break-mode
+    .pomodoro-switch-header
+    h2.active-mode {
+    color: #ffffff;
+}
+
+.palette-dark
+    .pomodoro-widget.break-mode
+    .pomodoro-switch-header
+    h2.active-mode {
+    background: rgba(255, 255, 255, 0.16);
 }
 
 /* ---------------------------------------------------------------------------
@@ -663,20 +715,43 @@
     color: #ffffff !important;
 }
 
-/* Frost break mode — same bright cute yellow + dark text used by
-   every other palette. The previous dark red-brown wash here
-   competed with the inherited dark text color (set by the base
-   break-mode rule), producing dark-on-dark text. */
+/* Frost break mode — keep the dark glass aesthetic of the regular
+   Frost pomodoro instead of swapping to a solid color. A cool blue
+   tint on the glass + a sky-blue glowing border cue the break
+   state without abandoning the frosted aesthetic. White text stays
+   for contrast on the dark glass. */
 .theme-frost .pomodoro-widget.break-mode {
     background:
         radial-gradient(
             ellipse at top left,
-            rgba(255, 255, 255, 0.4) 0%,
+            rgba(155, 200, 219, 0.2) 0%,
             transparent 60%
         ),
-        #f4ce5a !important;
-    color: #3a2a10 !important;
-    border-color: rgba(58, 42, 16, 0.22) !important;
+        rgba(15, 30, 50, 0.7) !important;
+    color: #ffffff !important;
+    border-color: rgba(155, 200, 219, 0.5) !important;
+    box-shadow: 0 0 0 1px rgba(155, 200, 219, 0.2),
+        0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2,
+.theme-frost
+    .pomodoro-widget.break-mode
+    .pomodoro-switch-header
+    h2.active-mode {
+    color: #ffffff !important;
+}
+
+.theme-frost
+    .pomodoro-widget.break-mode
+    .pomodoro-switch-header
+    h2.active-mode {
+    background: rgba(155, 200, 219, 0.25) !important;
 }
 
 

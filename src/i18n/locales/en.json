@@ -123,6 +123,10 @@
         "quote": "Quote"
       },
       "infoFieldsLabel": "Fields",
+      "notesShowBorder": "Show border",
+      "notesHideBorder": "Hide border",
+      "notesShowBorderAria": "Show the cardborder around the note",
+      "notesHideBorderAria": "Hide the cardborder around the note",
       "weatherUnitAria": "Toggle Celsius / Fahrenheit",
       "weatherUnitC": "°C",
       "weatherUnitF": "°F",
@@ -161,9 +165,7 @@
     "checkboxAriaDone": "Mark as not done",
     "checkboxAriaNotDone": "Mark as done",
     "checkboxTooltipDone": "Mark not done",
-    "checkboxTooltipNotDone": "Mark done",
-    "emptyTitle": "Nothing on your plate.",
-    "emptySub": "Add a task above to get started."
+    "checkboxTooltipNotDone": "Mark done"
   },
   "searchbar": {
     "placeholder": "Search the web...",

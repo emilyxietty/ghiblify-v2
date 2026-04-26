@@ -406,39 +406,6 @@
 /* Hide-completed is now an edit-mode setting on the widget itself —
    no inline button. See EditWidget.tsx + widgetConfig.ts. */
 
-/* Empty state — soft icon + two lines of guidance instead of a blank
-   card. Keeps the widget feeling alive even with no data. */
-.todo-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 28px 16px;
-    color: color-mix(in srgb, var(--todo-text) 60%, transparent);
-    text-align: center;
-    gap: 2px;
-}
-
-.todo-empty-icon {
-    font-size: 36px !important;
-    opacity: 0.5;
-    margin-bottom: 6px;
-    color: var(--todo-text);
-}
-
-.todo-empty-title {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--todo-text);
-}
-
-.todo-empty-sub {
-    margin: 0;
-    font-size: 11.5px;
-    opacity: 0.75;
-}
-
 /* Enter animation — slides in from above with a brief fade. Only
    plays for items added since mount (Todo.tsx tracks `enteringIds`),
    so the saved list doesn't cascade-in on every page load. */

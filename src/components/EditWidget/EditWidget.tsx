@@ -9,6 +9,7 @@ import {
   InfoSettings,
   isWidgetKey,
   QuicklinksSettings,
+  NotesSettings,
   TimeSettings,
   WeatherSettings,
 } from "../../config/widgetConfig";
@@ -135,6 +136,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.weatherUnit ||
     controls?.weatherSections ||
     controls?.weatherIconStyle ||
+    controls?.notesShowBorder ||
     supportsSlider
   );
 
@@ -179,6 +181,33 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             variant="dark"
             size="small"
             icon={quicklinksGrid ? <ListIcon /> : <ViewModuleIcon />}
+          />
+        )}
+        {controls?.notesShowBorder && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              const cur =
+                (widgets.notes.settings as NotesSettings).showBorder !== false;
+              updateWidgetSettings("notes", { showBorder: !cur });
+            }}
+            title={
+              (widgets.notes.settings as NotesSettings).showBorder !== false
+                ? t("widgets.edit.notesHideBorderAria")
+                : t("widgets.edit.notesShowBorderAria")
+            }
+            variant={
+              (widgets.notes.settings as NotesSettings).showBorder !== false
+                ? "light"
+                : "dark"
+            }
+            size="small"
+            className="btn-text-toggle"
+            icon={
+              (widgets.notes.settings as NotesSettings).showBorder !== false
+                ? t("widgets.edit.notesHideBorder")
+                : t("widgets.edit.notesShowBorder")
+            }
           />
         )}
         {controls?.weatherUnit && (

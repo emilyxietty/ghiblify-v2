@@ -7,6 +7,14 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
+  "action": {
+    "default_title": "Ghiblify — Options",
+    "default_popup": "options.html",
+    "default_icon": {
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
   "host_permissions": [
     "https://www.ghibli.jp/*",
     "https://*.imgur.com/*",

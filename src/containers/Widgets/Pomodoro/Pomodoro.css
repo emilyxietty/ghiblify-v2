@@ -45,22 +45,22 @@
             rgba(255, 255, 255, 0.4) 0%,
             transparent 60%
         ),
-        #f4ce5a;
-    color: #3a2a10;
-    border-color: rgba(58, 42, 16, 0.22);
+        #9bc8db;
+    color: #0f2a3a;
+    border-color: rgba(15, 42, 58, 0.22);
 }
 
 .pomodoro-widget.break-mode .pomodoro-switch-header {
-    background: rgba(58, 42, 16, 0.12);
-    border-color: rgba(58, 42, 16, 0.18);
+    background: rgba(15, 42, 58, 0.12);
+    border-color: rgba(15, 42, 58, 0.18);
 }
 
 .pomodoro-widget.break-mode .pomodoro-switch-header h2 {
-    color: #3a2a10;
+    color: #0f2a3a;
 }
 
 .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
-    background: rgba(58, 42, 16, 0.18);
+    background: rgba(15, 42, 58, 0.18);
 }
 
 /* ---------------------------------------------------------------------------

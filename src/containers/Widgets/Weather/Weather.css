@@ -159,3 +159,69 @@
     font-size: 12.5px;
     padding: 8px 4px;
 }
+
+/* Aesthetic loading state — drifting Meteocons cloud + soft text. The
+   icon already self-animates (SMIL); the wrapper adds a gentle vertical
+   bob and the text breathes via opacity pulse so the whole block feels
+   alive instead of frozen. Matches the rest of the weather widget's
+   text-on-photo treatment (white + halo). */
+.weather-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 16px 24px;
+    color: #ffffff;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.55),
+        0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.weather-loading-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45))
+        drop-shadow(0 0 10px rgba(255, 255, 255, 0.25));
+    animation: weather-loading-bob 3.2s ease-in-out infinite;
+}
+
+.weather-loading-text {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    animation: weather-loading-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes weather-loading-bob {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes weather-loading-breathe {
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .weather-loading-icon,
+    .weather-loading-text {
+        animation: none;
+    }
+}

@@ -2,7 +2,6 @@ import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import EditIcon from "@mui/icons-material/Edit";
-import EditNoteIcon from "@mui/icons-material/EditNote";
 import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
@@ -240,8 +239,6 @@ export const Todo: React.FC = () => {
     .slice()
     .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
 
-  const isEmpty = todos.length === 0;
-
   return (
     <div
       className="todo-container widget-header"
@@ -273,14 +270,7 @@ export const Todo: React.FC = () => {
           +
         </button>
       </div>
-      {isEmpty ? (
-        <div className="todo-empty">
-          <EditNoteIcon className="todo-empty-icon" />
-          <p className="todo-empty-title">{t("todo.emptyTitle")}</p>
-          <p className="todo-empty-sub">{t("todo.emptySub")}</p>
-        </div>
-      ) : (
-        <ul className="todo-list">
+      <ul className="todo-list">
           {visibleTodos.map((todo) => (
             <li
               key={todo.id}
@@ -388,8 +378,7 @@ export const Todo: React.FC = () => {
               </div>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </div>
   );
 };

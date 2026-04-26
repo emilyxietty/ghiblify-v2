@@ -67,21 +67,28 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="multi-select-menu">
-          {options.map((option) => (
-            <label
-              key={option.value}
-              className="multi-select-option"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input
-                type="checkbox"
-                checked={selectedValues.includes(option.value)}
-                onChange={() => handleOptionToggle(option.value)}
-              />
-              <span className="multi-select-label">{option.label}</span>
-            </label>
-          ))}
+        <div className="multi-select-menu" role="menu">
+          {options.map((option) => {
+            const checked = selectedValues.includes(option.value);
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={checked}
+                className={`multi-select-option${checked ? " is-selected" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOptionToggle(option.value);
+                }}
+              >
+                <span className="multi-select-check" aria-hidden="true">
+                  {checked ? "✓" : ""}
+                </span>
+                <span className="multi-select-label">{option.label}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

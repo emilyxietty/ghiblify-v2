@@ -85,7 +85,9 @@ export const Notes: React.FC = () => {
 
   return (
     <div
-      className="notes-widget widget-header"
+      className={`notes-widget widget-header${
+        settings.showBorder === false ? " no-border" : ""
+      }`}
       style={{ width: settings.width, height: settings.height }}
     >
       <textarea

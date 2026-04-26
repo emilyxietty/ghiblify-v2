@@ -42,6 +42,23 @@
     pointer-events: auto;
 }
 
+/* Right-click slide spotlight — keep the cornered + passthrough
+   behavior, but bring back the dim/blur backdrop so the demo
+   context menu pops against a darkened scene (instead of
+   competing with the bare photo). Drop the backdrop's z-index
+   below the ContextMenu portal (which sits at 5500) so the menu
+   reads clearly *above* the dim instead of being covered by it.
+   The cornered dialog lives in the opposite corner from the
+   context menu, so this stacking change doesn't cause overlap. */
+.welcome-backdrop.is-cornered-mode.is-right-click-spotlight {
+    z-index: 5400;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: background 220ms ease, backdrop-filter 220ms ease,
+        -webkit-backdrop-filter 220ms ease;
+}
+
 @keyframes welcome-backdrop-in {
     from {
         opacity: 0;

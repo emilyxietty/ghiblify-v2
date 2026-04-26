@@ -106,6 +106,10 @@ export interface NotesSettings {
   /** Free-form note body. Plain text (newlines preserved). Persisted
    *  alongside the widget. */
   content: string;
+  /** When true, paint the cardborder.svg behind the textarea. When
+   *  false the widget is just a plain cream rectangle (no border art).
+   *  Toggled from the widget's edit-mode controls. Default true. */
+  showBorder: boolean;
 }
 
 export interface WidgetSettingsMap {
@@ -158,6 +162,7 @@ export interface CustomControls {
   weatherUnit?: boolean;
   weatherSections?: boolean;
   weatherIconStyle?: boolean;
+  notesShowBorder?: boolean;
 }
 
 export interface WidgetConfig<K extends WidgetKey> {
@@ -169,6 +174,11 @@ export interface WidgetConfig<K extends WidgetKey> {
   height?: ResizeBound;
   size?: ResizeBound;
   customControls?: CustomControls;
+  /** When true, width and height are tied during drag-resize — both
+   *  follow the larger of the two dimensions so the widget always
+   *  stays square. (Used by Notes so the cardborder.svg never
+   *  letterboxes.) */
+  squareLock?: boolean;
 }
 
 type WidgetConfigsType = { [K in WidgetKey]: WidgetConfig<K> };
@@ -284,12 +294,11 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   notes: {
     name: "Notes",
     position: { x: 80, y: 30 },
-    // Default to a square footprint so the cardborder.png (square)
-    // sits flush against the widget's edges with no letterboxing
-    // cream gap around it.
-    settings: { width: 260, height: 260, content: "" },
-    width: { min: 180, max: 480, step: 20 },
-    height: { min: 180, max: 480, step: 20 },
+    // Fixed square footprint so the cardborder.svg (square) sits flush
+    // against the widget's edges with no letterboxing cream gap around
+    // it. Not user-resizable — no width/height ResizeBound.
+    settings: { width: 260, height: 260, content: "", showBorder: true },
+    customControls: { notesShowBorder: true },
   },
 };
 

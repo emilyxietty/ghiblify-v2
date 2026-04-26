@@ -514,7 +514,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     <div
       className={`welcome-backdrop${
         isCorneredMode ? " is-cornered-mode" : ""
-      }${isPassthrough ? " is-passthrough" : ""}`}
+      }${isPassthrough ? " is-passthrough" : ""}${
+        isRightClickSlide ? " is-right-click-spotlight" : ""
+      }`}
     >
       <div
         ref={dialogRef}

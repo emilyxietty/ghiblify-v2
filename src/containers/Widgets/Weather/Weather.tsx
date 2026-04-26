@@ -145,7 +145,18 @@ const Weather: React.FC = () => {
       }}
     >
       {loading && (
-        <div className="weather-empty">{t("weather.loading")}</div>
+        <div className="weather-loading" role="status" aria-live="polite">
+          <img
+            src={iconUrl("partly-cloudy-day", iconStyle)}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            className="weather-loading-icon"
+          />
+          <span className="weather-loading-text">
+            {t("weather.loading")}
+          </span>
+        </div>
       )}
       {!loading && error && (
         <div className="weather-empty weather-error">

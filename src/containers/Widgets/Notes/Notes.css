@@ -1,7 +1,7 @@
 /* ===========================================================================
-   Notes — blank note with a custom border PNG behind it
+   Notes — blank note with a custom border SVG behind it
    ===========================================================================
-   Visual: a clean rectangle that uses /assets/notes/cardborder.png as
+   Visual: a clean rectangle that uses /assets/notes/cardborder.svg as
    the background image, sized to fit the widget. The textarea sits
    on top with no extra chrome (no tape, no rule lines, no
    watercolor wash — just paper + handwriting).
@@ -11,15 +11,13 @@
     position: relative;
     box-sizing: border-box;
     /* Generous padding so the textarea text sits well INSIDE the
-       painted border and doesn't crowd the decorative edge of
-       cardborder.png. Bumped up after the border art turned out to
-       be wider than the original 28px allowance. */
+       painted border and doesn't crowd the decorative edge. */
     padding: 48px 44px;
-    /* Off-white cream fill sits behind the border PNG so the area
+    /* Off-white cream fill sits behind the border SVG so the area
        around (and inside) the rectangle reads as paper. */
     background-color: #fbf3df;
     background-image: url("/assets/notes/cardborder.svg");
-    /* `contain` preserves the PNG's natural square ratio — never
+    /* `contain` preserves the SVG's natural square ratio — never
        stretched. If the user resizes to a non-square footprint, the
        cream background fills the letterboxed gaps. */
     background-size: contain;
@@ -27,9 +25,17 @@
     background-position: center;
     /* Rounded corners on the cream backing so the card reads as a
        soft-cornered piece of paper rather than a hard rectangle.
-       The PNG's painted corners sit on top of this. */
+       The SVG's painted corners sit on top of this. */
     border-radius: 16px;
     overflow: hidden;
+}
+
+/* Border-off variant — drop the cardborder.svg layer and tighten
+   the padding (no painted edge to clear). The cream backing stays
+   so the note still reads as paper. */
+.notes-widget.no-border {
+    background-image: none;
+    padding: 18px 18px;
 }
 
 .notes-textarea {

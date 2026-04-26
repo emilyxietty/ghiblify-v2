@@ -1,14 +1,22 @@
-/* Per-widget opacity slider (rendered inside the overlay). */
+/* Per-widget opacity / blur slider. Pinned to the bottom of the
+   widget overlay (instead of the centered flow it used to sit in)
+   so it can't collide with the absolutely-positioned top-right
+   controls cluster (12/24h, °C/°F, Sections, Fields, etc.) on
+   small widgets like Weather. */
 .widget-opacity-control {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
     pointer-events: auto;
     background: rgba(0, 0, 0, 0.55);
     color: #ffffff;
     border-radius: var(--radius-lg);
     padding: 8px 12px;
-    min-width: 160px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    z-index: 21;
 }
 
 .widget-opacity-label {

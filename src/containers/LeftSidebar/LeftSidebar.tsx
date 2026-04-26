@@ -110,6 +110,7 @@ export const LeftSidebar: React.FC = () => {
     showGuide,
     sidebarSpotlight,
     currentBackground,
+    isDragging,
   } = useAppContext();
 
   // Blacklist the currently displayed background. Writes to the
@@ -201,9 +202,14 @@ export const LeftSidebar: React.FC = () => {
   // Edge-hover open + outside close (mouse UX preserved). While the
   // welcome guide is open the auto-close branch is skipped so the
   // sidebar stays put for the spotlight tour — the user shouldn't
-  // have to chase it after every accidental mouse drift.
+  // have to chase it after every accidental mouse drift. While the
+  // user is dragging a widget, both branches are skipped so the
+  // sidebar can't pop open mid-drag (cursor swinging past the
+  // viewport edge would otherwise hijack the drag with a sidebar
+  // reveal) and a sidebar that's already open stays open.
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) return;
       const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
       if (e.clientX < SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
       else if (isOpen && !showGuide && e.clientX > sidebarWidth)
@@ -211,7 +217,7 @@ export const LeftSidebar: React.FC = () => {
     };
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [isOpen, showGuide]);
+  }, [isOpen, showGuide, isDragging]);
 
   // Keyboard shortcuts: Cmd/Ctrl+K toggles the sidebar (keyboard-accessible
   // entry point now that the visible trigger button is gone). Escape closes.
