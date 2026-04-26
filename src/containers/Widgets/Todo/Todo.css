@@ -7,22 +7,19 @@
     gap: 10px;
     padding: 14px;
     box-sizing: border-box;
-    /* Light mode (default) — pale surface, dark text. */
-    --todo-surface-rgb: 255, 255, 255;
-    --todo-text: rgba(24, 24, 24, 0.92);
-    --todo-text-muted: rgba(24, 24, 24, 0.55);
-    --todo-border: rgba(0, 0, 0, 0.14);
-    --todo-accent: var(--yellow, #e9b330);
-    --todo-danger: #d44848;
-    /* --todo-opacity is set inline by Todo.tsx based on the user's slider
-       (0–1). Default 0.5 if the inline style is missing. */
-}
-
-.todo-container.todo-dark {
-    --todo-surface-rgb: 0, 0, 0;
-    --todo-text: rgba(255, 254, 245, 0.94);
-    --todo-text-muted: rgba(255, 254, 245, 0.55);
-    --todo-border: rgba(255, 255, 255, 0.18);
+    /* Single theme-tinted surface. The palette's --dark-rgb supplies
+       the surface color and --light supplies the contrast-safe text
+       color (every palette guarantees this pair is readable). The
+       per-widget opacity slider drives --todo-opacity inline. */
+    --todo-surface-rgb: var(--dark-rgb);
+    --todo-text: var(--light);
+    --todo-text-muted: color-mix(in srgb, var(--light) 60%, transparent);
+    --todo-border: color-mix(in srgb, var(--light) 22%, transparent);
+    /* Checkmark / accent uses --green (defined per-palette) so the
+       Todo doesn't read as the same warm yellow used for decorative
+       headings and pulses elsewhere — green reads better as a
+       "completed" affordance. */
+    --todo-accent: var(--green, #5e8a4f);
     --todo-danger: #ff8a8a;
 }
 
@@ -42,8 +39,22 @@
 /* remove manual padding reservation — header will be sticky and remain in flow */
 
 .todo-input-wrapper {
-    position: relative;
+    /* Two-column row: input grows, add button sits to its right.
+       align-items: stretch lets the button match the input's
+       natural height. No horizontal padding — the wrapper spans the
+       full container width, same as .todo-list, so the input + add
+       button row visually matches the items below. */
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
     width: 100%;
+    box-sizing: border-box;
+}
+
+.todo-input-wrapper > :first-child {
+    /* The TextInput should fill the remaining row space. */
+    flex: 1;
+    min-width: 0;
 }
 
 /* .todo-input {
@@ -51,7 +62,7 @@
     padding: 12px 36px 12px 10px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     color: var(--todo-text);
     font-size: 14px;
     outline: none;
@@ -69,16 +80,22 @@
 }
 
 .todo-add-btn {
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 26px;
-    height: 26px;
-    background: var(--todo-accent);
-    border: none;
-    border-radius: 50%;
-    color: #1a1a1a;
+    flex-shrink: 0;
+    /* Match the input field's full height so the row reads as a
+       single horizontal control. The TextInput has 12px vertical
+       padding + ~20px line-height = ~44px box; align-stretch on the
+       wrapper would also work but explicit height keeps the button
+       visually consistent across browsers. */
+    width: 38px;
+    align-self: stretch;
+    min-height: 38px;
+    background: rgba(
+        var(--todo-surface-rgb),
+        min(calc(var(--todo-opacity, 0.5) + 0.15), var(--surface-alpha-cap, 1))
+    );
+    color: var(--todo-text);
+    border: 1px solid var(--todo-border);
+    border-radius: var(--radius-md);
     font-size: 18px;
     font-weight: 600;
     line-height: 1;
@@ -87,24 +104,37 @@
     align-items: center;
     justify-content: center;
     transition: transform 160ms ease, box-shadow 160ms ease,
-        background 160ms ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        background 160ms ease, border-color 160ms ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.todo-add-btn:hover {
-    transform: translateY(-50%) scale(1.08);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.todo-add-btn:hover:not(:disabled) {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    border-color: color-mix(in srgb, var(--todo-text) 30%, transparent);
 }
 
-.todo-add-btn:active {
-    transform: translateY(-50%) scale(0.96);
+.todo-add-btn:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+/* Always-rendered, so it needs a clear "nothing to add" state.
+   Slightly faded + un-clickable, but stays in place so users know
+   the button exists even before they start typing. */
+.todo-add-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .todo-list {
     width: 100%;
     max-height: 240px;
     list-style: none;
-    padding: 0 0 28px;
+    /* No right padding — the scrollbar (when present) takes its 6px
+       directly from the content area at the right edge. Top padding
+       leaves room for the first item's hover lift. */
+    padding: 2px 0 28px 0;
     margin: 0;
     overflow-y: auto;
     display: flex;
@@ -123,7 +153,7 @@
 
 .todo-list::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--todo-text) 25%, transparent);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .todo-list::-webkit-scrollbar-thumb:hover {
@@ -132,8 +162,8 @@
 
 .todo-item {
     text-align: left;
-    /* Establish a stacking context so a later sibling can't paint over
-       this item's hover tooltip pseudo-element. */
+    /* Establish a stacking context so a later sibling can't paint
+       over this item's hover tooltip pseudo-element. */
     position: relative;
     z-index: 1;
     transition: transform 160ms ease;
@@ -162,12 +192,17 @@
     align-items: center;
     gap: 10px;
     padding: 9px 12px;
-    background: rgba(var(--todo-surface-rgb), var(--todo-opacity, 0.5));
+    background: rgba(
+        var(--todo-surface-rgb),
+        min(var(--todo-opacity, 0.5), var(--surface-alpha-cap, 1))
+    );
     color: var(--todo-text);
     border: 1px solid var(--todo-border);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    border-radius: 10px;
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    border-radius: var(--radius-lg);
     transition: background 160ms ease, border-color 160ms ease,
         box-shadow 160ms ease, transform 160ms ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -189,7 +224,7 @@
     min-width: 18px;
     background: transparent;
     border: 2px solid color-mix(in srgb, var(--todo-text) 50%, transparent);
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -212,6 +247,7 @@
 
 .todo-text {
     flex: 1;
+    position: relative;
     color: var(--todo-text);
     font-size: 13px;
     line-height: 1.45;
@@ -224,10 +260,28 @@
     transition: opacity 200ms ease;
 }
 
+/* Animated strikethrough — a pseudo-element that scales horizontally
+   from left to right, instead of CSS `text-decoration` which can't
+   transition. */
+.todo-text-inner {
+    position: relative;
+    display: inline;
+    background-image: linear-gradient(
+        currentColor,
+        currentColor
+    );
+    background-position: 0 60%;
+    background-size: 0% 1.5px;
+    background-repeat: no-repeat;
+    transition: background-size 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .todo-item.checked .todo-text {
-    text-decoration: line-through;
-    text-decoration-color: color-mix(in srgb, var(--todo-text) 50%, transparent);
     opacity: 0.5;
+}
+
+.todo-item.checked .todo-text-inner {
+    background-size: 100% 1.5px;
 }
 
 .todo-edit-input {
@@ -235,7 +289,7 @@
     padding: 4px 8px;
     background: color-mix(in srgb, var(--light) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 35%, transparent);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     color: var(--todo-text);
     font-size: 13px;
     outline: none;
@@ -249,7 +303,7 @@
     min-width: 22px;
     background: transparent;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     color: color-mix(in srgb, var(--todo-text) 55%, transparent);
     font-size: 16px;
     cursor: pointer;
@@ -270,9 +324,152 @@
     color: var(--todo-danger);
 }
 
-.todo-item.drag-over {
-    box-shadow: inset 0 2px 0 0 var(--todo-accent);
-    border-radius: 10px;
+/* Drop-line indicator — a 2px bar at the top OR bottom edge of the
+   hover-target item, depending on where the cursor is in the item.
+   Lets the user drop AFTER the last item (the bar appears below the
+   target) instead of always inserting before it. */
+.todo-item.drop-target::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 2.5px;
+    background: var(--todo-accent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--todo-accent) 60%, transparent);
+    pointer-events: none;
+    z-index: 6;
+}
+
+.todo-item.drop-target.drop-before::before {
+    top: -4px;
+}
+
+.todo-item.drop-target.drop-after::before {
+    bottom: -4px;
+}
+
+/* Drag handle — sits inside the item card on the right, just past
+   the delete button. Fades in on hover so it doesn't permanently
+   clutter the row. */
+.todo-drag-handle {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    color: color-mix(in srgb, var(--todo-text) 45%, transparent);
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 160ms ease;
+}
+
+.todo-item:hover .todo-drag-handle,
+.todo-item:focus-within .todo-drag-handle,
+.todo-item.dragging .todo-drag-handle {
+    opacity: 1;
+}
+
+.todo-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Inline edit affordance — a small pencil that fades in on hover.
+   The whole text span is still click-to-edit, but the pencil makes
+   that affordance discoverable. */
+.todo-edit-btn {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: color-mix(in srgb, var(--todo-text) 55%, transparent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 160ms ease, color 160ms ease, opacity 160ms ease;
+    opacity: 0;
+}
+
+.todo-item:hover .todo-edit-btn,
+.todo-item:focus-within .todo-edit-btn {
+    opacity: 1;
+}
+
+.todo-edit-btn:hover {
+    background: color-mix(in srgb, var(--todo-text) 14%, transparent);
+    color: var(--todo-text);
+}
+
+/* Hide-completed is now an edit-mode setting on the widget itself —
+   no inline button. See EditWidget.tsx + widgetConfig.ts. */
+
+/* Empty state — soft icon + two lines of guidance instead of a blank
+   card. Keeps the widget feeling alive even with no data. */
+.todo-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px;
+    color: color-mix(in srgb, var(--todo-text) 60%, transparent);
+    text-align: center;
+    gap: 2px;
+}
+
+.todo-empty-icon {
+    font-size: 36px !important;
+    opacity: 0.5;
+    margin-bottom: 6px;
+    color: var(--todo-text);
+}
+
+.todo-empty-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--todo-text);
+}
+
+.todo-empty-sub {
+    margin: 0;
+    font-size: 11.5px;
+    opacity: 0.75;
+}
+
+/* Enter animation — slides in from above with a brief fade. Only
+   plays for items added since mount (Todo.tsx tracks `enteringIds`),
+   so the saved list doesn't cascade-in on every page load. */
+.todo-item.entering {
+    animation: todo-item-enter 240ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes todo-item-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Leave animation — slides right and fades. The item stays mounted
+   for REMOVE_ANIM_MS in Todo.tsx so this can finish before unmount.
+   pointer-events: none prevents stray clicks during the exit. */
+.todo-item.removing {
+    animation: todo-item-leave 240ms ease forwards;
+    pointer-events: none;
+}
+
+@keyframes todo-item-leave {
+    to {
+        opacity: 0;
+        transform: translateX(28px);
+    }
 }
 
 /* Dark mode scrollbar */
@@ -286,7 +483,7 @@
 
 .todo-container.todo-dark .todo-list::-webkit-scrollbar-thumb {
     background: #4c4c4c;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 /* .todo-container.todo-dark .todo-input {
@@ -305,7 +502,7 @@
 
 .toto-title-text:hover {
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(var(--surface-blur, 6px));
     cursor: pointer;
 }
 

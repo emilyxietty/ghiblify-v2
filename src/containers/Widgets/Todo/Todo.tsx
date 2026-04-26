@@ -1,8 +1,12 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import EditIcon from "@mui/icons-material/Edit";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
+import { useT } from "../../../i18n/i18n";
 import "./Todo.css";
 
 interface TodoItem {
@@ -11,10 +15,31 @@ interface TodoItem {
   checked: boolean;
 }
 
+// Keep aligned with the leave animation duration in Todo.css. The
+// item stays mounted for this long after the user clicks delete so
+// the slide-out animation can complete before React unmounts it.
+const REMOVE_ANIM_MS = 240;
+
+const persistTodos = (next: TodoItem[]) => {
+  try {
+    localStorage.setItem("todo_data", JSON.stringify(next));
+  } catch (err) {
+    console.error("Failed to save todos:", err);
+  }
+};
+
 export const Todo: React.FC = () => {
+  const t = useT();
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Items mid-leave animation. Removed from `todos` only after
+  // REMOVE_ANIM_MS so the CSS can finish playing.
+  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
+  // Items added since mount — only newly-added items get the slide-in
+  // animation, otherwise every page load would cascade-in the entire
+  // saved list.
+  const [enteringIds, setEnteringIds] = useState<Set<string>>(new Set());
   const { widgets } = useAppContext();
   const todoSettings = widgets.todo.settings;
   const width = todoSettings.width;
@@ -25,8 +50,7 @@ export const Todo: React.FC = () => {
     const savedTodos = localStorage.getItem("todo_data");
     if (savedTodos) {
       try {
-        const parsed = JSON.parse(savedTodos);
-        setTodos(parsed);
+        setTodos(JSON.parse(savedTodos));
       } catch (err) {
         console.error("Failed to parse saved todos:", err);
       }
@@ -34,23 +58,31 @@ export const Todo: React.FC = () => {
   }, []);
 
   const addTodo = () => {
-    if (inputValue.trim()) {
-      const newTodo: TodoItem = {
-        id: Date.now().toString(),
-        text: inputValue.trim(),
-        checked: false,
-      };
-      setTodos((prev) => {
-        const next = [...prev, newTodo];
-        try {
-          localStorage.setItem("todo_data", JSON.stringify(next));
-        } catch (err) {
-          console.error("Failed to save todos:", err);
-        }
+    if (!inputValue.trim()) return;
+    const newTodo: TodoItem = {
+      id: Date.now().toString(),
+      text: inputValue.trim(),
+      checked: false,
+    };
+    setTodos((prev) => {
+      const next = [...prev, newTodo];
+      persistTodos(next);
+      return next;
+    });
+    setEnteringIds((prev) => {
+      const next = new Set(prev);
+      next.add(newTodo.id);
+      return next;
+    });
+    window.setTimeout(() => {
+      setEnteringIds((prev) => {
+        if (!prev.has(newTodo.id)) return prev;
+        const next = new Set(prev);
+        next.delete(newTodo.id);
         return next;
       });
-      setInputValue("");
-    }
+    }, 280);
+    setInputValue("");
   };
 
   const toggleTodo = (id: string) => {
@@ -58,43 +90,36 @@ export const Todo: React.FC = () => {
       const next = prev.map((t) =>
         t.id === id ? { ...t, checked: !t.checked } : t
       );
-      try {
-        localStorage.setItem("todo_data", JSON.stringify(next));
-      } catch (err) {
-        console.error("Failed to save todos:", err);
-      }
+      persistTodos(next);
       return next;
     });
   };
 
-  // Persist todos to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem("todo_data", JSON.stringify(todos));
-    } catch (err) {
-      console.error("Failed to save todos:", err);
-    }
-  }, [todos]);
-
-  const deleteTodo = (id: string) =>
-    setTodos((prev) => {
-      const next = prev.filter((t) => t.id !== id);
-      try {
-        localStorage.setItem("todo_data", JSON.stringify(next));
-      } catch (err) {
-        console.error("Failed to save todos:", err);
-      }
+  const deleteTodo = (id: string) => {
+    setRemovingIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
       return next;
     });
+    window.setTimeout(() => {
+      setTodos((prev) => {
+        const next = prev.filter((t) => t.id !== id);
+        persistTodos(next);
+        return next;
+      });
+      setRemovingIds((prev) => {
+        if (!prev.has(id)) return prev;
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, REMOVE_ANIM_MS);
+  };
 
   const updateTodoText = (id: string, newText: string) => {
     setTodos((prev) => {
       const next = prev.map((t) => (t.id === id ? { ...t, text: newText } : t));
-      try {
-        localStorage.setItem("todo_data", JSON.stringify(next));
-      } catch (err) {
-        console.error("Failed to save todos:", err);
-      }
+      persistTodos(next);
       return next;
     });
   };
@@ -105,49 +130,80 @@ export const Todo: React.FC = () => {
 
   const handleEditKeyPress = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    id: string
+    _id: string
   ) => {
     if (e.key === "Enter" || e.key === "Escape") setEditingId(null);
   };
 
-  // Drag-and-drop reordering logic
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  // Drag-and-drop reordering. Refs mirror the React state so the
+  // synchronous onDrop handler reads the very latest values even if
+  // React hasn't committed the dragOver render yet (closures over
+  // useState values were going stale and dropping items in the wrong
+  // slot, especially at the first / last positions).
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [dropPos, setDropPos] = useState<"before" | "after" | null>(null);
+  const draggedIdRef = useRef<string | null>(null);
+  const dropPosRef = useRef<"before" | "after" | null>(null);
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
+  const resetDrag = () => {
+    draggedIdRef.current = null;
+    dropPosRef.current = null;
+    setDraggedId(null);
+    setDropTargetId(null);
+    setDropPos(null);
   };
-  const handleDragOver = (index: number) => {
-    setDragOverIndex(index);
+
+  const handleDragStart = (id: string) => {
+    draggedIdRef.current = id;
+    setDraggedId(id);
   };
-  const handleDrop = (index: number) => {
-    if (draggedIndex === null || draggedIndex === index) return;
-    const updated = [...todos];
-    const [removed] = updated.splice(draggedIndex, 1);
-    updated.splice(index, 0, removed);
-    setTodos(updated);
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-    try {
-      localStorage.setItem("todo_data", JSON.stringify(updated));
-    } catch (err) {
-      console.error("Failed to save todos:", err);
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos: "before" | "after" =
+      e.clientY - rect.top < rect.height / 2 ? "before" : "after";
+    dropPosRef.current = pos;
+    setDropTargetId(id);
+    setDropPos(pos);
+  };
+  const handleDrop = (id: string) => {
+    const dragged = draggedIdRef.current;
+    const pos = dropPosRef.current ?? "before";
+    if (!dragged || dragged === id) {
+      resetDrag();
+      return;
     }
+    setTodos((prev) => {
+      const fromIdx = prev.findIndex((t) => t.id === dragged);
+      const targetIdx = prev.findIndex((t) => t.id === id);
+      if (fromIdx < 0 || targetIdx < 0) return prev;
+      const next = [...prev];
+      const [removed] = next.splice(fromIdx, 1);
+      // Insertion index in the post-splice array. If the dragged
+      // item was before the target, the target shifted left by 1
+      // when we spliced it out.
+      let insertAt = targetIdx;
+      if (fromIdx < targetIdx) insertAt -= 1;
+      if (pos === "after") insertAt += 1;
+      next.splice(insertAt, 0, removed);
+      persistTodos(next);
+      return next;
+    });
+    resetDrag();
   };
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-  };
+  const handleDragEnd = () => resetDrag();
 
-  const sortedTodos = [...todos].sort((a, b) =>
-    a.checked === b.checked ? 0 : a.checked ? 1 : -1
-  );
+  // Sort: incomplete first, completed at bottom. Items mid-leave stay
+  // rendered so the exit can play.
+  const visibleTodos = todos
+    .slice()
+    .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
+
+  const isEmpty = todos.length === 0;
 
   return (
     <div
-      className={`todo-container widget-header ${
-        todoSettings.darkMode ? "todo-dark" : ""
-      }`}
+      className="todo-container widget-header"
       style={{
         width: `${width}px`,
         height: `${height}px`,
@@ -161,48 +217,86 @@ export const Todo: React.FC = () => {
         <TextInput
           ref={inputRef}
           type="text"
-        //   className="todo-input"
-          placeholder="Add a task..."
+          placeholder={t("todo.addPlaceholder")}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyPress}
-          mode={todoSettings.darkMode ? "dark" : "light"}
         />
-        {inputValue && (
-          <button
-            className="todo-add-btn"
-            onClick={addTodo}
-            aria-label="Add task"
-            data-tooltip="Add task"
-          >
-            +
-          </button>
-        )}
+        <button
+          className="todo-add-btn"
+          onClick={addTodo}
+          disabled={!inputValue.trim()}
+          aria-label={t("todo.addAria")}
+          data-tooltip={t("todo.addTooltip")}
+        >
+          +
+        </button>
       </div>
-      {todos.length > 0 && (
+      {isEmpty ? (
+        <div className="todo-empty">
+          <EditNoteIcon className="todo-empty-icon" />
+          <p className="todo-empty-title">{t("todo.emptyTitle")}</p>
+          <p className="todo-empty-sub">{t("todo.emptySub")}</p>
+        </div>
+      ) : (
         <ul className="todo-list">
-          {sortedTodos.map((todo, index) => (
+          {visibleTodos.map((todo) => (
             <li
               key={todo.id}
-              className={`todo-item ${todo.checked ? "checked" : ""} ${
-                draggedIndex === index ? "dragging" : ""
-              } ${dragOverIndex === index ? "drag-over" : ""}`}
+              className={[
+                "todo-item",
+                todo.checked ? "checked" : "",
+                draggedId === todo.id ? "dragging" : "",
+                dropTargetId === todo.id && draggedId !== todo.id
+                  ? `drop-target drop-${dropPos ?? "before"}`
+                  : "",
+                removingIds.has(todo.id) ? "removing" : "",
+                enteringIds.has(todo.id) ? "entering" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               draggable
-              onDragStart={() => handleDragStart(index)}
+              onDragStart={(e) => {
+                // Shift means the user is dragging the whole widget —
+                // bail so the widget-shell handler wins.
+                if (e.shiftKey) {
+                  e.preventDefault();
+                  return;
+                }
+                try {
+                  e.dataTransfer.setData("text/plain", todo.id);
+                  e.dataTransfer.effectAllowed = "move";
+                } catch {
+                  /* ignore */
+                }
+                handleDragStart(todo.id);
+              }}
               onDragOver={(e) => {
                 e.preventDefault();
-                handleDragOver(index);
+                e.dataTransfer.dropEffect = "move";
+                handleDragOver(e, todo.id);
               }}
-              onDrop={() => handleDrop(index)}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleDrop(todo.id);
+              }}
               onDragEnd={handleDragEnd}
             >
               <div className="todo-item-content">
                 <button
                   className="todo-checkbox"
                   onClick={() => toggleTodo(todo.id)}
-                  aria-label={todo.checked ? "Mark as not done" : "Mark as done"}
+                  aria-label={
+                    todo.checked
+                      ? t("todo.checkboxAriaDone")
+                      : t("todo.checkboxAriaNotDone")
+                  }
                   aria-pressed={todo.checked}
-                  data-tooltip={todo.checked ? "Mark not done" : "Mark done"}
+                  data-tooltip={
+                    todo.checked
+                      ? t("todo.checkboxTooltipDone")
+                      : t("todo.checkboxTooltipNotDone")
+                  }
                 >
                   {todo.checked && <CheckIcon style={{ fontSize: "14px" }} />}
                 </button>
@@ -216,24 +310,40 @@ export const Todo: React.FC = () => {
                     onKeyDown={(e) => handleEditKeyPress(e, todo.id)}
                     onBlur={() => setEditingId(null)}
                     autoFocus
-                    mode={todoSettings.darkMode ? "dark" : "light"}
                   />
                 ) : (
                   <span
                     className="todo-text"
                     onClick={() => setEditingId(todo.id)}
                   >
-                    {todo.text}
+                    <span className="todo-text-inner">{todo.text}</span>
                   </span>
+                )}
+                {editingId !== todo.id && (
+                  <button
+                    className="todo-edit-btn"
+                    onClick={() => setEditingId(todo.id)}
+                    aria-label={t("todo.editAria", { text: todo.text })}
+                    data-tooltip={t("todo.editTooltip")}
+                  >
+                    <EditIcon style={{ fontSize: "14px" }} />
+                  </button>
                 )}
                 <button
                   className="todo-delete-btn"
                   onClick={() => deleteTodo(todo.id)}
-                  aria-label={`Delete: ${todo.text}`}
-                  data-tooltip="Delete task"
+                  aria-label={t("todo.deleteAria", { text: todo.text })}
+                  data-tooltip={t("todo.deleteTooltip")}
                 >
                   <ClearIcon style={{ fontSize: "14px" }} />
                 </button>
+                <span
+                  className="todo-drag-handle"
+                  aria-hidden="true"
+                  data-tooltip={t("todo.dragHandleTooltip")}
+                >
+                  <DragIndicatorIcon style={{ fontSize: 16 }} />
+                </span>
               </div>
             </li>
           ))}
