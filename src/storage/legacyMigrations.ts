@@ -35,11 +35,16 @@ export const readLegacyQuickLinks = (): NewQuickLink[] | null => {
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr) || arr.length === 0) return null;
     const out: NewQuickLink[] = [];
+    // DOMParser is preferred over `div.innerHTML = html` here: even
+    // though we only read href/textContent (so injection is harmless),
+    // Web Store reviewers flag any innerHTML write as a code-smell.
+    // DOMParser produces an inert document — no scripts run, no
+    // resources fetched — so it's review-friendly and equivalent.
+    const parser = new DOMParser();
     arr.forEach((html: unknown) => {
       if (typeof html !== "string") return;
-      const div = document.createElement("div");
-      div.innerHTML = html;
-      const a = div.querySelector("a");
+      const doc = parser.parseFromString(html, "text/html");
+      const a = doc.querySelector("a");
       if (!a) return;
       const url = a.getAttribute("href") || "";
       const title = (a.textContent || "").trim() || url;

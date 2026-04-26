@@ -16,20 +16,11 @@
     }
   },
   "host_permissions": [
-    "https://www.ghibli.jp/*",
-    "https://*.imgur.com/*",
-    "https://*.pinimg.com/*",
     "https://api.open-meteo.com/*",
     "https://api.bigdatacloud.net/*"
   ],
   "icons": {
     "48": "icon48.png",
     "128": "icon128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["background_en.json", "movie_metadata.json", "config.json"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }
