@@ -7,6 +7,10 @@ import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import {
+  clearLegacyTodos,
+  readLegacyTodos,
+} from "../../../storage/legacyMigrations";
 import "./Todo.css";
 
 interface TodoItem {
@@ -20,11 +24,33 @@ interface TodoItem {
 // the slide-out animation can complete before React unmounts it.
 const REMOVE_ANIM_MS = 240;
 
+// Storage key. Renamed from the bare "todo_data" used during dev to
+// the namespaced "ghiblify_todo" so every persisted entry the app
+// owns starts with the same prefix. The migration helper below
+// folds any old "todo_data" value into the new key on first read.
+const STORAGE_KEY = "ghiblify_todo";
+
 const persistTodos = (next: TodoItem[]) => {
   try {
-    localStorage.setItem("todo_data", JSON.stringify(next));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch (err) {
     console.error("Failed to save todos:", err);
+  }
+};
+
+// One-time read of the previous in-app key. If we find anything,
+// rewrite it to the new key and delete the old one. Idempotent.
+const readModernTodosOrMigrate = (): string | null => {
+  try {
+    const current = localStorage.getItem(STORAGE_KEY);
+    if (current) return current;
+    const old = localStorage.getItem("todo_data");
+    if (!old) return null;
+    localStorage.setItem(STORAGE_KEY, old);
+    localStorage.removeItem("todo_data");
+    return old;
+  } catch {
+    return null;
   }
 };
 
@@ -47,14 +73,29 @@ export const Todo: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const savedTodos = localStorage.getItem("todo_data");
+    const savedTodos = readModernTodosOrMigrate();
     if (savedTodos) {
       try {
         setTodos(JSON.parse(savedTodos));
+        return;
       } catch (err) {
         console.error("Failed to parse saved todos:", err);
       }
     }
+    // No modern todos stored — try to pull from the previous
+    // (jQuery) Ghiblify extension's chrome.storage.local["todo_data"]
+    // (a "×"-separated string with optional "☑" prefix per item).
+    // Cleared from chrome.storage on success so it's idempotent.
+    let cancelled = false;
+    readLegacyTodos().then((legacy) => {
+      if (cancelled || !legacy || !legacy.length) return;
+      setTodos(legacy);
+      persistTodos(legacy);
+      clearLegacyTodos();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const addTodo = () => {

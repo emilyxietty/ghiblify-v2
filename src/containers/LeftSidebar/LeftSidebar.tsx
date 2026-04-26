@@ -16,6 +16,7 @@ import LocalCafeIcon from "@mui/icons-material/LocalCafe";
 import StarIcon from "@mui/icons-material/Star";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
+import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import TimerIcon from "@mui/icons-material/Timer";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import {
@@ -36,6 +37,12 @@ import {
   SIDEBAR_EDGE_TRIGGER,
   SIDEBAR_WIDTH,
 } from "../../config/appConfig";
+import {
+  readBlacklist,
+  readFavorites,
+  writeBlacklist,
+  writeFavorites,
+} from "../../storage/backgroundStorage";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import { WidgetKey } from "../../config/widgetConfig";
 import {
@@ -54,13 +61,10 @@ const THEME_KEYS: ThemeName[] = [
   "totoro",
   "ponyo",
   "sky",
-  "sakura",
-  "meadow",
-  "pastel",
-  "cream",
+  "butter",
   "mint",
-  "bloom",
-  "cotton",
+  "spring",
+  "peony",
   "light",
   "dark",
   "frost",
@@ -80,6 +84,7 @@ const WIDGET_TOGGLES: Array<{
   { key: "pomodoro", icon: <TimerIcon /> },
   { key: "bookmarks", icon: <BookmarksIcon /> },
   { key: "weather", icon: <WbSunnyIcon /> },
+  { key: "notes", icon: <StickyNote2Icon /> },
 ];
 
 const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
@@ -107,54 +112,30 @@ export const LeftSidebar: React.FC = () => {
     currentBackground,
   } = useAppContext();
 
-  // Blacklist the currently displayed background. Persists to the
-  // shared `ghiblify_blacklist` localStorage key + dispatches the same
-  // event the BackgroundSettingsModal listens to, so any open modal
-  // updates and `useBackground` immediately picks a new image.
+  // Blacklist the currently displayed background. Writes to the
+  // shared ghiblify_background blob + dispatches the same event the
+  // BackgroundSettingsModal listens to, so any open modal updates
+  // and `useBackground` immediately picks a new image.
   const deleteCurrentBackground = () => {
     if (!currentBackground) return;
-    try {
-      const raw = localStorage.getItem("ghiblify_blacklist");
-      const list: string[] = raw ? JSON.parse(raw) : [];
-      const set = new Set<string>(Array.isArray(list) ? list : []);
-      if (set.has(currentBackground)) return;
-      set.add(currentBackground);
-      localStorage.setItem(
-        "ghiblify_blacklist",
-        JSON.stringify(Array.from(set))
-      );
-    } catch {
-      /* ignore */
-    }
+    const set = new Set<string>(readBlacklist());
+    if (set.has(currentBackground)) return;
+    set.add(currentBackground);
+    writeBlacklist(Array.from(set));
     window.dispatchEvent(
       new CustomEvent("ghiblify:blacklist:add", { detail: currentBackground })
     );
   };
 
   // Favorites — read on mount, refresh whenever any consumer broadcasts
-  // a change. Tracked in localStorage at `ghiblify_favorites` (array
-  // of URL strings). Heart button toggles membership for the current
+  // a change. Heart button toggles membership for the current
   // background and dispatches `ghiblify:favorites:change` so the
   // settings modal + useBackground stay in sync.
-  const [favorites, setFavorites] = useState<Set<string>>(() => {
-    try {
-      const raw = localStorage.getItem("ghiblify_favorites");
-      const arr = raw ? (JSON.parse(raw) as string[]) : [];
-      return new Set(Array.isArray(arr) ? arr : []);
-    } catch {
-      return new Set();
-    }
-  });
+  const [favorites, setFavorites] = useState<Set<string>>(
+    () => new Set(readFavorites())
+  );
   useEffect(() => {
-    const refresh = () => {
-      try {
-        const raw = localStorage.getItem("ghiblify_favorites");
-        const arr = raw ? (JSON.parse(raw) as string[]) : [];
-        setFavorites(new Set(Array.isArray(arr) ? arr : []));
-      } catch {
-        /* ignore */
-      }
-    };
+    const refresh = () => setFavorites(new Set(readFavorites()));
     window.addEventListener("ghiblify:favorites:change", refresh);
     return () =>
       window.removeEventListener("ghiblify:favorites:change", refresh);
@@ -166,16 +147,7 @@ export const LeftSidebar: React.FC = () => {
     if (next.has(currentBackground)) next.delete(currentBackground);
     else next.add(currentBackground);
     setFavorites(next);
-    try {
-      if (next.size === 0) localStorage.removeItem("ghiblify_favorites");
-      else
-        localStorage.setItem(
-          "ghiblify_favorites",
-          JSON.stringify(Array.from(next))
-        );
-    } catch {
-      /* ignore */
-    }
+    writeFavorites(Array.from(next));
     window.dispatchEvent(new CustomEvent("ghiblify:favorites:change"));
   };
 

@@ -5,6 +5,12 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
+import {
+  readBlacklist,
+  readFavorites,
+  writeBlacklist,
+  writeFavorites,
+} from "../../storage/backgroundStorage";
 import { Button } from "../Button/Button";
 import "./BackgroundSettingsModal.css";
 
@@ -252,20 +258,10 @@ export const BackgroundSettingsModal: React.FC<
   // BackgroundListItem moved to module scope (above) to keep its
   // identity stable across parent re-renders.
 
-  // blacklist state persisted in localStorage — use a Set for O(1) lookups
-  const [blacklist, setBlacklist] = React.useState<Set<string>>(new Set());
-
-  React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem("ghiblify_blacklist");
-      if (raw) {
-        const arr = JSON.parse(raw) as string[];
-        setBlacklist(new Set(arr));
-      }
-    } catch (err) {
-      // ignore
-    }
-  }, []);
+  // blacklist state persisted in the shared ghiblify_background blob
+  const [blacklist, setBlacklist] = React.useState<Set<string>>(
+    () => new Set(readBlacklist())
+  );
 
   // handler to add url to blacklist and persist
   const addToBlacklist = React.useCallback((url: string) => {
@@ -273,14 +269,7 @@ export const BackgroundSettingsModal: React.FC<
       if (prev.has(url)) return prev;
       const next = new Set(prev);
       next.add(url);
-      try {
-        localStorage.setItem(
-          "ghiblify_blacklist",
-          JSON.stringify(Array.from(next))
-        );
-      } catch (err) {
-        // ignore
-      }
+      writeBlacklist(Array.from(next));
       return next;
     });
   }, []);
@@ -305,58 +294,34 @@ export const BackgroundSettingsModal: React.FC<
     // eslint-disable-next-line no-restricted-globals
     if (!confirm(t("background.modal.restoreConfirm"))) return;
     setBlacklist(new Set());
-    try {
-      localStorage.removeItem("ghiblify_blacklist");
-    } catch (err) {
-      // ignore
-    }
+    writeBlacklist([]);
     // notify other parts of app to re-evaluate backgrounds
     const ev = new CustomEvent("ghiblify:blacklist:cleared");
     window.dispatchEvent(ev);
   }, []);
 
-  // Favorites state — same pattern as blacklist. Persisted in
-  // `ghiblify_favorites` (array of URLs). Mutations broadcast a
-  // `ghiblify:favorites:change` event so the sidebar heart button +
-  // useBackground stay in sync.
-  const [favorites, setFavorites] = React.useState<Set<string>>(new Set());
+  // Favorites state — persisted in the shared ghiblify_background
+  // blob. Mutations broadcast `ghiblify:favorites:change` so the
+  // sidebar heart button + useBackground stay in sync.
+  const [favorites, setFavorites] = React.useState<Set<string>>(
+    () => new Set(readFavorites())
+  );
   React.useEffect(() => {
-    const refresh = () => {
-      try {
-        const raw = localStorage.getItem("ghiblify_favorites");
-        const arr = raw ? (JSON.parse(raw) as string[]) : [];
-        setFavorites(new Set(Array.isArray(arr) ? arr : []));
-      } catch {
-        setFavorites(new Set());
-      }
-    };
-    refresh();
+    const refresh = () => setFavorites(new Set(readFavorites()));
     window.addEventListener("ghiblify:favorites:change", refresh);
     return () =>
       window.removeEventListener("ghiblify:favorites:change", refresh);
   }, []);
   // Toggle favorite for an arbitrary URL (used by the heart on each
-  // movie thumbnail). Mirrors the sidebar's logic — write the new
-  // set, broadcast `ghiblify:favorites:change` so other consumers
-  // sync. Auto-select the first available source if removing the
-  // last favorite would empty the rotation pool.
+  // movie thumbnail). Auto-select the first available source if
+  // removing the last favorite would empty the rotation pool.
   const toggleFavorite = React.useCallback(
     (url: string) => {
       setFavorites((prev) => {
         const next = new Set(prev);
         if (next.has(url)) next.delete(url);
         else next.add(url);
-        try {
-          if (next.size === 0)
-            localStorage.removeItem("ghiblify_favorites");
-          else
-            localStorage.setItem(
-              "ghiblify_favorites",
-              JSON.stringify(Array.from(next))
-            );
-        } catch {
-          /* ignore */
-        }
+        writeFavorites(Array.from(next));
         if (next.size === 0) {
           const anyMovieEnabled = movies.some(
             (m) =>
@@ -379,20 +344,7 @@ export const BackgroundSettingsModal: React.FC<
         if (!prev.has(url)) return prev;
         const next = new Set(prev);
         next.delete(url);
-        try {
-          if (next.size === 0) localStorage.removeItem("ghiblify_favorites");
-          else
-            localStorage.setItem(
-              "ghiblify_favorites",
-              JSON.stringify(Array.from(next))
-            );
-        } catch {
-          /* ignore */
-        }
-        // Safety net: if removing this favorite empties the favorites
-        // pool AND the user has every movie deselected (which was only
-        // allowed because favorites carried the rotation), auto-select
-        // the first movie so the page always has a source to draw from.
+        writeFavorites(Array.from(next));
         if (next.size === 0) {
           const anyMovieEnabled = movies.some(
             (m) => (backgroundSelection && backgroundSelection[m.key]) ?? true
@@ -414,18 +366,7 @@ export const BackgroundSettingsModal: React.FC<
       if (!prev.has(url)) return prev;
       const next = new Set(prev);
       next.delete(url);
-      try {
-        if (next.size === 0) {
-          localStorage.removeItem("ghiblify_blacklist");
-        } else {
-          localStorage.setItem(
-            "ghiblify_blacklist",
-            JSON.stringify(Array.from(next))
-          );
-        }
-      } catch {
-        /* ignore */
-      }
+      writeBlacklist(Array.from(next));
       // tell consumers (useBackground) to re-evaluate so the restored
       // image becomes eligible again for the rotation.
       const ev = new CustomEvent("ghiblify:blacklist:cleared");

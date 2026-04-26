@@ -13,6 +13,16 @@ import {
   WIDGET_CONFIGS,
   WIDGET_KEYS,
 } from "../config/widgetConfig";
+import {
+  readFilters,
+  readSelection,
+  writeFilters,
+  writeSelection,
+} from "../storage/backgroundStorage";
+import {
+  clearLegacyQuickLinks,
+  readLegacyQuickLinks,
+} from "../storage/legacyMigrations";
 
 const STORAGE_KEY = "ghiblify_widgets";
 
@@ -23,13 +33,10 @@ export const THEME_NAMES = [
   "totoro",
   "ponyo",
   "sky",
-  "sakura",
-  "meadow",
-  "pastel",
-  "cream",
+  "butter",
   "mint",
-  "bloom",
-  "cotton",
+  "spring",
+  "peony",
   "light",
   "dark",
   "frost",
@@ -41,13 +48,26 @@ export type ThemeName = (typeof THEME_NAMES)[number];
  *  app applies to <html> so widget surfaces can pick contrast-safe
  *  text + accents (CSS only — no new vars needed at the call site). */
 export const LIGHT_MODE_THEMES: ReadonlySet<ThemeName> = new Set<ThemeName>([
-  "pastel",
-  "cream",
+  "butter",
   "mint",
-  "bloom",
-  "cotton",
+  "spring",
+  "peony",
   "light",
 ]);
+
+// Legacy theme name → current name. Applied at load time so users
+// who saved a preference under one of the older / dropped names
+// don't end up with no palette. Removed names that have no obvious
+// successor (sakura, meadow, pastel) fall back to ghibli.
+const LEGACY_THEME_RENAMES: Record<string, ThemeName> = {
+  mono: "light",
+  cream: "butter",
+  bloom: "spring",
+  cotton: "peony",
+  sakura: "ghibli",
+  meadow: "ghibli",
+  pastel: "ghibli",
+};
 
 export interface AppearanceSettings {
   theme: ThemeName;
@@ -140,6 +160,7 @@ const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "quicklinks",
   "avatar",
   "pomodoro",
+  "notes",
 ]);
 
 const buildDefaultWidgets = (): WidgetsState => {
@@ -329,7 +350,20 @@ const clearLegacyKeys = () => {
 const loadInitialWidgets = (): WidgetsState => {
   const defaults = buildDefaultWidgets();
 
-  // Modern blob — apply diffs onto defaults
+  // One-time pull from the previous (jQuery) Ghiblify extension's
+  // `localStorage.quickLinks` (HTML strings). Always attempted, even
+  // when the modern blob exists — the legacy entry is only present
+  // for users coming from the v1 extension. Cleared after read so
+  // it's idempotent.
+  const legacyQL = readLegacyQuickLinks();
+  if (legacyQL && legacyQL.length) {
+    defaults.quicklinks.settings.links = legacyQL;
+    clearLegacyQuickLinks();
+  }
+
+  // Modern blob — apply diffs onto defaults. Done after the legacy
+  // pull so a user with both legacy AND modern data keeps their
+  // modern set (legacy is treated as a seed for first-run only).
   const blob = readJSON<Record<string, any> | null>(STORAGE_KEY, null);
   if (blob) {
     for (const key of WIDGET_KEYS) {
@@ -340,6 +374,11 @@ const loadInitialWidgets = (): WidgetsState => {
       if (stored.position) entry.position = stored.position;
       if (stored.settings)
         entry.settings = { ...entry.settings, ...stored.settings };
+    }
+    if (legacyQL && legacyQL.length) {
+      // Persist the freshly-imported quick links into the modern
+      // blob so subsequent loads find them in the new schema.
+      persistWidgets(defaults);
     }
     return defaults;
   }
@@ -383,24 +422,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const [backgroundFilters, setBackgroundFilters] = useState<BackgroundFilters>(
-    () =>
-      readJSON<BackgroundFilters>("background_filters", {
-        blur: 0,
-        brightness: 100,
-        contrast: 100,
-        saturation: 100,
-      })
+    () => readFilters()
   );
 
   const [backgroundSelection, setBackgroundSelection] = useState<
     Record<string, boolean>
-  >(() => readJSON<Record<string, boolean>>("background_selection", {}));
+  >(() => readSelection());
 
   const [appearance, setAppearance] = useState<AppearanceSettings>(() => {
     const saved = readJSON<Partial<AppearanceSettings>>("ghiblify_appearance", {});
-    // Migrate the old "mono" theme name → "light" (palette renamed
-    // when its dark counterpart was added).
-    if ((saved.theme as string) === "mono") saved.theme = "light";
+    // Map any legacy / renamed / removed theme names to their
+    // current equivalents (see LEGACY_THEME_RENAMES at the top of
+    // the file). Catches "mono" → "light" plus the recent renames
+    // (cream→butter, bloom→spring, cotton→peony) and the dropped
+    // names (sakura/meadow/pastel) that fall back to "ghibli".
+    const remapped =
+      saved.theme && LEGACY_THEME_RENAMES[saved.theme as string];
+    if (remapped) saved.theme = remapped;
     return { ...DEFAULT_APPEARANCE, ...saved };
   });
 
@@ -465,7 +503,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
     setBackgroundFilters((prev) => {
       const next = { ...prev, ...filters };
-      localStorage.setItem("background_filters", JSON.stringify(next));
+      writeFilters(next);
       return next;
     });
   };
@@ -473,7 +511,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const updateBackgroundSelection = (movieKey: string, value: boolean) => {
     setBackgroundSelection((prev) => {
       const next = { ...prev, [movieKey]: value };
-      localStorage.setItem("background_selection", JSON.stringify(next));
+      writeSelection(next);
       return next;
     });
   };

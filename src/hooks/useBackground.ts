@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../contexts/AppContext";
+import {
+  readBlacklist,
+  readFavorites,
+} from "../storage/backgroundStorage";
 
 interface BackgroundItem {
   link: string;
@@ -52,15 +56,9 @@ export const useBackground = () => {
         const bgData: BackgroundData = await bgResponse.json();
         const metadataData: MovieMetadataData = await metadataResponse.json();
 
-        // Load persisted blacklist and filter sources according to user's backgroundSelection preferences
-        let blacklistSet = new Set<string>();
-        try {
-          const raw = localStorage.getItem("ghiblify_blacklist");
-          const parsed = raw ? JSON.parse(raw) : [];
-          if (Array.isArray(parsed)) blacklistSet = new Set(parsed);
-        } catch (e) {
-          console.warn("useBackground: failed to parse blacklist", e);
-        }
+        // Load persisted blacklist + filter sources according to the
+        // user's backgroundSelection preferences.
+        const blacklistSet = new Set<string>(readBlacklist());
 
         // Filter sources according to user's backgroundSelection preferences
         const allowedSources = bgData.sources.filter(
@@ -100,20 +98,12 @@ export const useBackground = () => {
         // Favorites are always eligible — they're a personal opt-in
         // pool that the user can't deselect. Add any favorited URLs
         // that aren't already in the pool from a regular source.
-        try {
-          const rawFav = localStorage.getItem("ghiblify_favorites");
-          const favArr = rawFav ? (JSON.parse(rawFav) as string[]) : [];
-          if (Array.isArray(favArr)) {
-            favArr.forEach((link) => {
-              if (!blacklistSet.has(link) && !seen.has(link)) {
-                allLinks.push({ link, sourceTitle: "__favorites__" });
-                seen.add(link);
-              }
-            });
+        readFavorites().forEach((link) => {
+          if (!blacklistSet.has(link) && !seen.has(link)) {
+            allLinks.push({ link, sourceTitle: "__favorites__" });
+            seen.add(link);
           }
-        } catch (e) {
-          console.warn("useBackground: failed to parse favorites", e);
-        }
+        });
 
         if (allLinks.length === 0) {
           console.log(
