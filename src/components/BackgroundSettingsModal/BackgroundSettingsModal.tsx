@@ -1,7 +1,10 @@
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import RestoreIcon from "@mui/icons-material/Restore";
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
+import { useT } from "../../i18n/i18n";
 import { Button } from "../Button/Button";
 import "./BackgroundSettingsModal.css";
 
@@ -11,9 +14,151 @@ interface BackgroundSettingsModalProps {
   setShowBackgroundSettings: (show: boolean) => void;
 }
 
+// IMPORTANT: defined at module scope (not inside the parent
+// component) so its function identity stays stable across parent
+// re-renders. Defining a memoized component inside another component
+// gives it a fresh identity on every render, which causes React to
+// unmount + remount the children — wiping the per-item `open` state.
+// That manifested as the dropdowns auto-collapsing every time the
+// user hearted, unhearted, or deleted a thumbnail.
+type BackgroundListItemProps = {
+  movieKey: string;
+  title: string;
+  enabled: boolean;
+  available: boolean;
+  links: string[];
+  disableLast?: boolean;
+  defaultOpen?: boolean;
+  onUpdate: (k: string, v: boolean) => void;
+  favoritedSet: Set<string>;
+  onToggleFavorite: (url: string) => void;
+};
+
+const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
+  ({
+    movieKey,
+    title,
+    enabled,
+    available,
+    links,
+    disableLast,
+    defaultOpen,
+    onUpdate,
+    favoritedSet,
+    onToggleFavorite,
+  }) => {
+    const t = useT();
+    const [open, setOpen] = React.useState(defaultOpen ?? false);
+    React.useEffect(() => {
+      if (!available) {
+        // eslint-disable-next-line no-console
+        console.debug(
+          `BackgroundListItem: ${movieKey} (${title}) has no backgrounds. links=${links.length}`
+        );
+      }
+    }, []);
+
+    return (
+      <details
+        className="background-toggle"
+        style={{ position: "relative" }}
+        open={open}
+      >
+        <summary
+          className="background-summary"
+          onClick={(e) => {
+            // prevent the native toggle since we control `open` state
+            e.preventDefault();
+            setOpen((s) => !s);
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={enabled}
+            disabled={!available || !!disableLast}
+            onChange={(e) => onUpdate(movieKey, e.target.checked)}
+          />
+          <span className="background-title">{title}</span>
+          {!available && (
+            <span className="background-unavailable">
+              {" "}
+              {t("background.modal.noBackgrounds")}
+            </span>
+          )}
+        </summary>
+        {available && links.length > 0 && (
+          <div className="summary-images">
+            {links.map((lnk, idx) => {
+              const isFav = favoritedSet.has(lnk);
+              return (
+                <div key={idx} className="thumb-wrap">
+                  <img
+                    src={lnk}
+                    alt={`${title} ${idx}`}
+                    className="summary-thumb"
+                  />
+                  <button
+                    type="button"
+                    className={`thumb-fav${isFav ? " is-favorited" : ""}`}
+                    aria-label={
+                      isFav
+                        ? t("background.modal.unfavoriteOneAria")
+                        : t("background.modal.favoriteOneAria")
+                    }
+                    data-tooltip={
+                      isFav
+                        ? t("background.modal.unfavoriteOne")
+                        : t("background.modal.favoriteOne")
+                    }
+                    aria-pressed={isFav}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleFavorite(lnk);
+                    }}
+                  >
+                    {isFav ? (
+                      <FavoriteIcon fontSize="small" />
+                    ) : (
+                      <FavoriteBorderIcon fontSize="small" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="thumb-delete"
+                    aria-label={t("background.modal.removeImageTitle")}
+                    data-tooltip={t("common.delete")}
+                    onClick={(e) => {
+                      const ev = new CustomEvent(
+                        "ghiblify:blacklist:add",
+                        { detail: lnk }
+                      );
+                      window.dispatchEvent(ev);
+                    }}
+                  >
+                    <DeleteOutlineIcon fontSize="small" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </details>
+    );
+  },
+  (prev, next) =>
+    prev.enabled === next.enabled &&
+    prev.available === next.available &&
+    prev.disableLast === next.disableLast &&
+    prev.links.join("|") === next.links.join("|") &&
+    prev.links.every(
+      (l) => prev.favoritedSet.has(l) === next.favoritedSet.has(l)
+    )
+);
+
 export const BackgroundSettingsModal: React.FC<
   BackgroundSettingsModalProps
 > = ({ showBackgroundSettings, setShowBackgroundSettings }) => {
+  const t = useT();
   if (!showBackgroundSettings) return null;
   const dialogRef = React.useRef<HTMLDialogElement>(null);
   // Close modal when clicking outside dialog
@@ -86,7 +231,13 @@ export const BackgroundSettingsModal: React.FC<
   };
 
   const deselectAll = () => {
-    // Always keep the very first movie selected (if it exists).
+    // Favorites are always-on (no checkbox), so when the user has any
+    // we can safely turn off every movie — favorites carry the
+    // rotation alone. Otherwise fall back to keeping the first movie.
+    if (favorites.size > 0) {
+      movies.forEach((m) => updateBackgroundSelection(m.key, false));
+      return;
+    }
     const keepKey = movies[0]?.key;
     if (!keepKey) return;
     movies.forEach((m) => updateBackgroundSelection(m.key, m.key === keepKey));
@@ -98,101 +249,8 @@ export const BackgroundSettingsModal: React.FC<
     [updateBackgroundSelection]
   );
 
-  type ItemProps = {
-    movieKey: string;
-    title: string;
-    enabled: boolean;
-    available: boolean;
-    links: string[];
-    disableLast?: boolean;
-    defaultOpen?: boolean;
-    onUpdate: (k: string, v: boolean) => void;
-  };
-
-  const BackgroundListItem: React.FC<ItemProps> = React.memo(
-    ({ movieKey, title, enabled, available, links, disableLast, defaultOpen, onUpdate }) => {
-      const [open, setOpen] = React.useState(defaultOpen ?? false);
-      // log once per item if missing available backgrounds to help debugging
-      React.useEffect(() => {
-        if (!available) {
-          // debug only — should be visible in dev console
-          // eslint-disable-next-line no-console
-          console.debug(
-            `BackgroundListItem: ${movieKey} (${title}) has no backgrounds. links=${links.length}`
-          );
-        }
-      }, []);
-
-      return (
-        <details
-          className="background-toggle"
-          style={{ position: "relative" }}
-          open={open}
-        >
-          <summary
-            className="background-summary"
-            onClick={(e) => {
-              // prevent the native toggle since we control `open` state
-              e.preventDefault();
-              setOpen((s) => !s);
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={enabled}
-              disabled={!available || !!disableLast}
-              onChange={(e) => onUpdate(movieKey, e.target.checked)}
-              // onMouseDown removed
-            />
-            <span className="background-title">{title}</span>
-            {!available && (
-              <span className="background-unavailable"> (no backgrounds)</span>
-            )}
-          </summary>
-          {available && links.length > 0 && (
-            <div
-              className="summary-images"
-              // onMouseDown removed
-            >
-              {links.map((lnk, idx) => (
-                <div
-                  key={idx}
-                  className="thumb-wrap"
-                  // onMouseDown removed
-                >
-                  <img
-                    src={lnk}
-                    alt={`${title} ${idx}`}
-                    className="summary-thumb"
-                    // onMouseDown removed
-                  />
-                  <button
-                    type="button"
-                    className="thumb-delete"
-                    title="Remove image"
-                    onClick={(e) => {
-                      // call parent handler via custom event on window — parent will provide
-                      const ev = new CustomEvent("ghiblify:blacklist:add", {
-                        detail: lnk,
-                      });
-                      window.dispatchEvent(ev);
-                    }}
-                  >
-                    <DeleteOutlineIcon fontSize="small" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </details>
-      );
-    },
-    (prev, next) =>
-      prev.enabled === next.enabled &&
-      prev.available === next.available &&
-      prev.disableLast === next.disableLast &&
-      prev.links.join("|") === next.links.join("|")
-  );
+  // BackgroundListItem moved to module scope (above) to keep its
+  // identity stable across parent re-renders.
 
   // blacklist state persisted in localStorage — use a Set for O(1) lookups
   const [blacklist, setBlacklist] = React.useState<Set<string>>(new Set());
@@ -245,7 +303,7 @@ export const BackgroundSettingsModal: React.FC<
   const clearBlacklist = React.useCallback(() => {
     // guard to avoid accidental clears
     // eslint-disable-next-line no-restricted-globals
-    if (!confirm("Clear deleted and restore all images?")) return;
+    if (!confirm(t("background.modal.restoreConfirm"))) return;
     setBlacklist(new Set());
     try {
       localStorage.removeItem("ghiblify_blacklist");
@@ -255,6 +313,125 @@ export const BackgroundSettingsModal: React.FC<
     // notify other parts of app to re-evaluate backgrounds
     const ev = new CustomEvent("ghiblify:blacklist:cleared");
     window.dispatchEvent(ev);
+  }, []);
+
+  // Favorites state — same pattern as blacklist. Persisted in
+  // `ghiblify_favorites` (array of URLs). Mutations broadcast a
+  // `ghiblify:favorites:change` event so the sidebar heart button +
+  // useBackground stay in sync.
+  const [favorites, setFavorites] = React.useState<Set<string>>(new Set());
+  React.useEffect(() => {
+    const refresh = () => {
+      try {
+        const raw = localStorage.getItem("ghiblify_favorites");
+        const arr = raw ? (JSON.parse(raw) as string[]) : [];
+        setFavorites(new Set(Array.isArray(arr) ? arr : []));
+      } catch {
+        setFavorites(new Set());
+      }
+    };
+    refresh();
+    window.addEventListener("ghiblify:favorites:change", refresh);
+    return () =>
+      window.removeEventListener("ghiblify:favorites:change", refresh);
+  }, []);
+  // Toggle favorite for an arbitrary URL (used by the heart on each
+  // movie thumbnail). Mirrors the sidebar's logic — write the new
+  // set, broadcast `ghiblify:favorites:change` so other consumers
+  // sync. Auto-select the first available source if removing the
+  // last favorite would empty the rotation pool.
+  const toggleFavorite = React.useCallback(
+    (url: string) => {
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        if (next.has(url)) next.delete(url);
+        else next.add(url);
+        try {
+          if (next.size === 0)
+            localStorage.removeItem("ghiblify_favorites");
+          else
+            localStorage.setItem(
+              "ghiblify_favorites",
+              JSON.stringify(Array.from(next))
+            );
+        } catch {
+          /* ignore */
+        }
+        if (next.size === 0) {
+          const anyMovieEnabled = movies.some(
+            (m) =>
+              (backgroundSelection && backgroundSelection[m.key]) ?? true
+          );
+          if (!anyMovieEnabled && movies.length > 0) {
+            updateBackgroundSelection(movies[0].key, true);
+          }
+        }
+        window.dispatchEvent(new CustomEvent("ghiblify:favorites:change"));
+        return next;
+      });
+    },
+    [movies, backgroundSelection, updateBackgroundSelection]
+  );
+
+  const removeFavorite = React.useCallback(
+    (url: string) => {
+      setFavorites((prev) => {
+        if (!prev.has(url)) return prev;
+        const next = new Set(prev);
+        next.delete(url);
+        try {
+          if (next.size === 0) localStorage.removeItem("ghiblify_favorites");
+          else
+            localStorage.setItem(
+              "ghiblify_favorites",
+              JSON.stringify(Array.from(next))
+            );
+        } catch {
+          /* ignore */
+        }
+        // Safety net: if removing this favorite empties the favorites
+        // pool AND the user has every movie deselected (which was only
+        // allowed because favorites carried the rotation), auto-select
+        // the first movie so the page always has a source to draw from.
+        if (next.size === 0) {
+          const anyMovieEnabled = movies.some(
+            (m) => (backgroundSelection && backgroundSelection[m.key]) ?? true
+          );
+          if (!anyMovieEnabled && movies.length > 0) {
+            updateBackgroundSelection(movies[0].key, true);
+          }
+        }
+        window.dispatchEvent(new CustomEvent("ghiblify:favorites:change"));
+        return next;
+      });
+    },
+    [movies, backgroundSelection, updateBackgroundSelection]
+  );
+
+  // Restore a single image from the blacklist.
+  const restoreOne = React.useCallback((url: string) => {
+    setBlacklist((prev) => {
+      if (!prev.has(url)) return prev;
+      const next = new Set(prev);
+      next.delete(url);
+      try {
+        if (next.size === 0) {
+          localStorage.removeItem("ghiblify_blacklist");
+        } else {
+          localStorage.setItem(
+            "ghiblify_blacklist",
+            JSON.stringify(Array.from(next))
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+      // tell consumers (useBackground) to re-evaluate so the restored
+      // image becomes eligible again for the rotation.
+      const ev = new CustomEvent("ghiblify:blacklist:cleared");
+      window.dispatchEvent(ev);
+      return next;
+    });
   }, []);
 
   return (
@@ -267,8 +444,8 @@ export const BackgroundSettingsModal: React.FC<
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h4>Background Settings</h4>
-          <div>{movies.length} movies</div>
+          <h4>{t("background.modal.title")}</h4>
+          <div>{t("background.modal.moviesCount", { count: movies.length })}</div>
           <div className="modal-actions">
             {(() => {
               // Compute enabled and available movies
@@ -286,10 +463,18 @@ export const BackgroundSettingsModal: React.FC<
                 const available = availMap.get(m.key) || false;
                 return enabled && available;
               });
+              // Favorites is always on (locked), so it counts toward
+              // "have at least one source" — meaning when favorites
+              // exist, deselecting every movie is allowed.
+              const hasFavorites = favorites.size > 0;
+              const enabledCount =
+                enabledSelectable.length + (hasFavorites ? 1 : 0);
+              const totalAvailable = movies.filter(
+                (m) => availMap.get(m.key) || false
+              ).length;
               const allSelected =
-                enabledSelectable.length ===
-                movies.filter((m) => availMap.get(m.key) || false).length;
-              const onlyOneLeft = enabledSelectable.length <= 1;
+                enabledSelectable.length === totalAvailable;
+              const onlyOneLeft = enabledCount <= 1;
               return (
                 <>
                   <Button
@@ -302,7 +487,7 @@ export const BackgroundSettingsModal: React.FC<
                     size="small"
                     variant="outline-light"
                   >
-                    Select All
+                    {t("background.modal.selectAll")}
                   </Button>
                   <Button
                     className="modal-action-btn"
@@ -314,12 +499,12 @@ export const BackgroundSettingsModal: React.FC<
                     size="small"
                     variant="outline-light"
                   >
-                    Deselect All (except 1)
+                    {t("background.modal.deselectAll")}
                   </Button>
                   <button
                     className="modal-close"
                     onClick={() => setShowBackgroundSettings(false)}
-                    aria-label="Close"
+                    aria-label={t("modal.common.closeAria")}
                   >
                     ×
                   </button>
@@ -332,6 +517,67 @@ export const BackgroundSettingsModal: React.FC<
         <div className="modal-body">
           <div className="sidebar-section background-settings">
             <div className="background-list">
+              {/* Favorites entry — pinned to the top. Selectable like a
+                  movie (checkbox enables/disables it in the rotation
+                  pool); expanded view shows each favorited image with a
+                  per-image unfavorite button. Hidden when no favorites. */}
+              {favorites.size > 0 && (
+                <details
+                  className="background-toggle favorites-entry"
+                  style={{ position: "relative" }}
+                  open
+                >
+                  <summary className="background-summary">
+                    {/* Always-on: Favorites can't be deselected. The
+                        checkbox is shown so it visually matches the
+                        movie rows, but locked + always checked. */}
+                    <input
+                      type="checkbox"
+                      checked
+                      disabled
+                      aria-label={t("background.modal.favoritesAlwaysOn")}
+                    />
+                    <span className="background-title">
+                      {t("background.modal.favoritesTitle")}{" "}
+                      <span className="favorites-count">
+                        ({favorites.size})
+                      </span>
+                    </span>
+                  </summary>
+                  <div className="summary-images favorites-grid">
+                    {Array.from(favorites).map((url) => (
+                      <div
+                        className="thumb-wrap favorite-thumb-wrap"
+                        key={url}
+                      >
+                        <img
+                          src={url}
+                          alt=""
+                          aria-hidden="true"
+                          className="summary-thumb"
+                          draggable={false}
+                        />
+                        <button
+                          type="button"
+                          className="favorite-thumb-unfav"
+                          aria-label={t(
+                            "background.modal.unfavoriteOneAria"
+                          )}
+                          data-tooltip={t(
+                            "background.modal.unfavoriteOne"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFavorite(url);
+                          }}
+                        >
+                          <FavoriteIcon fontSize="small" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
               {
                 // Precompute availability map so we can determine whether
                 // the current item is the last selectable (checked + available)
@@ -346,13 +592,20 @@ export const BackgroundSettingsModal: React.FC<
                   availMap.set(m.key, available);
                 });
 
-                const enabledSelectableCount = movies.reduce((acc, m) => {
+                const enabledMovies = movies.reduce((acc, m) => {
                   const enabled =
                     (backgroundSelection && backgroundSelection[m.key]) ?? true;
                   const available = availMap.get(m.key) || false;
                   if (enabled && available) return acc + 1;
                   return acc;
                 }, 0);
+                // Favorites carries the rotation on its own when
+                // populated, so it counts toward the "have at least
+                // one source" floor — meaning the user can fully
+                // deselect every movie without hitting the disableLast
+                // lock.
+                const enabledSelectableCount =
+                  enabledMovies + (favorites.size > 0 ? 1 : 0);
 
                 let firstEnabledOpened = false;
                 return movies.map((m) => {
@@ -390,26 +643,73 @@ export const BackgroundSettingsModal: React.FC<
                       disableLast={disableLast}
                       defaultOpen={isFirstEnabled}
                       onUpdate={handleUpdateSelection}
+                      favoritedSet={favorites}
+                      onToggleFavorite={toggleFavorite}
                     />
                   );
                 });
               })()}
+
+              {/* Deleted entry — sits at the bottom of the movie list
+                  styled like any other expandable item, but with no
+                  enable/disable checkbox. Expanding shows the deleted
+                  thumbnails with per-image restore buttons. Hidden
+                  when nothing has been deleted. */}
+              {blacklist.size > 0 && (
+                <details
+                  className="background-toggle deleted-entry"
+                  style={{ position: "relative" }}
+                >
+                  <summary className="background-summary">
+                    <span className="background-title">
+                      {t("background.modal.deletedTitle")}{" "}
+                      <span className="deleted-count">({blacklist.size})</span>
+                    </span>
+                    <Button
+                      className="deleted-restore-all"
+                      size="small"
+                      variant="dark"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        clearBlacklist();
+                      }}
+                    >
+                      <RestoreIcon style={{ fontSize: 14 }} />
+                      {t("background.modal.restoreDeleted")}
+                    </Button>
+                  </summary>
+                  <div className="summary-images deleted-grid">
+                    {Array.from(blacklist).map((url) => (
+                      <div className="thumb-wrap deleted-thumb-wrap" key={url}>
+                        <img
+                          src={url}
+                          alt=""
+                          aria-hidden="true"
+                          className="summary-thumb deleted-thumb"
+                          draggable={false}
+                        />
+                        <button
+                          type="button"
+                          className="deleted-thumb-restore"
+                          aria-label={t(
+                            "background.modal.restoreOneAria"
+                          )}
+                          data-tooltip={t("background.modal.restoreOne")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            restoreOne(url);
+                          }}
+                        >
+                          <RestoreIcon fontSize="small" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
             </div>
           </div>
-        </div>
-
-        <div className="modal-footer" style={{ padding: "8px 16px" }}>
-          <Button
-            className="modal-action-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              clearBlacklist();
-            }}
-            variant="dark"
-          >
-            <RestoreIcon style={{ fontSize: 16 }} />
-            Restore Deleted
-          </Button>
         </div>
       </dialog>
     </div>

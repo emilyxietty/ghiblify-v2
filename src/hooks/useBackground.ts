@@ -39,7 +39,7 @@ export const useBackground = () => {
   const [currentBackground, setCurrentBackground] = useState<string>("");
   const [filmTitle, setFilmTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const { backgroundSelection } = useAppContext();
+  const { backgroundSelection, updateBackgroundSelection } = useAppContext();
 
   useEffect(() => {
     const loadBackground = async () => {
@@ -86,19 +86,54 @@ export const useBackground = () => {
 
         // Collect all non-blacklisted links with their source titles from valid sources
         const allLinks: { link: string; sourceTitle: string }[] = [];
+        const seen = new Set<string>();
 
         validSources.forEach((source) => {
           source.links.forEach((link) => {
-            if (!blacklistSet.has(link)) {
+            if (!blacklistSet.has(link) && !seen.has(link)) {
               allLinks.push({ link, sourceTitle: source.title });
+              seen.add(link);
             }
           });
         });
+
+        // Favorites are always eligible — they're a personal opt-in
+        // pool that the user can't deselect. Add any favorited URLs
+        // that aren't already in the pool from a regular source.
+        try {
+          const rawFav = localStorage.getItem("ghiblify_favorites");
+          const favArr = rawFav ? (JSON.parse(rawFav) as string[]) : [];
+          if (Array.isArray(favArr)) {
+            favArr.forEach((link) => {
+              if (!blacklistSet.has(link) && !seen.has(link)) {
+                allLinks.push({ link, sourceTitle: "__favorites__" });
+                seen.add(link);
+              }
+            });
+          }
+        } catch (e) {
+          console.warn("useBackground: failed to parse favorites", e);
+        }
 
         if (allLinks.length === 0) {
           console.log(
             "useBackground: no candidate links with metadata found, falling back to default"
           );
+          // Self-heal — when the pool is empty (no enabled movies AND
+          // no favorites), auto-enable the first available source so
+          // the user is never stranded with nothing to rotate. Picks
+          // the first source that has metadata + at least one
+          // non-blacklisted link.
+          const firstAvailableSource = bgData.sources.find(
+            (s) =>
+              !!metadataData[s.title] &&
+              s.links.some((l) => !blacklistSet.has(l))
+          );
+          if (firstAvailableSource) {
+            updateBackgroundSelection(firstAvailableSource.title, true);
+            // The selection change will retrigger this effect, so we
+            // can return early — the next pass will populate the pool.
+          }
           // If default is blacklisted too, try to find any non-blacklisted link
           if (!blacklistSet.has(bgData.default.link)) {
             setCurrentBackground(bgData.default.link);
@@ -180,19 +215,26 @@ export const useBackground = () => {
 
     loadBackground();
 
-    // Re-run selection when a new item is added to the blacklist elsewhere in the app
-    const onBlacklistAdd = () => {
-      loadBackground();
-    };
+    // Re-run selection when the blacklist changes — the current image
+    // may have been removed and we need a replacement. Favorites
+    // changes are intentionally NOT a trigger: favoriting is a passive
+    // bookmark and shouldn't shuffle the displayed photo. New
+    // favorites become eligible for the next natural rotation.
+    const reload = () => loadBackground();
+    window.addEventListener("ghiblify:blacklist:add", reload as EventListener);
     window.addEventListener(
-      "ghiblify:blacklist:add",
-      onBlacklistAdd as EventListener
+      "ghiblify:blacklist:cleared",
+      reload as EventListener
     );
 
     return () => {
       window.removeEventListener(
         "ghiblify:blacklist:add",
-        onBlacklistAdd as EventListener
+        reload as EventListener
+      );
+      window.removeEventListener(
+        "ghiblify:blacklist:cleared",
+        reload as EventListener
       );
     };
   }, [backgroundSelection]);

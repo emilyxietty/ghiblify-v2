@@ -11,7 +11,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 3000;
+    /* Above the welcome modal backdrop (6000) and the sidebar's
+       spotlight z-index (6500) — the picker is a focused modal and
+       must always sit on top of any other surface that can be open
+       behind it (sidebar, guide, etc.). */
+    z-index: 7000;
     padding: 24px;
     animation: bg-modal-overlay-in 200ms ease both;
 }
@@ -33,7 +37,7 @@
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
         0 0 0 1px rgba(0, 0, 0, 0.4);
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -79,7 +83,7 @@
     height: 2px;
     margin-top: 6px;
     background: var(--yellow);
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
     opacity: 0.8;
 }
 
@@ -146,7 +150,7 @@
 
 .background-modal .modal-body::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--light) 25%, transparent);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .background-list {
@@ -162,7 +166,7 @@
 .background-toggle {
     width: 100%;
     padding: 10px 14px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     background: color-mix(in srgb, var(--light) 4%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 8%, transparent);
     box-sizing: border-box;
@@ -227,7 +231,7 @@
     font-weight: 500;
     color: var(--light-muted);
     padding: 4px 10px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: color-mix(in srgb, var(--light) 6%, transparent);
     transition: background 140ms ease, color 140ms ease;
 }
@@ -278,14 +282,14 @@
 
 .summary-images::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--light) 25%, transparent);
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .thumb-wrap {
     position: relative;
     display: inline-block;
     flex: 0 0 auto;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     transition: transform 160ms ease, box-shadow 160ms ease;
 }
@@ -302,7 +306,7 @@
     object-fit: cover;
     display: block;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--light) 6%, transparent);
 }
 
@@ -343,6 +347,203 @@
 .thumb-delete:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
+}
+
+/* Heart on each thumbnail — same shape as the trash, sits to the
+   left of it. Always visible when the image is favorited (so users
+   can spot favorites at a glance), otherwise reveal-on-hover like
+   the trash. */
+.thumb-fav {
+    position: absolute;
+    top: 6px;
+    right: 38px;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    padding: 0;
+    transition: opacity 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.thumb-fav svg {
+    width: 14px;
+    height: 14px;
+}
+
+.thumb-wrap:hover .thumb-fav,
+.thumb-fav:focus-visible,
+.thumb-fav.is-favorited {
+    opacity: 1;
+}
+
+.thumb-fav.is-favorited {
+    color: #ff6b8a;
+}
+
+.thumb-fav.is-favorited svg {
+    filter: drop-shadow(0 0 4px rgba(255, 107, 138, 0.5));
+}
+
+.thumb-fav:hover {
+    background: rgba(0, 0, 0, 0.85);
+    transform: scale(1.08);
+}
+
+.thumb-fav:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Favorites entry — pinned to the top of the list. Selectable like a
+   movie (checkbox toggles inclusion in rotation). Expanded contents
+   show each favorited thumbnail with a per-image unfavorite button.
+   --------------------------------------------------------------------------- */
+
+.background-modal .favorites-entry .favorites-count {
+    opacity: 0.65;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.background-modal .favorites-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Soft custom scrollbar to match the rest of the modal. */
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent)
+        transparent;
+    padding-bottom: 6px;
+}
+
+.background-modal .favorites-grid::-webkit-scrollbar {
+    height: 6px;
+    background: transparent;
+}
+
+.background-modal .favorites-grid::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--light) 25%, transparent);
+    border-radius: var(--radius-pill);
+}
+
+.background-modal .favorites-grid .favorite-thumb-wrap {
+    flex: 0 0 auto;
+}
+
+.background-modal .favorite-thumb-wrap {
+    position: relative;
+}
+
+/* Always-visible pink heart badge in the top-right of each favorited
+   thumbnail so the user knows it's favorited at a glance. Click to
+   unfavorite. */
+.background-modal .favorite-thumb-unfav {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.55);
+    color: #ff6b8a;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, transform 140ms ease;
+}
+
+.background-modal .favorite-thumb-unfav:hover {
+    background: rgba(0, 0, 0, 0.78);
+    transform: scale(1.1);
+}
+
+.background-modal .favorite-thumb-unfav svg {
+    font-size: 16px;
+    filter: drop-shadow(0 0 4px rgba(255, 107, 138, 0.5));
+}
+
+/* ---------------------------------------------------------------------------
+   Deleted entry — sits inline at the bottom of the movie list as an
+   expandable <details>. No enable/disable checkbox; expanded contents
+   show every deleted thumbnail with a per-image restore button.
+   --------------------------------------------------------------------------- */
+
+.background-modal .deleted-entry > .background-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-left: 4px;
+}
+
+.background-modal .deleted-entry .deleted-count {
+    opacity: 0.65;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.background-modal .deleted-entry .deleted-restore-all {
+    margin-left: auto;
+}
+
+.background-modal .deleted-grid {
+    /* Same layout as a normal movie's summary-images row but renders
+       deleted thumbs (desaturated + restore-on-hover). */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.background-modal .deleted-grid .deleted-thumb-wrap {
+    position: relative;
+}
+
+.background-modal .deleted-grid .deleted-thumb {
+    /* Visually mark deleted state — desaturated and dimmed. Inherits
+       the base `.summary-thumb` size from the existing rule. */
+    filter: grayscale(0.6) brightness(0.7);
+    transition: filter 160ms ease;
+}
+
+.background-modal .deleted-grid .deleted-thumb-wrap:hover .deleted-thumb {
+    filter: grayscale(0) brightness(0.9);
+}
+
+.background-modal .deleted-thumb-restore {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 140ms ease, background 140ms ease;
+}
+
+.background-modal .deleted-thumb-wrap:hover .deleted-thumb-restore,
+.background-modal .deleted-thumb-restore:focus-visible {
+    opacity: 1;
+}
+
+.background-modal .deleted-thumb-restore:hover {
+    background: rgba(0, 0, 0, 0.65);
 }
 
 /* ---------------------------------------------------------------------------
