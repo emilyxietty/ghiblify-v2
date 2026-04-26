@@ -2,7 +2,7 @@
     position: absolute;
     background: rgba(0, 0, 0, 0.85);
     color: white;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 8px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
     z-index: 9999;

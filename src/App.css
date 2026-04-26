@@ -28,12 +28,46 @@
     --sidebar-bg: rgba(31, 38, 32, 0.86);
     --sidebar-card: rgba(20, 26, 22, 0.55);
 
-    /* Focus ring */
-    --focus-ring: rgba(233, 179, 48, 0.9);
+    /* Focus ring — soft pink, palette-agnostic. Reads as "active"
+       on every backdrop without competing with the warm palette
+       accents (which use --yellow). Light/dark/frost themes
+       override below for contrast reasons. */
+    --focus-ring: rgba(245, 130, 165, 0.9);
 
     /* High-contrast overridable params */
     --focus-ring-width: 2px;
     --widget-border-alpha: 0;
+
+    /* Border-radius scale. Use these instead of ad-hoc px values so
+       the corner softness reads as a coherent system across widgets,
+       inputs, popovers, and modals.
+         xs (4px)   — micro: scrollbar thumbs, tiny chips
+         sm (6px)   — small detail: kbd, tooltip, base button
+         md (8px)   — inputs, link tiles, small image surfaces
+         lg (12px)  — widget shells, popovers, dropdown menus
+         xl (16px)  — modals, large container surfaces
+         pill (999px) — pill buttons, segments, nav arrows */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-pill: 999px;
+
+    /* Backdrop blur for widget surfaces (Todo input, SearchBar, QuickLinks
+       tiles, Weather forecast cells). The Frost theme overrides this with
+       a much heavier value to get a frosted-glass effect. */
+    --surface-blur: 6px;
+    /* Saturation multiplier baked into the backdrop-filter. Defaults to
+       1 (no change). Frost bumps this to make the colors behind every
+       glass surface pop more vividly, the same way macOS Liquid Glass
+       does. */
+    --surface-saturate: 1;
+    /* Hard upper bound on the alpha of widget surfaces. Defaults to 1
+       (= no cap, opacity slider drives surface fully). Frost lowers
+       this so surfaces stay translucent enough for the photo + blur
+       to read through, regardless of where the user puts the slider. */
+    --surface-alpha-cap: 1;
 }
 
 /* ---------------------------------------------------------------------------
@@ -74,7 +108,7 @@
     --purple-dark: #4a2e5a;
     --sidebar-bg: rgba(50, 22, 18, 0.92);
     --sidebar-card: rgba(28, 12, 10, 0.6);
-    --focus-ring: rgba(240, 184, 48, 0.95);
+    --focus-ring: rgba(245, 130, 165, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
@@ -96,7 +130,7 @@
     --purple-dark: #6a4d8a;
     --sidebar-bg: rgba(50, 36, 64, 0.9);
     --sidebar-card: rgba(28, 20, 38, 0.6);
-    --focus-ring: rgba(240, 210, 120, 0.9);
+    --focus-ring: rgba(245, 130, 165, 0.9);
 }
 
 /* ---------------------------------------------------------------------------
@@ -118,7 +152,7 @@
     --purple-dark: #4f3d6a;
     --sidebar-bg: rgba(20, 50, 24, 0.88);
     --sidebar-card: rgba(12, 32, 14, 0.6);
-    --focus-ring: rgba(240, 208, 80, 0.9);
+    --focus-ring: rgba(245, 130, 165, 0.9);
 }
 
 /* ---------------------------------------------------------------------------
@@ -162,7 +196,7 @@
     --purple-dark: #5a4a8a;
     --sidebar-bg: rgba(20, 70, 130, 0.9);
     --sidebar-card: rgba(8, 38, 80, 0.6);
-    --focus-ring: rgba(255, 213, 74, 0.95);
+    --focus-ring: rgba(245, 130, 165, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
@@ -206,7 +240,7 @@
     --purple-dark: #6a4a9c;
     --sidebar-bg: rgba(14, 76, 40, 0.9);
     --sidebar-card: rgba(8, 44, 22, 0.6);
-    --focus-ring: rgba(253, 216, 53, 0.95);
+    --focus-ring: rgba(245, 130, 165, 0.95);
 }
 
 /* ===========================================================================
@@ -222,27 +256,27 @@
    Theme: Pastel — pink + sage, soft and gentle
    --------------------------------------------------------------------------- */
 .theme-pastel {
-    --dark: #f4c8d8;
-    --dark-rgb: 244, 200, 216;
-    --dark-muted: rgba(244, 200, 216, 0.7);
-    --cream: #fff5fa;
-    --cream-rgb: 255, 245, 250;
-    --red: #e85a8a;
-    --red-dark: #b03466;
-    --blue: #88b8d8;
-    --blue-muted: rgba(136, 184, 216, 0.6);
-    --yellow: #f0c050;
-    --green: #6fc878;
-    --rose: #ff9bb4;
-    --purple-dark: #a878c8;
+    --dark: #fce4ee;
+    --dark-rgb: 252, 228, 238;
+    --dark-muted: rgba(252, 228, 238, 0.7);
+    --cream: #fffafd;
+    --cream-rgb: 255, 250, 253;
+    --red: #f08aae;
+    --red-dark: #c4548a;
+    --blue: #a8cce4;
+    --blue-muted: rgba(168, 204, 228, 0.6);
+    --yellow: #f4d488;
+    --green: #9cdfa6;
+    --rose: #ffbecb;
+    --purple-dark: #c4a4dc;
     /* Inverted content vars — DARK foreground on LIGHT surface */
-    --light: rgba(74, 38, 60, 0.95);
-    --light-muted: rgba(74, 38, 60, 0.65);
-    --text-shadow-color: rgba(255, 245, 250, 0.85);
-    --sidebar-bg: rgba(248, 220, 232, 0.92);
-    --sidebar-card: rgba(255, 248, 252, 0.55);
-    --focus-ring: rgba(232, 90, 138, 0.95);
-    --disabled-light: rgba(120, 70, 100, 0.5);
+    --light: rgba(94, 52, 78, 0.95);
+    --light-muted: rgba(94, 52, 78, 0.6);
+    --text-shadow-color: rgba(255, 250, 253, 0.9);
+    --sidebar-bg: rgba(253, 240, 246, 0.94);
+    --sidebar-card: rgba(255, 250, 253, 0.6);
+    --focus-ring: rgba(240, 138, 174, 0.95);
+    --disabled-light: rgba(140, 96, 122, 0.5);
 }
 
 /* ---------------------------------------------------------------------------
@@ -334,6 +368,20 @@
     --disabled-light: rgba(120, 60, 90, 0.5);
 }
 
+/* Bloom — Pomodoro break mode uses var(--red-dark) which on this
+   palette is a vivid hot pink (#c22c6e) — dialed down to a deeper,
+   softer berry so the break timer doesn't glare against the rest of
+   the pink-and-green theme. Focus mode (var(--purple-dark)) is fine. */
+.theme-bloom .pomodoro-widget.break-mode {
+    background:
+        radial-gradient(
+            ellipse at top left,
+            color-mix(in srgb, var(--light) 12%, transparent) 0%,
+            transparent 60%
+        ),
+        #c45a85;
+}
+
 /* Bloom — active widget-icon glow uses green (the second co-star)
    instead of the default yellow so the pink+green pairing carries
    through the active state too. */
@@ -395,7 +443,9 @@
    chrome (which paints rgba(--dark-rgb, 0.6)) renders white. Text vars
    are inverted to dark gray so they read on the light surface.
    --------------------------------------------------------------------------- */
-.theme-mono {
+/* Light — neutral grayscale (the palette formerly named "mono"). Soft
+   off-white surfaces with dark text. */
+.theme-light {
     --dark: #ececec;
     --dark-rgb: 236, 236, 236;
     --dark-muted: rgba(236, 236, 236, 0.7);
@@ -421,6 +471,300 @@
     --disabled-light: rgba(120, 120, 120, 0.5);
 }
 
+/* Dark — neutral grayscale, the inverse of "Light". Charcoal surfaces
+   with bright off-white text. Mirror of the structure above. */
+.theme-dark {
+    --dark: #1a1a1a;
+    --dark-rgb: 26, 26, 26;
+    --dark-muted: rgba(26, 26, 26, 0.7);
+    --cream: #2a2a2a;
+    --cream-rgb: 42, 42, 42;
+    --red: #c8c8c8;
+    --red-dark: #3a3030;
+    --blue: #b8b8b8;
+    --blue-muted: rgba(184, 184, 184, 0.6);
+    --yellow: #e0e0e0;
+    --green: #a8a8a8;
+    --rose: #c0c0c0;
+    --purple-dark: #38343c;
+    --light: rgba(248, 248, 248, 0.96);
+    --light-muted: rgba(248, 248, 248, 0.65);
+    --text-shadow-color: rgba(0, 0, 0, 0.7);
+    --sidebar-bg: rgba(20, 20, 20, 0.94);
+    --sidebar-card: rgba(36, 36, 36, 0.6);
+    --focus-ring: rgba(220, 220, 220, 0.95);
+    --disabled-light: rgba(120, 120, 120, 0.55);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme: Frost — Apple Liquid Glass aesthetic. Widget surfaces become
+   nearly clear panes of frosted glass: heavy blur + saturation boost
+   on the backdrop-filter so the Ghibli photo bleeds through with even
+   richer color than it has natively, plus a hard alpha cap so the
+   surface never goes fully opaque even when the user maxes the opacity
+   slider. Text is the cream--light pair, kept dark so it reads against
+   any frosted background.
+   --------------------------------------------------------------------------- */
+.theme-frost {
+    --dark: #ffffff;
+    --dark-rgb: 255, 255, 255;
+    --dark-muted: rgba(255, 255, 255, 0.7);
+    --cream: #ffffff;
+    --cream-rgb: 255, 255, 255;
+    --red: #c8a8b8;
+    --red-dark: #8c5e7a;
+    --blue: #a8c4d8;
+    --blue-muted: rgba(168, 196, 216, 0.6);
+    --yellow: #d8c898;
+    --green: #a8c8b0;
+    --rose: #d8b8c4;
+    --purple-dark: #c8c0d8;
+    /* White text — the Frost glass keeps the Ghibli photo visible
+       behind every surface, so light text + a soft dark halo reads
+       cleanest regardless of which film is showing. */
+    --light: rgba(255, 255, 255, 0.96);
+    --light-muted: rgba(255, 255, 255, 0.7);
+    --text-shadow-color: rgba(0, 0, 0, 0.55);
+    --sidebar-bg: rgba(10, 14, 20, 0.62);
+    --sidebar-card: rgba(255, 255, 255, 0.08);
+    --focus-ring: rgba(120, 150, 180, 0.85);
+    --disabled-light: rgba(80, 100, 120, 0.5);
+    /* The three knobs that define the glass aesthetic. */
+    --surface-blur: 30px;
+    --surface-saturate: 1.7;
+    --surface-alpha-cap: 0.22;
+}
+
+/* Frost-only glass treatment.
+   ---------------------------------------------------------------------------
+   Why on .widget instead of per-cell: the .widget shell is
+   `position: fixed`, which makes it a CSS "backdrop root" — meaning a
+   `backdrop-filter` on any descendant can only blur pixels painted
+   INSIDE the widget (i.e. nothing). The widget shell itself, though,
+   is its own backdrop root and CAN blur the viewport behind it. So
+   the entire widget becomes one pane of frosted glass — which is also
+   how macOS / iOS Liquid Glass actually composites.
+
+   Excludes Time / Date / Avatar / Info — those are designed as text
+   directly over the photo with their own halo, and look better
+   without a card. */
+.theme-frost .widget[data-widget-key="todo"],
+.theme-frost .widget[data-widget-key="searchbar"],
+.theme-frost .widget[data-widget-key="weather"] {
+    /* Dark, mostly-opaque wash so the white text always reads no
+       matter what photo region is behind. Slider value (0–1, set on
+       the shell as --widget-blur by Widget.tsx) drives the blur:
+       0px at 0%, 30px at 100%, default 10% ≈ 3px. */
+    background: rgba(10, 14, 20, 0.4);
+    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
+        saturate(1.7);
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
+        saturate(1.7);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* On Frost, the per-cell surfaces inside a frosted widget would just
+   double-stack the tint — the shell already provides the glass.
+   Strip their backgrounds + blur so the widget reads as a single pane. */
+.theme-frost .widget[data-widget-key="todo"] .todo-item-content,
+.theme-frost .widget[data-widget-key="todo"] .todo-add-btn,
+.theme-frost .widget[data-widget-key="weather"] .weather-strip-cell,
+.theme-frost .widget .custom-input {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: none !important;
+}
+
+/* QuickLinks on Frost — per-tile glass instead of one big pane.
+   Each link card gets its own frost so the grid breathes (you can
+   see the photo in the gaps between tiles), and individual tiles
+   read as discrete glass chips. Same dark wash as other widgets so
+   white text reads cleanly. */
+.theme-frost .widget[data-widget-key="quicklinks"] .ql-grid-link,
+.theme-frost .widget[data-widget-key="quicklinks"] .quicklinksSettings-item {
+    background: rgba(10, 14, 20, 0.4) !important;
+    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
+        saturate(1.7) !important;
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
+        saturate(1.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    color: #ffffff !important;
+}
+
+/* Tooltips, callouts, dropdowns on Frost — they default to using
+   --light/--dark for surface + text, which on Frost is white-on-white.
+   Force dark surface + white text so they actually read. */
+.theme-frost .tooltip-portal,
+.theme-frost .quicklinksSettings-dropdown,
+.theme-frost .bookmarks-toggle-callout,
+.theme-frost .welcome-kbd {
+    background: rgba(10, 14, 20, 0.92) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Modal dialogs on Frost — every modal in the app uses
+   `rgba(var(--dark-rgb), 0.96)` as its surface, which on Frost (where
+   --dark-rgb is 255,255,255) renders white-on-white. Override every
+   dialog surface to the same dark glass used for tooltips above. New
+   modals should reuse one of these classes — or get added here — to
+   keep Frost looking like Frost. */
+.theme-frost .welcome-dialog,
+.theme-frost .socials-dialog,
+.theme-frost .report-dialog,
+.theme-frost .background-modal {
+    background: rgba(10, 14, 20, 0.92) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.theme-frost .tooltip-portal a,
+.theme-frost .quicklinksSettings-dropdown a {
+    color: #ffffff !important;
+}
+
+/* The tooltip arrow inherits var(--dark) for its border color, which
+   is white on Frost — recolor to match the dark pill above. */
+.theme-frost .tooltip-portal.is-bottom::before {
+    border-bottom-color: rgba(10, 14, 20, 0.92) !important;
+}
+
+.theme-frost .tooltip-portal.is-top::before {
+    border-top-color: rgba(10, 14, 20, 0.92) !important;
+}
+
+/* Shift-drag callout (rendered as body::after) reads var(--dark) for
+   surface and var(--light) for text — both white on Frost. The theme
+   class lives on <html> and the .show-widget-outline class lives on
+   <body>, so the descendant selector is required. */
+.theme-frost body.show-widget-outline::after {
+    background: rgba(10, 14, 20, 0.92) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* btn-dark / btn-light on Frost both resolve background AND color to
+   white (--dark and --light are both white-ish on Frost), which makes
+   the buttons disappear. Force a charcoal pill with white text so
+   they stay visible against the frosted glass + photo. */
+.theme-frost .btn-dark,
+.theme-frost .btn-light {
+    background: rgba(10, 14, 20, 0.7) !important;
+    color: #ffffff !important;
+    border-color: rgba(10, 14, 20, 0.7) !important;
+}
+
+.theme-frost .btn-dark:hover:not(:disabled):not(.btn-disabled),
+.theme-frost .btn-light:hover:not(:disabled):not(.btn-disabled) {
+    background: rgba(10, 14, 20, 0.88) !important;
+    border-color: rgba(10, 14, 20, 0.88) !important;
+}
+
+.theme-frost .btn-dark svg,
+.theme-frost .btn-light svg {
+    color: #ffffff !important;
+    fill: currentColor;
+}
+
+/* QuickLinks circular add button uses var(--dark) directly (not the
+   Button component), so the .btn-dark override above doesn't apply.
+   Match the same dark pill treatment so it's visible on Frost. */
+.theme-frost .quicklinksSettings-add-btn {
+    background: rgba(10, 14, 20, 0.7) !important;
+    color: #ffffff !important;
+    border-color: rgba(10, 14, 20, 0.7) !important;
+}
+
+.theme-frost .quicklinksSettings-add-btn:hover:not(:disabled) {
+    background: rgba(10, 14, 20, 0.88) !important;
+    border-color: rgba(10, 14, 20, 0.88) !important;
+}
+
+.theme-frost .quicklinksSettings-add-btn svg {
+    color: #ffffff !important;
+}
+
+/* Pomodoro card on Frost — its base uses var(--purple-dark) /
+   var(--red-dark), which on Frost are pale lavender / dusty rose
+   (white text on those reads poorly). Force a dark charcoal card
+   with a soft warm tint shift on break mode so focus vs break
+   still reads at a glance. */
+/* Welcome / Guide / Background-settings modals on Frost — their
+   dialog backgrounds use var(--dark-rgb) which is white on Frost,
+   making the modals invisible white-on-white. Force a dark dialog
+   so the white text reads. */
+.theme-frost .welcome-dialog,
+.theme-frost .report-dialog,
+.theme-frost .background-modal {
+    background: rgba(10, 14, 20, 0.96) !important;
+    color: #ffffff !important;
+}
+
+.theme-frost .pomodoro-widget {
+    background:
+        radial-gradient(
+            ellipse at top left,
+            rgba(255, 255, 255, 0.08) 0%,
+            transparent 60%
+        ),
+        rgba(10, 14, 20, 0.7) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+
+.theme-frost .pomodoro-widget.break-mode {
+    background:
+        radial-gradient(
+            ellipse at top left,
+            rgba(255, 255, 255, 0.08) 0%,
+            transparent 60%
+        ),
+        rgba(50, 18, 22, 0.72) !important;
+}
+
+
+/* Frost outline-variant buttons get the white-on-transparent treatment
+   so they remain visible against the frosted glass / photo background.
+   (The solid btn-dark / btn-light rules above already give those
+   variants the charcoal-pill treatment.) */
+.theme-frost .btn-outline-light,
+.theme-frost .btn-outline-dark {
+    background: transparent !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.theme-frost .btn-outline-light:hover:not(:disabled):not(.btn-disabled),
+.theme-frost .btn-outline-dark:hover:not(:disabled):not(.btn-disabled) {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Hovered tiles + items inside a frost widget: replace the var(--dark)
+   wash (which is white on Frost) with a subtle transparent white. */
+.theme-frost .widget[data-widget-key="quicklinks"] .ql-grid-link:hover,
+.theme-frost .widget[data-widget-key="quicklinks"] .quicklinksSettings-item:hover,
+.theme-frost .widget[data-widget-key="todo"] .todo-item-content:hover,
+.theme-frost .widget[data-widget-key="weather"] .weather-strip-cell:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Focused inputs on Frost — same outlined-white treatment. */
+.theme-frost .widget .custom-input:focus {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.85) !important;
+    color: #ffffff !important;
+}
+
 /* ---------------------------------------------------------------------------
    High-contrast modifier — orthogonal to theme. Forces a true black/white
    palette regardless of which theme is active, so contrast is guaranteed
@@ -440,8 +784,10 @@
     /* Sidebar surfaces */
     --sidebar-bg: rgba(0, 0, 0, 0.96);
     --sidebar-card: rgba(18, 18, 18, 0.8);
-    /* Strong yellow focus ring + thicker outlines */
-    --focus-ring: rgba(255, 220, 80, 1);
+    /* Pure white focus ring — neutral so high-contrast doesn't pick
+       up the active palette's yellow accent (which previously gave
+       everything a mustard wash). */
+    --focus-ring: #ffffff;
     --focus-ring-width: 3px;
     --widget-border-alpha: 0.6;
     /* Strong shadow for callouts */
@@ -466,11 +812,10 @@
     --sb-surface-hover: rgba(0, 0, 0, 0.96);
 }
 
-/* Force solid backings on every widget chrome surface. Background is the
-   theme's yellow accent mixed into near-black, so each surface still
-   carries a hint of the active palette (matches the active widget-icon
-   glow in the sidebar). Border stays the high-contrast yellow ring for
-   maximum visibility. Uses !important to outrank per-widget CSS. */
+/* Force solid backings on every widget chrome surface. Pure black
+   surface, pure white border — no palette tint, so high-contrast
+   reads cleanly as a true black/white mode regardless of which theme
+   the user has active. Uses !important to outrank per-widget CSS. */
 .high-contrast .widget,
 .high-contrast .widget-card,
 .high-contrast .custom-input,
@@ -489,12 +834,8 @@
 .high-contrast .searchbar-search-btn,
 .high-contrast .pomodoro-widget,
 .high-contrast .pomodoro-widget.break-mode {
-    background: color-mix(
-        in srgb,
-        var(--focus-ring) 18%,
-        #0a0a0a
-    ) !important;
-    border: 1.5px solid var(--focus-ring) !important;
+    background: #000000 !important;
+    border: 1.5px solid #ffffff !important;
     color: #ffffff !important;
 }
 
@@ -603,6 +944,57 @@ body {
     gap: 8px;
 }
 
+/* Mode segmented toggle (Edit Widgets / Drag Mode). One pill, two
+   halves; the active half is filled, the other is hollow. The pair
+   acts as a unified mutex toggle so users can see at a glance which
+   mode they're in. */
+.mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.mode-toggle-segment {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+    border: none;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease,
+        box-shadow 140ms ease;
+    white-space: nowrap;
+}
+
+.mode-toggle-segment:hover:not(.is-active) {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.mode-toggle-segment.is-active {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a1a;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.mode-toggle-segment:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
 /* ===========================================================================
    Hover tooltips
    ---------------------------------------------------------------------------
@@ -620,7 +1012,7 @@ body {
    =========================================================================== */
 
 body.show-widget-outline::after {
-    content: "Widgets are draggable — click and drag to move";
+    content: "Widgets are now draggable — click and drag to move";
     position: fixed;
     top: 16px;
     left: 50%;
@@ -628,7 +1020,7 @@ body.show-widget-outline::after {
     background: var(--dark);
     color: var(--light);
     padding: 8px 16px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.01em;
