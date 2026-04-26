@@ -90,47 +90,57 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Spirited Away — deep crimson bathhouse, ink, gold
+   Theme: Spirited Away — Haku-river indigo + No-Face white-violet, with
+   the soot-sprite pinks and the bathhouse-lantern green-ish glints.
+   Pulled away from the old crimson/gold bathhouse palette so the four
+   accent slots read as pink / purple / blue / green rather than red /
+   yellow / blue / green.
    --------------------------------------------------------------------------- */
 .theme-spirited {
-    --dark: #2a1410;
-    --dark-rgb: 42, 20, 16;
-    --dark-muted: rgba(42, 20, 16, 0.7);
-    --cream: #f7e0a8;
-    --cream-rgb: 247, 224, 168;
-    --red: #d83a30;
-    --red-dark: #8a1f1c;
-    --blue: #2d5a6e;
-    --blue-muted: rgba(45, 90, 110, 0.6);
-    --yellow: #f0b830;
-    --green: #5a7a4a;
-    --rose: #d8606a;
-    --purple-dark: #4a2e5a;
-    --sidebar-bg: rgba(50, 22, 18, 0.92);
-    --sidebar-card: rgba(28, 12, 10, 0.6);
-    --focus-ring: rgba(245, 130, 165, 0.95);
+    --dark: #1f2244;
+    --dark-rgb: 31, 34, 68;
+    --dark-muted: rgba(31, 34, 68, 0.7);
+    --cream: #ece4f4;
+    --cream-rgb: 236, 228, 244;
+    --red: #f08ab8;
+    --red-dark: #b34d80;
+    --blue: #6a8fd8;
+    --blue-muted: rgba(106, 143, 216, 0.6);
+    --yellow: #c9b8e8;
+    --green: #6dc4a8;
+    --rose: #f4a8c8;
+    --purple-dark: #5a3a8a;
+    --sidebar-bg: rgba(28, 30, 64, 0.92);
+    --sidebar-card: rgba(18, 20, 42, 0.6);
+    --focus-ring: rgba(245, 130, 195, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Howl's Moving Castle — plum, lavender, sage, butter
+   Theme: Howl's Moving Castle — Sophie's curse-grey hair as the
+   primary accent ("silver" / soft pewter), the dusky periwinkle of
+   her dress, and the misty alpine green-blue of the meadow scenes.
+   Pulled the base toward a softer dusk-blue (less navy than before)
+   so the silver accents read against it.
    --------------------------------------------------------------------------- */
 .theme-howls {
-    --dark: #3a2a48;
-    --dark-rgb: 58, 42, 72;
-    --dark-muted: rgba(58, 42, 72, 0.7);
-    --cream: #f5ebd9;
-    --cream-rgb: 245, 235, 217;
-    --red: #d68d8a;
-    --red-dark: #9c5754;
-    --blue: #a892d4;
-    --blue-muted: rgba(168, 146, 212, 0.6);
-    --yellow: #f0d278;
-    --green: #88a07a;
-    --rose: #e0bcc4;
-    --purple-dark: #6a4d8a;
-    --sidebar-bg: rgba(50, 36, 64, 0.9);
-    --sidebar-card: rgba(28, 20, 38, 0.6);
-    --focus-ring: rgba(245, 130, 165, 0.9);
+    --dark: #2a3a5c;
+    --dark-rgb: 42, 58, 92;
+    --dark-muted: rgba(42, 58, 92, 0.7);
+    --cream: #ecedf0;
+    --cream-rgb: 236, 237, 240;
+    /* Silver accents — desaturated so they read as Sophie's hair
+       rather than chrome. */
+    --red: #d4d6dc;
+    --red-dark: #8a8d97;
+    --blue: #8aa4c8;
+    --blue-muted: rgba(138, 164, 200, 0.6);
+    --yellow: #c8c4b0;
+    --green: #88b0a4;
+    --rose: #c0c4ce;
+    --purple-dark: #4a5478;
+    --sidebar-bg: rgba(36, 48, 76, 0.92);
+    --sidebar-card: rgba(22, 30, 50, 0.6);
+    --focus-ring: rgba(196, 200, 212, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
@@ -156,25 +166,29 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Ponyo — coral, deep ocean, seafoam
+   Theme: Ponyo — Ponyo's actual palette: she's a goldfish-girl in a red
+   dress against deep ocean blue, but the FILM reads as mostly blue
+   (sea, sky) with bright pink/red accents (her dress, hair). Lean
+   into the deep blue base and use pink as the primary accent rather
+   than coral-on-everything.
    --------------------------------------------------------------------------- */
 .theme-ponyo {
-    --dark: #0d3550;
-    --dark-rgb: 13, 53, 80;
-    --dark-muted: rgba(13, 53, 80, 0.7);
-    --cream: #fde9d2;
-    --cream-rgb: 253, 233, 210;
-    --red: #ef7a5f;
-    --red-dark: #b04a3a;
-    --blue: #2a9bd0;
-    --blue-muted: rgba(42, 155, 208, 0.6);
+    --dark: #0a2a52;
+    --dark-rgb: 10, 42, 82;
+    --dark-muted: rgba(10, 42, 82, 0.7);
+    --cream: #f8eaf0;
+    --cream-rgb: 248, 234, 240;
+    --red: #ff6a8e;
+    --red-dark: #c4365e;
+    --blue: #3a8cd4;
+    --blue-muted: rgba(58, 140, 212, 0.6);
     --yellow: #f8d878;
-    --green: #6db8a4;
-    --rose: #f8a89a;
-    --purple-dark: #4a5a8a;
-    --sidebar-bg: rgba(10, 50, 80, 0.9);
-    --sidebar-card: rgba(6, 30, 50, 0.6);
-    --focus-ring: rgba(248, 168, 100, 0.95);
+    --green: #5fb8c4;
+    --rose: #ffa8c0;
+    --purple-dark: #2a4a8a;
+    --sidebar-bg: rgba(8, 38, 76, 0.92);
+    --sidebar-card: rgba(4, 22, 48, 0.6);
+    --focus-ring: rgba(255, 130, 165, 0.95);
 }
 
 /* ---------------------------------------------------------------------------
@@ -199,50 +213,6 @@
     --focus-ring: rgba(245, 130, 165, 0.95);
 }
 
-/* ---------------------------------------------------------------------------
-   Theme: Sakura — pink blossoms, soft cream, leaf green
-   --------------------------------------------------------------------------- */
-.theme-sakura {
-    --dark: #4a1d3e;
-    --dark-rgb: 74, 29, 62;
-    --dark-muted: rgba(74, 29, 62, 0.7);
-    --cream: #fde8ef;
-    --cream-rgb: 253, 232, 239;
-    --red: #ff5a8a;
-    --red-dark: #c83064;
-    --blue: #b88ad4;
-    --blue-muted: rgba(184, 138, 212, 0.6);
-    --yellow: #ffd870;
-    --green: #88c878;
-    --rose: #ffb0c8;
-    --purple-dark: #6a3a78;
-    --sidebar-bg: rgba(80, 30, 65, 0.9);
-    --sidebar-card: rgba(50, 18, 40, 0.6);
-    --focus-ring: rgba(255, 90, 138, 0.9);
-}
-
-/* ---------------------------------------------------------------------------
-   Theme: Meadow — bright lime, golden yellow, cherry, sky
-   --------------------------------------------------------------------------- */
-.theme-meadow {
-    --dark: #0d4a25;
-    --dark-rgb: 13, 74, 37;
-    --dark-muted: rgba(13, 74, 37, 0.7);
-    --cream: #f5f8d8;
-    --cream-rgb: 245, 248, 216;
-    --red: #ee5a6a;
-    --red-dark: #b03048;
-    --blue: #4fc3f7;
-    --blue-muted: rgba(79, 195, 247, 0.6);
-    --yellow: #fdd835;
-    --green: #7cc442;
-    --rose: #f48fb1;
-    --purple-dark: #6a4a9c;
-    --sidebar-bg: rgba(14, 76, 40, 0.9);
-    --sidebar-card: rgba(8, 44, 22, 0.6);
-    --focus-ring: rgba(245, 130, 165, 0.95);
-}
-
 /* ===========================================================================
    LIGHT-MODE THEMES
    These override --light / --light-muted to dark text (since surfaces are
@@ -253,36 +223,9 @@
    =========================================================================== */
 
 /* ---------------------------------------------------------------------------
-   Theme: Pastel — pink + sage, soft and gentle
+   Theme: Butter — neutral light, sand + sage + warm clay
    --------------------------------------------------------------------------- */
-.theme-pastel {
-    --dark: #fce4ee;
-    --dark-rgb: 252, 228, 238;
-    --dark-muted: rgba(252, 228, 238, 0.7);
-    --cream: #fffafd;
-    --cream-rgb: 255, 250, 253;
-    --red: #f08aae;
-    --red-dark: #c4548a;
-    --blue: #a8cce4;
-    --blue-muted: rgba(168, 204, 228, 0.6);
-    --yellow: #f4d488;
-    --green: #9cdfa6;
-    --rose: #ffbecb;
-    --purple-dark: #c4a4dc;
-    /* Inverted content vars — DARK foreground on LIGHT surface */
-    --light: rgba(94, 52, 78, 0.95);
-    --light-muted: rgba(94, 52, 78, 0.6);
-    --text-shadow-color: rgba(255, 250, 253, 0.9);
-    --sidebar-bg: rgba(253, 240, 246, 0.94);
-    --sidebar-card: rgba(255, 250, 253, 0.6);
-    --focus-ring: rgba(240, 138, 174, 0.95);
-    --disabled-light: rgba(140, 96, 122, 0.5);
-}
-
-/* ---------------------------------------------------------------------------
-   Theme: Cream — neutral light, sand + sage + warm clay
-   --------------------------------------------------------------------------- */
-.theme-cream {
+.theme-butter {
     --dark: #efe2c4;
     --dark-rgb: 239, 226, 196;
     --dark-muted: rgba(239, 226, 196, 0.7);
@@ -332,11 +275,11 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Bloom — PASTEL PINK + PASTEL GREEN TOGETHER. Light theme: soft
+   Theme: Spring — pastel pink + pastel green together. Light theme: soft
    pink-cream sidebar with sage green and rose as paired accents, both
    visibly present. Dark text on light surfaces.
    --------------------------------------------------------------------------- */
-.theme-bloom {
+.theme-spring {
     --dark: #f4d2dc;
     --dark-rgb: 244, 210, 220;
     --dark-muted: rgba(244, 210, 220, 0.7);
@@ -372,7 +315,7 @@
    palette is a vivid hot pink (#c22c6e) — dialed down to a deeper,
    softer berry so the break timer doesn't glare against the rest of
    the pink-and-green theme. Focus mode (var(--purple-dark)) is fine. */
-.theme-bloom .pomodoro-widget.break-mode {
+.theme-spring .pomodoro-widget.break-mode {
     background:
         radial-gradient(
             ellipse at top left,
@@ -385,19 +328,19 @@
 /* Bloom — active widget-icon glow uses green (the second co-star)
    instead of the default yellow so the pink+green pairing carries
    through the active state too. */
-.theme-bloom .widget-icon.active {
+.theme-spring .widget-icon.active {
     background: color-mix(in srgb, var(--green) 32%, transparent);
 }
 
-.theme-bloom .widget-icon.active:hover {
+.theme-spring .widget-icon.active:hover {
     background: color-mix(in srgb, var(--green) 48%, transparent);
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Cotton Candy — pastel pink + pastel sky blue, paired equally.
+   Theme: Peony — pastel pink + pastel sky blue, paired equally.
    Light theme: light blue-pink wash sidebar, dark plum text.
    --------------------------------------------------------------------------- */
-.theme-cotton {
+.theme-peony {
     --dark: #d8d4ec;
     --dark-rgb: 216, 212, 236;
     --dark-muted: rgba(216, 212, 236, 0.7);
@@ -429,11 +372,11 @@
 
 /* Cotton — active widget-icon glow uses blue (the second co-star) so
    pink + blue read together throughout the sidebar. */
-.theme-cotton .widget-icon.active {
+.theme-peony .widget-icon.active {
     background: color-mix(in srgb, var(--blue) 32%, transparent);
 }
 
-.theme-cotton .widget-icon.active:hover {
+.theme-peony .widget-icon.active:hover {
     background: color-mix(in srgb, var(--blue) 48%, transparent);
 }
 
@@ -720,14 +663,20 @@
     color: #ffffff !important;
 }
 
+/* Frost break mode — same bright cute yellow + dark text used by
+   every other palette. The previous dark red-brown wash here
+   competed with the inherited dark text color (set by the base
+   break-mode rule), producing dark-on-dark text. */
 .theme-frost .pomodoro-widget.break-mode {
     background:
         radial-gradient(
             ellipse at top left,
-            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.4) 0%,
             transparent 60%
         ),
-        rgba(50, 18, 22, 0.72) !important;
+        #f4ce5a !important;
+    color: #3a2a10 !important;
+    border-color: rgba(58, 42, 16, 0.22) !important;
 }
 
 

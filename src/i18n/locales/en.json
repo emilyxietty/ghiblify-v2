@@ -19,13 +19,10 @@
     "totoro": "Totoro",
     "ponyo": "Ponyo",
     "sky": "Sky",
-    "sakura": "Sakura",
-    "meadow": "Meadow",
-    "bloom": "Bloom",
-    "pastel": "Pastel",
-    "cream": "Cream",
+    "butter": "Butter",
     "mint": "Mint",
-    "cotton": "Cotton Candy",
+    "spring": "Spring",
+    "peony": "Peony",
     "light": "Light",
     "dark": "Dark",
     "frost": "Frost"
@@ -43,7 +40,7 @@
       "buyCoffee": "Buy me a Coffee",
       "guide": "Guide",
       "guideAria": "Open the guide",
-      "rate": "Rate",
+      "rate": "Rate me",
       "rateAria": "Rate Ghiblify on the Chrome Web Store",
       "dragMode": "Drag Mode",
       "dragModeDone": "Done dragging",
@@ -90,7 +87,8 @@
       "pomodoro": "Pomodoro timer",
       "avatar": "Avatar",
       "bookmarks": "Bookmarks",
-      "weather": "Weather"
+      "weather": "Weather",
+      "notes": "Sticky note"
     },
     "tooltip": {
       "show": "Show {{name}} widget",
@@ -222,7 +220,13 @@
     "errorNoBookmarks": "chrome.bookmarks is missing. Either the bookmarks permission isn't active, or the extension isn't fully installed. Try: chrome://extensions → remove Ghiblify → Load unpacked → select dist/.",
     "errorBookmarksApi": "Bookmarks error: {{message}}",
     "errorLoad": "Failed to load bookmarks: {{message}}",
-    "delete": "Delete bookmark"
+    "delete": "Delete bookmark",
+    "noResultsTitle": "No bookmarks found",
+    "noResultsSub": "Nothing matches \"{{query}}\". Try a shorter search?"
+  },
+  "notes": {
+    "placeholder": "Jot something down…",
+    "ariaLabel": "Sticky note"
   },
   "weather": {
     "loading": "Loading weather…",
