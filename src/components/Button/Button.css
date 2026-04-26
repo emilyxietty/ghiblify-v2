@@ -3,7 +3,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -23,7 +23,7 @@
 
 /* Pill Style */
 .btn-pill {
-    border-radius: 100px;
+    border-radius: var(--radius-pill);
 }
 
 /* Sizes */
@@ -140,6 +140,21 @@
     align-items: center;
     justify-content: center;
     /* font-size: 1.2em; */
+}
+
+/* Text-icon toggle buttons (e.g. weather °F/°C, Now/Hourly/Weekly).
+   The Button component treats string `icon` props as icon-only, which
+   gives them .btn-icon's tight padding. Text rendered at the default
+   12px feels visually lighter than an SVG of the same em-size, so
+   bump the font-weight + give it room to breathe so the button reads
+   at the same visual scale as a sibling SVG-icon button. */
+.btn.btn-text-toggle {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 8px 12px;
+    min-width: 44px;
+    line-height: 1;
 }
 
 .btn-transparent {

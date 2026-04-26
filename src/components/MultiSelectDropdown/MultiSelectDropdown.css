@@ -9,7 +9,7 @@
     background: rgba(0, 0, 0, 0.8);
     border: none;
     color: white;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 12px;
     font-weight: 600;
@@ -44,7 +44,7 @@
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 8px;
     min-width: 180px;
     max-height: 250px;
@@ -72,7 +72,7 @@
     gap: 8px;
     padding: 8px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     transition: all 0.2s ease;
     color: #333;
     user-select: none;
@@ -101,12 +101,12 @@
 
 .multi-select-menu::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 .multi-select-menu::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 .multi-select-menu::-webkit-scrollbar-thumb:hover {

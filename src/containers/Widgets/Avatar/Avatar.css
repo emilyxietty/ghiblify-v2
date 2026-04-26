@@ -1,13 +1,130 @@
 .avatar-container {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    /* No overflow:hidden — nav arrows live just outside the image
+       bounds and would otherwise be clipped. */
+    overflow: visible;
 }
 
 .avatar-image {
     object-fit: contain;
     transition: all 0.3s ease;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     user-select: none;
     pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Credit chip — single component, two reveal triggers (Shift hold OR
+   widget in edit mode). Shows the avatar's display name plus, when
+   available, the creator name as a link to the source.
+   --------------------------------------------------------------------------- */
+
+.avatar-credit {
+    position: absolute;
+    left: 50%;
+    bottom: -22px;
+    transform: translateX(-50%);
+    padding: 3px 10px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease;
+    /* Sits above the EditWidget dark overlay (z-index: 10000000) so
+       the credit + source link are clickable in edit mode. */
+    z-index: 10000001;
+}
+
+.avatar-credit a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.avatar-credit a:hover {
+    text-decoration: underline;
+}
+
+.avatar-credit-name {
+    font-weight: 600;
+}
+
+.avatar-credit-sep {
+    margin: 0 6px;
+    opacity: 0.55;
+}
+
+.avatar-credit-creator {
+    opacity: 0.85;
+}
+
+/* Reveal triggers — Shift held anywhere OR widget in edit mode. */
+body.show-widget-outline .avatar-credit,
+.widget.edit-mode .avatar-credit {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Nav arrows for cycling avatars. Always in the DOM (so the user
+   doesn't see a layout shift when entering edit mode), hidden by
+   default. Only revealed in edit mode — Shift hold is just for the
+   credit, not for picking a new avatar.
+   --------------------------------------------------------------------------- */
+
+.avatar-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    /* Sits above the EditWidget overlay (z-index 10000000) so it
+       remains clickable when the widget enters edit mode. */
+    z-index: 10000001;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.avatar-nav-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.avatar-nav-btn:hover {
+    background: rgba(0, 0, 0, 0.78);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.avatar-nav-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.avatar-nav-left {
+    left: -22px;
+}
+
+.avatar-nav-right {
+    right: -22px;
+}
+
+.widget.edit-mode .avatar-nav-btn {
+    opacity: 1;
+    pointer-events: auto;
 }

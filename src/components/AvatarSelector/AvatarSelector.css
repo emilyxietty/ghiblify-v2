@@ -3,7 +3,7 @@
     align-items: center;
     gap: 16px;
     padding: 12px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     pointer-events: auto;
 }
 
@@ -53,7 +53,7 @@
     display: block;
     /* allow overlays to extend outside the image bounds */
     overflow: visible;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
 }
 
 .avatar-image-wrap img {
@@ -87,7 +87,7 @@
     justify-content: center;
     align-items: center;
     padding: 6px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .avatar-overlay-bottom {
@@ -102,7 +102,7 @@
     justify-content: center;
     align-items: center;
     padding: 6px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .avatar-nav-btn.avatar-nav-left,

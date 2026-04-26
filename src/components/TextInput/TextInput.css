@@ -1,55 +1,47 @@
-/* Base input — shared layout. Light/dark mode determines surface + text
-   color; theme palette tints the border and focus ring. */
+/* Theme-tinted text input. Surface uses the active palette's --dark
+   color triple at the alpha set inline via --input-opacity (driven by
+   each parent widget's opacity slider). Text always uses --light, which
+   every palette defines as the contrast-safe text color for its own
+   --dark surface — so readability is guaranteed across all 14 themes. */
 .custom-input {
     width: 100%;
     padding: 12px 36px 12px 10px;
-    backdrop-filter: blur(6px);
-    border-radius: 8px;
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    border-radius: var(--radius-md);
     font-size: 14px;
     outline: none;
     transition: background 160ms ease, border-color 160ms ease,
         box-shadow 160ms ease;
     box-sizing: border-box;
+    background: rgba(
+        var(--dark-rgb),
+        min(var(--input-opacity, 0.5), var(--surface-alpha-cap, 1))
+    );
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
+}
+
+.custom-input::placeholder {
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+    opacity: 1;
+}
+
+.custom-input:focus {
+    background: rgba(
+        var(--dark-rgb),
+        min(
+            calc(var(--input-opacity, 0.5) + 0.2),
+            var(--surface-alpha-cap, 1)
+        )
+    );
+    border-color: var(--focus-ring);
 }
 
 .custom-input-small {
     font-size: 10px;
-}
-
-/* Light mode — pale surface, dark text. Alpha follows --input-opacity
-   set by the parent widget (so the per-widget opacity slider also
-   tints the input, not just the button/tile). */
-.custom-input-light {
-    background: rgba(255, 255, 255, var(--input-opacity, 0.5));
-    color: rgba(24, 24, 24, 0.92);
-    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
-}
-
-.custom-input-light::placeholder {
-    color: rgba(24, 24, 24, 0.5);
-    opacity: 1;
-}
-
-.custom-input-light:focus {
-    background: rgba(255, 255, 255, calc(var(--input-opacity, 0.5) + 0.2));
-    border-color: var(--focus-ring);
-}
-
-/* Dark mode — dark surface, light text. */
-.custom-input-dark {
-    background: rgba(0, 0, 0, var(--input-opacity, 0.5));
-    color: rgba(255, 254, 245, 0.94);
-    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
-}
-
-.custom-input-dark::placeholder {
-    color: rgba(255, 254, 245, 0.55);
-    opacity: 1;
-}
-
-.custom-input-dark:focus {
-    background: rgba(0, 0, 0, calc(var(--input-opacity, 0.5) + 0.2));
-    border-color: var(--focus-ring);
 }
 
 .custom-input:focus-visible {

@@ -10,7 +10,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
@@ -113,7 +113,7 @@
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     list-style: none;
     padding: 4px;
     margin: 0;
@@ -139,7 +139,7 @@
 .dropdown-option {
     padding: 10px 12px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     transition: all 0.2s ease;
     color: #333;
     display: flex;
@@ -163,12 +163,12 @@
 
 .dropdown-menu::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
+    border-radius: var(--radius-xs);
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb:hover {

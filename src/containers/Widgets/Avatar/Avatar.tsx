@@ -1,3 +1,5 @@
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import React from "react";
 import { AVATAR_OPTIONS } from "../../../config/avatarConfig";
 import { useAppContext } from "../../../contexts/AppContext";
@@ -8,10 +10,26 @@ interface AvatarProps {
 }
 
 export const Avatar: React.FC<AvatarProps> = () => {
-  const { widgets } = useAppContext();
+  const { widgets, updateWidgetSettings } = useAppContext();
   const { selectedAvatar: avatar, size: avatarSize } = widgets.avatar.settings;
 
-  const avatarData = AVATAR_OPTIONS.find((a) => a.value === avatar);
+  const currentIndex = AVATAR_OPTIONS.findIndex((a) => a.value === avatar);
+  const avatarData =
+    currentIndex >= 0 ? AVATAR_OPTIONS[currentIndex] : AVATAR_OPTIONS[0];
+
+  const cyclePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next =
+      currentIndex <= 0 ? AVATAR_OPTIONS.length - 1 : currentIndex - 1;
+    updateWidgetSettings("avatar", { selectedAvatar: AVATAR_OPTIONS[next].value });
+  };
+
+  const cycleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next =
+      currentIndex === AVATAR_OPTIONS.length - 1 ? 0 : currentIndex + 1;
+    updateWidgetSettings("avatar", { selectedAvatar: AVATAR_OPTIONS[next].value });
+  };
 
   return (
     <div
@@ -22,13 +40,64 @@ export const Avatar: React.FC<AvatarProps> = () => {
       }}
     >
       {avatarData && (
-        <img
-          src={avatarData.src}
-          alt={avatarData.label}
-          className="avatar-image"
-          style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
-          title={avatarData.source}
-        />
+        <>
+          <img
+            src={avatarData.src}
+            alt={avatarData.label}
+            className="avatar-image"
+            style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
+            title={avatarData.source}
+          />
+
+          {/* Nav arrows for cycling avatars. Always present in the DOM,
+              hidden via CSS unless the widget is in edit mode (so the
+              same physical buttons live in one place — no duplicate
+              picker rendered by EditWidget). */}
+          <button
+            type="button"
+            className="avatar-nav-btn avatar-nav-left"
+            onClick={cyclePrev}
+            aria-label="Previous avatar"
+          >
+            <ArrowBackIosNewIcon fontSize="small" />
+          </button>
+          <button
+            type="button"
+            className="avatar-nav-btn avatar-nav-right"
+            onClick={cycleNext}
+            aria-label="Next avatar"
+          >
+            <ArrowForwardIosIcon fontSize="small" />
+          </button>
+
+          {/* Credit chip. Single rendering — CSS reveals it both on
+              Shift hold AND in edit mode, so the same DOM element
+              shows in both contexts (no overlap, no duplicates). */}
+          <div className="avatar-credit">
+            <span className="avatar-credit-name">{avatarData.label}</span>
+            {avatarData.creator && (
+              <>
+                <span className="avatar-credit-sep" aria-hidden="true">
+                  ·
+                </span>
+                {avatarData.source ? (
+                  <a
+                    className="avatar-credit-creator"
+                    href={avatarData.source}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {avatarData.creator}
+                  </a>
+                ) : (
+                  <span className="avatar-credit-creator">
+                    {avatarData.creator}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
