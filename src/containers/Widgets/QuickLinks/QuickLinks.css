@@ -1,36 +1,22 @@
 /* ===========================================================================
-   QuickLinks
-   Theme: .ql-light / .ql-dark applied to the wrapper.
+   QuickLinks — single theme-tinted style. Surface uses the active
+   palette's --dark-rgb triple at the alpha set by the per-widget
+   opacity slider. Text uses --light, the palette's contrast-safe
+   text color (works on both rich-dark and pastel-light palettes).
    =========================================================================== */
 
-/* "Light mode" = light text on dark surface (what the user sees as
-   light = bright text on a dim card). "Dark mode" = dark text on light
-   surface. Swapped from the previous mapping. */
-.ql-light {
-    --ql-text: rgba(255, 254, 245, 0.94);
-    --ql-text-muted: rgba(255, 254, 245, 0.55);
-    --ql-bg: rgba(0, 0, 0, 0.42);
-    --ql-bg-hover: rgba(0, 0, 0, 0.62);
-    --ql-bg-active: rgba(0, 0, 0, 0.78);
-    --ql-border: rgba(255, 255, 255, 0.16);
-    --ql-border-strong: rgba(255, 255, 255, 0.4);
+.quicklinksSettings-container,
+.quicklinksSettings-grid-wrapper {
+    --ql-text: var(--light);
+    --ql-text-muted: color-mix(in srgb, var(--light) 60%, transparent);
+    --ql-bg: rgba(var(--dark-rgb), 0.42);
+    --ql-bg-hover: rgba(var(--dark-rgb), 0.62);
+    --ql-bg-active: rgba(var(--dark-rgb), 0.78);
+    --ql-border: color-mix(in srgb, var(--light) 18%, transparent);
+    --ql-border-strong: color-mix(in srgb, var(--light) 40%, transparent);
     --ql-focus-ring: var(--focus-ring);
     --ql-danger: #ff8a8a;
     --ql-danger-bg: rgba(255, 107, 107, 0.18);
-    --ql-success: var(--green);
-}
-
-.ql-dark {
-    --ql-text: rgba(24, 24, 24, 0.92);
-    --ql-text-muted: rgba(24, 24, 24, 0.55);
-    --ql-bg: rgba(255, 255, 255, 0.42);
-    --ql-bg-hover: rgba(255, 255, 255, 0.62);
-    --ql-bg-active: rgba(255, 255, 255, 0.78);
-    --ql-border: rgba(0, 0, 0, 0.14);
-    --ql-border-strong: rgba(0, 0, 0, 0.32);
-    --ql-focus-ring: var(--focus-ring);
-    --ql-danger: #c62828;
-    --ql-danger-bg: rgba(198, 40, 40, 0.12);
     --ql-success: var(--green);
 }
 
@@ -78,7 +64,7 @@
 
 .ql-grid-cell {
     position: relative;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     /* Force square tiles regardless of column width (columns are
        auto-fill minmax(96px, 1fr), so they grow with the widget). */
     aspect-ratio: 1 / 1;
@@ -112,17 +98,30 @@
     padding: 10px 6px 8px;
     box-sizing: border-box;
     text-decoration: none;
-    border-radius: 10px;
-    /* Link tiles always dark + white text. Alpha controlled by the
-       opacity slider via --ql-opacity (set inline). */
-    background: rgba(0, 0, 0, var(--ql-opacity, 0.5));
-    color: #ffffff;
+    border-radius: var(--radius-lg);
+    /* Link tile uses the active palette's --dark-rgb at the alpha set
+       by the per-widget opacity slider (--ql-opacity, 0–1, inline).
+       Text color follows --light, the palette's contrast pair. */
+    background: rgba(
+        var(--dark-rgb),
+        min(var(--ql-opacity, 0.5), var(--surface-alpha-cap, 1))
+    );
+    color: var(--light);
     transition: background 120ms ease;
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
 }
 
 .ql-grid-link:hover {
-    background: rgba(0, 0, 0, calc(var(--ql-opacity, 0.5) + 0.2));
-    backdrop-filter: blur(6px);
+    background: rgba(
+        var(--dark-rgb),
+        min(
+            calc(var(--ql-opacity, 0.5) + 0.2),
+            var(--surface-alpha-cap, 1)
+        )
+    );
 }
 
 .ql-grid-link:focus-visible {
@@ -137,7 +136,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     flex-shrink: 0;
 }
 
@@ -154,12 +153,10 @@
 .ql-grid-title {
     font-size: 12px;
     line-height: 1.25;
-    /* Always white with a subtle dark text-shadow so the title reads
-       cleanly against any photo / tile-opacity combination. */
-    color: #ffffff;
-    text-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.55),
-        0 2px 6px rgba(0, 0, 0, 0.35);
+    /* Inherits the palette's --ql-text (which itself follows --light)
+       so the title color flips with palette mode the same way Todo
+       and SearchBar text does. No hardcoded white / drop-shadow. */
+    color: var(--ql-text);
     text-align: center;
     word-break: break-word;
     max-width: 88px;
@@ -177,7 +174,7 @@
     align-items: center;
     justify-content: center;
     padding: 8px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     border: 2px dashed var(--ql-border);
     background: color-mix(in srgb, var(--ql-text) 4%, transparent);
     transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
@@ -249,7 +246,7 @@
     justify-content: center;
     background: rgba(0, 0, 0, 0.55);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     color: var(--ql-danger);
     cursor: pointer;
     z-index: 2;
@@ -284,6 +281,71 @@
     gap: 8px;
     width: 100%;
     margin-bottom: 8px;
+    /* Lift above the EditWidget overlay (z-index: 10000000) so the
+       inputs are interactive while in edit mode and the user can
+       actually type into them. Without this, the overlay's blurred
+       backdrop covers the form. */
+    position: relative;
+    z-index: 10000001;
+}
+
+/* On Frost, every surface is glass over the photo — without an
+   explicit background the form's inputs blur into the wallpaper.
+   Wrap the row in the same dark glass treatment used by tooltips so
+   the inputs are legible. */
+.theme-frost .quicklinksSettings-add {
+    padding: 10px 12px;
+    background: rgba(10, 14, 20, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4);
+}
+
+/* Tooltip-style add-link card anchored to the right of the grid + cell.
+   The .ql-control-cell is `position: relative` (see ql-control-cell
+   below) so this card uses absolute positioning relative to that cell
+   — no JS positioning math, just CSS. */
+.quicklinksSettings-add.quicklinksSettings-add-popover {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    margin-bottom: 0;
+    width: max-content;
+    min-width: 240px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #ffffff;
+    z-index: 50;
+}
+
+/* Caret pointing back at the + button on the left side. */
+.quicklinksSettings-add-popover::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.82);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* The control cell needs `position: relative` so the absolute popover
+   anchors to it. */
+.ql-control-cell {
+    position: relative;
 }
 
 /* Circular palette-themed save button — matches the SearchBar circular
@@ -363,7 +425,7 @@
     font-size: 16px;
     font-weight: 600;
     padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: transparent;
     border: 1px solid transparent;
     cursor: pointer;
@@ -390,7 +452,7 @@
        Don't tie this to theme --dark-rgb (which goes light on those). */
     background: rgba(20, 22, 26, 0.92);
     color: #ffffff;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
     padding: 14px;
     box-sizing: border-box;
@@ -423,7 +485,7 @@
     align-items: center;
     gap: 10px;
     padding: 4px 4px 4px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     transition: background 120ms ease;
 }
 
@@ -436,21 +498,32 @@
 }
 
 .quicklinksSettings-item {
-    /* Dark tile + white text always (matches grid mode). */
-    background: rgba(0, 0, 0, var(--ql-opacity, 0.5));
+    /* Theme-tinted tile, alpha from per-widget opacity slider, capped
+       by --surface-alpha-cap so glass themes stay translucent. */
+    background: rgba(
+        var(--dark-rgb),
+        min(var(--ql-opacity, 0.5), var(--surface-alpha-cap, 1))
+    );
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
 }
 
 .quicklinksSettings-item:hover {
-    background: rgba(0, 0, 0, calc(var(--ql-opacity, 0.5) + 0.2));
+    background: rgba(
+        var(--dark-rgb),
+        min(
+            calc(var(--ql-opacity, 0.5) + 0.2),
+            var(--surface-alpha-cap, 1)
+        )
+    );
 }
 
 .quicklinksSettings-item .quicklinksSettings-link,
 .quicklinksSettings-item .ql-title,
 .quicklinksSettings-item .ql-url {
-    color: #ffffff;
-    text-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.55),
-        0 2px 6px rgba(0, 0, 0, 0.35);
+    color: var(--light);
 }
 
 .quicklinksSettings-item.dragging {
@@ -466,7 +539,7 @@
     height: 22px;
     background-size: cover;
     background-position: center;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     flex: 0 0 22px;
     object-fit: contain;
 }
@@ -481,7 +554,7 @@
     color: var(--light);
     text-align: left;
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     flex: 1;
     text-decoration: none;
@@ -529,7 +602,7 @@
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     padding: 6px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
