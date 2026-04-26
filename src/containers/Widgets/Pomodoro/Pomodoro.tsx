@@ -5,6 +5,7 @@ import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite
 import ReplayCircleFilledIcon from "@mui/icons-material/ReplayCircleFilled";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button/Button";
+import { useT } from "../../../i18n/i18n";
 import "./Pomodoro.css";
 
 const DEFAULT_POMODORO_MINUTES = 25;
@@ -19,109 +20,174 @@ const POMODORO_IMAGES = [
   "sootsprite.gif",
 ];
 
+// ---------------------------------------------------------------------------
+// Single-key persistence + cross-tab sync.
+// One JSON blob in localStorage replaces the 8 individual pomodoro_*
+// keys this component used to scatter. The `storage` event still fires
+// across tabs whenever the blob is rewritten — followers diff against
+// the previous value to apply granular updates.
+// ---------------------------------------------------------------------------
+
+const POMODORO_KEY = "ghiblify_pomodoro";
+
+interface PomodoroBlob {
+  /** Tab id of the leader (the tab that runs the countdown). null = no
+   *  leader; the next tab that ticks claims it. */
+  leader: string | null;
+  isRunning: boolean;
+  isBreak: boolean;
+  /** Concentration mode — persisted so cross-tab sync mirrors entry/
+   *  exit, but defensively cleared on mount (see init effect below). */
+  focusMode: boolean;
+  pomodoroSeconds: number;
+  breakSeconds: number;
+  pomodoroOriginal: number;
+  breakOriginal: number;
+}
+
+const DEFAULT_POMODORO: PomodoroBlob = {
+  leader: null,
+  isRunning: false,
+  isBreak: false,
+  focusMode: false,
+  pomodoroSeconds: DEFAULT_POMODORO_MINUTES * 60,
+  breakSeconds: DEFAULT_BREAK_MINUTES * 60,
+  pomodoroOriginal: DEFAULT_POMODORO_MINUTES * 60,
+  breakOriginal: DEFAULT_BREAK_MINUTES * 60,
+};
+
+const readPomodoro = (): PomodoroBlob => {
+  try {
+    const raw = localStorage.getItem(POMODORO_KEY);
+    if (raw) return { ...DEFAULT_POMODORO, ...JSON.parse(raw) };
+  } catch {
+    /* ignore */
+  }
+  return { ...DEFAULT_POMODORO };
+};
+
+const writePomodoro = (patch: Partial<PomodoroBlob>) => {
+  const next = { ...readPomodoro(), ...patch };
+  try {
+    localStorage.setItem(POMODORO_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+};
+
+// One-time migration: collapse the 8 legacy `pomodoro_*` / `break_*`
+// keys into the new single blob, then remove the originals. Idempotent:
+// once `ghiblify_pomodoro` exists this is a no-op (and a sweep of any
+// stragglers).
+const migrateLegacyPomodoro = () => {
+  const LEGACY = [
+    "pomodoro_seconds_left",
+    "break_seconds_left",
+    "pomodoro_is_running",
+    "pomodoro_is_break",
+    "pomodoro_original_seconds",
+    "break_original_seconds",
+    "pomodoro_focus_mode",
+    "pomodoro_leader",
+  ];
+  try {
+    if (localStorage.getItem(POMODORO_KEY)) {
+      LEGACY.forEach((k) => localStorage.removeItem(k));
+      return;
+    }
+    const has = LEGACY.some((k) => localStorage.getItem(k) !== null);
+    if (!has) return;
+    const num = (k: string, fallback: number) => {
+      const v = localStorage.getItem(k);
+      const n = v == null ? NaN : parseInt(v, 10);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const blob: PomodoroBlob = {
+      leader: localStorage.getItem("pomodoro_leader"),
+      isRunning: localStorage.getItem("pomodoro_is_running") === "true",
+      isBreak: localStorage.getItem("pomodoro_is_break") === "true",
+      focusMode: localStorage.getItem("pomodoro_focus_mode") === "true",
+      pomodoroSeconds: num("pomodoro_seconds_left", DEFAULT_POMODORO_MINUTES * 60),
+      breakSeconds: num("break_seconds_left", DEFAULT_BREAK_MINUTES * 60),
+      pomodoroOriginal: num(
+        "pomodoro_original_seconds",
+        DEFAULT_POMODORO_MINUTES * 60
+      ),
+      breakOriginal: num("break_original_seconds", DEFAULT_BREAK_MINUTES * 60),
+    };
+    localStorage.setItem(POMODORO_KEY, JSON.stringify(blob));
+    LEGACY.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* ignore */
+  }
+};
+migrateLegacyPomodoro();
+
 const Pomodoro: React.FC = () => {
+  const t = useT();
   // State for timer input value
   const [inputValue, setInputValue] = useState<string>("");
-  // Concentration / focus mode — hides everything else and centers the
-  // pomodoro widget. Toggled via a button on the widget; Esc exits.
-  // Persisted in localStorage so it stays in sync across every open tab.
+  // Concentration / focus mode — hides everything else and centers
+  // the pomodoro widget. Toggled via a button on the widget; Esc
+  // exits. Persisted to localStorage so opening a new tab while
+  // focus mode is on keeps the user in focus across tabs.
   const [focusMode, setFocusMode] = useState<boolean>(() => {
-    return localStorage.getItem("pomodoro_focus_mode") === "true";
+    try {
+      return readPomodoro().focusMode === true;
+    } catch {
+      return false;
+    }
   });
   // Unique tab ID for leader election
   const [tabId] = useState(() => Math.random().toString(36).slice(2));
   const [isLeader, setIsLeader] = useState(false);
 
-  // Leader election: only one tab writes
+  // Leader election: only one tab writes the countdown.
   useEffect(() => {
-    // Try to become leader if no leader exists
-    if (!localStorage.getItem("pomodoro_leader")) {
-      localStorage.setItem("pomodoro_leader", tabId);
+    const initial = readPomodoro();
+    if (!initial.leader) {
+      writePomodoro({ leader: tabId });
       setIsLeader(true);
-      console.log("Tab", tabId, "is claiming leader on mount");
-    } else if (localStorage.getItem("pomodoro_leader") === tabId) {
+    } else if (initial.leader === tabId) {
       setIsLeader(true);
-      console.log("Tab", tabId, "is already leader on mount");
     } else {
       setIsLeader(false);
-      console.log(
-        "Tab",
-        tabId,
-        "is not leader on mount. Current leader:",
-        localStorage.getItem("pomodoro_leader")
-      );
     }
-    // Listen for leader changes (e.g., tab close)
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "pomodoro_leader") {
-        const isNowLeader = localStorage.getItem("pomodoro_leader") === tabId;
-        setIsLeader(isNowLeader);
-        console.log(
-          "Tab",
-          tabId,
-          isNowLeader
-            ? "became leader (storage event)"
-            : "is not leader (storage event)",
-          "Current leader:",
-          localStorage.getItem("pomodoro_leader")
-        );
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    // On unload, release leadership if this tab is leader
+    // Release leadership on unload if this tab held it.
     const onUnload = () => {
-      if (localStorage.getItem("pomodoro_leader") === tabId) {
-        localStorage.removeItem("pomodoro_leader");
+      if (readPomodoro().leader === tabId) {
+        writePomodoro({ leader: null });
       }
     };
     window.addEventListener("beforeunload", onUnload);
     return () => {
-      window.removeEventListener("storage", onStorage);
       window.removeEventListener("beforeunload", onUnload);
-      if (localStorage.getItem("pomodoro_leader") === tabId) {
-        localStorage.removeItem("pomodoro_leader");
+      if (readPomodoro().leader === tabId) {
+        writePomodoro({ leader: null });
       }
     };
   }, [tabId]);
 
-  // --- State initialization from localStorage ---
-  const [pomodoroSecondsLeft, setPomodoroSecondsLeft] = useState(() => {
-    const saved = localStorage.getItem("pomodoro_seconds_left");
-    return saved ? parseInt(saved) : DEFAULT_POMODORO_MINUTES * 60;
-  });
-  const [breakSecondsLeft, setBreakSecondsLeft] = useState(() => {
-    const saved = localStorage.getItem("break_seconds_left");
-    return saved ? parseInt(saved) : DEFAULT_BREAK_MINUTES * 60;
-  });
-  const [isRunning, setIsRunning] = useState(() => {
-    const saved = localStorage.getItem("pomodoro_is_running");
-    return saved === "true";
-  });
-  const [isBreak, setIsBreak] = useState(() => {
-    const saved = localStorage.getItem("pomodoro_is_break");
-    return saved === "true";
-  });
+  // --- State initialization from the single blob ---
+  const initial = useRef<PomodoroBlob>(readPomodoro());
+  const [pomodoroSecondsLeft, setPomodoroSecondsLeft] = useState(
+    initial.current.pomodoroSeconds
+  );
+  const [breakSecondsLeft, setBreakSecondsLeft] = useState(
+    initial.current.breakSeconds
+  );
+  const [isRunning, setIsRunning] = useState(initial.current.isRunning);
+  const [isBreak, setIsBreak] = useState(initial.current.isBreak);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [pomodoroOriginalSecondsState, setPomodoroOriginalSecondsState] =
-    useState<number>(
-      parseInt(
-        localStorage.getItem("pomodoro_original_seconds") ||
-          (DEFAULT_POMODORO_MINUTES * 60).toString()
-      )
-    );
+    useState<number>(initial.current.pomodoroOriginal);
   const [breakOriginalSecondsState, setBreakOriginalSecondsState] =
-    useState<number>(
-      parseInt(
-        localStorage.getItem("break_original_seconds") ||
-          (DEFAULT_BREAK_MINUTES * 60).toString()
-      )
-    );
+    useState<number>(initial.current.breakOriginal);
 
   // Pick a random break image each break period
   const [timerImage, settimerImage] = useState<string>(() => {
-    // If starting in break mode, pick one
-    if (localStorage.getItem("pomodoro_is_break") === "true") {
+    if (initial.current.isBreak) {
       const idx = Math.floor(Math.random() * POMODORO_IMAGES.length);
       return POMODORO_IMAGES[idx];
     }
@@ -142,45 +208,53 @@ const Pomodoro: React.FC = () => {
     return `${m}:${s}`;
   };
 
-  // --- Only leader manages seconds remaining ---
+  // --- Only leader writes the per-second countdown ---
   useEffect(() => {
     if (isLeader) {
-      localStorage.setItem(
-        "pomodoro_seconds_left",
-        pomodoroSecondsLeft.toString()
-      );
-      localStorage.setItem("break_seconds_left", breakSecondsLeft.toString());
+      writePomodoro({
+        pomodoroSeconds: pomodoroSecondsLeft,
+        breakSeconds: breakSecondsLeft,
+      });
     }
   }, [pomodoroSecondsLeft, breakSecondsLeft, isLeader]);
 
-  // --- All tabs can control running, break mode, and reset ---
+  // --- All tabs broadcast running / break-mode toggles ---
   useEffect(() => {
-    localStorage.setItem("pomodoro_is_running", isRunning.toString());
+    writePomodoro({ isRunning });
   }, [isRunning]);
 
   useEffect(() => {
-    localStorage.setItem("pomodoro_is_break", isBreak.toString());
+    writePomodoro({ isBreak });
   }, [isBreak]);
 
-  // --- Listen for changes from other tabs ---
+  // --- Listen for blob changes from other tabs ---
+  // The blob writes once per change, so we get one storage event with
+  // the full new value. Diff against current state and apply pieces.
   useEffect(() => {
     const syncState = (e: StorageEvent) => {
-      if (e.key === "pomodoro_seconds_left" && e.newValue && !isLeader) {
-        setPomodoroSecondsLeft(parseInt(e.newValue));
+      if (e.key !== POMODORO_KEY || !e.newValue) return;
+      let next: PomodoroBlob;
+      try {
+        next = { ...DEFAULT_POMODORO, ...JSON.parse(e.newValue) };
+      } catch {
+        return;
       }
-      if (e.key === "break_seconds_left" && e.newValue && !isLeader) {
-        setBreakSecondsLeft(parseInt(e.newValue));
+      // Leader assignment — react when a different tab claims/releases.
+      setIsLeader(next.leader === tabId);
+      // Followers mirror the leader's countdown.
+      if (next.leader !== tabId) {
+        setPomodoroSecondsLeft(next.pomodoroSeconds);
+        setBreakSecondsLeft(next.breakSeconds);
       }
-      if (e.key === "pomodoro_is_running" && e.newValue !== null) {
-        setIsRunning(e.newValue === "true");
-      }
-      if (e.key === "pomodoro_is_break" && e.newValue !== null) {
-        setIsBreak(e.newValue === "true");
-      }
+      setIsRunning(next.isRunning);
+      setIsBreak(next.isBreak);
+      setPomodoroOriginalSecondsState(next.pomodoroOriginal);
+      setBreakOriginalSecondsState(next.breakOriginal);
+      setFocusMode(next.focusMode);
     };
     window.addEventListener("storage", syncState);
     return () => window.removeEventListener("storage", syncState);
-  }, [isLeader]);
+  }, [tabId]);
 
   useEffect(() => {
     if (!isRunning) {
@@ -194,17 +268,15 @@ const Pomodoro: React.FC = () => {
   }, [isBreak, isRunning, breakSecondsLeft, pomodoroSecondsLeft]);
 
   const releaseLeader = () => {
-    if (localStorage.getItem("pomodoro_leader") === tabId) {
-      localStorage.removeItem("pomodoro_leader");
+    if (readPomodoro().leader === tabId) {
+      writePomodoro({ leader: null });
       setIsLeader(false);
     }
   };
 
   const claimLeader = () => {
-    // Always claim leadership for this tab
-    localStorage.setItem("pomodoro_leader", tabId);
+    writePomodoro({ leader: tabId });
     setIsLeader(true);
-    console.log("Tab", tabId, "is claiming leader (claimLeader called)");
     if (isRunning) {
       setIsRunning((prev) => prev);
     }
@@ -212,35 +284,15 @@ const Pomodoro: React.FC = () => {
 
   const startTimer = () => {
     claimLeader();
-    if (!isBreak) {
-      localStorage.setItem(
-        "pomodoro_seconds_left",
-        pomodoroSecondsLeft.toString()
-      );
-    } else {
-      localStorage.setItem("break_seconds_left", breakSecondsLeft.toString());
-    }
+    writePomodoro(
+      isBreak
+        ? { breakSeconds: breakSecondsLeft }
+        : { pomodoroSeconds: pomodoroSecondsLeft }
+    );
     if (!isRunning) {
       setIsRunning(true);
     }
   };
-
-  useEffect(() => {
-    const syncOriginalSeconds = (e: StorageEvent) => {
-      if (e.key === "pomodoro_original_seconds") {
-        setPomodoroOriginalSecondsState(
-          parseInt(e.newValue || (DEFAULT_POMODORO_MINUTES * 60).toString())
-        );
-      }
-      if (e.key === "break_original_seconds") {
-        setBreakOriginalSecondsState(
-          parseInt(e.newValue || (DEFAULT_BREAK_MINUTES * 60).toString())
-        );
-      }
-    };
-    window.addEventListener("storage", syncOriginalSeconds);
-    return () => window.removeEventListener("storage", syncOriginalSeconds);
-  }, []);
 
   useEffect(() => {
     if (isLeader && isRunning) {
@@ -254,8 +306,8 @@ const Pomodoro: React.FC = () => {
             setIsRunning(false);
             setIsBreak(false);
             setPomodoroSecondsLeft(DEFAULT_POMODORO_MINUTES * 60);
-            if (localStorage.getItem("pomodoro_leader") === tabId) {
-              localStorage.removeItem("pomodoro_leader");
+            if (readPomodoro().leader === tabId) {
+              writePomodoro({ leader: null });
               setIsLeader(false);
             }
             return prev;
@@ -268,8 +320,8 @@ const Pomodoro: React.FC = () => {
             setIsRunning(false);
             setIsBreak(true);
             setBreakSecondsLeft(DEFAULT_BREAK_MINUTES * 60);
-            if (localStorage.getItem("pomodoro_leader") === tabId) {
-              localStorage.removeItem("pomodoro_leader");
+            if (readPomodoro().leader === tabId) {
+              writePomodoro({ leader: null });
               setIsLeader(false);
             }
             return prev;
@@ -288,18 +340,15 @@ const Pomodoro: React.FC = () => {
         intervalRef.current = null;
       }
     };
-  }, [isLeader, isRunning, isBreak]);
+  }, [isLeader, isRunning, isBreak, tabId]);
 
   const pauseTimer = () => {
-    // Save current seconds left when pausing
-    if (isBreak) {
-      localStorage.setItem("break_seconds_left", breakSecondsLeft.toString());
-    } else {
-      localStorage.setItem(
-        "pomodoro_seconds_left",
-        pomodoroSecondsLeft.toString()
-      );
-    }
+    // Save current seconds left when pausing.
+    writePomodoro(
+      isBreak
+        ? { breakSeconds: breakSecondsLeft }
+        : { pomodoroSeconds: pomodoroSecondsLeft }
+    );
     releaseLeader();
     setIsRunning(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -309,27 +358,15 @@ const Pomodoro: React.FC = () => {
     claimLeader();
     setIsRunning(false);
     if (isBreak) {
-      setBreakSecondsLeft(DEFAULT_BREAK_MINUTES * 60);
-      setBreakOriginalSecondsState(DEFAULT_BREAK_MINUTES * 60);
-      localStorage.setItem(
-        "break_seconds_left",
-        (DEFAULT_BREAK_MINUTES * 60).toString()
-      );
-      localStorage.setItem(
-        "break_original_seconds",
-        (DEFAULT_BREAK_MINUTES * 60).toString()
-      );
+      const v = DEFAULT_BREAK_MINUTES * 60;
+      setBreakSecondsLeft(v);
+      setBreakOriginalSecondsState(v);
+      writePomodoro({ breakSeconds: v, breakOriginal: v });
     } else {
-      setPomodoroSecondsLeft(DEFAULT_POMODORO_MINUTES * 60);
-      setPomodoroOriginalSecondsState(DEFAULT_POMODORO_MINUTES * 60);
-      localStorage.setItem(
-        "pomodoro_seconds_left",
-        (DEFAULT_POMODORO_MINUTES * 60).toString()
-      );
-      localStorage.setItem(
-        "pomodoro_original_seconds",
-        (DEFAULT_POMODORO_MINUTES * 60).toString()
-      );
+      const v = DEFAULT_POMODORO_MINUTES * 60;
+      setPomodoroSecondsLeft(v);
+      setPomodoroOriginalSecondsState(v);
+      writePomodoro({ pomodoroSeconds: v, pomodoroOriginal: v });
     }
   };
 
@@ -342,75 +379,57 @@ const Pomodoro: React.FC = () => {
     }
     if (isBreak) {
       setBreakSecondsLeft(val);
-      localStorage.setItem("break_seconds_left", val.toString());
-      localStorage.setItem("break_original_seconds", val.toString());
+      writePomodoro({ breakSeconds: val, breakOriginal: val });
     } else {
       setPomodoroSecondsLeft(val);
-      localStorage.setItem("pomodoro_seconds_left", val.toString());
-      localStorage.setItem("pomodoro_original_seconds", val.toString());
+      writePomodoro({ pomodoroSeconds: val, pomodoroOriginal: val });
     }
   };
 
   const minutesLeft = Math.floor(getCurrentSecondsLeft() / 60);
 
-  // Progress bar calculation
-  // Use original seconds from localStorage if available
-  const pomodoroOriginalSeconds = parseInt(
-    localStorage.getItem("pomodoro_original_seconds") ||
-      (DEFAULT_POMODORO_MINUTES * 60).toString()
-  );
-  const breakOriginalSeconds = parseInt(
-    localStorage.getItem("break_original_seconds") ||
-      (DEFAULT_BREAK_MINUTES * 60).toString()
-  );
+  // Progress bar — driven entirely by the locally-mirrored *State
+  // values, which the storage event keeps in sync across tabs.
   const totalSeconds = isBreak
     ? breakOriginalSecondsState
     : pomodoroOriginalSecondsState;
   const progressPercent = 100 * (1 - getCurrentSecondsLeft() / totalSeconds);
 
   // Toggle the focus-mode body class so app-wide CSS can hide other
-   // widgets and dim the background while concentration mode is on.
-   // Persist to localStorage so other tabs pick up the change.
+  // widgets and dim the background while concentration mode is on.
+  // Persisted into the shared blob so other tabs pick up the change
+  // via the unified storage listener above.
   useEffect(() => {
     if (focusMode) {
       document.body.classList.add("pomodoro-focus");
     } else {
       document.body.classList.remove("pomodoro-focus");
     }
-    try {
-      localStorage.setItem("pomodoro_focus_mode", focusMode.toString());
-    } catch {
-      /* ignore */
-    }
+    writePomodoro({ focusMode });
     return () => {
       document.body.classList.remove("pomodoro-focus");
     };
   }, [focusMode]);
 
-  // When Pomodoro unmounts (the user hides the widget entirely), make sure
-  // focus mode is fully cleared — otherwise the body class can be stuck
-  // with no Pomodoro available to dismiss it from, and the rest of the
-  // app stays hidden behind the scrim.
+  // When Pomodoro unmounts because the user HID the widget, clear
+  // focus mode so the body class doesn't get stuck with no Pomodoro
+  // to dismiss it from. But when unmount is part of a tab close
+  // (beforeunload fired first), leave the persisted flag alone — we
+  // want focus mode to carry over to the next new-tab so the user
+  // stays focused across tabs.
   useEffect(() => {
+    let isUnloading = false;
+    const onBeforeUnload = () => {
+      isUnloading = true;
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
     return () => {
-      document.body.classList.remove("pomodoro-focus");
-      try {
-        localStorage.setItem("pomodoro_focus_mode", "false");
-      } catch {
-        /* ignore */
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      if (!isUnloading) {
+        document.body.classList.remove("pomodoro-focus");
+        writePomodoro({ focusMode: false });
       }
     };
-  }, []);
-
-  // Mirror focus-mode changes from other tabs.
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "pomodoro_focus_mode" && e.newValue !== null) {
-        setFocusMode(e.newValue === "true");
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   // Esc exits focus mode
@@ -464,7 +483,7 @@ const Pomodoro: React.FC = () => {
             }
           }}
         >
-          Pomodoro
+          {t("pomodoro.modeFocus")}
         </h2>
         <h2
           className={isBreak ? "active-mode" : "inactive-mode"}
@@ -487,7 +506,7 @@ const Pomodoro: React.FC = () => {
             }
           }}
         >
-          Break
+          {t("pomodoro.modeBreak")}
         </h2>
       </div>
 
@@ -504,10 +523,18 @@ const Pomodoro: React.FC = () => {
             "sootsprite.gif": "https://mx.pinterest.com/pin/10344274145706593/",
           };
           const sourceUrl = imageSources[timerImage] || "";
+          // Real pause: when the timer isn't running, render the
+          // first-frame PNG instead of the GIF so the character
+          // actually stops moving. Stills live in the same folder
+          // as the GIFs with `-still.png` suffix.
+          const stillName = timerImage.replace(/\.gif$/, "-still.png");
+          const src = isRunning
+            ? `/assets/pomodoro/${timerImage}`
+            : `/assets/pomodoro/${stillName}`;
           return (
             <img
-              src={"/assets/pomodoro/" + timerImage}
-              alt={isBreak ? "Break" : "Pomodoro"}
+              src={src}
+              alt={isBreak ? t("pomodoro.modeBreak") : t("pomodoro.modeFocus")}
               className="timer-image"
               title={sourceUrl}
             />
@@ -552,7 +579,7 @@ const Pomodoro: React.FC = () => {
                 }
               }}
             />
-            <span className="timer-mins-label">mins</span>
+            <span className="timer-mins-label">{t("pomodoro.minsLabel")}</span>
           </div>
         ) : (
           formatTime(getCurrentSecondsLeft())
@@ -565,10 +592,10 @@ const Pomodoro: React.FC = () => {
             disabled={!isRunning}
             variant="transparent"
             className="pomodoro-control-btn"
-            aria-label="Pause timer"
+            aria-label={t("pomodoro.pauseAria")}
           >
             <PauseCircleIcon />
-            <span>Pause</span>
+            <span>{t("pomodoro.pause")}</span>
           </Button>
         ) : (
           <Button
@@ -576,10 +603,10 @@ const Pomodoro: React.FC = () => {
             disabled={isRunning}
             variant="transparent"
             className="pomodoro-control-btn"
-            aria-label="Start timer"
+            aria-label={t("pomodoro.playAria")}
           >
             <PlayCircleFilledWhiteIcon />
-            <span>Play</span>
+            <span>{t("pomodoro.play")}</span>
           </Button>
         )}
         <Button
@@ -587,8 +614,8 @@ const Pomodoro: React.FC = () => {
           variant="transparent"
           disabled={isRunning}
           className="pomodoro-control-btn pomodoro-control-btn-icon"
-          aria-label="Reset timer"
-          data-tooltip="Reset"
+          aria-label={t("pomodoro.resetAria")}
+          data-tooltip={t("pomodoro.reset")}
         >
           <ReplayCircleFilledIcon />
         </Button>
@@ -596,9 +623,9 @@ const Pomodoro: React.FC = () => {
           onClick={() => setFocusMode((f) => !f)}
           variant="transparent"
           className="pomodoro-control-btn pomodoro-control-btn-icon pomodoro-focus-btn"
-          aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
+          aria-label={focusMode ? t("pomodoro.focusAriaExit") : t("pomodoro.focusAriaEnter")}
           aria-pressed={focusMode}
-          data-tooltip={focusMode ? "Exit focus" : "Focus"}
+          data-tooltip={focusMode ? t("pomodoro.focusTooltipExit") : t("pomodoro.focusTooltipEnter")}
         >
           {focusMode ? <CloseIcon /> : <CenterFocusStrongIcon />}
         </Button>

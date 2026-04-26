@@ -14,7 +14,7 @@
         ),
         var(--purple-dark);
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
-    border-radius: 18px;
+    border-radius: var(--radius-xl);
     box-shadow:
         0 12px 32px rgba(0, 0, 0, 0.25),
         0 0 0 1px rgba(0, 0, 0, 0.08) inset;
@@ -32,14 +32,35 @@
     transition: background 200ms ease, border-color 200ms ease;
 }
 
+/* Break mode = cute warm-yellow card so it reads as "ok, take a
+   breather" rather than the urgent red of focus mode. Hardcoded
+   bright yellow (no var(--yellow)) so the contrast against the dark
+   text stays the same across every palette — Frost in particular
+   binds --yellow to a desaturated tan that, when mixed, dropped the
+   contrast against the dark text below readable. */
 .pomodoro-widget.break-mode {
     background:
         radial-gradient(
             ellipse at top left,
-            color-mix(in srgb, var(--light) 12%, transparent) 0%,
+            rgba(255, 255, 255, 0.4) 0%,
             transparent 60%
         ),
-        var(--red-dark);
+        #f4ce5a;
+    color: #3a2a10;
+    border-color: rgba(58, 42, 16, 0.22);
+}
+
+.pomodoro-widget.break-mode .pomodoro-switch-header {
+    background: rgba(58, 42, 16, 0.12);
+    border-color: rgba(58, 42, 16, 0.18);
+}
+
+.pomodoro-widget.break-mode .pomodoro-switch-header h2 {
+    color: #3a2a10;
+}
+
+.pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
+    background: rgba(58, 42, 16, 0.18);
 }
 
 /* ---------------------------------------------------------------------------
@@ -51,7 +72,7 @@
     align-items: center;
     background: color-mix(in srgb, var(--light) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     padding: 3px;
     gap: 0;
     margin-bottom: 4px;
@@ -61,7 +82,7 @@
     font-size: 0.78rem;
     margin: 0;
     padding: 5px 14px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     transition: background 180ms ease, color 180ms ease, opacity 180ms ease;
     user-select: none;
     letter-spacing: 0.04em;
@@ -95,7 +116,7 @@
     max-height: 56px;
     height: auto;
     display: block;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     margin-top: 2px;
 }
@@ -183,7 +204,7 @@
     align-items: center !important;
     gap: 6px !important;
     padding: 8px 16px !important;
-    border-radius: 999px !important;
+    border-radius: var(--radius-pill) !important;
     background: color-mix(in srgb, var(--light) 14%, transparent) !important;
     color: var(--light) !important;
     border: 1px solid color-mix(in srgb, var(--light) 22%, transparent) !important;
@@ -237,7 +258,7 @@
     width: 100%;
     height: 6px;
     background: color-mix(in srgb, var(--light) 12%, transparent);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     margin: 4px 0 0;
     overflow: hidden;
     position: relative;
@@ -298,7 +319,7 @@ body.pomodoro-focus::after {
     background: rgba(0, 0, 0, 0.78);
     color: #ffffff;
     padding: 8px 18px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 12.5px;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -346,9 +367,20 @@ body.pomodoro-focus .background-content {
     }
 }
 
-/* Hide every widget that isn't Pomodoro. */
-body.pomodoro-focus .widget:not([data-widget-key="pomodoro"]) {
+/* Hide every widget except Pomodoro and Todo. The todo list stays
+   visible during focus mode so the user can see (and check off) the
+   tasks they're focusing on without leaving the mode. Lifted above
+   the scrim AND the focused Pomodoro card so it sits at the very
+   front of the focus view. */
+body.pomodoro-focus
+    .widget:not([data-widget-key="pomodoro"]):not(
+        [data-widget-key="todo"]
+    ) {
     display: none !important;
+}
+
+body.pomodoro-focus .widget[data-widget-key="todo"] {
+    z-index: 1500 !important;
 }
 
 /* Both sidebars stay accessible during focus mode. They slide in via
@@ -382,14 +414,19 @@ body.pomodoro-focus .widget[data-widget-key="pomodoro"] {
 }
 
 /* In focus mode the card chrome falls away — Pomodoro becomes pure
-   typography floating over the dim scrim, scaled near-full-screen. */
-body.pomodoro-focus .pomodoro-widget {
+   typography floating over the dim scrim, scaled near-full-screen.
+   Both color states (focus + break) explicitly drop their card
+   surfaces so the timer reads as floating text on the scrim. */
+body.pomodoro-focus .pomodoro-widget,
+body.pomodoro-focus .pomodoro-widget.break-mode {
     width: min(96vw, 1100px);
     height: auto;
     min-height: min(82vh, 720px);
     padding: 4vh 6vw;
     gap: 4vh;
     background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
     border: none !important;
     box-shadow: none !important;
     color: #ffffff !important;
