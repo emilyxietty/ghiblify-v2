@@ -140,7 +140,12 @@
     max-width: calc(100% - 16px);
     gap: 8px;
     pointer-events: auto;
-    z-index: 20;
+    /* Must sit above .widget-opacity-control (z 21) so any dropdown
+       this container hosts (Sections / Fields multi-select) can float
+       over the slider when it extends downward. The container itself
+       lives at the top of the overlay so the bumped z doesn't cover
+       anything else — only its open dropdowns would overlap. */
+    z-index: 30;
 }
 
 
