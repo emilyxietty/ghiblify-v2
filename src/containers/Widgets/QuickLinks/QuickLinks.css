@@ -175,8 +175,13 @@
     justify-content: center;
     padding: 8px;
     border-radius: var(--radius-lg);
-    border: 2px dashed var(--ql-border);
-    background: color-mix(in srgb, var(--ql-text) 4%, transparent);
+    border: 2px dashed var(--ql-border-strong);
+    /* Use the same theme-tinted surface as the link tiles (rather
+       than the 4% near-transparent ghost we used to have) so the
+       cell has a consistent backdrop on any palette and against
+       any region of the photo behind it. The dashed border keeps
+       the "empty / add here" affordance. */
+    background: var(--ql-bg);
     transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
     /* Square — matches the link tiles. */
     aspect-ratio: 1 / 1;
@@ -188,7 +193,7 @@
 }
 
 .ql-control-cell:hover {
-    background: color-mix(in srgb, var(--ql-text) 10%, transparent);
+    background: var(--ql-bg-hover);
     border-color: var(--ql-border-strong);
     transform: scale(1.02);
 }
@@ -213,7 +218,12 @@
 
 .ql-control-cell .btn svg {
     font-size: 32px !important;
-    color: color-mix(in srgb, var(--ql-text) 70%, transparent);
+    /* Full --ql-text strength (was 70%) + a soft drop-shadow that
+       picks up the palette's text-shadow color so the glyph reads
+       on light photos AND inside light-mode palettes where --light
+       is itself a dark text color. */
+    color: var(--ql-text);
+    filter: drop-shadow(0 1px 2px var(--text-shadow-color));
     transition: color 140ms ease;
 }
 

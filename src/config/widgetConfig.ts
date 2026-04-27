@@ -234,14 +234,14 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   avatar: {
     name: "Avatar",
-    position: { x: 5.859649122807017, y: 86.06124604012672 },
+    position: { x: 50, y: 9.914150101936801 },
     settings: { selectedAvatar: "chihiro", size: 100 },
     size: { min: 50, max: 400, step: 50 },
     customControls: { avatarSelector: true },
   },
   quicklinks: {
     name: "Quick Links",
-    position: { x: 50, y: 50 },
+    position: { x: 50, y: 54.791029561671756 },
     settings: {
       width: 600,
       height: 200,
