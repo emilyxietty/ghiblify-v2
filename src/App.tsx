@@ -24,10 +24,28 @@ import Weather from "./containers/Widgets/Weather/Weather";
 import { AppProvider, useAppContext } from "./contexts/AppContext";
 import { useBackground } from "./hooks/useBackground";
 import { useInfoConfig } from "./hooks/useInfoConfig";
+import { useOnline } from "./hooks/useOnline";
 import { useT } from "./i18n/i18n";
 
 const AppContent: React.FC = () => {
   const t = useT();
+  const online = useOnline();
+  // Surface a transient toast on every transition into offline (and
+  // also on first load if we boot up offline). Re-shown if the user
+  // briefly comes back online and drops again.
+  const [showOfflineCallout, setShowOfflineCallout] = React.useState<boolean>(
+    () => (typeof navigator !== "undefined" ? !navigator.onLine : false)
+  );
+  const wasOnline = React.useRef<boolean>(online);
+  React.useEffect(() => {
+    if (!online && wasOnline.current) setShowOfflineCallout(true);
+    wasOnline.current = online;
+  }, [online]);
+  React.useEffect(() => {
+    if (!showOfflineCallout) return;
+    const id = window.setTimeout(() => setShowOfflineCallout(false), 5000);
+    return () => window.clearTimeout(id);
+  }, [showOfflineCallout]);
   const { currentBackground, filmTitle, loading: bgLoading } = useBackground();
   const {
     titlejp,
@@ -166,6 +184,11 @@ const AppContent: React.FC = () => {
 
   return (
     <>
+      {showOfflineCallout && (
+        <div className="offline-callout" role="status" aria-live="polite">
+          {t("common.offlineCallout")}
+        </div>
+      )}
       <LeftSidebar />
       <RightSidebar visible={widgets.bookmarks.visible} />
       {(showWidgetEdits || editingWidgetKey || dragMode) && (

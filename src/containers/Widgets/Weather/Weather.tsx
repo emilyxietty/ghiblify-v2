@@ -146,19 +146,18 @@ const Weather: React.FC = () => {
     >
       {loading && (
         <div className="weather-loading" role="status" aria-live="polite">
-          <img
-            src={iconUrl("partly-cloudy-day", iconStyle)}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            className="weather-loading-icon"
-          />
-          <span className="weather-loading-text">
-            {t("weather.loading")}
-          </span>
+          <span className="weather-spinner" aria-hidden="true" />
         </div>
       )}
-      {!loading && error && (
+      {!loading && error && error === "offline" && (
+        <div className="weather-current weather-na">
+          <div className="weather-current-text">
+            <div className="weather-temp">{t("weather.unavailable")}</div>
+            <div className="weather-condition">{t("weather.offline")}</div>
+          </div>
+        </div>
+      )}
+      {!loading && error && error !== "offline" && (
         <div className="weather-empty weather-error">
           {error === "permission-denied"
             ? t("weather.permissionDenied")

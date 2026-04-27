@@ -349,14 +349,14 @@
     outline-offset: 2px;
 }
 
-/* Heart on each thumbnail — same shape as the trash, sits to the
-   left of it. Always visible when the image is favorited (so users
-   can spot favorites at a glance), otherwise reveal-on-hover like
-   the trash. */
+/* Heart on each thumbnail — sits in the top-left corner, mirroring
+   the trash button which sits in the top-right. Always visible when
+   the image is favorited (so users can spot favorites at a glance),
+   otherwise reveal-on-hover like the trash. */
 .thumb-fav {
     position: absolute;
     top: 6px;
-    right: 38px;
+    left: 6px;
     width: 26px;
     height: 26px;
     display: inline-flex;
@@ -411,6 +411,44 @@
     opacity: 0.65;
     font-weight: 500;
     margin-left: 4px;
+}
+
+/* Small info icon next to the Favorites title — hover reveals the
+   tooltip explaining that favorites always rotate. The span is the
+   hover target (TooltipPortal listens at the [data-tooltip] level).
+   Inline-flex centers the inline-mounted SVG vertically with the
+   text without nudging the line height. */
+.background-modal .favorites-info {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 2px;
+    opacity: 0.6;
+    cursor: help;
+    transition: opacity 140ms ease;
+    vertical-align: middle;
+    color: inherit;
+}
+
+.background-modal .favorites-info:hover,
+.background-modal .favorites-info:focus-visible {
+    opacity: 1;
+    outline: none;
+}
+
+.background-modal .favorites-info:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+/* "X / Y" count next to each movie title in the summary row.
+   X = images currently kept (post-blacklist), Y = full source list.
+   Same muted treatment as the Favorites/Deleted counters. */
+.background-modal .background-count {
+    opacity: 0.65;
+    font-weight: 500;
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
 }
 
 .background-modal .favorites-grid {

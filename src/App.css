@@ -68,6 +68,17 @@
        this so surfaces stay translucent enough for the photo + blur
        to read through, regardless of where the user puts the slider. */
     --surface-alpha-cap: 1;
+
+    /* Z-index tiers. Use these instead of ad-hoc values so layers
+       compose predictably. Existing in-stacking-context values
+       (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
+       fine as raw numbers — these tokens cover the cross-component
+       layers that previously used arms-race values like 10M / 20T. */
+    --z-edit-overlay: 10000;          /* dim covering sidebars + widgets in edit mode */
+    --z-edit-overlay-content: 10001;  /* widget content that must poke above the dim */
+    --z-portal: 99999;                /* body-portaled menus + callouts */
+    --z-resize-handle: 100000;        /* always-on-top corner grip */
+    --z-tutorial-pulse: 100001;       /* tutorial-only pulse above the handle */
 }
 
 /* ---------------------------------------------------------------------------
@@ -955,6 +966,48 @@ body {
 .App {
     background-color: #000;
     min-height: 100vh;
+}
+
+/* Transient toast shown when the browser flips offline. Mirrors the
+   bookmarks-toggle-callout treatment so the two reads as a coherent
+   notification system. Lives in the top portal tier so it renders
+   above the bookmarks panel. */
+.offline-callout {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: var(--z-portal);
+    pointer-events: none;
+    animation: offline-callout-in 5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes offline-callout-in {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px);
+    }
+    8% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    85% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
 }
 
 .edit-toggle-button {

@@ -442,6 +442,17 @@ const Pomodoro: React.FC = () => {
     return () => document.removeEventListener("keydown", handler);
   }, [focusMode]);
 
+  // Right-click → "Enter/Exit focus mode" in the widget context menu
+  // dispatches this event (Widget.tsx can't reach into Pomodoro's local
+  // state directly). Toggle here so the menu item actually does
+  // something.
+  useEffect(() => {
+    const handler = () => setFocusMode((v) => !v);
+    window.addEventListener("ghiblify:pomodoro:toggle-focus", handler);
+    return () =>
+      window.removeEventListener("ghiblify:pomodoro:toggle-focus", handler);
+  }, []);
+
   // Sync inputValue with timer when timer resets or changes
   useEffect(() => {
     if (!isRunning) {

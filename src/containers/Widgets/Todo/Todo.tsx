@@ -214,14 +214,21 @@ export const Todo: React.FC = () => {
       return;
     }
     setTodos((prev) => {
-      const fromIdx = prev.findIndex((t) => t.id === dragged);
-      const targetIdx = prev.findIndex((t) => t.id === id);
+      // Work in VISIBLE order (incomplete-first, completed-last) so
+      // drop positions match what the user actually sees. Previously
+      // we used `prev` directly, which is storage order — dragging a
+      // completed item visually after an incomplete one would land it
+      // in the wrong spot in storage.
+      const visible = prev
+        .slice()
+        .sort((a, b) =>
+          a.checked === b.checked ? 0 : a.checked ? 1 : -1
+        );
+      const fromIdx = visible.findIndex((t) => t.id === dragged);
+      const targetIdx = visible.findIndex((t) => t.id === id);
       if (fromIdx < 0 || targetIdx < 0) return prev;
-      const next = [...prev];
+      const next = [...visible];
       const [removed] = next.splice(fromIdx, 1);
-      // Insertion index in the post-splice array. If the dragged
-      // item was before the target, the target shifted left by 1
-      // when we spliced it out.
       let insertAt = targetIdx;
       if (fromIdx < targetIdx) insertAt -= 1;
       if (pos === "after") insertAt += 1;
@@ -270,7 +277,49 @@ export const Todo: React.FC = () => {
           +
         </button>
       </div>
-      <ul className="todo-list">
+      <ul
+        className="todo-list"
+        // Edge-of-list drop: when the cursor is above the first item
+        // or below the last, the inner <li> handlers don't fire (the
+        // cursor is in empty whitespace). Snap the drop indicator to
+        // before-first / after-last so the user can drag to top or
+        // bottom without having to land precisely on the edge row.
+        onDragOver={(e) => {
+          if (!draggedIdRef.current) return;
+          const items = Array.from(
+            (e.currentTarget as HTMLElement).querySelectorAll(".todo-item")
+          ) as HTMLElement[];
+          if (items.length === 0) return;
+          const firstRect = items[0].getBoundingClientRect();
+          const lastRect = items[items.length - 1].getBoundingClientRect();
+          if (e.clientY < firstRect.top) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            const id = visibleTodos[0]?.id;
+            if (id) {
+              dropPosRef.current = "before";
+              setDropTargetId(id);
+              setDropPos("before");
+            }
+          } else if (e.clientY > lastRect.bottom) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            const id = visibleTodos[visibleTodos.length - 1]?.id;
+            if (id) {
+              dropPosRef.current = "after";
+              setDropTargetId(id);
+              setDropPos("after");
+            }
+          }
+        }}
+        onDrop={(e) => {
+          // Fall-through drop from the edge-of-list dragover above.
+          // The inner <li> onDrop covers the in-between cases.
+          if (!draggedIdRef.current || !dropTargetId) return;
+          e.preventDefault();
+          handleDrop(dropTargetId);
+        }}
+      >
           {visibleTodos.map((todo) => (
             <li
               key={todo.id}
@@ -286,23 +335,10 @@ export const Todo: React.FC = () => {
               ]
                 .filter(Boolean)
                 .join(" ")}
-              draggable
-              onDragStart={(e) => {
-                // Shift means the user is dragging the whole widget —
-                // bail so the widget-shell handler wins.
-                if (e.shiftKey) {
-                  e.preventDefault();
-                  return;
-                }
-                try {
-                  e.dataTransfer.setData("text/plain", todo.id);
-                  e.dataTransfer.effectAllowed = "move";
-                } catch {
-                  /* ignore */
-                }
-                handleDragStart(todo.id);
-              }}
+              // Only the .todo-drag-handle is draggable (see below).
+              // The <li> itself acts as the drop target.
               onDragOver={(e) => {
+                if (!draggedIdRef.current) return;
                 e.preventDefault();
                 e.dataTransfer.dropEffect = "move";
                 handleDragOver(e, todo.id);
@@ -311,7 +347,6 @@ export const Todo: React.FC = () => {
                 e.preventDefault();
                 handleDrop(todo.id);
               }}
-              onDragEnd={handleDragEnd}
             >
               <div className="todo-item-content">
                 <button
@@ -372,6 +407,41 @@ export const Todo: React.FC = () => {
                   className="todo-drag-handle"
                   aria-hidden="true"
                   data-tooltip={t("todo.dragHandleTooltip")}
+                  // Drag is initiated from the handle ONLY so clicks on
+                  // the row text / checkbox / edit / delete buttons
+                  // never accidentally start a drag (a slightly-moved
+                  // mousedown on a draggable parent counts as drag-
+                  // start, which made the widget feel finicky).
+                  // Completed tasks are not draggable — they always sort
+                  // to the bottom anyway, so reordering them is a no-op
+                  // that the user shouldn't even attempt.
+                  draggable={!todo.checked}
+                  onDragStart={(e) => {
+                    // Shift on the handle means the user is dragging
+                    // the whole widget — bail so the widget-shell
+                    // handler wins.
+                    if (e.shiftKey) {
+                      e.preventDefault();
+                      return;
+                    }
+                    // Use the parent <li> as the drag preview so the
+                    // whole row visibly travels with the cursor, not
+                    // just the handle icon.
+                    const li = (e.currentTarget as HTMLElement).closest(
+                      ".todo-item"
+                    ) as HTMLElement | null;
+                    if (li) {
+                      e.dataTransfer.setDragImage(li, 0, 0);
+                    }
+                    try {
+                      e.dataTransfer.setData("text/plain", todo.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    } catch {
+                      /* ignore */
+                    }
+                    handleDragStart(todo.id);
+                  }}
+                  onDragEnd={handleDragEnd}
                 >
                   <DragIndicatorIcon style={{ fontSize: 16 }} />
                 </span>

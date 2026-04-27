@@ -124,9 +124,15 @@
     "year": "1997",
     "screentime": "133 mins",
     "quotes": [
-      "\"Look, everyone! This is what hatred looks like!\" - Prince Ashitaka",
+      "\"Look, everyone! This is what hatred looks like!\" - Ashitaka",
       "\"You want some of our iron? Mine your own!\" - Townsman",
-      "\"Ugh, I smell like a human.\" - San"
+      "\"Ugh, I smell like a human.\" - San",
+      "\"To see with eyes unclouded by hate.\" - Ashitaka",
+      "\"Live. You are beautiful.\" - Ashitaka",
+      "\"You cannot alter your fate. However, you can rise to meet it, if you so choose.\" - Hii-sama",
+      "\"Even if all the trees grow back, it won't be his forest anymore.\" - San",
+      "\"Never. I'll never forgive the human race.\" - San",
+      "\"In the time of the ancient gods, this land was covered in forests, where, from ages long past, dwelt the spirits of the gods.\" - Narrator"
     ]
   },
   "whisper of the heart": {
@@ -149,7 +155,9 @@
     "screentime": "93 mins",
     "quotes": [
       "\"I'd rather be a pig than a fascist.\" - Porco Rosso",
-      "\"A pig's gotta fly.\" - Porco Rosso"
+      "\"A pig's gotta fly.\" - Porco Rosso",
+      "\"A pig that doesn't fly is just an ordinary pig.\" - Porco Rosso",
+      "\"Fly, even if you have to crawl.\" - Porco Rosso"
     ]
   },
   "pom poko": {
@@ -169,7 +177,9 @@
     "screentime": "75 mins",
     "quotes": [
       "\"Always believe in yourself. Do this and no matter where you are, you will have nothing to fear.\" - Baron",
-      "\"Whenever someone creates something with all of their heart, then that creation is given a soul.\" - Baron"
+      "\"Whenever someone creates something with all of their heart, then that creation is given a soul.\" - Baron",
+      "\"There's somewhere I belong. I just have to find it.\" - Haru",
+      "\"When all is said and done, you must follow your own path.\" - Baron"
     ]
   },
   "from up on poppy hill": {
@@ -178,7 +188,9 @@
     "year": "2011",
     "screentime": "91 mins",
     "quotes": [
-      "\"There's no future for people who worship the future, and forget the past.\" - Shun Kazama"
+      "\"There's no future for people who worship the future, and forget the past.\" - Shun Kazama",
+      "\"Tearing it down would be like wiping out the memories of those who came before us.\" - Shun Kazama",
+      "\"I think I might be falling in love with you.\" - Umi Matsuzaki"
     ]
   },
   "nausicaa of the valley of the wind": {
@@ -189,7 +201,24 @@
     "quotes": [
       "\"Why does everything that's good for you have to taste so bad?\" - Asbel",
       "\"It's so beautiful. It's hard to believe these spores could kill me.\" - Nausicaa",
-      "\"Nice valley. I think I'll keep it.\" - Kushana"
+      "\"Nice valley. I think I'll keep it.\" - Kushana",
+      "\"Don't be afraid. There's nothing to fear.\" - Nausicaa",
+      "\"Every one of us must be willing to give up what we love most.\" - Lord Yupa",
+      "\"I'm not afraid to die — if it's to protect the people I love.\" - Nausicaa"
+    ]
+  },
+  "when marnie was there": {
+    "title": "When Marnie Was There",
+    "titlejp": "思い出のマーニー",
+    "year": "2014",
+    "screentime": "103 mins",
+    "quotes": [
+      "\"She whines like an old goat.\" - Anna Sasaki",
+      "\"I hate myself.\" - Anna Sasaki",
+      "\"I cost you money.\" - Anna Sasaki",
+      "\"There's an invisible magic circle. There's the inside, and the outside. And I'm outside.\" - Anna Sasaki",
+      "\"Will you forgive me, Anna?\" - Marnie",
+      "\"I love you, Anna. More than any girl I've ever known.\" - Marnie"
     ]
   },
   "the boy and the heron": {
@@ -199,7 +228,9 @@
     "screentime": "124 mins",
     "quotes": [
       "\"I'll be your guide.\" - The Grey Heron",
-      "\"Mahito turned into a little budgie.\" - Shoichi Maki"
+      "\"Mahito turned into a little budgie.\" - Shoichi Maki",
+      "\"How do you live?\" - Granduncle",
+      "\"Friends. We are friends, aren't we?\" - The Grey Heron"
     ]
   },
   "soothing (beta)": {

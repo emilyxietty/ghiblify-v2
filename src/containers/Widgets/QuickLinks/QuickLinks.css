@@ -281,12 +281,12 @@
     gap: 8px;
     width: 100%;
     margin-bottom: 8px;
-    /* Lift above the EditWidget overlay (z-index: 10000000) so the
-       inputs are interactive while in edit mode and the user can
-       actually type into them. Without this, the overlay's blurred
-       backdrop covers the form. */
+    /* Lift above the EditWidget dim overlay so the inputs are
+       interactive while in edit mode and the user can actually type
+       into them. Without this, the overlay's blurred backdrop
+       covers the form. */
     position: relative;
-    z-index: 10000001;
+    z-index: var(--z-edit-overlay-content);
 }
 
 /* On Frost, every surface is glass over the photo — without an

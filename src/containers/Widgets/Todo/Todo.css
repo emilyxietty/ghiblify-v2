@@ -374,6 +374,20 @@
     cursor: grabbing;
 }
 
+/* Completed tasks aren't draggable (handle has draggable={false}). Make
+   that visually clear: dim the handle further and switch the cursor so
+   the user doesn't try and wonder why nothing happens. Stays on its
+   normal hover-fade-in cycle so the disabled state is only visible
+   while the user is hovering the row. */
+.todo-item.checked .todo-drag-handle {
+    color: color-mix(in srgb, var(--todo-text) 22%, transparent);
+    cursor: not-allowed;
+}
+
+.todo-item.checked .todo-drag-handle:active {
+    cursor: not-allowed;
+}
+
 /* Inline edit affordance — a small pencil that fades in on hover.
    The whole text span is still click-to-edit, but the pencil makes
    that affordance discoverable. */

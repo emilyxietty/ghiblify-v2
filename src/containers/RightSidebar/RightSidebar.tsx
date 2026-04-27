@@ -354,7 +354,7 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
         className="bookmarks-folder-toggle"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        style={{ paddingLeft: 8 + depth * 20 }}
+        style={{ paddingLeft: 8 + depth * 28 }}
       >
         <ChevronRightIcon
           className={`bookmarks-chevron${open ? " is-open" : ""}`}
@@ -398,7 +398,7 @@ interface BookmarkLinkProps {
   onDrop: () => void;
   /** Folder nesting level — used to indent the link tile so it lines
    *  up under its sibling folders' chevrons (which already use
-   *  `paddingLeft: 8 + depth * 20`). */
+   *  `paddingLeft: 8 + depth * 28`). */
   depth: number;
 }
 
@@ -481,11 +481,11 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
         href={node.url}
         className="bookmarks-link"
         title={node.url}
-        // Indent matches the parent folder toggle's `8 + depth * 20`,
+        // Indent matches the parent folder toggle's `8 + depth * 28`,
         // so links visually line up under (and inside of) their
         // sibling folders' chevrons rather than hugging the panel
         // edge regardless of nesting.
-        style={{ paddingLeft: 8 + depth * 20 }}
+        style={{ paddingLeft: 8 + depth * 28 }}
         // <a href> is implicitly draggable, which would steal the drag
         // from the wrapping <li> and turn it into a "drag the URL"
         // link-drag (browser owns dataTransfer + dropEffect). Pin it
@@ -495,6 +495,15 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
         // mousedown that starts the drag doesn't also follow the link.
         onClick={(e) => {
           if (drag.draggedId) e.preventDefault();
+        }}
+        // Bind contextmenu on the <a> directly. Relying on bubble-up
+        // to the parent <li> isn't reliable for link elements —
+        // Chrome can show its native link menu (Open in New Tab, …)
+        // before React's synthetic event preventDefault takes effect.
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setContextMenuPos({ x: e.clientX, y: e.clientY });
         }}
       >
         {favicon ? (

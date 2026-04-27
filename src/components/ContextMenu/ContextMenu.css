@@ -5,14 +5,16 @@
    =========================================================================== */
 
 .ctx-menu {
-    /* Fixed 160px width for every menu and cascade so the parent and
-       its submenu always look like the same component. Long labels
-       fall back to text-overflow:ellipsis on .ctx-menu-label.
-       border-box so 160px is the total outer width including the
-       4px padding — otherwise the row's `width: 100%` + padding
-       would overflow to 180px. */
+    /* Sized to content with a 160px floor so short menus never feel
+       cramped, and a 300px ceiling so an outlier long label doesn't
+       blow the menu off-screen. Cascades inherit the parent's width
+       as their min-width via JS (see SubmenuRow useEffect) so a
+       short-labeled parent + long-labeled cascade still look paired.
+       border-box so the rendered width includes the 4px padding. */
     box-sizing: border-box;
-    width: 160px;
+    min-width: 160px;
+    max-width: 300px;
+    width: max-content;
     padding: 4px;
     background: rgba(10, 14, 20, 0.96);
     color: #ffffff;
@@ -25,7 +27,7 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    z-index: 5500;
+    z-index: var(--z-portal);
     font-size: 13px;
     font-family: inherit;
     animation: ctx-menu-in 110ms ease both;
@@ -67,6 +69,17 @@
 .ctx-menu-submenu-row.is-open {
     background: rgba(255, 255, 255, 0.1);
     outline: none;
+}
+
+.ctx-menu-row.ctx-menu-info {
+    /* Non-interactive — no hover state, dimmer text, no pointer. */
+    cursor: default;
+    opacity: 0.75;
+    background: transparent;
+}
+
+.ctx-menu-row.ctx-menu-info:hover {
+    background: transparent;
 }
 
 .ctx-menu-row.is-disabled {

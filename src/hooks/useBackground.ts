@@ -4,6 +4,15 @@ import {
   readBlacklist,
   readFavorites,
 } from "../storage/backgroundStorage";
+import { useOnline } from "./useOnline";
+
+// Bundled fallback shown when the browser is offline. Lives in
+// public/assets/backgrounds and ships with the extension, so it loads
+// from chrome-extension:// without a network request. The "spirited
+// away" key matches the metadata in movie_metadata.json so the Info
+// widget still resolves a film.
+const OFFLINE_FALLBACK_PATH = "assets/backgrounds/chihiro043.jpg";
+const OFFLINE_FALLBACK_FILM = "spirited away";
 
 interface BackgroundItem {
   link: string;
@@ -44,8 +53,22 @@ export const useBackground = () => {
   const [filmTitle, setFilmTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const { backgroundSelection, updateBackgroundSelection } = useAppContext();
+  const online = useOnline();
 
   useEffect(() => {
+    // Offline short-circuit — every URL in background_en.json is
+    // remote (Tumblr/Pinterest/Tenor/etc.), so without network we'd
+    // sit on a black screen. Switch to the bundled Spirited Away
+    // still and surface the matching film title so the Info widget
+    // populates from the local metadata file (which IS shipped with
+    // the extension and works offline).
+    if (!online) {
+      setCurrentBackground(chrome.runtime.getURL(OFFLINE_FALLBACK_PATH));
+      setFilmTitle(OFFLINE_FALLBACK_FILM);
+      setLoading(false);
+      return;
+    }
+
     const loadBackground = async () => {
       try {
         const [bgResponse, metadataResponse] = await Promise.all([
@@ -232,7 +255,7 @@ export const useBackground = () => {
         reload as EventListener
       );
     };
-  }, [backgroundSelection]);
+  }, [backgroundSelection, online]);
 
   return { currentBackground, filmTitle, loading };
 };

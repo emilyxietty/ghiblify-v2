@@ -714,7 +714,7 @@ body.tutorial-adjust-time
     .widget[data-widget-key="time"]
     .widget-resize-handle {
     animation: tutorial-time-pulse 1.6s ease-in-out infinite;
-    z-index: 20000000001;
+    z-index: var(--z-tutorial-pulse);
 }
 
 @keyframes tutorial-time-pulse {

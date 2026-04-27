@@ -1,5 +1,8 @@
+import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import EditIcon from "@mui/icons-material/Edit";
+import FaceIcon from "@mui/icons-material/Face";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
+import PlaceIcon from "@mui/icons-material/Place";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import {
@@ -7,7 +10,9 @@ import {
   ContextMenuItem,
 } from "../../components/ContextMenu/ContextMenu";
 import EditWidget from "../../components/EditWidget/EditWidget";
+import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
+  AvatarSettings,
   getWidgetConfig,
   InfoSettings,
   NotesSettings,
@@ -677,22 +682,23 @@ function buildContextMenuItems(args: {
     isFrost,
   } = args;
 
+  const widgetName = t(`widgets.names.${storageKey}`);
   const universal: ContextMenuItem[] = [
     {
       type: "action",
-      label: t("widgets.contextMenu.edit"),
+      label: t("widgets.contextMenu.edit", { name: widgetName }),
       onClick: () => setEditingWidgetKey(storageKey),
       icon: <EditIcon style={{ fontSize: 14 }} />,
     },
     {
       type: "action",
-      label: t("widgets.contextMenu.drag"),
+      label: t("widgets.contextMenu.drag", { name: widgetName }),
       onClick: () => setDragMode(true),
       icon: <OpenWithIcon style={{ fontSize: 14 }} />,
     },
     {
       type: "action",
-      label: t("widgets.contextMenu.hide"),
+      label: t("widgets.contextMenu.hide", { name: widgetName }),
       onClick: () => toggleWidgetVisibility(storageKey),
       icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
     },
@@ -745,7 +751,34 @@ function buildContextMenuItems(args: {
     const sectionKeys = ["now", "hourly", "daily"] as const;
     const onlyOneOn =
       sectionKeys.filter((k) => s.sections[k]).length <= 1;
+
+    // Read the resolved location from the weather cache so the user
+    // can see what geolocation reported. The label is set by
+    // useWeather after a reverse-geocode (BigDataCloud) and persisted
+    // in `ghiblify_weather.place.label`.
+    let locationLabel: string | null = null;
+    try {
+      const raw = localStorage.getItem("ghiblify_weather");
+      if (raw) {
+        const blob = JSON.parse(raw);
+        const label = blob?.place?.label;
+        if (typeof label === "string" && label.trim()) locationLabel = label;
+      }
+    } catch {
+      /* ignore — no label shown */
+    }
+
     extras = [
+      ...(locationLabel
+        ? ([
+            {
+              type: "info" as const,
+              label: locationLabel,
+              icon: <PlaceIcon style={{ fontSize: 14 }} />,
+            },
+            { type: "separator" as const },
+          ] as ContextMenuItem[])
+        : []),
       {
         type: "radio",
         label: t("widgets.edit.weatherUnitC"),
@@ -787,6 +820,50 @@ function buildContextMenuItems(args: {
         checked: showBorder,
         onClick: () =>
           updateWidgetSettings("notes", { showBorder: !showBorder }),
+      },
+    ];
+  } else if (storageKey === "avatar") {
+    const s = widgets.avatar.settings as AvatarSettings;
+    extras = [
+      {
+        type: "submenu",
+        label: t("widgets.contextMenu.selectAvatar"),
+        icon: <FaceIcon style={{ fontSize: 14 }} />,
+        items: AVATAR_OPTIONS.map((opt) => ({
+          type: "radio" as const,
+          label: opt.label,
+          selected: s.selectedAvatar === opt.value,
+          onClick: () =>
+            updateWidgetSettings("avatar", { selectedAvatar: opt.value }),
+        })),
+      },
+    ];
+  } else if (storageKey === "pomodoro") {
+    // Focus mode lives in Pomodoro's local React state, not in
+    // AppContext. Read the current state from the same localStorage
+    // blob the widget reads at mount, and dispatch a custom event the
+    // Pomodoro effect listens for to flip it.
+    let focusOn = false;
+    try {
+      const raw = localStorage.getItem("ghiblify_pomodoro");
+      if (raw) {
+        const blob = JSON.parse(raw);
+        focusOn = blob?.focusMode === true;
+      }
+    } catch {
+      /* ignore — default to false */
+    }
+    extras = [
+      {
+        type: "action",
+        label: focusOn
+          ? t("widgets.contextMenu.focusModeOff")
+          : t("widgets.contextMenu.focusModeOn"),
+        icon: <CenterFocusStrongIcon style={{ fontSize: 14 }} />,
+        onClick: () =>
+          window.dispatchEvent(
+            new CustomEvent("ghiblify:pomodoro:toggle-focus")
+          ),
       },
     ];
   } else if (storageKey === "info") {

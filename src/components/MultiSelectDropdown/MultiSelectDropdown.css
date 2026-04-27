@@ -44,13 +44,14 @@
     position: absolute;
     top: calc(100% + 4px);
     right: 0;
-    /* Fixed 160px to match the right-click ContextMenu — both menus
-       are now the same width regardless of label length. Long labels
-       fall back to text-overflow: ellipsis on .multi-select-label.
-       border-box so 160px is the total outer width (rows inside use
-       width: 100% + padding which would otherwise overflow). */
+    /* Sized to content with a 160px floor / 300px ceiling, matching
+       the right-click ContextMenu. border-box so the rendered width
+       includes the 4px padding (rows inside use width: 100%, which
+       would otherwise overflow). */
     box-sizing: border-box;
-    width: 160px;
+    min-width: 160px;
+    max-width: 300px;
+    width: max-content;
     padding: 4px;
     background: rgba(10, 14, 20, 0.96);
     color: #ffffff;
@@ -64,7 +65,7 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    z-index: 5500;
+    z-index: var(--z-portal);
     font-size: 13px;
     user-select: none;
     animation: multiSelectSlideIn 110ms ease both;

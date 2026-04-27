@@ -1,6 +1,7 @@
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import RestoreIcon from "@mui/icons-material/Restore";
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
@@ -33,6 +34,10 @@ type BackgroundListItemProps = {
   enabled: boolean;
   available: boolean;
   links: string[];
+  /** Pre-blacklist total — the source's full link count. Shown
+   *  alongside `links.length` in the summary so the user can see
+   *  how many they've trashed (e.g., "47 / 50"). */
+  totalLinks: number;
   disableLast?: boolean;
   defaultOpen?: boolean;
   onUpdate: (k: string, v: boolean) => void;
@@ -47,6 +52,7 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
     enabled,
     available,
     links,
+    totalLinks,
     disableLast,
     defaultOpen,
     onUpdate,
@@ -91,7 +97,20 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => onUpdate(movieKey, e.target.checked)}
           />
-          <span className="background-title">{title}</span>
+          <span className="background-title">
+            {title}
+            {available && totalLinks > 0 && (
+              <span className="background-count">
+                {" "}
+                (
+                {enabled
+                  ? links.length
+                  : links.filter((l) => favoritedSet.has(l)).length}
+                {" / "}
+                {totalLinks})
+              </span>
+            )}
+          </span>
           {!available && (
             <span className="background-unavailable">
               {" "}
@@ -162,6 +181,7 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
     prev.enabled === next.enabled &&
     prev.available === next.available &&
     prev.disableLast === next.disableLast &&
+    prev.totalLinks === next.totalLinks &&
     prev.links.join("|") === next.links.join("|") &&
     prev.links.every(
       (l) => prev.favoritedSet.has(l) === next.favoritedSet.has(l)
@@ -488,6 +508,21 @@ export const BackgroundSettingsModal: React.FC<
                     />
                     <span className="background-title">
                       {t("background.modal.favoritesTitle")}{" "}
+                      <span
+                        className="favorites-info"
+                        data-tooltip={t("background.modal.favoritesAlwaysOn")}
+                        aria-label={t("background.modal.favoritesAlwaysOn")}
+                        role="img"
+                        tabIndex={0}
+                        // Don't toggle the <details> open/closed when the
+                        // user clicks the info hover target.
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <InfoOutlinedIcon style={{ fontSize: 14 }} />
+                      </span>
                       <span className="favorites-count">
                         ({favorites.size})
                       </span>
@@ -589,6 +624,7 @@ export const BackgroundSettingsModal: React.FC<
                       enabled={enabled}
                       available={available}
                       links={filteredLinks}
+                      totalLinks={links.length}
                       disableLast={disableLast}
                       defaultOpen={isFirstEnabled}
                       onUpdate={handleUpdateSelection}

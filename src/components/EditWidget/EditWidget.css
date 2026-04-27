@@ -86,7 +86,7 @@
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(2px);
     border-radius: var(--radius-lg);
-    z-index: 10000000;
+    z-index: var(--z-edit-overlay);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -158,7 +158,7 @@
     background: transparent;
     cursor: nwse-resize;
     pointer-events: auto;
-    z-index: 20000000000000;
+    z-index: var(--z-resize-handle);
 }
 
 .widget-resize-handle::after {

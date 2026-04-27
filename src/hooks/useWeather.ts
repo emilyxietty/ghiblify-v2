@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useOnline } from "./useOnline";
 
 /**
  * Weather hook backed by Open-Meteo (free, no API key, generous limits).
@@ -50,7 +51,8 @@ export interface WeatherDaily {
 export type WeatherErrorCode =
   | "permission-denied"
   | "permission-unavailable"
-  | "fetch-error";
+  | "fetch-error"
+  | "offline";
 
 export interface WeatherData {
   current: WeatherCurrent;
@@ -341,10 +343,22 @@ export const useWeather = (unit: "C" | "F") => {
   const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<WeatherErrorCode | null>(null);
+  const online = useOnline();
 
   useEffect(() => {
     let cancelled = false;
     setError(null);
+
+    // Offline short-circuit — Open-Meteo + BigDataCloud are both
+    // remote, so without network there's no useful weather to show.
+    // Surface "offline" so the widget can render N/A instead of a
+    // generic fetch-error message.
+    if (!online) {
+      setData(null);
+      setError("offline");
+      setLoading(false);
+      return;
+    }
 
     const cachedApi = readApi();
     if (
@@ -381,7 +395,7 @@ export const useWeather = (unit: "C" | "F") => {
     return () => {
       cancelled = true;
     };
-  }, [unit]);
+  }, [unit, online]);
 
   return { data, loading, error };
 };

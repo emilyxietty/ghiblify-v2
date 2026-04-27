@@ -10,7 +10,8 @@
     "reset": "Reset",
     "guide": "Guide",
     "search": "Search",
-    "exit": "Exit"
+    "exit": "Exit",
+    "offlineCallout": "Wi-Fi is not currently available"
   },
   "themes": {
     "ghibli": "Ghibli",
@@ -95,12 +96,15 @@
       "hide": "Hide {{name}} widget"
     },
     "contextMenu": {
-      "edit": "Edit widget",
-      "drag": "Drag widget",
-      "hide": "Hide widget",
+      "edit": "Edit {{name}}",
+      "drag": "Drag {{name}}",
+      "hide": "Hide {{name}}",
       "time12": "12-hour",
       "time24": "24-hour",
-      "addLink": "Add new link"
+      "addLink": "Add new link",
+      "focusModeOn": "Enter focus mode",
+      "focusModeOff": "Exit focus mode",
+      "selectAvatar": "Choose avatar"
     },
     "edit": {
       "ariaEdit": "Edit {{key}} widget",
@@ -231,7 +235,8 @@
     "ariaLabel": "Sticky note"
   },
   "weather": {
-    "loading": "Loading weather…",
+    "unavailable": "N/A",
+    "offline": "Offline — weather unavailable",
     "permissionDenied": "Location permission denied. Enable it in Chrome to see local weather.",
     "permissionUnavailable": "Geolocation isn't available in this context.",
     "fetchError": "Couldn't load weather. Try again later.",
@@ -281,8 +286,8 @@
   },
   "socials": {
     "buttonLabel": "My socials",
-    "modalTitle": "Find me online",
-    "modalIntro": "Say hi! I'd love to connect."
+    "modalTitle": "My Socials",
+    "modalIntro": "I'd love to connect! Come say hi :)"
   },
   "report": {
     "buttonLabel": "Report Issue",

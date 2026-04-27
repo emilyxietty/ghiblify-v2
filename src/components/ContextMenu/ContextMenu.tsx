@@ -20,6 +20,14 @@ export type ContextMenuItem =
       // marker so they ignore this.
       icon?: React.ReactNode;
     }
+  | {
+      // Non-interactive informational row (e.g., the resolved
+      // location on the Weather widget's right-click menu). Renders
+      // muted, no hover affordance, no click handler.
+      type: "info";
+      label: string;
+      icon?: React.ReactNode;
+    }
   | { type: "separator" }
   | {
       type: "radio";
@@ -34,7 +42,12 @@ export type ContextMenuItem =
       onClick: () => void;
       disabled?: boolean;
     }
-  | { type: "submenu"; label: string; items: ContextMenuItem[] };
+  | {
+      type: "submenu";
+      label: string;
+      items: ContextMenuItem[];
+      icon?: React.ReactNode;
+    };
 
 interface ContextMenuProps {
   position: { x: number; y: number };
@@ -58,10 +71,20 @@ const SubmenuRow: React.FC<{
   // -5 so the first item visually aligns with the parent row. Shifted
   // upward when the submenu would overflow the bottom of the viewport.
   const [topOffset, setTopOffset] = useState<number>(-5);
+  // Pin the cascade's min-width to the parent menu's measured width
+  // so a short-labeled parent + long-labeled cascade still look like
+  // they belong together. Without this, content-sized menus can end
+  // up at mismatched widths next to each other.
+  const [minWidth, setMinWidth] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isOpen || !rowRef.current || !subRef.current) return;
     const rowRect = rowRef.current.getBoundingClientRect();
+    const parentMenu = rowRef.current.closest(".ctx-menu") as HTMLElement | null;
+    const parentWidth = parentMenu?.getBoundingClientRect().width ?? 0;
+    setMinWidth(parentWidth || null);
+    // Re-measure AFTER min-width applies so the side/top calculations
+    // account for the cascade's final size.
     const subRect = subRef.current.getBoundingClientRect();
     const margin = 8;
 
@@ -99,7 +122,9 @@ const SubmenuRow: React.FC<{
       aria-haspopup="menu"
       aria-expanded={isOpen}
     >
-      <span className="ctx-menu-icon" aria-hidden="true" />
+      <span className="ctx-menu-icon" aria-hidden="true">
+        {item.icon}
+      </span>
       <span className="ctx-menu-label">{item.label}</span>
       <ChevronRightIcon className="ctx-menu-chevron" />
       {isOpen && (
@@ -107,7 +132,7 @@ const SubmenuRow: React.FC<{
           ref={subRef}
           className={`ctx-menu ctx-menu-submenu ctx-menu-submenu-${side}`}
           role="menu"
-          style={{ top: topOffset }}
+          style={{ top: topOffset, ...(minWidth ? { minWidth } : {}) }}
           // Outside-click is handled by the root listener; the
           // stopPropagation here keeps mousedown inside the submenu
           // from being mis-classified as outside.
@@ -161,6 +186,20 @@ const Items: React.FC<{
               </span>
               <span className="ctx-menu-label">{item.label}</span>
             </button>
+          );
+        }
+        if (item.type === "info") {
+          return (
+            <div
+              key={idx}
+              role="presentation"
+              className="ctx-menu-row ctx-menu-info"
+            >
+              <span className="ctx-menu-icon" aria-hidden="true">
+                {item.icon}
+              </span>
+              <span className="ctx-menu-label">{item.label}</span>
+            </div>
           );
         }
         // radio | checkbox

@@ -38,9 +38,9 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 140ms ease;
-    /* Sits above the EditWidget dark overlay (z-index: 10000000) so
-       the credit + source link are clickable in edit mode. */
-    z-index: 10000001;
+    /* Sits above the EditWidget dim overlay so the credit + source
+       link are clickable in edit mode. */
+    z-index: var(--z-edit-overlay-content);
 }
 
 .avatar-credit a {
@@ -94,9 +94,9 @@ body.show-widget-outline .avatar-credit,
     align-items: center;
     justify-content: center;
     padding: 0;
-    /* Sits above the EditWidget overlay (z-index 10000000) so it
-       remains clickable when the widget enters edit mode. */
-    z-index: 10000001;
+    /* Sits above the EditWidget dim overlay so it remains clickable
+       when the widget enters edit mode. */
+    z-index: var(--z-edit-overlay-content);
     opacity: 0;
     pointer-events: none;
     transition: opacity 140ms ease, background 140ms ease, transform 140ms ease;
