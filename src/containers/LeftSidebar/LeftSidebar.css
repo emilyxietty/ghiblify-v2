@@ -128,11 +128,28 @@
 
 /* Language picker sits inline beside Rate / Report. The base
    .dropdown is `width: 100%`, which would push our two siblings
-   onto the next line — pin to auto so it sizes to its content.
-   flex: 0 0 auto disables grow/shrink so it stays compact. */
-.left-sidebar .language-picker {
-    width: auto;
-    min-width: 92px;
+   onto the next line. Force the wrapper AND the inner toggle button
+   to size to their content via `max-content` — `width: auto` alone
+   was leaving the button visibly stretched.
+   flex: 0 0 auto disables grow/shrink so the picker stays compact
+   inside its flex parent. */
+.left-sidebar .language-picker,
+.welcome-language-picker {
+    width: max-content !important;
+    flex: 0 0 auto;
+}
+
+.left-sidebar .language-picker .dropdown-toggle,
+.welcome-language-picker .dropdown-toggle {
+    width: max-content !important;
+}
+
+/* The inner label span uses `flex: 1` from the base Dropdown.css,
+   which makes the button stretch when there's any free space.
+   Disable it for the picker so the label sits at its intrinsic
+   width and the toggle hugs (label + arrow). */
+.left-sidebar .language-picker .dropdown-selected,
+.welcome-language-picker .dropdown-selected {
     flex: 0 0 auto;
 }
 

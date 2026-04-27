@@ -237,7 +237,7 @@
   },
   "weather": {
     "unavailable": "N/D",
-    "offline": "Offline — clima indisponível",
+    "offline": "Offline",
     "permissionDenied": "Permissão de localização negada. Habilite no Chrome para ver o clima local.",
     "permissionUnavailable": "Geolocalização indisponível neste contexto.",
     "fetchError": "Não foi possível carregar o clima. Tente novamente.",
@@ -352,7 +352,7 @@
       "welcome": {
         "title": "Bem-vindo ao Ghiblify",
         "body1": "Uma página de nova aba inspirada no Studio Ghibli. As imagens são gentilmente cedidas pelo Studio Ghibli para uso não comercial. Aproveite este trabalho feito com amor e considere apoiar o estudio comprando produtos ou filmes oficiais.",
-        "body2": "Como a extensão acaba de ser remodelada, peço paciência enquanto corrijo bugs e adiciono recursos. Reporte qualquer problema. Obrigado pelo apoio!",
+        "body2": "Se notar algum problema, reporte. Obrigado pelo apoio!",
         "body3": "Clique em Próximo para um tour rápido pelas novidades.",
         "hint": "Use ← → ou os pontos para navegar pelo guia."
       },

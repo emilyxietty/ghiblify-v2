@@ -144,7 +144,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
               position: "fixed",
               left: menuPos.left,
               top: menuPos.top,
+              // The base .dropdown-menu CSS sets `right: 0`, which on
+              // a portaled+fixed menu would stretch it to the
+              // viewport's right edge. Explicitly clear it.
+              right: "auto",
               minWidth: menuPos.width,
+              width: "max-content",
+              maxWidth: 280,
             }
           : undefined
       }

@@ -237,7 +237,7 @@
   },
   "weather": {
     "unavailable": "N/D",
-    "offline": "Hors ligne — météo indisponible",
+    "offline": "Hors ligne",
     "permissionDenied": "Permission de localisation refusée. Activez-la dans Chrome.",
     "permissionUnavailable": "La géolocalisation n'est pas disponible dans ce contexte.",
     "fetchError": "Impossible de charger la météo. Réessayez plus tard.",
@@ -352,7 +352,7 @@
       "welcome": {
         "title": "Bienvenue sur Ghiblify",
         "body1": "Une page de nouvel onglet inspirée du Studio Ghibli. Ces images sont généreusement fournies gratuitement par le Studio Ghibli pour un usage non commercial. Profitez-en et envisagez de soutenir le studio en achetant des produits ou films officiels.",
-        "body2": "L'extension venant d'être refondée, merci de votre patience pendant que je corrige les bugs et ajoute des fonctionnalités. Signalez-moi tout problème. Merci pour votre soutien !",
+        "body2": "Si vous remarquez un problème, signalez-le. Merci pour votre soutien !",
         "body3": "Cliquez sur Suivant pour un tour rapide des nouveautés.",
         "hint": "Utilisez ← → ou les points pour naviguer dans ce guide."
       },

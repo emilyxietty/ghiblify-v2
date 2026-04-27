@@ -237,7 +237,7 @@
   },
   "weather": {
     "unavailable": "N/A",
-    "offline": "Offline — weather unavailable",
+    "offline": "Offline",
     "permissionDenied": "Location permission denied. Enable it in Chrome to see local weather.",
     "permissionUnavailable": "Geolocation isn't available in this context.",
     "fetchError": "Couldn't load weather. Try again later.",
@@ -352,7 +352,7 @@
       "welcome": {
         "title": "Welcome to Ghiblify",
         "body1": "A Studio Ghibli–inspired new tab page. These images are generously provided for free for non-commercial use by Studio Ghibli. Please enjoy this labor of love, and consider supporting the studio by purchasing official merchandise or media.",
-        "body2": "As this extension has been newly revamped, please bear with me as I fix bugs and add features in the near future. If you notice any issues, please report them to me. I'm very grateful for your support. Thank you!",
+        "body2": "If you notice any issues, please report them to me. Thank you for your support!",
         "body3": "Click Next to take a quick tour of the new features.",
         "hint": "Use ← → or the dots to flip through this guide."
       },

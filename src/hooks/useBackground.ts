@@ -3,13 +3,19 @@ import { useAppContext } from "../contexts/AppContext";
 import { readBlacklist, readFavorites } from "../storage/backgroundStorage";
 import { useOnline } from "./useOnline";
 
-// Bundled fallback shown when the browser is offline. Lives in
-// public/assets/backgrounds and ships with the extension, so it loads
-// from chrome-extension:// without a network request. The "spirited
-// away" key matches the metadata in movie_metadata.json so the Info
-// widget still resolves a film.
-const OFFLINE_FALLBACK_PATH = "assets/backgrounds/chihiro043.jpg";
-const OFFLINE_FALLBACK_FILM = "spirited away";
+// Bundled fallbacks shown when the browser is offline. All ship with
+// the extension under public/assets/backgrounds and load from
+// chrome-extension:// without any network request. Each entry pairs
+// the image path with the matching `movie_metadata.json` key so the
+// Info widget still resolves a film while offline.
+const OFFLINE_FALLBACKS: Array<{ path: string; film: string }> = [
+  { path: "assets/backgrounds/chihiro015.jpg", film: "spirited away" },
+  { path: "assets/backgrounds/chihiro043.jpg", film: "spirited away" },
+  { path: "assets/backgrounds/howl049.jpg", film: "howl's moving castle" },
+  { path: "assets/backgrounds/kazetachinu024.jpg", film: "the wind rises" },
+  { path: "assets/backgrounds/majo001.jpg", film: "kiki's delivery service" },
+  { path: "assets/backgrounds/ponyo005.jpg", film: "ponyo" },
+];
 
 interface BackgroundItem {
   link: string;
@@ -55,13 +61,17 @@ export const useBackground = () => {
   useEffect(() => {
     // Offline short-circuit — every URL in background.json is
     // remote (Tumblr/Pinterest/Tenor/etc.), so without network we'd
-    // sit on a black screen. Switch to the bundled Spirited Away
-    // still and surface the matching film title so the Info widget
-    // populates from the local metadata file (which IS shipped with
-    // the extension and works offline).
+    // sit on a black screen. Pick a random bundled fallback and
+    // surface its matching film title so the Info widget populates
+    // from the local metadata file (which IS shipped with the
+    // extension and works offline).
     if (!online) {
-      setCurrentBackground(chrome.runtime.getURL(OFFLINE_FALLBACK_PATH));
-      setFilmTitle(OFFLINE_FALLBACK_FILM);
+      const pick =
+        OFFLINE_FALLBACKS[
+          Math.floor(Math.random() * OFFLINE_FALLBACKS.length)
+        ];
+      setCurrentBackground(chrome.runtime.getURL(pick.path));
+      setFilmTitle(pick.film);
       setLoading(false);
       return;
     }
@@ -215,11 +225,25 @@ export const useBackground = () => {
           chosenLink,
         );
 
-        // Get metadata for this source (exists because we filtered validSources)
-        const metadata = metadataData[selected.sourceTitle];
+        // Resolve metadata. When the pick came from the favorites
+        // pool the sourceTitle is the sentinel "__favorites__" — not
+        // a real metadata key — so look up the actual originating
+        // film by scanning bgData.sources for the URL. Falls back to
+        // a blank filmTitle if the favorite doesn't belong to any
+        // tracked source (e.g., a one-off URL the user hearted from
+        // the right-click menu on a custom background).
+        let resolvedMetadata = metadataData[selected.sourceTitle];
+        if (!resolvedMetadata && selected.sourceTitle === "__favorites__") {
+          const originSource = bgData.sources.find((s) =>
+            s.links.includes(selected!.link)
+          );
+          if (originSource) {
+            resolvedMetadata = metadataData[originSource.title];
+          }
+        }
 
         setCurrentBackground(chosenLink);
-        setFilmTitle(metadata.title);
+        setFilmTitle(resolvedMetadata?.title ?? "");
 
         setLoading(false);
       } catch (error) {

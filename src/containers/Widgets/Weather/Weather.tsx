@@ -151,9 +151,15 @@ const Weather: React.FC = () => {
       )}
       {!loading && error && error === "offline" && (
         <div className="weather-current weather-na">
+          <img
+            src={chrome.runtime.getURL("assets/weather/Loading.gif")}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            className="weather-icon weather-offline-icon"
+          />
           <div className="weather-current-text">
             <div className="weather-temp">{t("weather.unavailable")}</div>
-            <div className="weather-condition">{t("weather.offline")}</div>
           </div>
         </div>
       )}
