@@ -1,5 +1,5 @@
-// Single combined localStorage entry for everything that customizes
-// the rotating photo background:
+// Single combined entry for everything that customizes the rotating
+// photo background:
 //   favorites — URLs always kept in the rotation pool
 //   blacklist — URLs that should never appear
 //   selection — which movies the user has enabled / disabled
@@ -7,11 +7,21 @@
 //
 // All four used to live in their own keys (background_selection,
 // background_filters, ghiblify_favorites, ghiblify_blacklist) which
-// muddled the localStorage namespace and meant four separate
-// migrations every time the shape changed. Now everything lives
-// inside `ghiblify_background` and migrates from the four legacy
-// keys on first load (idempotent — runs once per page load and is a
-// no-op once cleaned up).
+// muddled the namespace and meant four separate migrations every
+// time the shape changed. Now everything lives inside
+// `ghiblify_background` and migrates from the four legacy keys on
+// first load (idempotent — runs once per page load and is a no-op
+// once cleaned up).
+//
+// Persistence flows through hybridStorage — chrome.storage.local is
+// the source of truth, with a localStorage mirror for synchronous
+// first-paint reads. See ../storage/hybridStorage.ts.
+
+import {
+  readSync as readPersisted,
+  write as writePersisted,
+  remove as removePersisted,
+} from "./hybridStorage";
 
 export interface BackgroundFilters {
   blur: number;
@@ -44,25 +54,15 @@ const LEGACY_KEYS = [
 ];
 
 const readBlob = (): BackgroundBlob => {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as BackgroundBlob) : {};
-  } catch {
-    return {};
-  }
+  const parsed = readPersisted<BackgroundBlob | null>(KEY, null);
+  return parsed && typeof parsed === "object" ? parsed : {};
 };
 
 const writeBlob = (next: BackgroundBlob) => {
-  try {
-    if (Object.keys(next).length === 0) {
-      localStorage.removeItem(KEY);
-    } else {
-      localStorage.setItem(KEY, JSON.stringify(next));
-    }
-  } catch {
-    /* ignore */
+  if (Object.keys(next).length === 0) {
+    removePersisted(KEY);
+  } else {
+    writePersisted(KEY, next);
   }
 };
 

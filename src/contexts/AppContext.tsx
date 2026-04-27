@@ -23,6 +23,12 @@ import {
   clearLegacyQuickLinks,
   readLegacyQuickLinks,
 } from "../storage/legacyMigrations";
+import {
+  readSync as readPersisted,
+  remove as removePersisted,
+  subscribe as subscribePersisted,
+  write as writePersisted,
+} from "../storage/hybridStorage";
 
 const STORAGE_KEY = "ghiblify_widgets";
 
@@ -210,9 +216,9 @@ const persistWidgets = (state: WidgetsState) => {
     if (Object.keys(out).length > 0) minimal[key] = out;
   }
   if (Object.keys(minimal).length === 0) {
-    localStorage.removeItem(STORAGE_KEY);
+    removePersisted(STORAGE_KEY);
   } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+    writePersisted(STORAGE_KEY, minimal);
   }
 };
 
@@ -364,7 +370,7 @@ const loadInitialWidgets = (): WidgetsState => {
   // Modern blob — apply diffs onto defaults. Done after the legacy
   // pull so a user with both legacy AND modern data keeps their
   // modern set (legacy is treated as a seed for first-run only).
-  const blob = readJSON<Record<string, any> | null>(STORAGE_KEY, null);
+  const blob = readPersisted<Record<string, any> | null>(STORAGE_KEY, null);
   if (blob) {
     for (const key of WIDGET_KEYS) {
       const entry = defaults[key];
@@ -402,20 +408,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     "guide" | "widgets" | "palette" | "background" | null
   >(null);
   const [currentBackground, setCurrentBackground] = useState<string>("");
-  const [showGuide, setShowGuide] = useState(() => {
-    try {
-      return localStorage.getItem("ghiblify_guide_seen") !== "true";
-    } catch {
-      return false;
-    }
-  });
+  const [showGuide, setShowGuide] = useState(
+    () => readPersisted<boolean>("ghiblify_guide_seen", false) !== true
+  );
   useEffect(() => {
     if (!showGuide) return;
-    try {
-      localStorage.setItem("ghiblify_guide_seen", "true");
-    } catch {
-      /* ignore */
-    }
+    writePersisted("ghiblify_guide_seen", true);
   }, [showGuide]);
   const [editingWidgetKey, setEditingWidgetKey] = useState<WidgetKey | null>(
     null
@@ -430,7 +428,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   >(() => readSelection());
 
   const [appearance, setAppearance] = useState<AppearanceSettings>(() => {
-    const saved = readJSON<Partial<AppearanceSettings>>("ghiblify_appearance", {});
+    const saved = readPersisted<Partial<AppearanceSettings>>(
+      "ghiblify_appearance",
+      {}
+    );
     // Map any legacy / renamed / removed theme names to their
     // current equivalents (see LEGACY_THEME_RENAMES at the top of
     // the file). Catches "mono" → "light" plus the recent renames
@@ -519,10 +520,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const updateAppearance = (patch: Partial<AppearanceSettings>) => {
     setAppearance((prev) => {
       const next = { ...prev, ...patch };
-      localStorage.setItem("ghiblify_appearance", JSON.stringify(next));
+      writePersisted("ghiblify_appearance", next);
       return next;
     });
   };
+
+  // Cross-device sync — when chrome.storage.sync delivers a remote
+  // appearance update from a sibling Chrome install, mirror it into
+  // local React state without bouncing back through writePersisted
+  // (the mirror has already been updated by the hybrid layer).
+  useEffect(() => {
+    return subscribePersisted("ghiblify_appearance", (next) => {
+      if (!next || typeof next !== "object") return;
+      setAppearance((prev) => ({ ...prev, ...(next as AppearanceSettings) }));
+    });
+  }, []);
 
   const toggleWidgetVisibility = (key: WidgetKey) => {
     setWidgets((prev) => ({

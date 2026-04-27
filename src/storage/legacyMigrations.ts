@@ -7,6 +7,11 @@
 // Each migration is idempotent — it deletes the legacy entry once
 // successfully read, so subsequent calls are no-ops.
 
+import {
+  readSync as readPersisted,
+  write as writePersisted,
+} from "./hybridStorage";
+
 export interface NewTodoItem {
   id: string;
   text: string;
@@ -125,8 +130,8 @@ export const clearLegacyTodos = () => {
 // own schema and the keys would otherwise sit forever in storage,
 // taking up quota and confusing future debugging.
 //
-// Gated by a localStorage flag so it runs exactly once per browser
-// profile. Idempotent: rerunning is a no-op.
+// Gated by a hybrid-storage flag so it runs exactly once per
+// install. Idempotent: rerunning is a no-op.
 // ---------------------------------------------------------------------------
 const LEGACY_CLEAN_FLAG = "ghiblify_legacy_cleaned";
 
@@ -175,11 +180,7 @@ const LEGACY_KEYS = [
 ];
 
 export const cleanLegacyStorage = () => {
-  try {
-    if (localStorage.getItem(LEGACY_CLEAN_FLAG) === "true") return;
-  } catch {
-    return;
-  }
+  if (readPersisted<boolean>(LEGACY_CLEAN_FLAG, false) === true) return;
 
   // localStorage entries (the v1 quickLinks lived here too — but
   // readLegacyQuickLinks already handles that one).
@@ -204,9 +205,5 @@ export const cleanLegacyStorage = () => {
     }
   }
 
-  try {
-    localStorage.setItem(LEGACY_CLEAN_FLAG, "true");
-  } catch {
-    /* ignore */
-  }
+  writePersisted(LEGACY_CLEAN_FLAG, true);
 };

@@ -51,15 +51,17 @@ export const LANGUAGES: LanguageOption[] = [
   { code: "zh", label: "中文" },
 ];
 
+import {
+  readSync as readPersisted,
+  subscribe as subscribePersisted,
+  write as writePersisted,
+} from "../storage/hybridStorage";
+
 const STORAGE_KEY = "ghiblify_locale";
 
 const readPersistedLocale = (): string => {
-  try {
-    const v = localStorage.getItem(STORAGE_KEY);
-    if (v && dictionaries[v]) return v;
-  } catch {
-    /* ignore — fall back to default */
-  }
+  const v = readPersisted<string | null>(STORAGE_KEY, null);
+  if (v && dictionaries[v]) return v;
   return "en";
 };
 
@@ -77,13 +79,19 @@ export function setLocale(locale: string): void {
     return;
   }
   currentLocale = locale;
-  try {
-    localStorage.setItem(STORAGE_KEY, locale);
-  } catch {
-    /* ignore — preference just won't persist this session */
-  }
+  writePersisted(STORAGE_KEY, locale);
   listeners.forEach((l) => l());
 }
+
+// Cross-device sync — when chrome.storage.sync delivers a remote
+// locale update from another Chrome install, switch to it without
+// requiring a reload. Skip if the value is already what we have.
+subscribePersisted(STORAGE_KEY, (next) => {
+  if (typeof next !== "string" || !dictionaries[next]) return;
+  if (next === currentLocale) return;
+  currentLocale = next;
+  listeners.forEach((l) => l());
+});
 
 export function getLocale(): string {
   return currentLocale;

@@ -10,6 +10,10 @@ import {
   clearLegacyTodos,
   readLegacyTodos,
 } from "../../../storage/legacyMigrations";
+import {
+  readSync as readPersisted,
+  write as writePersisted,
+} from "../../../storage/hybridStorage";
 import "./Todo.css";
 
 interface TodoItem {
@@ -30,24 +34,21 @@ const REMOVE_ANIM_MS = 240;
 const STORAGE_KEY = "ghiblify_todo";
 
 const persistTodos = (next: TodoItem[]) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch (err) {
-    console.error("Failed to save todos:", err);
-  }
+  writePersisted(STORAGE_KEY, next);
 };
 
 // One-time read of the previous in-app key. If we find anything,
 // rewrite it to the new key and delete the old one. Idempotent.
-const readModernTodosOrMigrate = (): string | null => {
+const readModernTodosOrMigrate = (): TodoItem[] | null => {
+  const current = readPersisted<TodoItem[] | null>(STORAGE_KEY, null);
+  if (current && current.length) return current;
   try {
-    const current = localStorage.getItem(STORAGE_KEY);
-    if (current) return current;
     const old = localStorage.getItem("todo_data");
     if (!old) return null;
-    localStorage.setItem(STORAGE_KEY, old);
+    const parsed = JSON.parse(old) as TodoItem[];
+    writePersisted(STORAGE_KEY, parsed);
     localStorage.removeItem("todo_data");
-    return old;
+    return parsed;
   } catch {
     return null;
   }
@@ -73,13 +74,9 @@ export const Todo: React.FC = () => {
 
   useEffect(() => {
     const savedTodos = readModernTodosOrMigrate();
-    if (savedTodos) {
-      try {
-        setTodos(JSON.parse(savedTodos));
-        return;
-      } catch (err) {
-        console.error("Failed to parse saved todos:", err);
-      }
+    if (savedTodos && savedTodos.length) {
+      setTodos(savedTodos);
+      return;
     }
     // No modern todos stored — try to pull from the previous
     // (jQuery) Ghiblify extension's chrome.storage.local["todo_data"]
