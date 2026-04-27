@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../contexts/AppContext";
-import {
-  readBlacklist,
-  readFavorites,
-} from "../storage/backgroundStorage";
+import { readBlacklist, readFavorites } from "../storage/backgroundStorage";
 import { useOnline } from "./useOnline";
 
 // Bundled fallback shown when the browser is offline. Lives in
@@ -56,7 +53,7 @@ export const useBackground = () => {
   const online = useOnline();
 
   useEffect(() => {
-    // Offline short-circuit — every URL in background_en.json is
+    // Offline short-circuit — every URL in background.json is
     // remote (Tumblr/Pinterest/Tenor/etc.), so without network we'd
     // sit on a black screen. Switch to the bundled Spirited Away
     // still and surface the matching film title so the Info widget
@@ -72,7 +69,7 @@ export const useBackground = () => {
     const loadBackground = async () => {
       try {
         const [bgResponse, metadataResponse] = await Promise.all([
-          fetch(chrome.runtime.getURL("background_en.json")),
+          fetch(chrome.runtime.getURL("background.json")),
           fetch(chrome.runtime.getURL("movie_metadata.json")),
         ]);
 
@@ -87,7 +84,7 @@ export const useBackground = () => {
         const allowedSources = bgData.sources.filter(
           (s) =>
             // default to true when not specified
-            (backgroundSelection && backgroundSelection[s.title]) ?? true
+            (backgroundSelection && backgroundSelection[s.title]) ?? true,
         );
 
         // No fallback to "all sources" when allowedSources is empty —
@@ -101,13 +98,13 @@ export const useBackground = () => {
         console.log("useBackground: backgroundSelection", backgroundSelection);
         console.log(
           "useBackground: allowed source titles",
-          sourcesToUse.map((s) => s.title)
+          sourcesToUse.map((s) => s.title),
         );
 
         // Only use sources that have metadata entries - prevents selecting a
         // background whose metadata is missing and falling back to the default.
         const validSources = sourcesToUse.filter(
-          (s) => !!metadataData[s.title]
+          (s) => !!metadataData[s.title],
         );
 
         // Collect all non-blacklisted links with their source titles from valid sources
@@ -135,7 +132,7 @@ export const useBackground = () => {
 
         if (allLinks.length === 0) {
           console.log(
-            "useBackground: no candidate links with metadata found, falling back to default"
+            "useBackground: no candidate links with metadata found, falling back to default",
           );
           // Self-heal — when the pool is empty (no enabled movies AND
           // no favorites), auto-enable the first available source so
@@ -145,7 +142,7 @@ export const useBackground = () => {
           const firstAvailableSource = bgData.sources.find(
             (s) =>
               !!metadataData[s.title] &&
-              s.links.some((l) => !blacklistSet.has(l))
+              s.links.some((l) => !blacklistSet.has(l)),
           );
           if (firstAvailableSource) {
             updateBackgroundSelection(firstAvailableSource.title, true);
@@ -215,7 +212,7 @@ export const useBackground = () => {
           "useBackground: selected source",
           selected?.sourceTitle,
           "link",
-          chosenLink
+          chosenLink,
         );
 
         // Get metadata for this source (exists because we filtered validSources)
@@ -242,17 +239,17 @@ export const useBackground = () => {
     window.addEventListener("ghiblify:blacklist:add", reload as EventListener);
     window.addEventListener(
       "ghiblify:blacklist:cleared",
-      reload as EventListener
+      reload as EventListener,
     );
 
     return () => {
       window.removeEventListener(
         "ghiblify:blacklist:add",
-        reload as EventListener
+        reload as EventListener,
       );
       window.removeEventListener(
         "ghiblify:blacklist:cleared",
-        reload as EventListener
+        reload as EventListener,
       );
     };
   }, [backgroundSelection, online]);

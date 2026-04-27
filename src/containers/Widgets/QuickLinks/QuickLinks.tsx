@@ -398,19 +398,25 @@ export const QuickLinks: React.FC = () => {
               { type: "separator" },
               {
                 type: "action",
-                label: t("widgets.contextMenu.edit"),
+                label: t("widgets.contextMenu.edit", {
+                  name: t("widgets.names.quicklinks"),
+                }),
                 icon: <EditIcon style={{ fontSize: 14 }} />,
                 onClick: () => setEditingWidgetKey("quicklinks"),
               },
               {
                 type: "action",
-                label: t("widgets.contextMenu.drag"),
+                label: t("widgets.contextMenu.drag", {
+                  name: t("widgets.names.quicklinks"),
+                }),
                 icon: <OpenWithIcon style={{ fontSize: 14 }} />,
                 onClick: () => setDragMode(true),
               },
               {
                 type: "action",
-                label: t("widgets.contextMenu.hide"),
+                label: t("widgets.contextMenu.hide", {
+                  name: t("widgets.names.quicklinks"),
+                }),
                 icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
                 onClick: () => toggleWidgetVisibility("quicklinks"),
               },

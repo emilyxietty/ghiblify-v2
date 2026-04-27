@@ -1,0 +1,422 @@
+{
+  "common": {
+    "done": "Concluído",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "delete": "Excluir",
+    "add": "Adicionar",
+    "edit": "Editar",
+    "reset": "Restaurar",
+    "guide": "Guia",
+    "search": "Buscar",
+    "exit": "Sair",
+    "offlineCallout": "Wi-Fi indisponível"
+  },
+  "themes": {
+    "ghibli": "Ghibli",
+    "spirited": "A Viagem de Chihiro",
+    "howls": "Howl",
+    "totoro": "Totoro",
+    "ponyo": "Ponyo",
+    "sky": "Céu",
+    "butter": "Manteiga",
+    "mint": "Menta",
+    "spring": "Primavera",
+    "peony": "Peônia",
+    "light": "Claro",
+    "dark": "Escuro",
+    "frost": "Gelo"
+  },
+  "sidebar": {
+    "ariaLabel": "Configurações",
+    "externalLinksLabel": "Links externos",
+    "headings": {
+      "widgets": "Widgets",
+      "appearance": "Aparência",
+      "background": "Plano de fundo"
+    },
+    "buttons": {
+      "githubRepo": "Repositório no Github",
+      "buyCoffee": "Pague-me um café",
+      "guide": "Guia",
+      "guideAria": "Abrir o guia",
+      "rate": "Avaliar",
+      "rateAria": "Avaliar Ghiblify na Chrome Web Store",
+      "languageAria": "Escolher idioma",
+      "dragMode": "Modo arrastar",
+      "dragModeDone": "Concluído",
+      "dragModeAria": "Ativar modo arrastar",
+      "dragModeOnAria": "Sair do modo arrastar",
+      "modeToggleAria": "Alternar entre Editar e Arrastar",
+      "editWidgets": "Modo edição",
+      "resetAllWidgets": "Restaurar widgets",
+      "resetFilters": "Restaurar filtros",
+      "selectBackgrounds": "Selecionar planos de fundo",
+      "deleteBackground": "Excluir plano de fundo",
+      "deleteBackgroundAria": "Remover o plano de fundo atual da rotação",
+      "favoriteBackground": "Favoritar plano de fundo",
+      "favoriteBackgroundAria": "Adicionar plano de fundo aos favoritos",
+      "unfavoriteBackground": "Remover dos favoritos",
+      "unfavoriteBackgroundAria": "Remover plano de fundo dos favoritos"
+    },
+    "appearance": {
+      "palette": "Paleta",
+      "paletteAria": "Paleta de cores",
+      "highContrast": "Alto contraste"
+    },
+    "filters": {
+      "heading": "Filtros",
+      "blur": "Desfoque",
+      "brightness": "Brilho",
+      "contrast": "Contraste",
+      "saturation": "Saturação"
+    },
+    "filterUnits": {
+      "px": "px",
+      "percent": "%"
+    }
+  },
+  "widgets": {
+    "names": {
+      "time": "Hora",
+      "date": "Data",
+      "greeting": "Saudação",
+      "info": "Info do filme",
+      "todo": "Lista de tarefas",
+      "quicklinks": "Links rápidos",
+      "searchbar": "Barra de pesquisa",
+      "pomodoro": "Cronômetro Pomodoro",
+      "avatar": "Avatar",
+      "bookmarks": "Favoritos",
+      "weather": "Clima",
+      "notes": "Bilhete"
+    },
+    "tooltip": {
+      "show": "Mostrar widget {{name}}",
+      "hide": "Ocultar widget {{name}}"
+    },
+    "contextMenu": {
+      "edit": "Editar {{name}}",
+      "drag": "Arrastar {{name}}",
+      "hide": "Ocultar {{name}}",
+      "time12": "12 horas",
+      "time24": "24 horas",
+      "addLink": "Adicionar novo link",
+      "focusModeOn": "Modo concentração",
+      "focusModeOff": "Sair do modo concentração",
+      "selectAvatar": "Escolher avatar"
+    },
+    "edit": {
+      "ariaEdit": "Editar widget {{key}}",
+      "tooltipEdit": "Editar",
+      "opacity": "Opacidade",
+      "opacityAria": "Opacidade do widget",
+      "blur": "Desfoque",
+      "blurAria": "Desfoque do widget",
+      "noCustomization": "Sem opções de personalização",
+      "darkModeAria": "Alternar modo escuro",
+      "timeFormatAria": "Alternar formato 12/24 h",
+      "gridShow": "Ver em grade",
+      "gridShowList": "Ver em lista",
+      "resizeTitle": "Arraste para redimensionar",
+      "infoFields": {
+        "japaneseTitle": "Título japonês",
+        "title": "Título",
+        "year": "Ano",
+        "movieLength": "Duração",
+        "quote": "Citação"
+      },
+      "infoFieldsLabel": "Campos",
+      "notesShowBorder": "Mostrar borda",
+      "notesHideBorder": "Ocultar borda",
+      "notesShowBorderAria": "Mostrar a borda do bilhete",
+      "notesHideBorderAria": "Ocultar a borda do bilhete",
+      "weatherUnitAria": "Alternar Celsius / Fahrenheit",
+      "weatherUnitC": "°C",
+      "weatherUnitF": "°F",
+      "weatherSections": {
+        "now": "Agora",
+        "hourly": "Por hora",
+        "daily": "Diário"
+      },
+      "weatherSectionsLabel": "Seções",
+      "weatherIconStyle": {
+        "animated": "Animado",
+        "still": "Estático"
+      },
+      "weatherIconStyleAria": {
+        "animated": "Ícones animados — clique para estático",
+        "still": "Ícones estáticos — clique para animado"
+      }
+    }
+  },
+  "greeting": {
+    "morning": "Bom dia",
+    "afternoon": "Boa tarde",
+    "evening": "Boa noite",
+    "namePlaceholder": "seu nome",
+    "editNameAria": "Editar seu nome"
+  },
+  "todo": {
+    "addPlaceholder": "Adicionar tarefa...",
+    "addAria": "Adicionar tarefa",
+    "addTooltip": "Adicionar tarefa",
+    "deleteAria": "Excluir: {{text}}",
+    "deleteTooltip": "Excluir tarefa",
+    "editAria": "Editar: {{text}}",
+    "editTooltip": "Editar tarefa",
+    "dragHandleTooltip": "Arrastar para reordenar",
+    "checkboxAriaDone": "Marcar como pendente",
+    "checkboxAriaNotDone": "Marcar como feita",
+    "checkboxTooltipDone": "Marcar pendente",
+    "checkboxTooltipNotDone": "Marcar feita"
+  },
+  "searchbar": {
+    "placeholder": "Buscar na web...",
+    "ariaLabelInput": "Buscar na web",
+    "ariaLabelButton": "Buscar",
+    "tooltipButton": "Buscar"
+  },
+  "quicklinks": {
+    "trigger": "Links",
+    "ariaDialog": "Links rápidos",
+    "addAria": "Adicionar novo link rápido",
+    "addTooltip": "Adicionar link",
+    "saveAria": "Salvar link",
+    "saveTooltip": "Salvar link",
+    "editLink": "Editar link",
+    "deleteLink": "Excluir link",
+    "deleteAria": "Excluir {{title}}",
+    "deleteGridTooltip": "Excluir {{title}}",
+    "deleteListTooltip": "Excluir link",
+    "removeTooltip": "Remover links",
+    "doneDeleteTooltip": "Concluído",
+    "labelPlaceholder": "Rótulo (opcional)",
+    "labelSrOnly": "Rótulo (opcional)",
+    "urlPlaceholder": "https://exemplo.com",
+    "urlSrOnly": "URL",
+    "emptyMessage": "Sem links rápidos. Adicione um acima."
+  },
+  "pomodoro": {
+    "modeFocus": "Pomodoro",
+    "modeBreak": "Pausa",
+    "minsLabel": "min",
+    "play": "Iniciar",
+    "pause": "Pausar",
+    "reset": "Reiniciar",
+    "focus": "Concentração",
+    "exit": "Sair",
+    "playAria": "Iniciar cronômetro",
+    "pauseAria": "Pausar cronômetro",
+    "resetAria": "Reiniciar cronômetro",
+    "focusAriaEnter": "Entrar no modo concentração",
+    "focusAriaExit": "Sair do modo concentração",
+    "focusTooltipEnter": "Concentração",
+    "focusTooltipExit": "Sair"
+  },
+  "bookmarks": {
+    "ariaLabel": "Favoritos",
+    "heading": "Favoritos",
+    "searchPlaceholder": "Buscar nos favoritos...",
+    "searchAria": "Buscar nos favoritos",
+    "loading": "Carregando…",
+    "empty": "Nenhum favorito ainda.",
+    "callout": "Painel de favoritos — passe o cursor pela borda direita",
+    "errorNoChrome": "Esta página não é executada como extensão do Chrome. Abra a nova aba dentro da extensão instalada.",
+    "errorNoBookmarks": "chrome.bookmarks indisponível. Verifique a permissão ou reinstale a extensão.",
+    "errorBookmarksApi": "Erro de favoritos: {{message}}",
+    "errorLoad": "Falha ao carregar favoritos: {{message}}",
+    "delete": "Excluir favorito",
+    "noResultsTitle": "Nenhum resultado",
+    "noResultsSub": "Nada corresponde a \"{{query}}\"."
+  },
+  "notes": {
+    "placeholder": "Anote algo…",
+    "ariaLabel": "Bilhete"
+  },
+  "weather": {
+    "unavailable": "N/D",
+    "offline": "Offline — clima indisponível",
+    "permissionDenied": "Permissão de localização negada. Habilite no Chrome para ver o clima local.",
+    "permissionUnavailable": "Geolocalização indisponível neste contexto.",
+    "fetchError": "Não foi possível carregar o clima. Tente novamente.",
+    "feelsLike": "Sensação {{temp}}",
+    "hi": "Máx {{temp}}",
+    "lo": "Mín {{temp}}",
+    "now": "Agora",
+    "wmo": {
+      "0": "Limpo",
+      "1": "Quase limpo",
+      "2": "Parcialmente nublado",
+      "3": "Nublado",
+      "45": "Nevoeiro",
+      "48": "Nevoeiro com geada",
+      "51": "Garoa fraca",
+      "53": "Garoa",
+      "55": "Garoa forte",
+      "56": "Garoa congelante",
+      "57": "Garoa congelante",
+      "61": "Chuva fraca",
+      "63": "Chuva",
+      "65": "Chuva forte",
+      "66": "Chuva congelante",
+      "67": "Chuva congelante",
+      "71": "Neve fraca",
+      "73": "Neve",
+      "75": "Neve forte",
+      "77": "Grãos de neve",
+      "80": "Pancadas leves",
+      "81": "Pancadas",
+      "82": "Pancadas fortes",
+      "85": "Pancadas de neve leves",
+      "86": "Pancadas de neve",
+      "95": "Trovoada",
+      "96": "Trovoada com granizo",
+      "99": "Trovoada com granizo"
+    },
+    "weekday": {
+      "0": "Dom",
+      "1": "Seg",
+      "2": "Ter",
+      "3": "Qua",
+      "4": "Qui",
+      "5": "Sex",
+      "6": "Sáb"
+    }
+  },
+  "socials": {
+    "buttonLabel": "Minhas redes",
+    "modalTitle": "Minhas redes",
+    "modalIntro": "Adoraria me conectar! Venha dizer oi :)"
+  },
+  "report": {
+    "buttonLabel": "Reportar problema",
+    "buttonAria": "Abrir caixa de diálogo de reporte",
+    "modalTitle": "Reportar um problema",
+    "modalIntro": "Encontrou um bug ou tem um comentário? Mande e-mail ou contate-me nas redes.",
+    "emailLabel": "E-mail",
+    "copyLabel": "Copiar",
+    "copyAria": "Copiar endereço de e-mail",
+    "copied": "Copiado!",
+    "openMailAria": "Abrir no app de e-mail",
+    "openMail": "Abrir app de e-mail"
+  },
+  "background": {
+    "modal": {
+      "title": "Configurações de plano de fundo",
+      "moviesCount": "{{count}} filmes",
+      "selectAll": "Selecionar tudo",
+      "deselectAll": "Desmarcar tudo (exceto 1)",
+      "noBackgrounds": "(sem planos de fundo)",
+      "show": "Mostrar ↓",
+      "hide": "Ocultar ↑",
+      "removeImageTitle": "Remover imagem",
+      "restoreDeleted": "Restaurar excluídos",
+      "restoreConfirm": "Limpar excluídos e restaurar todas as imagens?",
+      "deletedTitle": "Excluídos",
+      "restoreAll": "Restaurar tudo",
+      "restoreOne": "Restaurar",
+      "restoreOneAria": "Restaurar esta imagem à rotação",
+      "favoritesTitle": "Favoritos",
+      "favoritesAlwaysOn": "Os favoritos estão sempre na rotação",
+      "favoriteOne": "Favoritar",
+      "favoriteOneAria": "Adicionar esta imagem aos favoritos",
+      "unfavoriteOne": "Remover",
+      "unfavoriteOneAria": "Remover esta imagem dos favoritos"
+    },
+    "loadingError": "Nenhum plano de fundo encontrado. Veja erros no console.",
+    "contextMenu": {
+      "open": "Selecionar planos de fundo...",
+      "favorite": "Favoritar esta foto",
+      "unfavorite": "Remover dos favoritos",
+      "delete": "Excluir esta foto"
+    }
+  },
+  "modal": {
+    "common": {
+      "closeAria": "Fechar"
+    }
+  },
+  "callouts": {
+    "shiftDrag": "Os widgets agora podem ser arrastados — clique e arraste para mover",
+    "focusMode": "Esc para sair do modo concentração"
+  },
+  "welcome": {
+    "previousAria": "Slide anterior",
+    "nextAria": "Próximo slide",
+    "closeAria": "Fechar guia",
+    "doneButton": "Concluído",
+    "tabsAria": "Páginas do guia",
+    "slides": {
+      "welcome": {
+        "title": "Bem-vindo ao Ghiblify",
+        "body1": "Uma página de nova aba inspirada no Studio Ghibli. As imagens são gentilmente cedidas pelo Studio Ghibli para uso não comercial. Aproveite este trabalho feito com amor e considere apoiar o estudio comprando produtos ou filmes oficiais.",
+        "body2": "Como a extensão acaba de ser remodelada, peço paciência enquanto corrijo bugs e adiciono recursos. Reporte qualquer problema. Obrigado pelo apoio!",
+        "body3": "Clique em Próximo para um tour rápido pelas novidades.",
+        "hint": "Use ← → ou os pontos para navegar pelo guia."
+      },
+      "findGuide": {
+        "title": "Você pode voltar a este guia a qualquer momento",
+        "body1Pre": "Passe o cursor pela borda esquerda da tela — ou pressione ",
+        "body1Post": " — para abrir a barra lateral. O botão Guia no topo reabre este tour. Procure-o piscando agora.",
+        "hint": "A barra lateral está aberta atrás deste diálogo para você ver onde encontrá-la depois."
+      },
+      "widgets": {
+        "title": "Escolha seus widgets",
+        "body1": "Toque em qualquer ícone para mostrá-lo ou ocultá-lo. Os widgets ativos brilham com a cor de destaque da paleta.",
+        "body2Pre": "Estes mesmos botões ficam na barra lateral — passe o cursor pela borda esquerda ou pressione ",
+        "body2Post": " para encontrá-los depois.",
+        "tryItNow": "Experimente agora!"
+      },
+      "palette": {
+        "title": "Escolha uma paleta",
+        "body1": "Clique em uma amostra para repintar toda a UI. Paletas claras invertem texto e superfícies; a paleta Gelo dá um acabamento de vidro.",
+        "hint": "Você pode trocar de paleta a qualquer momento na seção Aparência."
+      },
+      "adjustTime": {
+        "title": "Personalize widgets",
+        "body1": "Cada widget tem seus próprios controles. O widget de Hora acima está em modo edição — alterne 12/24 h e arraste o controle deslizante para o tamanho.",
+        "body2Pre": "Três formas de editar: Modo edição na barra lateral, ",
+        "body2Post": " + clique no lápis ao passar o cursor, ou clique direito → Editar widget.",
+        "format12": "12 horas",
+        "format24": "24 horas",
+        "fontSizeLabel": "Tamanho do relógio"
+      },
+      "drag": {
+        "title": "Mova os widgets",
+        "body1Pre": "Mantenha ",
+        "body1Post": " e arraste o widget de Hora para reposicioná-lo. Os widgets se ajustam à grade.",
+        "body2": "Não quer manter Shift? Ative o Modo arrastar na barra superior e todos os widgets ficarão móveis até clicar em Concluído.",
+        "hint": "O cursor vira uma mão quando Shift está pressionado — essa é a sua dica."
+      },
+      "rightClick": {
+        "title": "Clique direito para ações rápidas",
+        "body1": "Clique direito em qualquer widget para um menu de ações — Editar, Arrastar, Ocultar, mais atalhos específicos (12/24 h em Hora, °C/°F em Clima, etc.).",
+        "body2": "Submenus abrem em cascata para opções de seleção múltipla. Clique direito no fundo vazio mostra o menu nativo do Chrome."
+      },
+      "appearance": {
+        "title": "Temas e aparência",
+        "body1": "A seção Aparência tem várias paletas. Escolha uma e toda a UI se repinta.",
+        "body2": "O controle deslizante de fundo tinge as superfícies internas. Alto contraste leva tudo a um mínimo legível."
+      },
+      "background": {
+        "title": "Cure as fotos",
+        "body1": "Favorite a foto atual para mantê-la na rotação. A lixeira a remove para sempre.",
+        "body2": "Abra Selecionar planos de fundo para escolher quais filmes aparecem, ou favorite qualquer foto.",
+        "open": "Selecionar planos de fundo",
+        "hint": "Os botões de favoritar e lixeira estão na barra lateral — piscando agora."
+      },
+      "shortcuts": {
+        "title": "Atalhos de teclado",
+        "openSidebar": "Abrir ou fechar a barra lateral",
+        "openBookmarks": "Abrir ou fechar o painel de favoritos",
+        "moveWidget": "Mover um widget",
+        "editWidget": "Editar um único widget (Shift + clique no lápis)",
+        "escape": "Fechar barra lateral, popovers, modo edição ou este guia",
+        "enter": "Confirmar edição ou sair do modo edição",
+        "navigateGuide": "Navegar pelos slides deste guia"
+      }
+    }
+  }
+}

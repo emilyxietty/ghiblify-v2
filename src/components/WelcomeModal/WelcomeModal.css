@@ -231,6 +231,22 @@
     font-style: italic;
 }
 
+/* Language picker on the welcome slide. Inline-width so it doesn't
+   stretch to the full body; the welcome modal is themed dark, so we
+   use the same outline-light variant here. */
+.welcome-language-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 6px;
+}
+
+.welcome-language-row .welcome-language-picker {
+    width: auto;
+    min-width: 140px;
+    flex: 0 0 auto;
+}
+
 /* ---------------------------------------------------------------------------
    Keyboard key cap
    --------------------------------------------------------------------------- */

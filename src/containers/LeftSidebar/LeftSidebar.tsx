@@ -50,7 +50,13 @@ import {
   ThemeName,
   useAppContext,
 } from "../../contexts/AppContext";
-import { useT } from "../../i18n/i18n";
+import {
+  LANGUAGES,
+  getLocale,
+  setLocale,
+  useT,
+} from "../../i18n/i18n";
+import { Dropdown } from "../../components/Dropdown/Dropdown";
 import "./LeftSidebar.css";
 
 // Theme keys — labels come from i18n at render time so they translate.
@@ -317,6 +323,10 @@ export const LeftSidebar: React.FC = () => {
           showGuide || sidebarSpotlight ? " sidebar-spotlight" : ""
         }${sidebarSpotlight ? ` spotlight-${sidebarSpotlight}` : ""}`}
         aria-label={t("sidebar.ariaLabel")}
+        // Drive the visible width from the same SIDEBAR_WIDTH
+        // constant used by the close-trigger logic, so the JS and
+        // CSS sources of truth can't drift.
+        style={{ ["--sidebar-width" as any]: `${SIDEBAR_WIDTH}px` }}
       >
         <div className="sidebar-content">
           <div className="sidebar-section button-group" role="group">
@@ -556,6 +566,16 @@ export const LeftSidebar: React.FC = () => {
               <StarIcon style={{ fontSize: 14 }} />
               {t("sidebar.buttons.rate")}
             </Button>
+            <Dropdown
+              className="language-picker"
+              size="small"
+              variant="outline-light"
+              portal
+              direction="up"
+              options={LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
+              value={getLocale()}
+              onChange={(code) => setLocale(code)}
+            />
           </div>
         </div>
       </aside>

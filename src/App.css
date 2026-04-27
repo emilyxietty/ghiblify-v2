@@ -79,6 +79,25 @@
     --z-portal: 99999;                /* body-portaled menus + callouts */
     --z-resize-handle: 100000;        /* always-on-top corner grip */
     --z-tutorial-pulse: 100001;       /* tutorial-only pulse above the handle */
+
+    /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
+       pills, callouts — anything that's NOT a widget surface and
+       needs to read consistently against any photo or palette.
+       These are deliberately theme-INDEPENDENT (no theme overrides
+       them). The existing `--dark` / `--light` are intentionally
+       remapped per theme (e.g. Frost makes `--dark` white because
+       the widget glass layer adds darkness over it), which broke
+       any chrome consumer expecting `--dark` to actually be dark.
+       Migrate new chrome to these tokens — no Frost override
+       needed.
+         --ui-chrome-bg        — solid-feeling dark surface
+         --ui-chrome-bg-hover  — slightly lighter on hover
+         --ui-chrome-fg        — readable text
+         --ui-chrome-border    — subtle 1px outline */
+    --ui-chrome-bg: rgba(20, 26, 32, 0.78);
+    --ui-chrome-bg-hover: rgba(20, 26, 32, 0.9);
+    --ui-chrome-fg: rgba(255, 255, 255, 0.96);
+    --ui-chrome-border: rgba(255, 255, 255, 0.18);
 }
 
 /* ---------------------------------------------------------------------------

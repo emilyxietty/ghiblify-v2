@@ -39,8 +39,8 @@ If you add another time-sensitive widget (e.g. world clocks), follow the same le
 Background and movie metadata are loaded at runtime:
 
 ```ts
-const url = chrome.runtime.getURL("background_en.json");
-const data = await fetch(url).then(r => r.json());
+const url = chrome.runtime.getURL("background.json");
+const data = await fetch(url).then((r) => r.json());
 ```
 
 These files must be listed in `manifest.json` under `web_accessible_resources`. If you add a new runtime-fetched JSON, add it there too — otherwise the fetch returns 404 in the extension context.

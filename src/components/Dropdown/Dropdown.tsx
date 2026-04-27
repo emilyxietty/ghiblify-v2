@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./Dropdown.css";
 
 export interface DropdownOption {
@@ -16,6 +17,15 @@ interface DropdownProps {
   size?: "small" | "medium" | "large";
   disabled?: boolean;
   className?: string;
+  /** Render the open menu in a body-level portal with `position: fixed`
+   *  so it escapes any ancestor's `overflow: hidden | auto`. Use this
+   *  when the dropdown lives inside a scrollable modal/sidebar panel
+   *  where the menu would otherwise be clipped or trigger scrolling. */
+  portal?: boolean;
+  /** Vertical direction the menu opens. Default "down" matches the
+   *  classic select behavior; pass "up" for pickers anchored at the
+   *  bottom of a panel. */
+  direction?: "up" | "down";
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -27,20 +37,31 @@ export const Dropdown: React.FC<DropdownProps> = ({
   size = "medium",
   disabled = false,
   className = "",
+  portal = false,
+  direction = "down",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+  // Position (viewport-relative, used only in portal mode) for the
+  // floating menu. Calculated from the toggle's bounding rect on open
+  // and on viewport changes.
+  const [menuPos, setMenuPos] = useState<{
+    left: number;
+    top: number;
+    width: number;
+  } | null>(null);
 
   const selectedOption = options.find((option) => option.value === value);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
+      const target = event.target as Node;
+      if (dropdownRef.current && dropdownRef.current.contains(target)) return;
+      // In portal mode the menu lives in a sibling of the toggle, so
+      // also tolerate clicks inside the menu itself.
+      if (menuRef.current && menuRef.current.contains(target)) return;
+      setIsOpen(false);
     };
 
     if (isOpen) {
@@ -51,6 +72,31 @@ export const Dropdown: React.FC<DropdownProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // Reposition the portaled menu against the toggle. Runs synchronously
+  // after layout (useLayoutEffect) so the menu doesn't flicker at
+  // (0,0) for one frame before snapping into place.
+  useLayoutEffect(() => {
+    if (!portal || !isOpen) return;
+    const reposition = () => {
+      const toggle = dropdownRef.current?.querySelector(
+        ".dropdown-toggle"
+      ) as HTMLElement | null;
+      if (!toggle) return;
+      const rect = toggle.getBoundingClientRect();
+      const menuHeight = menuRef.current?.offsetHeight ?? 0;
+      const top =
+        direction === "up" ? rect.top - menuHeight - 4 : rect.bottom + 4;
+      setMenuPos({ left: rect.left, top, width: rect.width });
+    };
+    reposition();
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [portal, isOpen, direction, options.length]);
 
   const handleToggle = () => {
     if (!disabled) {
@@ -85,6 +131,43 @@ export const Dropdown: React.FC<DropdownProps> = ({
     }
   };
 
+  const menu = isOpen ? (
+    <ul
+      ref={menuRef}
+      className={`dropdown-menu ${className}${
+        portal ? " dropdown-menu-portal" : ""
+      } dropdown-menu-${direction}`}
+      role="listbox"
+      style={
+        portal && menuPos
+          ? {
+              position: "fixed",
+              left: menuPos.left,
+              top: menuPos.top,
+              minWidth: menuPos.width,
+            }
+          : undefined
+      }
+    >
+      {options.map((option) => (
+        <li
+          key={option.value}
+          className={`dropdown-option ${
+            option.value === value ? "selected" : ""
+          }`}
+          onClick={() => handleSelect(option.value)}
+          role="option"
+          aria-selected={option.value === value}
+        >
+          {option.icon && (
+            <span className="dropdown-icon">{option.icon}</span>
+          )}
+          {option.label}
+        </li>
+      ))}
+    </ul>
+  ) : null;
+
   return (
     <div
       ref={dropdownRef}
@@ -116,26 +199,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         <span className={`dropdown-arrow ${isOpen ? "open" : ""}`}>▼</span>
       </button>
 
-      {isOpen && (
-        <ul className="dropdown-menu" role="listbox">
-          {options.map((option) => (
-            <li
-              key={option.value}
-              className={`dropdown-option ${
-                option.value === value ? "selected" : ""
-              }`}
-              onClick={() => handleSelect(option.value)}
-              role="option"
-              aria-selected={option.value === value}
-            >
-              {option.icon && (
-                <span className="dropdown-icon">{option.icon}</span>
-              )}
-              {option.label}
-            </li>
-          ))}
-        </ul>
-      )}
+      {portal ? menu && createPortal(menu, document.body) : menu}
     </div>
   );
 };

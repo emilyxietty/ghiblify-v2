@@ -289,6 +289,14 @@
     z-index: var(--z-edit-overlay-content);
 }
 
+/* In edit mode the opacity slider is pinned absolute at bottom: 8px
+   of the widget overlay (~50px tall pill). Without breathing room,
+   the slider lands directly on top of the inline add-link form when
+   both are visible. Push the form up so the two never collide. */
+.widget.edit-mode .quicklinksSettings-add:not(.quicklinksSettings-add-popover) {
+    margin-bottom: 72px;
+}
+
 /* On Frost, every surface is glass over the photo — without an
    explicit background the form's inputs blur into the wallpaper.
    Wrap the row in the same dark glass treatment used by tooltips so

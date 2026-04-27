@@ -8,9 +8,9 @@
 type WidgetsState = {
   [K in WidgetKey]: {
     visible: boolean;
-    position: { x: number; y: number };  // viewport-percent
-    settings: WidgetSettingsMap[K];      // widget-specific
-  }
+    position: { x: number; y: number }; // viewport-percent
+    settings: WidgetSettingsMap[K]; // widget-specific
+  };
 };
 ```
 
@@ -22,10 +22,10 @@ Settings types (in `src/config/widgetConfig.ts`) deliberately do **not** include
 
 ```ts
 const {
-  widgets,                  // WidgetsState — read directly
-  toggleWidgetVisibility,   // (key) => void
-  updateWidgetPosition,     // (key, pos) => void
-  updateWidgetSettings,     // <K>(key: K, patch: Partial<settings[K]>) => void
+  widgets, // WidgetsState — read directly
+  toggleWidgetVisibility, // (key) => void
+  updateWidgetPosition, // (key, pos) => void
+  updateWidgetSettings, // <K>(key: K, patch: Partial<settings[K]>) => void
   resetAllWidgets,
 } = useAppContext();
 ```
@@ -101,7 +101,7 @@ Implication: if you add timer-like multi-tab features, follow this pattern. Don'
 
 `hooks/useBackground.ts`:
 
-1. `chrome.runtime.getURL("background_en.json")` → fetched and parsed
+1. `chrome.runtime.getURL("background.json")` → fetched and parsed
 2. Filter to films the user has enabled (`background_selection` in context)
 3. Filter out URLs in `ghiblify_blacklist` (localStorage)
 4. Pick a random link that isn't the current one

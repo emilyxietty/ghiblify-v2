@@ -1,0 +1,422 @@
+{
+  "common": {
+    "done": "完了",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "delete": "削除",
+    "add": "追加",
+    "edit": "編集",
+    "reset": "リセット",
+    "guide": "ガイド",
+    "search": "検索",
+    "exit": "終了",
+    "offlineCallout": "Wi-Fiに接続されていません"
+  },
+  "themes": {
+    "ghibli": "ジブリ",
+    "spirited": "千と千尋",
+    "howls": "ハウル",
+    "totoro": "トトロ",
+    "ponyo": "ポニョ",
+    "sky": "空",
+    "butter": "バター",
+    "mint": "ミント",
+    "spring": "春",
+    "peony": "牡丹",
+    "light": "ライト",
+    "dark": "ダーク",
+    "frost": "フロスト"
+  },
+  "sidebar": {
+    "ariaLabel": "設定",
+    "externalLinksLabel": "外部リンク",
+    "headings": {
+      "widgets": "ウィジェット",
+      "appearance": "外観",
+      "background": "背景"
+    },
+    "buttons": {
+      "githubRepo": "GitHubリポジトリ",
+      "buyCoffee": "コーヒーをおごる",
+      "guide": "ガイド",
+      "guideAria": "ガイドを開く",
+      "rate": "評価する",
+      "rateAria": "Chromeウェブストアで評価",
+      "languageAria": "言語を選択",
+      "dragMode": "ドラッグモード",
+      "dragModeDone": "ドラッグ終了",
+      "dragModeAria": "ドラッグモードに入る",
+      "dragModeOnAria": "ドラッグモードを終了",
+      "modeToggleAria": "編集とドラッグモードを切替",
+      "editWidgets": "編集モード",
+      "resetAllWidgets": "ウィジェットをリセット",
+      "resetFilters": "フィルタをリセット",
+      "selectBackgrounds": "背景を選択",
+      "deleteBackground": "背景を削除",
+      "deleteBackgroundAria": "現在の背景をローテーションから削除",
+      "favoriteBackground": "お気に入りに追加",
+      "favoriteBackgroundAria": "現在の背景をお気に入りに追加",
+      "unfavoriteBackground": "お気に入りから削除",
+      "unfavoriteBackgroundAria": "現在の背景をお気に入りから削除"
+    },
+    "appearance": {
+      "palette": "パレット",
+      "paletteAria": "カラーパレット",
+      "highContrast": "ハイコントラスト"
+    },
+    "filters": {
+      "heading": "フィルタ",
+      "blur": "ぼかし",
+      "brightness": "明るさ",
+      "contrast": "コントラスト",
+      "saturation": "彩度"
+    },
+    "filterUnits": {
+      "px": "px",
+      "percent": "%"
+    }
+  },
+  "widgets": {
+    "names": {
+      "time": "時計",
+      "date": "日付",
+      "greeting": "挨拶",
+      "info": "映画情報",
+      "todo": "ToDoリスト",
+      "quicklinks": "クイックリンク",
+      "searchbar": "検索バー",
+      "pomodoro": "ポモドーロタイマー",
+      "avatar": "アバター",
+      "bookmarks": "ブックマーク",
+      "weather": "天気",
+      "notes": "付箋"
+    },
+    "tooltip": {
+      "show": "{{name}}を表示",
+      "hide": "{{name}}を非表示"
+    },
+    "contextMenu": {
+      "edit": "{{name}}を編集",
+      "drag": "{{name}}を移動",
+      "hide": "{{name}}を非表示",
+      "time12": "12時間制",
+      "time24": "24時間制",
+      "addLink": "新しいリンクを追加",
+      "focusModeOn": "集中モードに入る",
+      "focusModeOff": "集中モードを終了",
+      "selectAvatar": "アバターを選ぶ"
+    },
+    "edit": {
+      "ariaEdit": "{{key}}ウィジェットを編集",
+      "tooltipEdit": "編集",
+      "opacity": "透明度",
+      "opacityAria": "ウィジェットの透明度",
+      "blur": "ぼかし",
+      "blurAria": "ウィジェットのぼかし量",
+      "noCustomization": "カスタマイズはありません",
+      "darkModeAria": "ダークモード切替",
+      "timeFormatAria": "12/24時間制を切替",
+      "gridShow": "グリッド表示",
+      "gridShowList": "リスト表示",
+      "resizeTitle": "ドラッグでサイズ変更",
+      "infoFields": {
+        "japaneseTitle": "日本語タイトル",
+        "title": "タイトル",
+        "year": "公開年",
+        "movieLength": "上映時間",
+        "quote": "セリフ"
+      },
+      "infoFieldsLabel": "項目",
+      "notesShowBorder": "枠を表示",
+      "notesHideBorder": "枠を非表示",
+      "notesShowBorderAria": "メモの枠を表示",
+      "notesHideBorderAria": "メモの枠を非表示",
+      "weatherUnitAria": "摂氏/華氏を切替",
+      "weatherUnitC": "°C",
+      "weatherUnitF": "°F",
+      "weatherSections": {
+        "now": "現在",
+        "hourly": "1時間ごと",
+        "daily": "1週間"
+      },
+      "weatherSectionsLabel": "セクション",
+      "weatherIconStyle": {
+        "animated": "アニメ",
+        "still": "静止"
+      },
+      "weatherIconStyleAria": {
+        "animated": "アイコンが動く — クリックで静止に切替",
+        "still": "アイコンは静止 — クリックでアニメに切替"
+      }
+    }
+  },
+  "greeting": {
+    "morning": "おはようございます",
+    "afternoon": "こんにちは",
+    "evening": "こんばんは",
+    "namePlaceholder": "お名前",
+    "editNameAria": "名前を編集"
+  },
+  "todo": {
+    "addPlaceholder": "タスクを追加...",
+    "addAria": "タスクを追加",
+    "addTooltip": "タスクを追加",
+    "deleteAria": "{{text}}を削除",
+    "deleteTooltip": "タスクを削除",
+    "editAria": "{{text}}を編集",
+    "editTooltip": "タスクを編集",
+    "dragHandleTooltip": "ドラッグで並び替え",
+    "checkboxAriaDone": "未完了にする",
+    "checkboxAriaNotDone": "完了にする",
+    "checkboxTooltipDone": "未完了にする",
+    "checkboxTooltipNotDone": "完了にする"
+  },
+  "searchbar": {
+    "placeholder": "ウェブを検索...",
+    "ariaLabelInput": "ウェブを検索",
+    "ariaLabelButton": "検索",
+    "tooltipButton": "検索"
+  },
+  "quicklinks": {
+    "trigger": "リンク",
+    "ariaDialog": "クイックリンク",
+    "addAria": "新しいクイックリンクを追加",
+    "addTooltip": "リンクを追加",
+    "saveAria": "リンクを保存",
+    "saveTooltip": "リンクを保存",
+    "editLink": "リンクを編集",
+    "deleteLink": "リンクを削除",
+    "deleteAria": "{{title}}を削除",
+    "deleteGridTooltip": "{{title}}を削除",
+    "deleteListTooltip": "リンクを削除",
+    "removeTooltip": "リンクを削除",
+    "doneDeleteTooltip": "削除を終了",
+    "labelPlaceholder": "ラベル(任意)",
+    "labelSrOnly": "ラベル(任意)",
+    "urlPlaceholder": "https://example.com",
+    "urlSrOnly": "URL",
+    "emptyMessage": "クイックリンクはまだありません。上から追加してください。"
+  },
+  "pomodoro": {
+    "modeFocus": "ポモドーロ",
+    "modeBreak": "休憩",
+    "minsLabel": "分",
+    "play": "開始",
+    "pause": "一時停止",
+    "reset": "リセット",
+    "focus": "集中",
+    "exit": "終了",
+    "playAria": "タイマー開始",
+    "pauseAria": "タイマー一時停止",
+    "resetAria": "タイマーリセット",
+    "focusAriaEnter": "集中モードに入る",
+    "focusAriaExit": "集中モードを終了",
+    "focusTooltipEnter": "集中",
+    "focusTooltipExit": "集中を終了"
+  },
+  "bookmarks": {
+    "ariaLabel": "ブックマーク",
+    "heading": "ブックマーク",
+    "searchPlaceholder": "ブックマークを検索...",
+    "searchAria": "ブックマークを検索",
+    "loading": "読み込み中…",
+    "empty": "ブックマークはまだありません。",
+    "callout": "ブックマークパネル — 右端にカーソルを合わせて開く",
+    "errorNoChrome": "このページはChrome拡張機能として実行されていません。インストール済みの拡張内で新しいタブを開いてください。",
+    "errorNoBookmarks": "chrome.bookmarksが利用できません。bookmarks権限を確認するか、拡張を再読み込みしてください。",
+    "errorBookmarksApi": "ブックマークエラー: {{message}}",
+    "errorLoad": "ブックマークの読み込みに失敗しました: {{message}}",
+    "delete": "ブックマークを削除",
+    "noResultsTitle": "ブックマークが見つかりません",
+    "noResultsSub": "「{{query}}」に一致する項目はありません。"
+  },
+  "notes": {
+    "placeholder": "メモを書く…",
+    "ariaLabel": "付箋"
+  },
+  "weather": {
+    "unavailable": "N/A",
+    "offline": "オフライン — 天気を取得できません",
+    "permissionDenied": "位置情報の許可が拒否されました。Chromeで有効にしてください。",
+    "permissionUnavailable": "この環境では位置情報を利用できません。",
+    "fetchError": "天気を取得できませんでした。後でもう一度試してください。",
+    "feelsLike": "体感 {{temp}}",
+    "hi": "最高 {{temp}}",
+    "lo": "最低 {{temp}}",
+    "now": "現在",
+    "wmo": {
+      "0": "快晴",
+      "1": "ほぼ快晴",
+      "2": "晴れ時々曇り",
+      "3": "曇り",
+      "45": "霧",
+      "48": "霧氷",
+      "51": "弱い霧雨",
+      "53": "霧雨",
+      "55": "強い霧雨",
+      "56": "凍結霧雨",
+      "57": "凍結霧雨",
+      "61": "弱い雨",
+      "63": "雨",
+      "65": "強い雨",
+      "66": "凍雨",
+      "67": "凍雨",
+      "71": "弱い雪",
+      "73": "雪",
+      "75": "大雪",
+      "77": "雪粒",
+      "80": "にわか雨",
+      "81": "にわか雨",
+      "82": "強いにわか雨",
+      "85": "弱いにわか雪",
+      "86": "にわか雪",
+      "95": "雷雨",
+      "96": "ひょうを伴う雷雨",
+      "99": "ひょうを伴う雷雨"
+    },
+    "weekday": {
+      "0": "日",
+      "1": "月",
+      "2": "火",
+      "3": "水",
+      "4": "木",
+      "5": "金",
+      "6": "土"
+    }
+  },
+  "socials": {
+    "buttonLabel": "SNS",
+    "modalTitle": "SNS",
+    "modalIntro": "ぜひお気軽に！"
+  },
+  "report": {
+    "buttonLabel": "問題を報告",
+    "buttonAria": "問題報告ダイアログを開く",
+    "modalTitle": "問題を報告",
+    "modalIntro": "バグやご意見はメールまたはSNSでお知らせください。",
+    "emailLabel": "メール",
+    "copyLabel": "コピー",
+    "copyAria": "メールアドレスをコピー",
+    "copied": "コピーしました!",
+    "openMailAria": "メールアプリで開く",
+    "openMail": "メールアプリを開く"
+  },
+  "background": {
+    "modal": {
+      "title": "背景設定",
+      "moviesCount": "{{count}}本の映画",
+      "selectAll": "すべて選択",
+      "deselectAll": "すべて解除(1つ残す)",
+      "noBackgrounds": "(背景なし)",
+      "show": "表示 ↓",
+      "hide": "非表示 ↑",
+      "removeImageTitle": "画像を削除",
+      "restoreDeleted": "削除を復元",
+      "restoreConfirm": "削除した画像をすべて復元しますか?",
+      "deletedTitle": "削除済み",
+      "restoreAll": "すべて復元",
+      "restoreOne": "復元",
+      "restoreOneAria": "この画像をローテーションに戻す",
+      "favoritesTitle": "お気に入り",
+      "favoritesAlwaysOn": "お気に入りは常にローテーションに含まれます",
+      "favoriteOne": "お気に入り",
+      "favoriteOneAria": "この画像をお気に入りに追加",
+      "unfavoriteOne": "解除",
+      "unfavoriteOneAria": "この画像をお気に入りから削除"
+    },
+    "loadingError": "背景が見つかりません。コンソールでエラーを確認してください。",
+    "contextMenu": {
+      "open": "背景を選択...",
+      "favorite": "この写真をお気に入り",
+      "unfavorite": "お気に入りから削除",
+      "delete": "この写真を削除"
+    }
+  },
+  "modal": {
+    "common": {
+      "closeAria": "閉じる"
+    }
+  },
+  "callouts": {
+    "shiftDrag": "ウィジェットをドラッグできます",
+    "focusMode": "Escで集中モードを終了"
+  },
+  "welcome": {
+    "previousAria": "前のスライド",
+    "nextAria": "次のスライド",
+    "closeAria": "ガイドを閉じる",
+    "doneButton": "完了",
+    "tabsAria": "ガイドのページ",
+    "slides": {
+      "welcome": {
+        "title": "Ghiblifyへようこそ",
+        "body1": "スタジオジブリ風の新しいタブページです。これらの画像はスタジオジブリにより非商用目的で無料提供されています。公式グッズや作品の購入によりスタジオを応援していただければ幸いです。",
+        "body2": "拡張機能を一新したばかりですので、バグ修正や機能追加が続きます。問題があればぜひお知らせください。ご支援に感謝いたします。",
+        "body3": "「次へ」をクリックして新機能のツアーを始めましょう。",
+        "hint": "← → やドットでこのガイドをめくれます。"
+      },
+      "findGuide": {
+        "title": "このガイドにはいつでも戻れます",
+        "body1Pre": "画面の左端にカーソルを合わせるか、",
+        "body1Post": "を押すとサイドバーが開きます。上部の「ガイド」ボタンでこのツアーに戻れます。今そのボタンが点滅しています。",
+        "hint": "このダイアログの後ろでサイドバーが開いているので、後で見つけやすくなっています。"
+      },
+      "widgets": {
+        "title": "ウィジェットを選ぶ",
+        "body1": "アイコンをタップすると表示・非表示を切り替えられます。アクティブなウィジェットはアクセントカラーで光ります。",
+        "body2Pre": "これらの切り替えはサイドバーにもあります。画面の左端にカーソルを合わせるか",
+        "body2Post": "で見つけられます。",
+        "tryItNow": "試してみよう!"
+      },
+      "palette": {
+        "title": "パレットを選ぶ",
+        "body1": "スウォッチをクリックするとUI全体が色変えされます。明るいパレットは文字と表面が暗くなり、フロストパレットはガラスのような表現になります。",
+        "hint": "パレットはサイドバーの「外観」セクションからいつでも切り替え可能です。"
+      },
+      "adjustTime": {
+        "title": "ウィジェットをカスタマイズ",
+        "body1": "各ウィジェットには独自のコントロールがあります。上の時計ウィジェットは編集モードです — 12/24時間制を切替えたり、サイズを調整できます。",
+        "body2Pre": "ウィジェットを編集する3つの方法: サイドバーの編集モード、",
+        "body2Post": "+ ホバー時のペンアイコン、または右クリック → 編集。",
+        "format12": "12時間制",
+        "format24": "24時間制",
+        "fontSizeLabel": "時計のサイズ"
+      },
+      "drag": {
+        "title": "ウィジェットを移動",
+        "body1Pre": "",
+        "body1Post": "を押しながら上の時計をドラッグして配置できます。ウィジェットはグリッドにスナップします。",
+        "body2": "Shiftを押し続けたくない場合は、編集モードからドラッグモードを有効にすれば全ウィジェットがドラッグ可能になります。",
+        "hint": "Shift押下中はカーソルがつかむ手に変わります。"
+      },
+      "rightClick": {
+        "title": "右クリックでクイック操作",
+        "body1": "ウィジェットを右クリックすると、編集・移動・非表示などのメニューが開きます。ウィジェットごとに専用のショートカット(時計の12/24切替、天気の℃/℉など)もあります。",
+        "body2": "サブメニューは複数選択(天気のセクション、映画情報のフィールド等)に対応しています。背景を右クリックするとChromeの標準メニューが表示されます。"
+      },
+      "appearance": {
+        "title": "テーマと外観",
+        "body1": "「外観」セクションには多数のパレットがあります。選ぶとUI全体が色変えされます。",
+        "body2": "ウィジェット背景スライダーで内側の表面の透明度を調整できます。ハイコントラストで読みやすさを最大化できます。"
+      },
+      "background": {
+        "title": "写真をキュレート",
+        "body1": "現在の写真をハートでお気に入り、ゴミ箱で削除できます。お気に入りは常にローテーションに残ります。",
+        "body2": "「背景を選択」でどの作品から選ぶか、または個別の写真をハートできます。",
+        "open": "背景を選択",
+        "hint": "ハートとゴミ箱はサイドバーにあります。"
+      },
+      "shortcuts": {
+        "title": "キーボードショートカット",
+        "openSidebar": "サイドバーを開閉",
+        "openBookmarks": "ブックマークパネルを開閉",
+        "moveWidget": "ウィジェットを移動",
+        "editWidget": "単一のウィジェットを編集(Shift+ペン)",
+        "escape": "サイドバー、ポップオーバー、編集モード、ガイドを閉じる",
+        "enter": "編集を確定または編集モードを終了",
+        "navigateGuide": "ガイドのスライド移動"
+      }
+    }
+  }
+}

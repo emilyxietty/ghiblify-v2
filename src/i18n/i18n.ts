@@ -13,15 +13,63 @@
  */
 
 import en from "./locales/en.json";
+import es from "./locales/es.json";
+import fr from "./locales/fr.json";
+import ja from "./locales/ja.json";
+import ko from "./locales/ko.json";
+import pt from "./locales/pt.json";
+import zh from "./locales/zh.json";
 
 type Dict = Record<string, unknown>;
 
 const dictionaries: Record<string, Dict> = {
   en: en as Dict,
+  ja: ja as Dict,
+  ko: ko as Dict,
+  es: es as Dict,
+  fr: fr as Dict,
+  pt: pt as Dict,
+  zh: zh as Dict,
 };
 
-let currentLocale: string = "en";
+// Languages exposed in the UI picker. The `label` is shown in the
+// language's own script so a user who doesn't read English can still
+// recognize their tongue. Missing translations fall back to English
+// at lookup time, so partial locale files are safe to ship.
+export interface LanguageOption {
+  code: string;
+  label: string;
+}
+
+export const LANGUAGES: LanguageOption[] = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "ja", label: "日本語" },
+  { code: "ko", label: "한국어" },
+  { code: "pt", label: "Português" },
+  { code: "zh", label: "中文" },
+];
+
+const STORAGE_KEY = "ghiblify_locale";
+
+const readPersistedLocale = (): string => {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (v && dictionaries[v]) return v;
+  } catch {
+    /* ignore — fall back to default */
+  }
+  return "en";
+};
+
+let currentLocale: string = readPersistedLocale();
 const listeners = new Set<() => void>();
+
+// Note: <html lang> is intentionally NOT mutated when the user
+// switches locale — the page markup stays English-tagged regardless,
+// which keeps Chrome's "translate this page" prompt and other
+// browser-language heuristics consistent.
 
 export function setLocale(locale: string): void {
   if (!dictionaries[locale]) {
@@ -29,6 +77,11 @@ export function setLocale(locale: string): void {
     return;
   }
   currentLocale = locale;
+  try {
+    localStorage.setItem(STORAGE_KEY, locale);
+  } catch {
+    /* ignore — preference just won't persist this session */
+  }
   listeners.forEach((l) => l());
 }
 

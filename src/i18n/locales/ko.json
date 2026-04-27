@@ -1,0 +1,422 @@
+{
+  "common": {
+    "done": "완료",
+    "save": "저장",
+    "cancel": "취소",
+    "close": "닫기",
+    "delete": "삭제",
+    "add": "추가",
+    "edit": "편집",
+    "reset": "초기화",
+    "guide": "가이드",
+    "search": "검색",
+    "exit": "종료",
+    "offlineCallout": "Wi-Fi를 사용할 수 없습니다"
+  },
+  "themes": {
+    "ghibli": "지브리",
+    "spirited": "센과 치히로",
+    "howls": "하울",
+    "totoro": "토토로",
+    "ponyo": "포뇨",
+    "sky": "하늘",
+    "butter": "버터",
+    "mint": "민트",
+    "spring": "봄",
+    "peony": "모란",
+    "light": "라이트",
+    "dark": "다크",
+    "frost": "서리"
+  },
+  "sidebar": {
+    "ariaLabel": "설정",
+    "externalLinksLabel": "외부 링크",
+    "headings": {
+      "widgets": "위젯",
+      "appearance": "외관",
+      "background": "배경"
+    },
+    "buttons": {
+      "githubRepo": "Github 저장소",
+      "buyCoffee": "커피 한 잔",
+      "guide": "가이드",
+      "guideAria": "가이드 열기",
+      "rate": "평가하기",
+      "rateAria": "Chrome 웹 스토어에서 Ghiblify 평가",
+      "languageAria": "언어 선택",
+      "dragMode": "드래그 모드",
+      "dragModeDone": "완료",
+      "dragModeAria": "드래그 모드 시작",
+      "dragModeOnAria": "드래그 모드 종료",
+      "modeToggleAria": "편집과 드래그 모드 전환",
+      "editWidgets": "편집 모드",
+      "resetAllWidgets": "위젯 초기화",
+      "resetFilters": "필터 초기화",
+      "selectBackgrounds": "배경 선택",
+      "deleteBackground": "배경 삭제",
+      "deleteBackgroundAria": "현재 배경을 로테이션에서 제거",
+      "favoriteBackground": "배경 즐겨찾기",
+      "favoriteBackgroundAria": "현재 배경을 즐겨찾기에 추가",
+      "unfavoriteBackground": "즐겨찾기 해제",
+      "unfavoriteBackgroundAria": "현재 배경을 즐겨찾기에서 제거"
+    },
+    "appearance": {
+      "palette": "팔레트",
+      "paletteAria": "색상 팔레트",
+      "highContrast": "고대비"
+    },
+    "filters": {
+      "heading": "필터",
+      "blur": "블러",
+      "brightness": "밝기",
+      "contrast": "대비",
+      "saturation": "채도"
+    },
+    "filterUnits": {
+      "px": "px",
+      "percent": "%"
+    }
+  },
+  "widgets": {
+    "names": {
+      "time": "시계",
+      "date": "날짜",
+      "greeting": "인사",
+      "info": "영화 정보",
+      "todo": "할 일 목록",
+      "quicklinks": "빠른 링크",
+      "searchbar": "검색바",
+      "pomodoro": "뽀모도로 타이머",
+      "avatar": "아바타",
+      "bookmarks": "북마크",
+      "weather": "날씨",
+      "notes": "스티키 노트"
+    },
+    "tooltip": {
+      "show": "{{name}} 위젯 표시",
+      "hide": "{{name}} 위젯 숨기기"
+    },
+    "contextMenu": {
+      "edit": "{{name}} 편집",
+      "drag": "{{name}} 이동",
+      "hide": "{{name}} 숨기기",
+      "time12": "12시간제",
+      "time24": "24시간제",
+      "addLink": "새 링크 추가",
+      "focusModeOn": "집중 모드",
+      "focusModeOff": "집중 모드 종료",
+      "selectAvatar": "아바타 선택"
+    },
+    "edit": {
+      "ariaEdit": "{{key}} 위젯 편집",
+      "tooltipEdit": "편집",
+      "opacity": "불투명도",
+      "opacityAria": "위젯 불투명도",
+      "blur": "블러",
+      "blurAria": "위젯 블러",
+      "noCustomization": "사용 가능한 옵션 없음",
+      "darkModeAria": "다크 모드 전환",
+      "timeFormatAria": "12/24시간 전환",
+      "gridShow": "격자 보기",
+      "gridShowList": "목록 보기",
+      "resizeTitle": "드래그하여 크기 조절",
+      "infoFields": {
+        "japaneseTitle": "일본어 제목",
+        "title": "제목",
+        "year": "연도",
+        "movieLength": "상영 시간",
+        "quote": "명대사"
+      },
+      "infoFieldsLabel": "필드",
+      "notesShowBorder": "테두리 표시",
+      "notesHideBorder": "테두리 숨기기",
+      "notesShowBorderAria": "노트 테두리 표시",
+      "notesHideBorderAria": "노트 테두리 숨기기",
+      "weatherUnitAria": "섭씨/화씨 전환",
+      "weatherUnitC": "°C",
+      "weatherUnitF": "°F",
+      "weatherSections": {
+        "now": "현재",
+        "hourly": "시간별",
+        "daily": "일별"
+      },
+      "weatherSectionsLabel": "섹션",
+      "weatherIconStyle": {
+        "animated": "애니메이션",
+        "still": "정지"
+      },
+      "weatherIconStyleAria": {
+        "animated": "애니메이션 아이콘 — 클릭하여 정지로 전환",
+        "still": "정지 아이콘 — 클릭하여 애니메이션으로 전환"
+      }
+    }
+  },
+  "greeting": {
+    "morning": "좋은 아침이에요",
+    "afternoon": "안녕하세요",
+    "evening": "좋은 저녁이에요",
+    "namePlaceholder": "이름",
+    "editNameAria": "이름 편집"
+  },
+  "todo": {
+    "addPlaceholder": "할 일 추가...",
+    "addAria": "할 일 추가",
+    "addTooltip": "할 일 추가",
+    "deleteAria": "삭제: {{text}}",
+    "deleteTooltip": "할 일 삭제",
+    "editAria": "편집: {{text}}",
+    "editTooltip": "할 일 편집",
+    "dragHandleTooltip": "드래그하여 정렬",
+    "checkboxAriaDone": "미완료로 표시",
+    "checkboxAriaNotDone": "완료로 표시",
+    "checkboxTooltipDone": "미완료로 표시",
+    "checkboxTooltipNotDone": "완료로 표시"
+  },
+  "searchbar": {
+    "placeholder": "웹 검색...",
+    "ariaLabelInput": "웹 검색",
+    "ariaLabelButton": "검색",
+    "tooltipButton": "검색"
+  },
+  "quicklinks": {
+    "trigger": "링크",
+    "ariaDialog": "빠른 링크",
+    "addAria": "새 빠른 링크 추가",
+    "addTooltip": "링크 추가",
+    "saveAria": "링크 저장",
+    "saveTooltip": "링크 저장",
+    "editLink": "링크 편집",
+    "deleteLink": "링크 삭제",
+    "deleteAria": "{{title}} 삭제",
+    "deleteGridTooltip": "{{title}} 삭제",
+    "deleteListTooltip": "링크 삭제",
+    "removeTooltip": "링크 삭제",
+    "doneDeleteTooltip": "완료",
+    "labelPlaceholder": "라벨 (선택)",
+    "labelSrOnly": "라벨 (선택)",
+    "urlPlaceholder": "https://example.com",
+    "urlSrOnly": "URL",
+    "emptyMessage": "빠른 링크가 없습니다. 위에 추가해 보세요."
+  },
+  "pomodoro": {
+    "modeFocus": "뽀모도로",
+    "modeBreak": "휴식",
+    "minsLabel": "분",
+    "play": "시작",
+    "pause": "일시정지",
+    "reset": "초기화",
+    "focus": "집중",
+    "exit": "종료",
+    "playAria": "타이머 시작",
+    "pauseAria": "타이머 일시정지",
+    "resetAria": "타이머 초기화",
+    "focusAriaEnter": "집중 모드 시작",
+    "focusAriaExit": "집중 모드 종료",
+    "focusTooltipEnter": "집중",
+    "focusTooltipExit": "집중 종료"
+  },
+  "bookmarks": {
+    "ariaLabel": "북마크",
+    "heading": "북마크",
+    "searchPlaceholder": "북마크 검색...",
+    "searchAria": "북마크 검색",
+    "loading": "불러오는 중…",
+    "empty": "아직 북마크가 없습니다.",
+    "callout": "북마크 패널 — 오른쪽 가장자리에 마우스를 올려 열기",
+    "errorNoChrome": "이 페이지는 Chrome 확장으로 실행되지 않습니다. 설치된 확장 내에서 새 탭을 여세요.",
+    "errorNoBookmarks": "chrome.bookmarks를 사용할 수 없습니다. 권한을 확인하거나 확장을 다시 설치하세요.",
+    "errorBookmarksApi": "북마크 오류: {{message}}",
+    "errorLoad": "북마크 로드 실패: {{message}}",
+    "delete": "북마크 삭제",
+    "noResultsTitle": "결과 없음",
+    "noResultsSub": "「{{query}}」와 일치하는 항목이 없습니다."
+  },
+  "notes": {
+    "placeholder": "메모 작성…",
+    "ariaLabel": "스티키 노트"
+  },
+  "weather": {
+    "unavailable": "N/A",
+    "offline": "오프라인 — 날씨 정보를 가져올 수 없습니다",
+    "permissionDenied": "위치 권한이 거부되었습니다. Chrome에서 활성화하세요.",
+    "permissionUnavailable": "이 환경에서는 위치 정보를 사용할 수 없습니다.",
+    "fetchError": "날씨를 불러오지 못했습니다. 나중에 다시 시도하세요.",
+    "feelsLike": "체감 {{temp}}",
+    "hi": "최고 {{temp}}",
+    "lo": "최저 {{temp}}",
+    "now": "현재",
+    "wmo": {
+      "0": "맑음",
+      "1": "대체로 맑음",
+      "2": "부분적으로 흐림",
+      "3": "흐림",
+      "45": "안개",
+      "48": "서리 안개",
+      "51": "약한 이슬비",
+      "53": "이슬비",
+      "55": "강한 이슬비",
+      "56": "어는 이슬비",
+      "57": "어는 이슬비",
+      "61": "약한 비",
+      "63": "비",
+      "65": "강한 비",
+      "66": "어는 비",
+      "67": "어는 비",
+      "71": "약한 눈",
+      "73": "눈",
+      "75": "강한 눈",
+      "77": "싸락눈",
+      "80": "약한 소나기",
+      "81": "소나기",
+      "82": "강한 소나기",
+      "85": "약한 눈 소나기",
+      "86": "눈 소나기",
+      "95": "뇌우",
+      "96": "우박을 동반한 뇌우",
+      "99": "우박을 동반한 뇌우"
+    },
+    "weekday": {
+      "0": "일",
+      "1": "월",
+      "2": "화",
+      "3": "수",
+      "4": "목",
+      "5": "금",
+      "6": "토"
+    }
+  },
+  "socials": {
+    "buttonLabel": "내 SNS",
+    "modalTitle": "내 SNS",
+    "modalIntro": "연락 환영해요! 인사하러 와주세요 :)"
+  },
+  "report": {
+    "buttonLabel": "문제 신고",
+    "buttonAria": "문제 신고 대화상자 열기",
+    "modalTitle": "문제 신고",
+    "modalIntro": "버그나 피드백이 있나요? 이메일이나 SNS로 연락 주세요.",
+    "emailLabel": "이메일",
+    "copyLabel": "복사",
+    "copyAria": "이메일 주소 복사",
+    "copied": "복사됨!",
+    "openMailAria": "메일 앱에서 열기",
+    "openMail": "메일 앱 열기"
+  },
+  "background": {
+    "modal": {
+      "title": "배경 설정",
+      "moviesCount": "영화 {{count}}편",
+      "selectAll": "모두 선택",
+      "deselectAll": "모두 해제 (1개 유지)",
+      "noBackgrounds": "(배경 없음)",
+      "show": "표시 ↓",
+      "hide": "숨기기 ↑",
+      "removeImageTitle": "이미지 제거",
+      "restoreDeleted": "삭제된 항목 복원",
+      "restoreConfirm": "삭제된 이미지를 모두 복원하시겠습니까?",
+      "deletedTitle": "삭제됨",
+      "restoreAll": "모두 복원",
+      "restoreOne": "복원",
+      "restoreOneAria": "이 이미지를 로테이션에 복원",
+      "favoritesTitle": "즐겨찾기",
+      "favoritesAlwaysOn": "즐겨찾기는 항상 로테이션에 포함됩니다",
+      "favoriteOne": "즐겨찾기",
+      "favoriteOneAria": "이 이미지를 즐겨찾기에 추가",
+      "unfavoriteOne": "해제",
+      "unfavoriteOneAria": "이 이미지를 즐겨찾기에서 제거"
+    },
+    "loadingError": "배경을 찾을 수 없습니다. 콘솔에서 오류를 확인하세요.",
+    "contextMenu": {
+      "open": "배경 선택...",
+      "favorite": "이 사진 즐겨찾기",
+      "unfavorite": "즐겨찾기 해제",
+      "delete": "이 사진 삭제"
+    }
+  },
+  "modal": {
+    "common": {
+      "closeAria": "닫기"
+    }
+  },
+  "callouts": {
+    "shiftDrag": "위젯을 드래그할 수 있습니다 — 클릭 후 끌어 이동",
+    "focusMode": "Esc로 집중 모드 종료"
+  },
+  "welcome": {
+    "previousAria": "이전 슬라이드",
+    "nextAria": "다음 슬라이드",
+    "closeAria": "가이드 닫기",
+    "doneButton": "완료",
+    "tabsAria": "가이드 페이지",
+    "slides": {
+      "welcome": {
+        "title": "Ghiblify에 오신 것을 환영합니다",
+        "body1": "스튜디오 지브리에서 영감을 받은 새 탭 페이지입니다. 이 이미지들은 스튜디오 지브리가 비상업적 사용을 위해 무료로 제공한 것입니다. 마음을 담은 이 작업을 즐기시고, 공식 굿즈나 영화 구매로 스튜디오를 응원해 주세요.",
+        "body2": "확장이 막 새롭게 단장되었으니 버그 수정과 기능 추가를 진행하는 동안 양해 부탁드립니다. 문제가 있으면 알려주세요. 응원에 감사합니다!",
+        "body3": "다음을 클릭하여 새로운 기능을 빠르게 둘러보세요.",
+        "hint": "← →나 점을 사용해 가이드를 넘기세요."
+      },
+      "findGuide": {
+        "title": "이 가이드는 언제든 다시 볼 수 있어요",
+        "body1Pre": "화면 왼쪽 가장자리에 마우스를 올리거나 ",
+        "body1Post": "을(를) 눌러 사이드바를 여세요. 상단의 가이드 버튼이 이 투어를 다시 엽니다. 지금 깜박이고 있습니다.",
+        "hint": "이 대화상자 뒤에 사이드바가 열려 있어 나중에 어디서 찾을지 보실 수 있습니다."
+      },
+      "widgets": {
+        "title": "위젯 선택",
+        "body1": "아이콘을 탭하여 표시하거나 숨길 수 있습니다. 활성 위젯은 팔레트의 강조색으로 빛납니다.",
+        "body2Pre": "이 토글은 사이드바에도 있습니다. 화면 왼쪽 가장자리에 마우스를 올리거나 ",
+        "body2Post": "을(를) 누르세요.",
+        "tryItNow": "지금 해보세요!"
+      },
+      "palette": {
+        "title": "팔레트 선택",
+        "body1": "스와치를 클릭하면 UI 전체의 색상이 바뀝니다. 라이트 팔레트는 텍스트와 표면을 어둡게 뒤집고, 서리 팔레트는 유리 같은 효과를 줍니다.",
+        "hint": "사이드바의 외관 섹션에서 언제든 팔레트를 바꿀 수 있어요."
+      },
+      "adjustTime": {
+        "title": "위젯 사용자 정의",
+        "body1": "각 위젯에는 자체 컨트롤이 있습니다. 위의 시계 위젯은 편집 모드입니다 — 12/24시간을 전환하고 슬라이더로 크기를 조절하세요.",
+        "body2Pre": "편집 방법 세 가지: 사이드바의 편집 모드, ",
+        "body2Post": " + 호버 시 나타나는 연필 클릭, 또는 우클릭 → 위젯 편집.",
+        "format12": "12시간제",
+        "format24": "24시간제",
+        "fontSizeLabel": "시계 크기"
+      },
+      "drag": {
+        "title": "위젯 이동",
+        "body1Pre": "",
+        "body1Post": "을(를) 누른 채 위의 시계 위젯을 끌어 위치를 옮기세요. 위젯은 격자에 스냅됩니다.",
+        "body2": "Shift를 계속 누르고 싶지 않다면 상단 막대에서 드래그 모드를 켜세요. 완료를 클릭할 때까지 모든 위젯이 드래그됩니다.",
+        "hint": "Shift를 누르면 커서가 잡는 손으로 변합니다 — 그게 신호입니다."
+      },
+      "rightClick": {
+        "title": "우클릭으로 빠른 작업",
+        "body1": "위젯을 우클릭하면 빠른 작업 메뉴가 열립니다 — 편집, 이동, 숨기기, 그리고 위젯별 단축 옵션(시계의 12/24시간, 날씨의 °C/°F 등).",
+        "body2": "다중 선택 옵션은 캐스케이드 서브메뉴로 열립니다. 빈 배경을 우클릭하면 Chrome 기본 메뉴가 표시됩니다."
+      },
+      "appearance": {
+        "title": "테마와 외관",
+        "body1": "외관 섹션에는 다양한 팔레트가 있습니다. 선택하면 UI 전체의 색이 바뀝니다.",
+        "body2": "위젯 배경 슬라이더로 내부 표면 색상을 조정하세요. 고대비는 모든 요소를 가독성 최저값으로 강제합니다."
+      },
+      "background": {
+        "title": "사진 큐레이션",
+        "body1": "현재 사진을 즐겨찾기에 추가하면 항상 로테이션에 남습니다. 휴지통은 영원히 제거합니다.",
+        "body2": "배경 선택을 열어 어떤 영화를 보여줄지 정하거나, 어떤 사진이든 즐겨찾기에 추가하세요.",
+        "open": "배경 선택",
+        "hint": "현재 사진의 즐겨찾기와 휴지통 버튼은 사이드바에 있습니다 — 지금 깜박입니다."
+      },
+      "shortcuts": {
+        "title": "키보드 단축키",
+        "openSidebar": "사이드바 열기/닫기",
+        "openBookmarks": "북마크 패널 열기/닫기",
+        "moveWidget": "위젯 이동",
+        "editWidget": "단일 위젯 편집 (Shift + 연필 클릭)",
+        "escape": "사이드바, 팝오버, 편집 모드, 가이드 닫기",
+        "enter": "편집 확인 또는 편집 모드 종료",
+        "navigateGuide": "가이드 슬라이드 탐색"
+      }
+    }
+  }
+}

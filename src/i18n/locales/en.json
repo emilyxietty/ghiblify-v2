@@ -43,6 +43,7 @@
       "guideAria": "Open the guide",
       "rate": "Rate me",
       "rateAria": "Rate Ghiblify on the Chrome Web Store",
+      "languageAria": "Choose language",
       "dragMode": "Drag Mode",
       "dragModeDone": "Done dragging",
       "dragModeAria": "Enter drag mode (move widgets without holding Shift)",

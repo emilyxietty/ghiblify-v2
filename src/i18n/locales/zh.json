@@ -1,0 +1,422 @@
+{
+  "common": {
+    "done": "完成",
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "delete": "删除",
+    "add": "添加",
+    "edit": "编辑",
+    "reset": "重置",
+    "guide": "指南",
+    "search": "搜索",
+    "exit": "退出",
+    "offlineCallout": "Wi-Fi 不可用"
+  },
+  "themes": {
+    "ghibli": "吉卜力",
+    "spirited": "千与千寻",
+    "howls": "哈尔",
+    "totoro": "龙猫",
+    "ponyo": "波妞",
+    "sky": "天空",
+    "butter": "黄油",
+    "mint": "薄荷",
+    "spring": "春日",
+    "peony": "牡丹",
+    "light": "明亮",
+    "dark": "暗色",
+    "frost": "霜冻"
+  },
+  "sidebar": {
+    "ariaLabel": "设置",
+    "externalLinksLabel": "外部链接",
+    "headings": {
+      "widgets": "小组件",
+      "appearance": "外观",
+      "background": "背景"
+    },
+    "buttons": {
+      "githubRepo": "Github 仓库",
+      "buyCoffee": "请我喝咖啡",
+      "guide": "指南",
+      "guideAria": "打开指南",
+      "rate": "评分",
+      "rateAria": "在 Chrome 应用商店评分",
+      "languageAria": "选择语言",
+      "dragMode": "拖动模式",
+      "dragModeDone": "完成",
+      "dragModeAria": "进入拖动模式",
+      "dragModeOnAria": "退出拖动模式",
+      "modeToggleAria": "在编辑与拖动间切换",
+      "editWidgets": "编辑模式",
+      "resetAllWidgets": "重置所有小组件",
+      "resetFilters": "重置滤镜",
+      "selectBackgrounds": "选择背景",
+      "deleteBackground": "删除背景",
+      "deleteBackgroundAria": "从轮播中移除当前背景",
+      "favoriteBackground": "收藏背景",
+      "favoriteBackgroundAria": "添加到收藏",
+      "unfavoriteBackground": "取消收藏",
+      "unfavoriteBackgroundAria": "从收藏中移除"
+    },
+    "appearance": {
+      "palette": "调色板",
+      "paletteAria": "颜色调色板",
+      "highContrast": "高对比度"
+    },
+    "filters": {
+      "heading": "滤镜",
+      "blur": "模糊",
+      "brightness": "亮度",
+      "contrast": "对比度",
+      "saturation": "饱和度"
+    },
+    "filterUnits": {
+      "px": "px",
+      "percent": "%"
+    }
+  },
+  "widgets": {
+    "names": {
+      "time": "时间",
+      "date": "日期",
+      "greeting": "问候",
+      "info": "影片信息",
+      "todo": "待办列表",
+      "quicklinks": "快速链接",
+      "searchbar": "搜索栏",
+      "pomodoro": "番茄钟",
+      "avatar": "头像",
+      "bookmarks": "书签",
+      "weather": "天气",
+      "notes": "便签"
+    },
+    "tooltip": {
+      "show": "显示 {{name}} 小组件",
+      "hide": "隐藏 {{name}} 小组件"
+    },
+    "contextMenu": {
+      "edit": "编辑 {{name}}",
+      "drag": "拖动 {{name}}",
+      "hide": "隐藏 {{name}}",
+      "time12": "12 小时制",
+      "time24": "24 小时制",
+      "addLink": "添加新链接",
+      "focusModeOn": "进入专注模式",
+      "focusModeOff": "退出专注模式",
+      "selectAvatar": "选择头像"
+    },
+    "edit": {
+      "ariaEdit": "编辑 {{key}} 小组件",
+      "tooltipEdit": "编辑",
+      "opacity": "不透明度",
+      "opacityAria": "小组件不透明度",
+      "blur": "模糊",
+      "blurAria": "小组件模糊度",
+      "noCustomization": "无可用选项",
+      "darkModeAria": "切换深色模式",
+      "timeFormatAria": "切换 12/24 小时制",
+      "gridShow": "网格显示",
+      "gridShowList": "列表显示",
+      "resizeTitle": "拖动以调整大小",
+      "infoFields": {
+        "japaneseTitle": "日文标题",
+        "title": "标题",
+        "year": "年份",
+        "movieLength": "片长",
+        "quote": "台词"
+      },
+      "infoFieldsLabel": "字段",
+      "notesShowBorder": "显示边框",
+      "notesHideBorder": "隐藏边框",
+      "notesShowBorderAria": "显示便签边框",
+      "notesHideBorderAria": "隐藏便签边框",
+      "weatherUnitAria": "切换摄氏/华氏",
+      "weatherUnitC": "°C",
+      "weatherUnitF": "°F",
+      "weatherSections": {
+        "now": "现在",
+        "hourly": "每小时",
+        "daily": "每日"
+      },
+      "weatherSectionsLabel": "板块",
+      "weatherIconStyle": {
+        "animated": "动画",
+        "still": "静态"
+      },
+      "weatherIconStyleAria": {
+        "animated": "图标动画 — 点击切换为静态",
+        "still": "图标静态 — 点击切换为动画"
+      }
+    }
+  },
+  "greeting": {
+    "morning": "早上好",
+    "afternoon": "下午好",
+    "evening": "晚上好",
+    "namePlaceholder": "你的名字",
+    "editNameAria": "编辑你的名字"
+  },
+  "todo": {
+    "addPlaceholder": "添加任务...",
+    "addAria": "添加任务",
+    "addTooltip": "添加任务",
+    "deleteAria": "删除：{{text}}",
+    "deleteTooltip": "删除任务",
+    "editAria": "编辑：{{text}}",
+    "editTooltip": "编辑任务",
+    "dragHandleTooltip": "拖动以排序",
+    "checkboxAriaDone": "标记为未完成",
+    "checkboxAriaNotDone": "标记为完成",
+    "checkboxTooltipDone": "标记为未完成",
+    "checkboxTooltipNotDone": "标记为完成"
+  },
+  "searchbar": {
+    "placeholder": "搜索网页...",
+    "ariaLabelInput": "搜索网页",
+    "ariaLabelButton": "搜索",
+    "tooltipButton": "搜索"
+  },
+  "quicklinks": {
+    "trigger": "链接",
+    "ariaDialog": "快速链接",
+    "addAria": "添加新的快速链接",
+    "addTooltip": "添加链接",
+    "saveAria": "保存链接",
+    "saveTooltip": "保存链接",
+    "editLink": "编辑链接",
+    "deleteLink": "删除链接",
+    "deleteAria": "删除 {{title}}",
+    "deleteGridTooltip": "删除 {{title}}",
+    "deleteListTooltip": "删除链接",
+    "removeTooltip": "移除链接",
+    "doneDeleteTooltip": "完成删除",
+    "labelPlaceholder": "标签（可选）",
+    "labelSrOnly": "标签（可选）",
+    "urlPlaceholder": "https://example.com",
+    "urlSrOnly": "URL",
+    "emptyMessage": "暂无快速链接，请在上方添加。"
+  },
+  "pomodoro": {
+    "modeFocus": "番茄钟",
+    "modeBreak": "休息",
+    "minsLabel": "分",
+    "play": "开始",
+    "pause": "暂停",
+    "reset": "重置",
+    "focus": "专注",
+    "exit": "退出",
+    "playAria": "开始计时",
+    "pauseAria": "暂停计时",
+    "resetAria": "重置计时器",
+    "focusAriaEnter": "进入专注模式",
+    "focusAriaExit": "退出专注模式",
+    "focusTooltipEnter": "专注",
+    "focusTooltipExit": "退出专注"
+  },
+  "bookmarks": {
+    "ariaLabel": "书签",
+    "heading": "书签",
+    "searchPlaceholder": "搜索书签...",
+    "searchAria": "搜索书签",
+    "loading": "加载中…",
+    "empty": "暂无书签。",
+    "callout": "书签面板 — 将光标移至右边缘以打开",
+    "errorNoChrome": "此页面未作为 Chrome 扩展运行。请在已安装的扩展中打开新标签。",
+    "errorNoBookmarks": "chrome.bookmarks 不可用。请检查 bookmarks 权限或重新加载扩展。",
+    "errorBookmarksApi": "书签错误：{{message}}",
+    "errorLoad": "加载书签失败：{{message}}",
+    "delete": "删除书签",
+    "noResultsTitle": "未找到书签",
+    "noResultsSub": "没有匹配「{{query}}」的结果。"
+  },
+  "notes": {
+    "placeholder": "记点什么…",
+    "ariaLabel": "便签"
+  },
+  "weather": {
+    "unavailable": "N/A",
+    "offline": "离线 — 天气不可用",
+    "permissionDenied": "位置权限被拒绝。请在 Chrome 中启用以查看本地天气。",
+    "permissionUnavailable": "此环境下无法使用地理定位。",
+    "fetchError": "无法加载天气，请稍后重试。",
+    "feelsLike": "体感 {{temp}}",
+    "hi": "最高 {{temp}}",
+    "lo": "最低 {{temp}}",
+    "now": "现在",
+    "wmo": {
+      "0": "晴",
+      "1": "多云转晴",
+      "2": "局部多云",
+      "3": "阴",
+      "45": "雾",
+      "48": "雾凇",
+      "51": "小毛毛雨",
+      "53": "毛毛雨",
+      "55": "大毛毛雨",
+      "56": "冻毛毛雨",
+      "57": "冻毛毛雨",
+      "61": "小雨",
+      "63": "雨",
+      "65": "大雨",
+      "66": "冻雨",
+      "67": "冻雨",
+      "71": "小雪",
+      "73": "雪",
+      "75": "大雪",
+      "77": "雪粒",
+      "80": "小阵雨",
+      "81": "阵雨",
+      "82": "强阵雨",
+      "85": "小阵雪",
+      "86": "阵雪",
+      "95": "雷雨",
+      "96": "雷雨伴冰雹",
+      "99": "雷雨伴冰雹"
+    },
+    "weekday": {
+      "0": "日",
+      "1": "一",
+      "2": "二",
+      "3": "三",
+      "4": "四",
+      "5": "五",
+      "6": "六"
+    }
+  },
+  "socials": {
+    "buttonLabel": "我的社交",
+    "modalTitle": "我的社交",
+    "modalIntro": "想多多交流！来打个招呼吧 :)"
+  },
+  "report": {
+    "buttonLabel": "报告问题",
+    "buttonAria": "打开问题报告对话框",
+    "modalTitle": "报告问题",
+    "modalIntro": "发现 bug 或有反馈？请通过邮件或社交联系我。",
+    "emailLabel": "邮箱",
+    "copyLabel": "复制",
+    "copyAria": "复制邮箱地址",
+    "copied": "已复制！",
+    "openMailAria": "在邮件应用中打开",
+    "openMail": "打开邮件应用"
+  },
+  "background": {
+    "modal": {
+      "title": "背景设置",
+      "moviesCount": "{{count}} 部电影",
+      "selectAll": "全选",
+      "deselectAll": "取消全选（保留 1 个）",
+      "noBackgrounds": "（无背景）",
+      "show": "显示 ↓",
+      "hide": "隐藏 ↑",
+      "removeImageTitle": "移除图片",
+      "restoreDeleted": "恢复已删除",
+      "restoreConfirm": "清空已删除并恢复所有图片？",
+      "deletedTitle": "已删除",
+      "restoreAll": "全部恢复",
+      "restoreOne": "恢复",
+      "restoreOneAria": "将此图片恢复至轮播",
+      "favoritesTitle": "收藏",
+      "favoritesAlwaysOn": "收藏始终包含在轮播中",
+      "favoriteOne": "收藏",
+      "favoriteOneAria": "将此图片加入收藏",
+      "unfavoriteOne": "取消收藏",
+      "unfavoriteOneAria": "从收藏中移除此图片"
+    },
+    "loadingError": "未找到背景。请查看控制台错误。",
+    "contextMenu": {
+      "open": "选择背景...",
+      "favorite": "收藏此照片",
+      "unfavorite": "取消收藏",
+      "delete": "删除此照片"
+    }
+  },
+  "modal": {
+    "common": {
+      "closeAria": "关闭"
+    }
+  },
+  "callouts": {
+    "shiftDrag": "小组件现在可拖动 — 单击并拖动以移动",
+    "focusMode": "按 Esc 退出专注模式"
+  },
+  "welcome": {
+    "previousAria": "上一张",
+    "nextAria": "下一张",
+    "closeAria": "关闭指南",
+    "doneButton": "完成",
+    "tabsAria": "指南页",
+    "slides": {
+      "welcome": {
+        "title": "欢迎来到 Ghiblify",
+        "body1": "一个受吉卜力工作室启发的新标签页。这些图片由吉卜力工作室慷慨提供，仅供非商业用途。请尽情享用这份心血之作，并考虑通过购买官方周边或影片来支持工作室。",
+        "body2": "扩展刚刚重新设计，敬请耐心等待我修复 bug 和添加新功能。如发现问题，请告诉我。非常感谢你的支持！",
+        "body3": "点击「下一步」开始浏览新功能。",
+        "hint": "使用 ← → 或圆点翻阅本指南。"
+      },
+      "findGuide": {
+        "title": "你可以随时回到本指南",
+        "body1Pre": "将光标悬停在屏幕左边缘 — 或按 ",
+        "body1Post": " — 即可打开侧边栏。顶部的「指南」按钮可重新打开本教程。它正在闪烁。",
+        "hint": "侧边栏在此对话框后面已打开，方便你日后查找。"
+      },
+      "widgets": {
+        "title": "选择你的小组件",
+        "body1": "点击任意图标即可显示或隐藏它。激活的小组件会以调色板的强调色发光。",
+        "body2Pre": "这些开关也存在于侧边栏中 — 悬停屏幕左边缘或按 ",
+        "body2Post": " 即可找到。",
+        "tryItNow": "立即尝试！"
+      },
+      "palette": {
+        "title": "选择调色板",
+        "body1": "点击色块为整个 UI 重新着色。明亮色板会反转文本和表面；霜冻色板让小组件呈现玻璃质感。",
+        "hint": "你可随时在侧边栏的「外观」部分切换调色板。"
+      },
+      "adjustTime": {
+        "title": "自定义小组件",
+        "body1": "每个小组件都有自己的控件。上方的时间小组件正处于编辑模式 — 切换 12/24 小时制，并拖动滑块调整大小。",
+        "body2Pre": "三种编辑方式：侧边栏的编辑模式、",
+        "body2Post": " + 点击悬停时出现的铅笔，或右键单击 → 编辑小组件。",
+        "format12": "12 小时制",
+        "format24": "24 小时制",
+        "fontSizeLabel": "时钟大小"
+      },
+      "drag": {
+        "title": "移动小组件",
+        "body1Pre": "按住 ",
+        "body1Post": " 并拖动上方的时间小组件以重新定位。小组件会对齐到网格线。",
+        "body2": "不想一直按 Shift？从顶部栏开启拖动模式，所有小组件都可拖动直到点击完成。",
+        "hint": "按下 Shift 时光标会变成抓取手 — 这就是提示。"
+      },
+      "rightClick": {
+        "title": "右键单击进行快速操作",
+        "body1": "右键单击任意小组件可弹出快速操作菜单 — 编辑、拖动、隐藏，以及该小组件的特定快捷方式（时间的 12/24 小时、天气的 °C/°F 等）。",
+        "body2": "子菜单以级联面板形式打开，用于多选选项。右键单击空白背景可使用 Chrome 原生菜单。"
+      },
+      "appearance": {
+        "title": "主题与外观",
+        "body1": "「外观」部分有许多调色板可供选择。任选一个，整个 UI 都会重新着色。",
+        "body2": "小组件背景滑块用于调整内部表面色调。高对比度可强制所有元素达到可读最低值。"
+      },
+      "background": {
+        "title": "策划照片",
+        "body1": "收藏当前照片，使其始终保留在轮播中。删除则永远不再出现。",
+        "body2": "打开「选择背景」选择展示哪些电影，或为任意照片点心。",
+        "open": "选择背景",
+        "hint": "侧边栏中有当前照片的收藏与删除按钮 — 现在正在闪烁。"
+      },
+      "shortcuts": {
+        "title": "键盘快捷键",
+        "openSidebar": "打开或关闭侧边栏",
+        "openBookmarks": "打开或关闭书签面板",
+        "moveWidget": "移动小组件",
+        "editWidget": "编辑单个小组件（按住 Shift 并点击铅笔）",
+        "escape": "关闭侧边栏、弹出框、编辑模式或本指南",
+        "enter": "确认编辑或退出编辑模式",
+        "navigateGuide": "在本指南中翻页"
+      }
+    }
+  }
+}

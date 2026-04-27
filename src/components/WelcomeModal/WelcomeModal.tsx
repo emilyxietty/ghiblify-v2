@@ -21,7 +21,8 @@ import {
   getWidgetConfig,
 } from "../../config/widgetConfig";
 import { THEME_NAMES, ThemeName, useAppContext } from "../../contexts/AppContext";
-import { useT } from "../../i18n/i18n";
+import { LANGUAGES, getLocale, setLocale, useT } from "../../i18n/i18n";
+import { Dropdown } from "../Dropdown/Dropdown";
 import "./WelcomeModal.css";
 
 const Key: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -355,6 +356,21 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
       case "welcome":
         return (
           <>
+            <div className="welcome-language-row">
+              <Dropdown
+                className="welcome-language-picker"
+                size="small"
+                variant="outline-light"
+                portal
+                direction="down"
+                options={LANGUAGES.map((l) => ({
+                  value: l.code,
+                  label: l.label,
+                }))}
+                value={getLocale()}
+                onChange={(code) => setLocale(code)}
+              />
+            </div>
             <p>{t("welcome.slides.welcome.body1")}</p>
             <p>{t("welcome.slides.welcome.body2")}</p>
             <p>{t("welcome.slides.welcome.body3")}</p>

@@ -10,7 +10,11 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: min(400px, 100vw);
+    /* Width is driven by the --sidebar-width CSS variable, which
+       LeftSidebar.tsx writes from the SIDEBAR_WIDTH constant in
+       config/appConfig.ts. Falls back to 460px so styling still
+       works if the variable hasn't been set yet (first paint). */
+    width: min(var(--sidebar-width, 430px), 100vw);
     height: 100vh;
     background: var(--sidebar-bg);
     backdrop-filter: blur(14px) saturate(110%);
@@ -80,12 +84,14 @@
 }
 
 @keyframes sidebar-spotlight-pulse {
+
     0%,
     100% {
         box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 80%, transparent),
             0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
         transform: scale(1);
     }
+
     50% {
         box-shadow:
             0 0 0 10px color-mix(in srgb, var(--yellow) 0%, transparent),
@@ -117,6 +123,135 @@
     margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
+    flex-wrap: wrap;
+}
+
+/* Language picker sits inline beside Rate / Report. The base
+   .dropdown is `width: 100%`, which would push our two siblings
+   onto the next line — pin to auto so it sizes to its content.
+   flex: 0 0 auto disables grow/shrink so it stays compact. */
+.left-sidebar .language-picker {
+    width: auto;
+    min-width: 92px;
+    flex: 0 0 auto;
+}
+
+/* Palette-themed pill — matches .btn-dark used by the Report and
+   Rate buttons next to this picker. Frost has a dedicated override
+   below (since `--dark` is intentionally white in Frost). */
+.left-sidebar .language-picker .dropdown-toggle,
+.welcome-language-picker .dropdown-toggle {
+    background: var(--dark);
+    color: var(--light);
+    border-color: color-mix(in srgb, var(--light) 24%, transparent);
+    transition: background 160ms ease, border-color 160ms ease,
+        transform 160ms ease, box-shadow 160ms ease;
+}
+
+.left-sidebar .language-picker .dropdown-toggle:hover:not(:disabled),
+.welcome-language-picker .dropdown-toggle:hover:not(:disabled) {
+    background: var(--dark-muted);
+    border-color: color-mix(in srgb, var(--light) 40%, transparent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
+        0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+}
+
+.left-sidebar .language-picker .dropdown-toggle:focus-visible,
+.welcome-language-picker .dropdown-toggle:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Frost — palette has --dark = white which would render the pill
+   white-on-white. Match the dark glass treatment used by .btn-dark
+   on Frost (see App.css). */
+.theme-frost .left-sidebar .language-picker .dropdown-toggle,
+.theme-frost .welcome-language-picker .dropdown-toggle {
+    background: rgba(10, 14, 20, 0.7);
+    color: rgba(255, 255, 255, 0.96);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.theme-frost .left-sidebar .language-picker .dropdown-toggle:hover:not(:disabled),
+.theme-frost .welcome-language-picker .dropdown-toggle:hover:not(:disabled) {
+    background: rgba(10, 14, 20, 0.88);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+/* The picker lives at the very bottom of the sidebar — when its menu
+   opens downward it extends past the sidebar's bottom edge (the
+   sidebar's overflow-y: auto would otherwise clip it). Flip the menu
+   to open UPWARD instead so it floats above the buttons, comfortably
+   inside the panel. */
+/* Both pickers portal their menu to <body>, so these selectors
+   target the menu element by its passed-through className DIRECTLY
+   (not as a descendant of the .left-sidebar / welcome-card tree —
+   the portal breaks the ancestor chain). The Dropdown component
+   forwards `className` to both the wrapper div AND the menu <ul>,
+   so `.dropdown-menu.language-picker` matches the portaled menu. */
+.dropdown-menu.language-picker,
+.dropdown-menu.welcome-language-picker {
+    background: var(--dark);
+    color: var(--light);
+    border-color: color-mix(in srgb, var(--light) 16%, transparent);
+    /* Lift above modals (6000), sidebar (99999), and edit overlay. */
+    z-index: var(--z-portal);
+}
+
+/* Frost override — same dark-glass treatment as the toggle. */
+.theme-frost .dropdown-menu.language-picker,
+.theme-frost .dropdown-menu.welcome-language-picker {
+    background: rgba(10, 14, 20, 0.92);
+    color: rgba(255, 255, 255, 0.96);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Up-direction animation for the sidebar picker's portaled menu. */
+.dropdown-menu-portal.dropdown-menu-up {
+    animation: dropdownSlideInUp 0.2s ease;
+}
+
+.dropdown-menu-portal.dropdown-menu-down {
+    animation: dropdownSlideIn 0.2s ease;
+}
+
+.dropdown-menu.language-picker .dropdown-option,
+.dropdown-menu.welcome-language-picker .dropdown-option {
+    color: var(--light);
+}
+
+.dropdown-menu.language-picker .dropdown-option:hover,
+.dropdown-menu.welcome-language-picker .dropdown-option:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.dropdown-menu.language-picker .dropdown-option.selected,
+.dropdown-menu.welcome-language-picker .dropdown-option.selected {
+    background: color-mix(in srgb, var(--yellow) 24%, transparent);
+    font-weight: 600;
+}
+
+.theme-frost .dropdown-menu.language-picker .dropdown-option,
+.theme-frost .dropdown-menu.welcome-language-picker .dropdown-option {
+    color: rgba(255, 255, 255, 0.96);
+}
+
+.theme-frost .dropdown-menu.language-picker .dropdown-option:hover,
+.theme-frost .dropdown-menu.welcome-language-picker .dropdown-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes dropdownSlideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -443,13 +578,11 @@
        palettes with similar accents (Ghibli vs Spirited vs Totoro)
        still look distinct because their --dark differs. */
     background:
-        conic-gradient(
-            from 0deg,
+        conic-gradient(from 0deg,
             var(--dark) 0deg 180deg,
             var(--red) 180deg 240deg,
             var(--yellow) 240deg 300deg,
-            var(--blue) 300deg 360deg
-        );
+            var(--blue) 300deg 360deg);
 }
 
 .theme-swatch:hover {
@@ -473,13 +606,11 @@
    black so the swatch reads as a dark palette at a glance. */
 .theme-swatch.theme-frost {
     background:
-        conic-gradient(
-            from 0deg,
+        conic-gradient(from 0deg,
             #0a0e14 0deg 180deg,
             var(--red) 180deg 240deg,
             var(--yellow) 240deg 300deg,
-            var(--blue) 300deg 360deg
-        );
+            var(--blue) 300deg 360deg);
 }
 
 /* ---------------------------------------------------------------------------
@@ -530,16 +661,16 @@
     transition: transform 160ms ease, background 160ms ease;
 }
 
-.contrast-toggle input:checked + .contrast-switch {
+.contrast-toggle input:checked+.contrast-switch {
     background: var(--green);
 }
 
-.contrast-toggle input:checked + .contrast-switch::after {
+.contrast-toggle input:checked+.contrast-switch::after {
     transform: translateX(16px);
     background: var(--dark);
 }
 
-.contrast-toggle input:focus-visible + .contrast-switch {
+.contrast-toggle input:focus-visible+.contrast-switch {
     box-shadow: 0 0 0 2px var(--focus-ring);
 }
 

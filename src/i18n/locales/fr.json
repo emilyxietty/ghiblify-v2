@@ -1,0 +1,422 @@
+{
+  "common": {
+    "done": "Terminé",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "reset": "Réinitialiser",
+    "guide": "Guide",
+    "search": "Rechercher",
+    "exit": "Quitter",
+    "offlineCallout": "Wi-Fi indisponible"
+  },
+  "themes": {
+    "ghibli": "Ghibli",
+    "spirited": "Le Voyage de Chihiro",
+    "howls": "Hauru",
+    "totoro": "Totoro",
+    "ponyo": "Ponyo",
+    "sky": "Ciel",
+    "butter": "Beurre",
+    "mint": "Menthe",
+    "spring": "Printemps",
+    "peony": "Pivoine",
+    "light": "Clair",
+    "dark": "Sombre",
+    "frost": "Givre"
+  },
+  "sidebar": {
+    "ariaLabel": "Paramètres",
+    "externalLinksLabel": "Liens externes",
+    "headings": {
+      "widgets": "Widgets",
+      "appearance": "Apparence",
+      "background": "Arrière-plan"
+    },
+    "buttons": {
+      "githubRepo": "Dépôt Github",
+      "buyCoffee": "Offrir un café",
+      "guide": "Guide",
+      "guideAria": "Ouvrir le guide",
+      "rate": "Noter",
+      "rateAria": "Noter Ghiblify sur le Chrome Web Store",
+      "languageAria": "Choisir la langue",
+      "dragMode": "Mode déplacement",
+      "dragModeDone": "Terminé",
+      "dragModeAria": "Activer le mode déplacement",
+      "dragModeOnAria": "Quitter le mode déplacement",
+      "modeToggleAria": "Basculer entre Édition et Déplacement",
+      "editWidgets": "Mode édition",
+      "resetAllWidgets": "Réinitialiser les widgets",
+      "resetFilters": "Réinitialiser les filtres",
+      "selectBackgrounds": "Choisir les arrière-plans",
+      "deleteBackground": "Supprimer l'arrière-plan",
+      "deleteBackgroundAria": "Retirer l'arrière-plan actuel de la rotation",
+      "favoriteBackground": "Mettre en favori",
+      "favoriteBackgroundAria": "Ajouter aux favoris",
+      "unfavoriteBackground": "Retirer des favoris",
+      "unfavoriteBackgroundAria": "Retirer des favoris"
+    },
+    "appearance": {
+      "palette": "Palette",
+      "paletteAria": "Palette de couleurs",
+      "highContrast": "Contraste élevé"
+    },
+    "filters": {
+      "heading": "Filtres",
+      "blur": "Flou",
+      "brightness": "Luminosité",
+      "contrast": "Contraste",
+      "saturation": "Saturation"
+    },
+    "filterUnits": {
+      "px": "px",
+      "percent": "%"
+    }
+  },
+  "widgets": {
+    "names": {
+      "time": "Heure",
+      "date": "Date",
+      "greeting": "Salutation",
+      "info": "Infos film",
+      "todo": "Liste de tâches",
+      "quicklinks": "Liens rapides",
+      "searchbar": "Barre de recherche",
+      "pomodoro": "Minuteur Pomodoro",
+      "avatar": "Avatar",
+      "bookmarks": "Marque-pages",
+      "weather": "Météo",
+      "notes": "Note"
+    },
+    "tooltip": {
+      "show": "Afficher le widget {{name}}",
+      "hide": "Masquer le widget {{name}}"
+    },
+    "contextMenu": {
+      "edit": "Modifier {{name}}",
+      "drag": "Déplacer {{name}}",
+      "hide": "Masquer {{name}}",
+      "time12": "12 heures",
+      "time24": "24 heures",
+      "addLink": "Ajouter un lien",
+      "focusModeOn": "Mode concentration",
+      "focusModeOff": "Quitter le mode concentration",
+      "selectAvatar": "Choisir un avatar"
+    },
+    "edit": {
+      "ariaEdit": "Modifier le widget {{key}}",
+      "tooltipEdit": "Modifier",
+      "opacity": "Opacité",
+      "opacityAria": "Opacité du widget",
+      "blur": "Flou",
+      "blurAria": "Intensité du flou",
+      "noCustomization": "Aucune personnalisation disponible",
+      "darkModeAria": "Activer/désactiver le mode sombre",
+      "timeFormatAria": "Basculer 12/24 h",
+      "gridShow": "Afficher en grille",
+      "gridShowList": "Afficher en liste",
+      "resizeTitle": "Glisser pour redimensionner",
+      "infoFields": {
+        "japaneseTitle": "Titre japonais",
+        "title": "Titre",
+        "year": "Année",
+        "movieLength": "Durée",
+        "quote": "Citation"
+      },
+      "infoFieldsLabel": "Champs",
+      "notesShowBorder": "Afficher la bordure",
+      "notesHideBorder": "Masquer la bordure",
+      "notesShowBorderAria": "Afficher la bordure de la note",
+      "notesHideBorderAria": "Masquer la bordure de la note",
+      "weatherUnitAria": "Basculer Celsius / Fahrenheit",
+      "weatherUnitC": "°C",
+      "weatherUnitF": "°F",
+      "weatherSections": {
+        "now": "Maintenant",
+        "hourly": "Par heure",
+        "daily": "Quotidien"
+      },
+      "weatherSectionsLabel": "Sections",
+      "weatherIconStyle": {
+        "animated": "Animé",
+        "still": "Fixe"
+      },
+      "weatherIconStyleAria": {
+        "animated": "Icônes animées — cliquer pour passer en fixe",
+        "still": "Icônes fixes — cliquer pour passer en animé"
+      }
+    }
+  },
+  "greeting": {
+    "morning": "Bonjour",
+    "afternoon": "Bon après-midi",
+    "evening": "Bonsoir",
+    "namePlaceholder": "votre nom",
+    "editNameAria": "Modifier votre nom"
+  },
+  "todo": {
+    "addPlaceholder": "Ajouter une tâche...",
+    "addAria": "Ajouter une tâche",
+    "addTooltip": "Ajouter une tâche",
+    "deleteAria": "Supprimer : {{text}}",
+    "deleteTooltip": "Supprimer la tâche",
+    "editAria": "Modifier : {{text}}",
+    "editTooltip": "Modifier la tâche",
+    "dragHandleTooltip": "Glisser pour réorganiser",
+    "checkboxAriaDone": "Marquer non terminée",
+    "checkboxAriaNotDone": "Marquer terminée",
+    "checkboxTooltipDone": "Marquer non terminée",
+    "checkboxTooltipNotDone": "Marquer terminée"
+  },
+  "searchbar": {
+    "placeholder": "Rechercher sur le web...",
+    "ariaLabelInput": "Rechercher sur le web",
+    "ariaLabelButton": "Rechercher",
+    "tooltipButton": "Rechercher"
+  },
+  "quicklinks": {
+    "trigger": "Liens",
+    "ariaDialog": "Liens rapides",
+    "addAria": "Ajouter un nouveau lien rapide",
+    "addTooltip": "Ajouter un lien",
+    "saveAria": "Enregistrer le lien",
+    "saveTooltip": "Enregistrer le lien",
+    "editLink": "Modifier le lien",
+    "deleteLink": "Supprimer le lien",
+    "deleteAria": "Supprimer {{title}}",
+    "deleteGridTooltip": "Supprimer {{title}}",
+    "deleteListTooltip": "Supprimer le lien",
+    "removeTooltip": "Supprimer des liens",
+    "doneDeleteTooltip": "Terminé",
+    "labelPlaceholder": "Étiquette (facultatif)",
+    "labelSrOnly": "Étiquette (facultatif)",
+    "urlPlaceholder": "https://exemple.com",
+    "urlSrOnly": "URL",
+    "emptyMessage": "Aucun lien rapide. Ajoutez-en un ci-dessus."
+  },
+  "pomodoro": {
+    "modeFocus": "Pomodoro",
+    "modeBreak": "Pause",
+    "minsLabel": "min",
+    "play": "Démarrer",
+    "pause": "Pause",
+    "reset": "Réinitialiser",
+    "focus": "Concentration",
+    "exit": "Quitter",
+    "playAria": "Démarrer le minuteur",
+    "pauseAria": "Mettre en pause",
+    "resetAria": "Réinitialiser le minuteur",
+    "focusAriaEnter": "Entrer en mode concentration",
+    "focusAriaExit": "Quitter le mode concentration",
+    "focusTooltipEnter": "Concentration",
+    "focusTooltipExit": "Quitter"
+  },
+  "bookmarks": {
+    "ariaLabel": "Marque-pages",
+    "heading": "Marque-pages",
+    "searchPlaceholder": "Rechercher des marque-pages...",
+    "searchAria": "Rechercher dans les marque-pages",
+    "loading": "Chargement…",
+    "empty": "Aucun marque-page pour l'instant.",
+    "callout": "Panneau marque-pages — survolez le bord droit",
+    "errorNoChrome": "Cette page n'est pas exécutée comme une extension Chrome. Ouvrez l'onglet dans l'extension installée.",
+    "errorNoBookmarks": "chrome.bookmarks est indisponible. Vérifiez la permission ou réinstallez l'extension.",
+    "errorBookmarksApi": "Erreur marque-pages : {{message}}",
+    "errorLoad": "Échec du chargement des marque-pages : {{message}}",
+    "delete": "Supprimer le marque-page",
+    "noResultsTitle": "Aucun résultat",
+    "noResultsSub": "Rien ne correspond à « {{query}} »."
+  },
+  "notes": {
+    "placeholder": "Notez quelque chose…",
+    "ariaLabel": "Note"
+  },
+  "weather": {
+    "unavailable": "N/D",
+    "offline": "Hors ligne — météo indisponible",
+    "permissionDenied": "Permission de localisation refusée. Activez-la dans Chrome.",
+    "permissionUnavailable": "La géolocalisation n'est pas disponible dans ce contexte.",
+    "fetchError": "Impossible de charger la météo. Réessayez plus tard.",
+    "feelsLike": "Ressenti {{temp}}",
+    "hi": "Max {{temp}}",
+    "lo": "Min {{temp}}",
+    "now": "Maintenant",
+    "wmo": {
+      "0": "Dégagé",
+      "1": "Plutôt dégagé",
+      "2": "Partiellement nuageux",
+      "3": "Couvert",
+      "45": "Brouillard",
+      "48": "Brouillard givrant",
+      "51": "Bruine légère",
+      "53": "Bruine",
+      "55": "Bruine forte",
+      "56": "Bruine verglaçante",
+      "57": "Bruine verglaçante",
+      "61": "Pluie légère",
+      "63": "Pluie",
+      "65": "Pluie forte",
+      "66": "Pluie verglaçante",
+      "67": "Pluie verglaçante",
+      "71": "Neige légère",
+      "73": "Neige",
+      "75": "Forte neige",
+      "77": "Grains de neige",
+      "80": "Averses légères",
+      "81": "Averses",
+      "82": "Averses fortes",
+      "85": "Averses de neige légères",
+      "86": "Averses de neige",
+      "95": "Orage",
+      "96": "Orage avec grêle",
+      "99": "Orage avec grêle"
+    },
+    "weekday": {
+      "0": "Dim",
+      "1": "Lun",
+      "2": "Mar",
+      "3": "Mer",
+      "4": "Jeu",
+      "5": "Ven",
+      "6": "Sam"
+    }
+  },
+  "socials": {
+    "buttonLabel": "Mes réseaux",
+    "modalTitle": "Mes réseaux",
+    "modalIntro": "Au plaisir d'échanger ! Passez dire bonjour :)"
+  },
+  "report": {
+    "buttonLabel": "Signaler un problème",
+    "buttonAria": "Ouvrir la boîte de dialogue de signalement",
+    "modalTitle": "Signaler un problème",
+    "modalIntro": "Un bug ou un commentaire ? Écrivez-moi par e-mail ou via mes réseaux.",
+    "emailLabel": "E-mail",
+    "copyLabel": "Copier",
+    "copyAria": "Copier l'adresse e-mail",
+    "copied": "Copié !",
+    "openMailAria": "Ouvrir dans l'app mail",
+    "openMail": "Ouvrir l'app mail"
+  },
+  "background": {
+    "modal": {
+      "title": "Paramètres d'arrière-plan",
+      "moviesCount": "{{count}} films",
+      "selectAll": "Tout sélectionner",
+      "deselectAll": "Tout désélectionner (sauf 1)",
+      "noBackgrounds": "(aucun fond)",
+      "show": "Afficher ↓",
+      "hide": "Masquer ↑",
+      "removeImageTitle": "Retirer l'image",
+      "restoreDeleted": "Restaurer les supprimés",
+      "restoreConfirm": "Effacer les supprimés et restaurer toutes les images ?",
+      "deletedTitle": "Supprimés",
+      "restoreAll": "Tout restaurer",
+      "restoreOne": "Restaurer",
+      "restoreOneAria": "Remettre cette image dans la rotation",
+      "favoritesTitle": "Favoris",
+      "favoritesAlwaysOn": "Les favoris sont toujours dans la rotation",
+      "favoriteOne": "Favori",
+      "favoriteOneAria": "Ajouter cette image aux favoris",
+      "unfavoriteOne": "Retirer",
+      "unfavoriteOneAria": "Retirer cette image des favoris"
+    },
+    "loadingError": "Aucun arrière-plan trouvé. Vérifiez la console pour les erreurs.",
+    "contextMenu": {
+      "open": "Choisir les arrière-plans...",
+      "favorite": "Mettre en favori",
+      "unfavorite": "Retirer des favoris",
+      "delete": "Supprimer cette photo"
+    }
+  },
+  "modal": {
+    "common": {
+      "closeAria": "Fermer"
+    }
+  },
+  "callouts": {
+    "shiftDrag": "Les widgets sont maintenant déplaçables — cliquez-glissez pour bouger",
+    "focusMode": "Échap pour quitter le mode concentration"
+  },
+  "welcome": {
+    "previousAria": "Diapositive précédente",
+    "nextAria": "Diapositive suivante",
+    "closeAria": "Fermer le guide",
+    "doneButton": "Terminé",
+    "tabsAria": "Pages du guide",
+    "slides": {
+      "welcome": {
+        "title": "Bienvenue sur Ghiblify",
+        "body1": "Une page de nouvel onglet inspirée du Studio Ghibli. Ces images sont généreusement fournies gratuitement par le Studio Ghibli pour un usage non commercial. Profitez-en et envisagez de soutenir le studio en achetant des produits ou films officiels.",
+        "body2": "L'extension venant d'être refondée, merci de votre patience pendant que je corrige les bugs et ajoute des fonctionnalités. Signalez-moi tout problème. Merci pour votre soutien !",
+        "body3": "Cliquez sur Suivant pour un tour rapide des nouveautés.",
+        "hint": "Utilisez ← → ou les points pour naviguer dans ce guide."
+      },
+      "findGuide": {
+        "title": "Vous pouvez revenir à ce guide à tout moment",
+        "body1Pre": "Survolez le bord gauche de l'écran — ou appuyez sur ",
+        "body1Post": " — pour ouvrir la barre latérale. Le bouton Guide en haut relance ce tour. Repérez le bouton qui clignote.",
+        "hint": "La barre latérale est ouverte derrière cette boîte de dialogue pour que vous voyiez où la trouver."
+      },
+      "widgets": {
+        "title": "Choisissez vos widgets",
+        "body1": "Touchez n'importe quelle icône pour l'afficher ou la masquer. Les widgets actifs brillent avec la couleur d'accent de la palette.",
+        "body2Pre": "Ces mêmes interrupteurs vivent dans la barre latérale — survolez le bord gauche ou appuyez sur ",
+        "body2Post": " pour les retrouver plus tard.",
+        "tryItNow": "Essayez maintenant !"
+      },
+      "palette": {
+        "title": "Choisissez une palette",
+        "body1": "Cliquez sur un échantillon pour reteinter toute l'UI. Les palettes claires inversent texte et surfaces ; la palette Givre donne un aspect verre.",
+        "hint": "Vous pouvez changer de palette depuis la section Apparence de la barre latérale."
+      },
+      "adjustTime": {
+        "title": "Personnalisez les widgets",
+        "body1": "Chaque widget a ses propres contrôles. Le widget Heure ci-dessus est en mode édition — basculez 12/24 h et glissez le curseur pour la taille.",
+        "body2Pre": "Trois façons d'éditer : Mode édition dans la barre latérale, ",
+        "body2Post": " + clic sur le crayon au survol, ou clic droit → Modifier le widget.",
+        "format12": "12 heures",
+        "format24": "24 heures",
+        "fontSizeLabel": "Taille de l'horloge"
+      },
+      "drag": {
+        "title": "Déplacez les widgets",
+        "body1Pre": "Maintenez ",
+        "body1Post": " et glissez le widget Heure pour le repositionner. Les widgets s'alignent sur la grille.",
+        "body2": "Vous ne voulez pas maintenir Shift ? Activez le Mode déplacement depuis la barre supérieure et tous les widgets deviennent déplaçables jusqu'à Terminé.",
+        "hint": "Le curseur se transforme en main quand Shift est enfoncé — c'est votre indice."
+      },
+      "rightClick": {
+        "title": "Clic droit pour des actions rapides",
+        "body1": "Cliquez avec le bouton droit sur un widget pour un menu d'actions rapides — Modifier, Déplacer, Masquer, plus des raccourcis spécifiques (12/24 h pour Heure, °C/°F pour Météo, etc.).",
+        "body2": "Les sous-menus s'ouvrent en cascade pour les options à choix multiples. Le clic droit sur l'arrière-plan vide affiche le menu natif de Chrome."
+      },
+      "appearance": {
+        "title": "Thèmes et apparence",
+        "body1": "La section Apparence propose de nombreuses palettes. Choisissez-en une et toute l'UI se reteinte.",
+        "body2": "Le curseur d'arrière-plan teinte les surfaces internes. Le contraste élevé force tout à un minimum lisible."
+      },
+      "background": {
+        "title": "Sélectionnez les photos",
+        "body1": "Mettez la photo actuelle en favori pour la garder dans la rotation. La poubelle la supprime à jamais.",
+        "body2": "Ouvrez Choisir les arrière-plans pour décider quels films apparaissent, ou mettez en favori n'importe quelle photo.",
+        "open": "Choisir les arrière-plans",
+        "hint": "Les boutons favori et poubelle sont dans la barre latérale — ils clignotent maintenant."
+      },
+      "shortcuts": {
+        "title": "Raccourcis clavier",
+        "openSidebar": "Ouvrir ou fermer la barre latérale",
+        "openBookmarks": "Ouvrir ou fermer le panneau marque-pages",
+        "moveWidget": "Déplacer un widget",
+        "editWidget": "Modifier un seul widget (Shift + clic sur le crayon)",
+        "escape": "Fermer la barre latérale, popovers, mode édition ou ce guide",
+        "enter": "Confirmer une édition ou quitter le mode édition",
+        "navigateGuide": "Naviguer dans les diapositives du guide"
+      }
+    }
+  }
+}

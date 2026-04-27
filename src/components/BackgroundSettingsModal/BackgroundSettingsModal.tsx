@@ -65,7 +65,7 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
       if (!available) {
         // eslint-disable-next-line no-console
         console.debug(
-          `BackgroundListItem: ${movieKey} (${title}) has no backgrounds. links=${links.length}`
+          `BackgroundListItem: ${movieKey} (${title}) has no backgrounds. links=${links.length}`,
         );
       }
     }, []);
@@ -160,10 +160,9 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
                     aria-label={t("background.modal.removeImageTitle")}
                     data-tooltip={t("common.delete")}
                     onClick={(e) => {
-                      const ev = new CustomEvent(
-                        "ghiblify:blacklist:add",
-                        { detail: lnk }
-                      );
+                      const ev = new CustomEvent("ghiblify:blacklist:add", {
+                        detail: lnk,
+                      });
                       window.dispatchEvent(ev);
                     }}
                   >
@@ -184,8 +183,8 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
     prev.totalLinks === next.totalLinks &&
     prev.links.join("|") === next.links.join("|") &&
     prev.links.every(
-      (l) => prev.favoritedSet.has(l) === next.favoritedSet.has(l)
-    )
+      (l) => prev.favoritedSet.has(l) === next.favoritedSet.has(l),
+    ),
 );
 
 export const BackgroundSettingsModal: React.FC<
@@ -208,7 +207,7 @@ export const BackgroundSettingsModal: React.FC<
   const { backgroundSelection, updateBackgroundSelection } = useAppContext();
   //   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
   const [movies, setMovies] = useState<Array<{ key: string; title: string }>>(
-    []
+    [],
   );
   const [availableBackgroundTitles, setAvailableBackgroundTitles] = useState<
     Set<string>
@@ -221,7 +220,7 @@ export const BackgroundSettingsModal: React.FC<
     // Fetch movie metadata and background sources so we can mark which movies
     // actually have backgrounds available.
     let mounted = true;
-    Promise.all([fetch("/movie_metadata.json"), fetch("/background_en.json")])
+    Promise.all([fetch("/movie_metadata.json"), fetch("/background.json")])
       .then(async ([metaRes, bgRes]) => {
         const data = await metaRes.json();
         const bgData = await bgRes.json();
@@ -234,7 +233,7 @@ export const BackgroundSettingsModal: React.FC<
         const titles = new Set<string>();
         // store normalized titles (lowercased) for more forgiving matching
         (bgData.sources || []).forEach((s: any) =>
-          titles.add((s.title || "").toLowerCase().trim())
+          titles.add((s.title || "").toLowerCase().trim()),
         );
         setAvailableBackgroundTitles(titles);
         setBackgroundSources(bgData.sources || []);
@@ -242,8 +241,8 @@ export const BackgroundSettingsModal: React.FC<
       .catch((err) =>
         console.log(
           "LeftSidebar: failed to load movie metadata or backgrounds",
-          err
-        )
+          err,
+        ),
       );
     return () => {
       mounted = false;
@@ -279,7 +278,7 @@ export const BackgroundSettingsModal: React.FC<
   // stable wrapper to avoid creating a new function per render
   const handleUpdateSelection = React.useCallback(
     (key: string, checked: boolean) => updateBackgroundSelection(key, checked),
-    [updateBackgroundSelection]
+    [updateBackgroundSelection],
   );
 
   // BackgroundListItem moved to module scope (above) to keep its
@@ -287,7 +286,7 @@ export const BackgroundSettingsModal: React.FC<
 
   // blacklist state persisted in the shared ghiblify_background blob
   const [blacklist, setBlacklist] = React.useState<Set<string>>(
-    () => new Set(readBlacklist())
+    () => new Set(readBlacklist()),
   );
 
   // handler to add url to blacklist and persist
@@ -311,7 +310,7 @@ export const BackgroundSettingsModal: React.FC<
     return () =>
       window.removeEventListener(
         "ghiblify:blacklist:add",
-        onAdd as EventListener
+        onAdd as EventListener,
       );
   }, [addToBlacklist]);
 
@@ -331,7 +330,7 @@ export const BackgroundSettingsModal: React.FC<
   // blob. Mutations broadcast `ghiblify:favorites:change` so the
   // sidebar heart button + useBackground stay in sync.
   const [favorites, setFavorites] = React.useState<Set<string>>(
-    () => new Set(readFavorites())
+    () => new Set(readFavorites()),
   );
   React.useEffect(() => {
     const refresh = () => setFavorites(new Set(readFavorites()));
@@ -351,8 +350,7 @@ export const BackgroundSettingsModal: React.FC<
         writeFavorites(Array.from(next));
         if (next.size === 0) {
           const anyMovieEnabled = movies.some(
-            (m) =>
-              (backgroundSelection && backgroundSelection[m.key]) ?? true
+            (m) => (backgroundSelection && backgroundSelection[m.key]) ?? true,
           );
           if (!anyMovieEnabled && movies.length > 0) {
             updateBackgroundSelection(movies[0].key, true);
@@ -362,7 +360,7 @@ export const BackgroundSettingsModal: React.FC<
         return next;
       });
     },
-    [movies, backgroundSelection, updateBackgroundSelection]
+    [movies, backgroundSelection, updateBackgroundSelection],
   );
 
   const removeFavorite = React.useCallback(
@@ -374,7 +372,7 @@ export const BackgroundSettingsModal: React.FC<
         writeFavorites(Array.from(next));
         if (next.size === 0) {
           const anyMovieEnabled = movies.some(
-            (m) => (backgroundSelection && backgroundSelection[m.key]) ?? true
+            (m) => (backgroundSelection && backgroundSelection[m.key]) ?? true,
           );
           if (!anyMovieEnabled && movies.length > 0) {
             updateBackgroundSelection(movies[0].key, true);
@@ -384,7 +382,7 @@ export const BackgroundSettingsModal: React.FC<
         return next;
       });
     },
-    [movies, backgroundSelection, updateBackgroundSelection]
+    [movies, backgroundSelection, updateBackgroundSelection],
   );
 
   // Restore a single image from the blacklist.
@@ -413,7 +411,9 @@ export const BackgroundSettingsModal: React.FC<
       >
         <div className="modal-header">
           <h4>{t("background.modal.title")}</h4>
-          <div>{t("background.modal.moviesCount", { count: movies.length })}</div>
+          <div>
+            {t("background.modal.moviesCount", { count: movies.length })}
+          </div>
           <div className="modal-actions">
             {(() => {
               // Compute enabled and available movies
@@ -421,7 +421,7 @@ export const BackgroundSettingsModal: React.FC<
               movies.forEach((m) => {
                 const mk = (m.key || "").toLowerCase().trim();
                 const available = Array.from(availableBackgroundTitles).some(
-                  (t) => t === mk || t.includes(mk) || mk.includes(t)
+                  (t) => t === mk || t.includes(mk) || mk.includes(t),
                 );
                 availMap.set(m.key, available);
               });
@@ -438,10 +438,9 @@ export const BackgroundSettingsModal: React.FC<
               const enabledCount =
                 enabledSelectable.length + (hasFavorites ? 1 : 0);
               const totalAvailable = movies.filter(
-                (m) => availMap.get(m.key) || false
+                (m) => availMap.get(m.key) || false,
               ).length;
-              const allSelected =
-                enabledSelectable.length === totalAvailable;
+              const allSelected = enabledSelectable.length === totalAvailable;
               const onlyOneLeft = enabledCount <= 1;
               return (
                 <>
@@ -530,10 +529,7 @@ export const BackgroundSettingsModal: React.FC<
                   </summary>
                   <div className="summary-images favorites-grid">
                     {Array.from(favorites).map((url) => (
-                      <div
-                        className="thumb-wrap favorite-thumb-wrap"
-                        key={url}
-                      >
+                      <div className="thumb-wrap favorite-thumb-wrap" key={url}>
                         <img
                           src={url}
                           alt=""
@@ -544,12 +540,8 @@ export const BackgroundSettingsModal: React.FC<
                         <button
                           type="button"
                           className="favorite-thumb-unfav"
-                          aria-label={t(
-                            "background.modal.unfavoriteOneAria"
-                          )}
-                          data-tooltip={t(
-                            "background.modal.unfavoriteOne"
-                          )}
+                          aria-label={t("background.modal.unfavoriteOneAria")}
+                          data-tooltip={t("background.modal.unfavoriteOne")}
                           onClick={(e) => {
                             e.stopPropagation();
                             removeFavorite(url);
@@ -571,7 +563,7 @@ export const BackgroundSettingsModal: React.FC<
                 movies.forEach((m) => {
                   const mk = (m.key || "").toLowerCase().trim();
                   const available = Array.from(availableBackgroundTitles).some(
-                    (t) => t === mk || t.includes(mk) || mk.includes(t)
+                    (t) => t === mk || t.includes(mk) || mk.includes(t),
                   );
                   availMap.set(m.key, available);
                 });
@@ -613,7 +605,10 @@ export const BackgroundSettingsModal: React.FC<
                   // Open the first enabled+available movie by default so users
                   // see a row of images immediately without having to expand.
                   const isFirstEnabled =
-                    enabled && available && filteredLinks.length > 0 && !firstEnabledOpened;
+                    enabled &&
+                    available &&
+                    filteredLinks.length > 0 &&
+                    !firstEnabledOpened;
                   if (isFirstEnabled) firstEnabledOpened = true;
 
                   return (
@@ -677,9 +672,7 @@ export const BackgroundSettingsModal: React.FC<
                         <button
                           type="button"
                           className="deleted-thumb-restore"
-                          aria-label={t(
-                            "background.modal.restoreOneAria"
-                          )}
+                          aria-label={t("background.modal.restoreOneAria")}
                           data-tooltip={t("background.modal.restoreOne")}
                           onClick={(e) => {
                             e.stopPropagation();
