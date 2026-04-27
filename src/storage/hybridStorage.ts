@@ -61,12 +61,19 @@ export const HYBRID_KEYS: Record<string, Area> = {
   ghiblify_widgets: "local",
   ghiblify_background: "local",
   ghiblify_todo: "local",
-  // Per-install flags.
-  ghiblify_legacy_cleaned: "local",
+  // Per-install flag.
   ghiblify_guide_seen: "local",
 };
 
-const MIGRATION_FLAG = "ghiblify_hybrid_migrated";
+// Single combined gate for ALL one-time setup work — both v1 (jQuery)
+// data cleanup AND the localStorage→chrome.storage migration. Replaces
+// the previous pair of flags (`ghiblify_legacy_cleaned`,
+// `ghiblify_hybrid_migrated`); see runOneTimeSetup below.
+const SETUP_FLAG = "ghiblify_setup_done";
+const LEGACY_FLAGS = [
+  "ghiblify_legacy_cleaned",
+  "ghiblify_hybrid_migrated",
+];
 
 type Listener = (newValue: unknown) => void;
 const listeners = new Map<string, Set<Listener>>();
@@ -193,34 +200,14 @@ if (hasChromeStorage) {
   );
 }
 
-// --- One-time migration -----------------------------------------------------
+// --- One-time setup ---------------------------------------------------------
 
-/**
- * On the first run with this layer present, copy any existing
- * localStorage values for registered keys into chrome.storage so
- * cross-device sync (and the `storage` permission justification)
- * starts working for users upgrading from the localStorage-only
- * build. Idempotent — gated by a localStorage flag.
- *
- * Best-effort: if chrome.storage isn't available or a write fails,
- * the user's data still lives in localStorage and the layer keeps
- * working in mirror-only mode.
- */
-export const migrateOnce = async (): Promise<void> => {
-  try {
-    if (localStorage.getItem(MIGRATION_FLAG) === "true") return;
-  } catch {
-    return;
-  }
-
-  if (!hasChromeStorage) {
-    try {
-      localStorage.setItem(MIGRATION_FLAG, "true");
-    } catch {
-      /* ignore */
-    }
-    return;
-  }
+// Internal worker — copy any existing localStorage values for
+// registered keys into chrome.storage. Idempotent; safe to call
+// multiple times (the only effect of a re-run is rewriting the same
+// values, which is harmless). Caller is responsible for gating.
+const performHybridMigration = async (): Promise<void> => {
+  if (!hasChromeStorage) return;
 
   // Bucket pending writes by area so we can issue at most two
   // chrome.storage.set calls instead of one per key.
@@ -252,9 +239,55 @@ export const migrateOnce = async (): Promise<void> => {
     });
 
   await Promise.all([setArea("sync", pending.sync), setArea("local", pending.local)]);
+};
+
+/**
+ * Single combined entry point for all one-time install work:
+ *   1. Drain v1 (jQuery) Ghiblify storage entries that the new app
+ *      no longer reads (cleanup callback supplied by the caller —
+ *      avoids a circular import with legacyMigrations).
+ *   2. Copy any existing localStorage values for registered keys
+ *      into chrome.storage so cross-device sync starts working
+ *      and the `storage` permission justification matches reality.
+ *
+ * Replaces the previous pair of separate flags (`ghiblify_legacy_cleaned`,
+ * `ghiblify_hybrid_migrated`) with one combined `ghiblify_setup_done`.
+ * On run, also tidies away those legacy per-step flags.
+ *
+ * Best-effort: any failure is swallowed and the localStorage mirror
+ * keeps the app working.
+ */
+export const runOneTimeSetup = async (
+  cleanLegacy: () => void
+): Promise<void> => {
+  let already = false;
+  try {
+    already = localStorage.getItem(SETUP_FLAG) === "true";
+  } catch {
+    return;
+  }
+  if (already) return;
 
   try {
-    localStorage.setItem(MIGRATION_FLAG, "true");
+    cleanLegacy();
+  } catch {
+    /* ignore — workers are themselves idempotent and try-wrapped */
+  }
+
+  await performHybridMigration();
+
+  try {
+    localStorage.setItem(SETUP_FLAG, "true");
+    // Tidy the previous-build per-step flags so users don't carry
+    // dead keys around forever.
+    LEGACY_FLAGS.forEach((k) => localStorage.removeItem(k));
+    if (hasChromeStorage) {
+      try {
+        chromeNs.storage.local.remove(LEGACY_FLAGS);
+      } catch {
+        /* ignore */
+      }
+    }
   } catch {
     /* ignore */
   }

@@ -463,16 +463,55 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);
 
-  // Persist on every widgets change. Skip the very first render so we don't
-  // overwrite the value we just loaded.
+  // Debounced persist — coalesces high-frequency state changes
+  // (resize-drag fires on every mousemove → updateWidgetSettings →
+  // setWidgets, which without this debounce would write the whole
+  // blob to localStorage + chrome.storage on every pixel of a
+  // resize). 250 ms is invisible to the user but flattens the storm
+  // into one write per gesture. Skip the very first render so we
+  // don't overwrite the value we just loaded.
   const isFirstRender = useRef(true);
+  const pendingPersistRef = useRef<{
+    timer: number | null;
+    value: WidgetsState | null;
+  }>({ timer: null, value: null });
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
-    persistWidgets(widgets);
+    const pending = pendingPersistRef.current;
+    pending.value = widgets;
+    if (pending.timer != null) window.clearTimeout(pending.timer);
+    pending.timer = window.setTimeout(() => {
+      if (pending.value) persistWidgets(pending.value);
+      pending.timer = null;
+    }, 250);
   }, [widgets]);
+
+  // Flush any pending debounced widgets-write when the tab is hidden
+  // or unmounting, so a quick close-mid-resize / quick navigation
+  // doesn't drop the last gesture's state.
+  useEffect(() => {
+    const flush = () => {
+      const pending = pendingPersistRef.current;
+      if (pending.timer != null && pending.value) {
+        window.clearTimeout(pending.timer);
+        pending.timer = null;
+        persistWidgets(pending.value);
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, []);
 
   // Edit mode and Drag mode are mutually exclusive — turning one on
   // turns the other off. Single-widget edit mode (`editingWidgetKey`)

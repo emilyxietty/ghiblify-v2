@@ -33,8 +33,35 @@ const REMOVE_ANIM_MS = 240;
 // folds any old "todo_data" value into the new key on first read.
 const STORAGE_KEY = "ghiblify_todo";
 
+// Debounced persist — coalesces typing bursts on the inline edit
+// input so the storage layer doesn't take a write per keystroke.
+// Module-scoped because a single user only ever sees one Todo widget,
+// and we want the timer to survive remounts (the user tapping out of
+// edit mode and back in again shouldn't drop a pending write).
+let persistTimer: number | null = null;
+let persistPendingValue: TodoItem[] | null = null;
 const persistTodos = (next: TodoItem[]) => {
-  writePersisted(STORAGE_KEY, next);
+  persistPendingValue = next;
+  if (persistTimer != null) window.clearTimeout(persistTimer);
+  persistTimer = window.setTimeout(() => {
+    if (persistPendingValue) writePersisted(STORAGE_KEY, persistPendingValue);
+    persistTimer = null;
+    persistPendingValue = null;
+  }, 300);
+};
+
+// Force-write any pending value immediately. Called on
+// visibilitychange/pagehide so a quick close-mid-typing doesn't drop
+// the last few keystrokes.
+const flushPersistTodos = () => {
+  if (persistTimer != null) {
+    window.clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  if (persistPendingValue) {
+    writePersisted(STORAGE_KEY, persistPendingValue);
+    persistPendingValue = null;
+  }
 };
 
 // One-time read of the previous in-app key. If we find anything,
@@ -71,6 +98,22 @@ export const Todo: React.FC = () => {
   const width = todoSettings.width;
   const height = todoSettings.height;
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Flush any pending debounced todo write when the tab hides or
+  // the widget unmounts, so a quick close-mid-typing doesn't drop
+  // the last keystrokes.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flushPersistTodos();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", flushPersistTodos);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", flushPersistTodos);
+      flushPersistTodos();
+    };
+  }, []);
 
   useEffect(() => {
     const savedTodos = readModernTodosOrMigrate();
