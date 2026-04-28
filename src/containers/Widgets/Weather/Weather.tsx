@@ -136,9 +136,35 @@ const Weather: React.FC = () => {
     </div>
   );
 
+  // Bucket the active WMO weather code (+ day/night) into a "mood"
+  // tag the CSS uses to swap the card background. Keeping this in
+  // JS rather than CSS attribute selectors with ranges so each
+  // bucket is documented and easy to tweak.
+  const moodFor = (code?: number, isDay?: boolean): string => {
+    if (code == null) return "default";
+    const day = isDay ?? true;
+    if (code <= 1) return day ? "clear-day" : "clear-night";
+    if (code === 2) return day ? "p-cloudy-day" : "p-cloudy-night";
+    if (code === 3) return day ? "cloudy-day" : "cloudy-night";
+    if (code >= 45 && code <= 48) return "fog";
+    if (code >= 51 && code <= 67) return day ? "rain-day" : "rain-night";
+    if (code >= 71 && code <= 77) return day ? "snow-day" : "snow-night";
+    if (code >= 80 && code <= 82) return day ? "rain-day" : "rain-night";
+    if (code >= 85 && code <= 86) return day ? "snow-day" : "snow-night";
+    if (code >= 95) return "thunder";
+    return "default";
+  };
+  const mood =
+    settings.showCard && data
+      ? moodFor(data.current.weatherCode, data.current.isDay)
+      : undefined;
+
   return (
     <div
-      className="weather-widget widget-header"
+      className={`weather-widget widget-header${
+        settings.showCard ? " weather-card-on" : ""
+      }`}
+      data-weather-mood={mood}
       style={{
         ["--weather-cell-opacity" as any]:
           ((settings.opacity ?? 35) / 100).toString(),

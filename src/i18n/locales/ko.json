@@ -34,7 +34,18 @@
     "headings": {
       "widgets": "위젯",
       "appearance": "외관",
-      "background": "배경"
+      "background": "배경",
+      "cursor": "커서"
+    },
+    "cursor": {
+      "summaryLabel": "스타일",
+      "default": "기본",
+      "soot": "검댕이",
+      "sparkle": "반짝임",
+      "petal": "꽃잎",
+      "bubble": "비눗방울",
+      "heart": "하트",
+      "leaf": "나뭇잎"
     },
     "buttons": {
       "githubRepo": "Github 저장소",
@@ -51,7 +62,7 @@
       "modeToggleAria": "편집과 드래그 모드 전환",
       "editWidgets": "편집 모드",
       "resetAllWidgets": "위젯 초기화",
-      "resetFilters": "필터 초기화",
+      "resetFilters": "배경 설정 초기화",
       "selectBackgrounds": "배경 선택",
       "deleteBackground": "배경 삭제",
       "deleteBackgroundAria": "현재 배경을 로테이션에서 제거",
@@ -66,11 +77,13 @@
       "highContrast": "고대비"
     },
     "filters": {
-      "heading": "필터",
+      "heading": "설정",
       "blur": "블러",
       "brightness": "밝기",
       "contrast": "대비",
-      "saturation": "채도"
+      "saturation": "채도",
+      "parallax": "패럴랙스 효과",
+      "parallaxTooltip": "커서를 움직이면 배경 사진이 살짝 함께 움직여 깊이감을 만들어줍니다 — 마치 전경이 조금 멀리 있는 풍경 앞에 떠 있는 듯한 느낌입니다."
     },
     "filterUnits": {
       "px": "px",
@@ -148,7 +161,12 @@
       "weatherIconStyleAria": {
         "animated": "애니메이션 아이콘 — 클릭하여 정지로 전환",
         "still": "정지 아이콘 — 클릭하여 애니메이션으로 전환"
-      }
+      },
+      "weatherShowCard": "카드",
+      "weatherHideCard": "카드",
+      "weatherShowCardLabel": "카드 배경 표시",
+      "weatherShowCardAria": "날씨 뒤에 부드러운 그라데이션 카드 표시",
+      "weatherHideCardAria": "카드 배경 숨기기"
     }
   },
   "greeting": {
@@ -307,7 +325,7 @@
       "title": "배경 설정",
       "moviesCount": "영화 {{count}}편",
       "selectAll": "모두 선택",
-      "deselectAll": "모두 해제 (1개 유지)",
+      "deselectAll": "모두 해제",
       "noBackgrounds": "(배경 없음)",
       "show": "표시 ↓",
       "hide": "숨기기 ↑",

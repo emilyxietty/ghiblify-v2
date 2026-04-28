@@ -1,62 +1,58 @@
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import BookmarksIcon from "@mui/icons-material/Bookmarks";
+import BugReportIcon from "@mui/icons-material/BugReport";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditIcon from "@mui/icons-material/Edit";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
-import BugReportIcon from "@mui/icons-material/BugReport";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LinkIcon from "@mui/icons-material/Link";
 import LocalCafeIcon from "@mui/icons-material/LocalCafe";
-import StarIcon from "@mui/icons-material/Star";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
+import StarIcon from "@mui/icons-material/Star";
 import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import TimerIcon from "@mui/icons-material/Timer";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
-import {
-  codeToIconName,
-  iconUrl as weatherIconUrl,
-} from "../Widgets/Weather/Weather";
-import { useWeather } from "../../hooks/useWeather";
-import { WeatherSettings } from "../../config/widgetConfig";
 import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
 import ReportModal from "../../components/ReportModal/ReportModal";
 import SocialsModal from "../../components/SocialsModal/SocialsModal";
+import { WeatherSettings } from "../../config/widgetConfig";
+import { useWeather } from "../../hooks/useWeather";
+import {
+  codeToIconName,
+  iconUrl as weatherIconUrl,
+} from "../Widgets/Weather/Weather";
 
 import { Button } from "../../components/Button/Button";
+import { Dropdown } from "../../components/Dropdown/Dropdown";
 import {
   BUYMEACOFFEE_URL,
   CHROME_WEBSTORE_REVIEW_URL,
   SIDEBAR_EDGE_TRIGGER,
   SIDEBAR_WIDTH,
 } from "../../config/appConfig";
+import { AVATAR_OPTIONS } from "../../config/avatarConfig";
+import { WidgetKey } from "../../config/widgetConfig";
+import {
+  BackgroundFilters,
+  CURSOR_NAMES,
+  ThemeName,
+  useAppContext,
+} from "../../contexts/AppContext";
+import { LANGUAGES, getLocale, setLocale, useT } from "../../i18n/i18n";
 import {
   readBlacklist,
   readFavorites,
   writeBlacklist,
   writeFavorites,
 } from "../../storage/backgroundStorage";
-import { AVATAR_OPTIONS } from "../../config/avatarConfig";
-import { WidgetKey } from "../../config/widgetConfig";
-import {
-  BackgroundFilters,
-  ThemeName,
-  useAppContext,
-} from "../../contexts/AppContext";
-import {
-  LANGUAGES,
-  getLocale,
-  setLocale,
-  useT,
-} from "../../i18n/i18n";
-import { Dropdown } from "../../components/Dropdown/Dropdown";
 import "./LeftSidebar.css";
 
 // Theme keys — labels come from i18n at render time so they translate.
@@ -108,6 +104,8 @@ export const LeftSidebar: React.FC = () => {
     resetAllWidgets,
     backgroundFilters,
     updateBackgroundFilters,
+    backgroundParallax,
+    setBackgroundParallax,
     appearance,
     updateAppearance,
     showWidgetEdits,
@@ -130,7 +128,7 @@ export const LeftSidebar: React.FC = () => {
     set.add(currentBackground);
     writeBlacklist(Array.from(set));
     window.dispatchEvent(
-      new CustomEvent("ghiblify:blacklist:add", { detail: currentBackground })
+      new CustomEvent("ghiblify:blacklist:add", { detail: currentBackground }),
     );
   };
 
@@ -139,7 +137,7 @@ export const LeftSidebar: React.FC = () => {
   // background and dispatches `ghiblify:favorites:change` so the
   // settings modal + useBackground stay in sync.
   const [favorites, setFavorites] = useState<Set<string>>(
-    () => new Set(readFavorites())
+    () => new Set(readFavorites()),
   );
   useEffect(() => {
     const refresh = () => setFavorites(new Set(readFavorites()));
@@ -169,9 +167,9 @@ export const LeftSidebar: React.FC = () => {
       src={weatherIconUrl(
         codeToIconName(
           weatherData.current.weatherCode,
-          weatherData.current.isDay
+          weatherData.current.isDay,
         ),
-        weatherSettings.iconStyle ?? "animated"
+        weatherSettings.iconStyle ?? "animated",
       )}
       alt=""
       aria-hidden="true"
@@ -263,7 +261,7 @@ export const LeftSidebar: React.FC = () => {
 
   const handleFilterChange = (
     filterType: keyof BackgroundFilters,
-    value: number
+    value: number,
   ) => {
     const newFilters = { ...filters, [filterType]: value };
     setFilters(newFilters);
@@ -279,13 +277,16 @@ export const LeftSidebar: React.FC = () => {
     };
     setFilters(defaultFilters);
     updateBackgroundFilters(defaultFilters);
+    // Also clear parallax so the "Reset background settings" button
+    // truly resets the whole panel, not just the slider values.
+    setBackgroundParallax(false);
   };
 
   const renderFilter = (
     name: keyof BackgroundFilters,
     label: string,
     min: number,
-    max: number
+    max: number,
   ) => {
     const value = filters[name] ?? (name === "blur" ? 0 : 100);
     const unitKey = FILTER_UNITS[name];
@@ -360,7 +361,10 @@ export const LeftSidebar: React.FC = () => {
             </Button>
           </div>
 
-          <section className="sidebar-section" aria-labelledby="widgets-heading">
+          <section
+            className="sidebar-section"
+            aria-labelledby="widgets-heading"
+          >
             <h4 id="widgets-heading">{t("sidebar.headings.widgets")}</h4>
             <div
               className="widget-section"
@@ -381,7 +385,10 @@ export const LeftSidebar: React.FC = () => {
                     size="medium"
                     variant="transparent"
                     onClick={() => toggleWidgetVisibility(key)}
-                    aria-label={t(visible ? "widgets.tooltip.hide" : "widgets.tooltip.show", { name })}
+                    aria-label={t(
+                      visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
+                      { name },
+                    )}
                     aria-pressed={visible}
                     data-tooltip={name}
                   />
@@ -396,37 +403,75 @@ export const LeftSidebar: React.FC = () => {
                   avatarData ? (
                     <img src={avatarData.src} alt="" />
                   ) : (
-                    <span style={{ width: 28, height: 28, display: "inline-block" }}>
+                    <span
+                      style={{ width: 28, height: 28, display: "inline-block" }}
+                    >
                       A
                     </span>
                   )
                 }
                 size="medium"
                 onClick={() => toggleWidgetVisibility("avatar")}
-                aria-label={t(widgets.avatar.visible ? "widgets.tooltip.hide" : "widgets.tooltip.show", {
-                  name: t("widgets.names.avatar"),
-                })}
+                aria-label={t(
+                  widgets.avatar.visible
+                    ? "widgets.tooltip.hide"
+                    : "widgets.tooltip.show",
+                  {
+                    name: t("widgets.names.avatar"),
+                  },
+                )}
                 aria-pressed={widgets.avatar.visible}
                 data-tooltip={t("widgets.names.avatar")}
               />
             </div>
             <div className="widget-edits">
-              <Button variant="dark" size="medium" pill onClick={handleEditToggle}>
+              <Button
+                variant="dark"
+                size="medium"
+                pill
+                onClick={handleEditToggle}
+              >
                 <EditIcon style={{ fontSize: 14 }} />
-                {showWidgetEdits ? t("common.done") : t("sidebar.buttons.editWidgets")}
+                {showWidgetEdits
+                  ? t("common.done")
+                  : t("sidebar.buttons.editWidgets")}
               </Button>
-              <Button variant="dark" size="medium" pill onClick={resetAllWidgets}>
+              <Button
+                variant="dark"
+                size="medium"
+                pill
+                onClick={resetAllWidgets}
+              >
                 <RestoreIcon style={{ fontSize: 14 }} />
                 {t("sidebar.buttons.resetAllWidgets")}
               </Button>
             </div>
           </section>
 
-          <section className="sidebar-section" aria-labelledby="appearance-heading">
+          <section
+            className="sidebar-section"
+            aria-labelledby="appearance-heading"
+          >
             <h4 id="appearance-heading">{t("sidebar.headings.appearance")}</h4>
-            <div className="filter-group" role="group" aria-labelledby="appearance-heading">
-              <div className="filter-control">
-                <span className="filter-control-label">{t("sidebar.appearance.palette")}</span>
+            <details className="filter-collapsible">
+              <summary className="filter-collapsible-summary">
+                <span>{t("sidebar.filters.heading")}</span>
+                <span className="collapsible-preview" aria-hidden="true">
+                  <span
+                    className={`theme-swatch theme-${appearance.theme} preview-swatch`}
+                    data-tooltip={t(`themes.${appearance.theme}`)}
+                  />
+                </span>
+                <ExpandMoreIcon
+                  className="filter-collapsible-chevron"
+                  fontSize="small"
+                />
+              </summary>
+              <div
+                className="filter-group"
+                role="group"
+                aria-labelledby="appearance-heading"
+              >
                 <div
                   className="theme-swatches"
                   role="radiogroup"
@@ -451,27 +496,29 @@ export const LeftSidebar: React.FC = () => {
                     );
                   })}
                 </div>
+                <div className="filter-control">
+                  <label className="contrast-toggle">
+                    <span>{t("sidebar.appearance.highContrast")}</span>
+                    <input
+                      id="appearance-high-contrast"
+                      type="checkbox"
+                      role="switch"
+                      checked={appearance.highContrast}
+                      onChange={(e) =>
+                        updateAppearance({ highContrast: e.target.checked })
+                      }
+                    />
+                    <span className="contrast-switch" aria-hidden="true" />
+                  </label>
+                </div>
               </div>
-
-              <div className="filter-control">
-                <label className="contrast-toggle">
-                  <span>{t("sidebar.appearance.highContrast")}</span>
-                  <input
-                    id="appearance-high-contrast"
-                    type="checkbox"
-                    role="switch"
-                    checked={appearance.highContrast}
-                    onChange={(e) =>
-                      updateAppearance({ highContrast: e.target.checked })
-                    }
-                  />
-                  <span className="contrast-switch" aria-hidden="true" />
-                </label>
-              </div>
-            </div>
+            </details>
           </section>
 
-          <section className="sidebar-section" aria-labelledby="background-heading">
+          <section
+            className="sidebar-section"
+            aria-labelledby="background-heading"
+          >
             <h4 id="background-heading">{t("sidebar.headings.background")}</h4>
             <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
@@ -482,10 +529,55 @@ export const LeftSidebar: React.FC = () => {
                 />
               </summary>
               <div className="filter-group" role="group">
+                <div className="filter-control">
+                  <label className="contrast-toggle">
+                    <span className="filter-toggle-label">
+                      {t("sidebar.filters.parallax")}
+                      <span
+                        className="filter-help"
+                        role="img"
+                        tabIndex={0}
+                        aria-label={t("sidebar.filters.parallaxTooltip")}
+                        data-tooltip={t("sidebar.filters.parallaxTooltip")}
+                        onClick={(e) => {
+                          // Don't toggle the switch when clicking the
+                          // help icon (it's wrapped by the same <label>).
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <HelpOutlineIcon style={{ fontSize: 13 }} />
+                      </span>
+                    </span>
+                    <input
+                      id="background-parallax"
+                      type="checkbox"
+                      role="switch"
+                      checked={backgroundParallax}
+                      onChange={(e) => setBackgroundParallax(e.target.checked)}
+                    />
+                    <span className="contrast-switch" aria-hidden="true" />
+                  </label>
+                </div>
                 {renderFilter("blur", t("sidebar.filters.blur"), 0, 20)}
-                {renderFilter("brightness", t("sidebar.filters.brightness"), 0, 200)}
-                {renderFilter("contrast", t("sidebar.filters.contrast"), 0, 200)}
-                {renderFilter("saturation", t("sidebar.filters.saturation"), 0, 200)}
+                {renderFilter(
+                  "brightness",
+                  t("sidebar.filters.brightness"),
+                  0,
+                  200,
+                )}
+                {renderFilter(
+                  "contrast",
+                  t("sidebar.filters.contrast"),
+                  0,
+                  200,
+                )}
+                {renderFilter(
+                  "saturation",
+                  t("sidebar.filters.saturation"),
+                  0,
+                  200,
+                )}
                 <div className="filter-actions">
                   <Button variant="dark" size="small" onClick={resetFilters}>
                     <RestoreIcon style={{ fontSize: 16 }} />
@@ -542,6 +634,110 @@ export const LeftSidebar: React.FC = () => {
             </div>
           </section>
 
+          <section className="sidebar-section" aria-labelledby="cursor-heading">
+            <h4 id="cursor-heading">{t("sidebar.headings.cursor")}</h4>
+            <details className="filter-collapsible">
+              <summary className="filter-collapsible-summary">
+                <span>{t("sidebar.filters.heading")}</span>
+                {(() => {
+                  const cur = appearance.cursor ?? "default";
+                  const label = t(`sidebar.cursor.${cur}`);
+                  if (cur === "default") {
+                    return (
+                      <span
+                        className="collapsible-preview"
+                        data-tooltip={label}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          className="preview-cursor-svg"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M5 3 L5 19 L9 15.5 L11.5 21 L13.5 20 L11 14.5 L17 14.5 Z"
+                            fill="currentColor"
+                            stroke="rgba(0,0,0,0.45)"
+                            strokeWidth="0.7"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    );
+                  }
+                  return (
+                    <span
+                      className="collapsible-preview"
+                      data-tooltip={label}
+                    >
+                      <img
+                        className="preview-cursor-img"
+                        src={`/assets/cursors/${cur}.svg`}
+                        alt=""
+                        aria-hidden="true"
+                        draggable={false}
+                      />
+                    </span>
+                  );
+                })()}
+                <ExpandMoreIcon
+                  className="filter-collapsible-chevron"
+                  fontSize="small"
+                />
+              </summary>
+              <div className="filter-group" role="group">
+                <div
+                  className="cursor-swatches"
+                  role="group"
+                  aria-label={t("sidebar.headings.cursor")}
+                >
+                  {CURSOR_NAMES.map((name) => {
+                const active = (appearance.cursor ?? "default") === name;
+                const label = t(`sidebar.cursor.${name}`);
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    className={`cursor-swatch cursor-swatch-${name}${
+                      active ? " is-active" : ""
+                    }`}
+                    onClick={() => updateAppearance({ cursor: name })}
+                    aria-label={label}
+                    aria-pressed={active}
+                    data-tooltip={label}
+                  >
+                    {name === "default" ? (
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M5 3 L5 19 L9 15.5 L11.5 21 L13.5 20 L11 14.5 L17 14.5 Z"
+                          fill="currentColor"
+                          stroke="rgba(0,0,0,0.45)"
+                          strokeWidth="0.7"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      <img
+                        src={`/assets/cursors/${name}.svg`}
+                        alt=""
+                        aria-hidden="true"
+                        draggable={false}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+                </div>
+              </div>
+            </details>
+          </section>
+
           <div
             className="sidebar-section button-group sidebar-bottom"
             role="group"
@@ -572,7 +768,10 @@ export const LeftSidebar: React.FC = () => {
               variant="outline-light"
               portal
               direction="up"
-              options={LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
+              options={LANGUAGES.map((l) => ({
+                value: l.code,
+                label: l.label,
+              }))}
               value={getLocale()}
               onChange={(code) => setLocale(code)}
             />

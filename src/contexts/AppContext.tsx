@@ -15,8 +15,10 @@ import {
 } from "../config/widgetConfig";
 import {
   readFilters,
+  readParallax,
   readSelection,
   writeFilters,
+  writeParallax,
   writeSelection,
 } from "../storage/backgroundStorage";
 import {
@@ -75,14 +77,35 @@ const LEGACY_THEME_RENAMES: Record<string, ThemeName> = {
   pastel: "ghibli",
 };
 
+// Available cursor presets. "default" leaves the OS cursor untouched
+// and shows nothing extra. The others render a sprite, trail, or
+// soft colour halo BESIDE the OS cursor (we never replace the
+// cursor itself — see CursorEffect.tsx).
+//
+//   companion  — single sprite that eases toward the cursor
+//   trail      — particles emit + drift behind the cursor
+//   glow       — soft colour halo follows the cursor
+export const CURSOR_NAMES = [
+  "default",
+  "soot",
+  "sparkle",
+  "petal",
+  "bubble",
+  "heart",
+  "leaf",
+] as const;
+export type CursorName = (typeof CURSOR_NAMES)[number];
+
 export interface AppearanceSettings {
   theme: ThemeName;
   highContrast: boolean;
+  cursor: CursorName;
 }
 
 const DEFAULT_APPEARANCE: AppearanceSettings = {
   theme: "ghibli",
   highContrast: false,
+  cursor: "default",
 };
 
 export interface BackgroundFilters {
@@ -133,6 +156,11 @@ interface AppContextType {
   // background
   backgroundFilters: BackgroundFilters;
   updateBackgroundFilters: (f: Partial<BackgroundFilters>) => void;
+  /** Soft cursor-driven parallax on the background photo. Toggled
+   *  from the sidebar's filters section, persisted with the rest
+   *  of the background prefs. */
+  backgroundParallax: boolean;
+  setBackgroundParallax: (on: boolean) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
   /** URL of the photo currently painted by `<Background>`. Set by
@@ -423,6 +451,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     () => readFilters()
   );
 
+  const [backgroundParallax, setBackgroundParallaxState] = useState<boolean>(
+    () => readParallax()
+  );
+
   const [backgroundSelection, setBackgroundSelection] = useState<
     Record<string, boolean>
   >(() => readSelection());
@@ -540,6 +572,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     if (k) setDragMode(false);
   };
 
+  const setBackgroundParallax = (on: boolean) => {
+    setBackgroundParallaxState(on);
+    writeParallax(on);
+  };
+
   const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
     setBackgroundFilters((prev) => {
       const next = { ...prev, ...filters };
@@ -635,6 +672,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setEditingWidgetKey: setEditingWidgetKeyExclusive,
         backgroundFilters,
         updateBackgroundFilters,
+        backgroundParallax,
+        setBackgroundParallax,
         backgroundSelection,
         updateBackgroundSelection,
         currentBackground,

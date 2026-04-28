@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import "./TooltipPortal.css";
 
@@ -30,6 +30,11 @@ export const TooltipPortal: React.FC = () => {
       // Prefer below; flip above when the target sits in the bottom half
       // of the viewport so the tooltip stays on-screen.
       const placement = rect.bottom > window.innerHeight - 80 ? "top" : "bottom";
+      // x is the trigger center. The render-time effect below
+      // measures the tooltip's ACTUAL width and clamps if needed —
+      // doing it here with the CSS max-width over-clamps short
+      // tooltips (e.g. "Default") so they end up shifted far from
+      // their trigger.
       const x = rect.left + rect.width / 2;
       const y = placement === "bottom" ? rect.bottom + 8 : rect.top - 8;
       return { text, x, y, placement };
@@ -105,11 +110,40 @@ export const TooltipPortal: React.FC = () => {
     };
   }, []);
 
+  return <TooltipBody tip={tip} />;
+};
+
+// Measure-and-clamp pass: render at the trigger's center, then in a
+// useLayoutEffect grab the actual rendered width and shift the
+// tooltip back inside the viewport if it overflows. Using the
+// MEASURED width (not max-width) means short tooltips stay anchored
+// on their trigger and only long, wrapped ones get clamped.
+const TooltipBody: React.FC<{ tip: TooltipState | null }> = ({ tip }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [adjusted, setAdjusted] = useState<{ x: number; y: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!tip || !ref.current) {
+      setAdjusted(null);
+      return;
+    }
+    const rect = ref.current.getBoundingClientRect();
+    const half = rect.width / 2;
+    const margin = 8;
+    const minX = half + margin;
+    const maxX = window.innerWidth - half - margin;
+    const clampedX = Math.max(minX, Math.min(maxX, tip.x));
+    setAdjusted({ x: clampedX, y: tip.y });
+  }, [tip?.x, tip?.y, tip?.text]);
+
   if (!tip) return null;
+  const x = adjusted?.x ?? tip.x;
+  const y = adjusted?.y ?? tip.y;
   return createPortal(
     <div
+      ref={ref}
       className={`tooltip-portal is-${tip.placement}`}
-      style={{ left: `${tip.x}px`, top: `${tip.y}px` }}
+      style={{ left: `${x}px`, top: `${y}px` }}
       role="tooltip"
     >
       {tip.text}

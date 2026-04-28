@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <radialGradient id="sp-glow" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0%" stop-color="#fff8c0" stop-opacity="1"/>
+      <stop offset="55%" stop-color="#ffd66b" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ffb84a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Classic 4-pointed twinkle: long vertical + horizontal spikes
+       with a concave waist so the cross reads as a sparkle. The
+       inner vertices (11/13, 11/13) sit near center, creating four
+       sharp tips at (12, 1.5), (22.5, 12), (12, 22.5), (1.5, 12). -->
+  <path d="M 12 1.5
+           L 13 11
+           L 22.5 12
+           L 13 13
+           L 12 22.5
+           L 11 13
+           L 1.5 12
+           L 11 11 Z"
+        fill="#ffd66b"
+        stroke="#ffb84a"
+        stroke-width="0.4"
+        stroke-linejoin="round"/>
+  <!-- Soft inner glow centered on the cross. -->
+  <circle cx="12" cy="12" r="3.4" fill="url(#sp-glow)"/>
+  <!-- Tiny white core for sparkle. -->
+  <circle cx="12" cy="12" r="1.1" fill="#fffce6"/>
+</svg>

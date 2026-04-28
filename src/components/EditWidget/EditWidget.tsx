@@ -136,6 +136,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.weatherUnit ||
     controls?.weatherSections ||
     controls?.weatherIconStyle ||
+    controls?.weatherCard ||
     controls?.notesShowBorder ||
     supportsSlider
   );
@@ -249,6 +250,28 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 weatherSettings.iconStyle === "animated" ? "still" : "animated"
               }`
             )}
+          />
+        )}
+        {controls?.weatherCard && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              const cur = !!weatherSettings.showCard;
+              updateWidgetSettings("weather", { showCard: !cur });
+            }}
+            title={
+              weatherSettings.showCard
+                ? t("widgets.edit.weatherHideCardAria")
+                : t("widgets.edit.weatherShowCardAria")
+            }
+            variant={weatherSettings.showCard ? "light" : "dark"}
+            size="small"
+            className="btn-text-toggle"
+            icon={
+              weatherSettings.showCard
+                ? t("widgets.edit.weatherHideCard")
+                : t("widgets.edit.weatherShowCard")
+            }
           />
         )}
         {controls?.weatherSections && (

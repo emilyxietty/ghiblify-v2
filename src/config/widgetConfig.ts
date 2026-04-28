@@ -94,6 +94,12 @@ export interface WeatherSettings {
    *  rain falls). "still" = single-frame static variant for users who
    *  prefer no motion (or to save battery). */
   iconStyle: "animated" | "still";
+  /** When true, paint a soft gradient card behind the weather
+   *  content (sky-blue → rose, with rounded corners + a subtle
+   *  shadow). When false, the widget keeps its current
+   *  transparent-on-photo treatment. Default false so existing
+   *  users see no change. */
+  showCard: boolean;
 }
 // Bookmarks is a right-side sliding panel, not a positioned widget. It's in
 // WIDGET_KEYS so its visibility lives in the same state as everything else
@@ -162,6 +168,7 @@ export interface CustomControls {
   weatherUnit?: boolean;
   weatherSections?: boolean;
   weatherIconStyle?: boolean;
+  weatherCard?: boolean;
   notesShowBorder?: boolean;
 }
 
@@ -283,12 +290,14 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       opacity: 75,
       blur: 10,
       iconStyle: "animated",
+      showCard: false,
     },
     // No width/height ResizeBound — widget auto-sizes to content.
     customControls: {
       weatherUnit: true,
       weatherSections: true,
       weatherIconStyle: true,
+      weatherCard: true,
     },
   },
   notes: {

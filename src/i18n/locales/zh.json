@@ -34,7 +34,18 @@
     "headings": {
       "widgets": "小组件",
       "appearance": "外观",
-      "background": "背景"
+      "background": "背景",
+      "cursor": "光标"
+    },
+    "cursor": {
+      "summaryLabel": "样式",
+      "default": "默认",
+      "soot": "煤炭精灵",
+      "sparkle": "闪光",
+      "petal": "花瓣",
+      "bubble": "泡泡",
+      "heart": "爱心",
+      "leaf": "叶子"
     },
     "buttons": {
       "githubRepo": "Github 仓库",
@@ -51,7 +62,7 @@
       "modeToggleAria": "在编辑与拖动间切换",
       "editWidgets": "编辑模式",
       "resetAllWidgets": "重置所有小组件",
-      "resetFilters": "重置滤镜",
+      "resetFilters": "重置背景设置",
       "selectBackgrounds": "选择背景",
       "deleteBackground": "删除背景",
       "deleteBackgroundAria": "从轮播中移除当前背景",
@@ -66,11 +77,13 @@
       "highContrast": "高对比度"
     },
     "filters": {
-      "heading": "滤镜",
+      "heading": "设置",
       "blur": "模糊",
       "brightness": "亮度",
       "contrast": "对比度",
-      "saturation": "饱和度"
+      "saturation": "饱和度",
+      "parallax": "视差效果",
+      "parallaxTooltip": "光标移动时背景照片会轻微跟随，营造出柔和的纵深感 — 仿佛前景悬浮在略远的场景之上。"
     },
     "filterUnits": {
       "px": "px",
@@ -148,7 +161,12 @@
       "weatherIconStyleAria": {
         "animated": "图标动画 — 点击切换为静态",
         "still": "图标静态 — 点击切换为动画"
-      }
+      },
+      "weatherShowCard": "卡片",
+      "weatherHideCard": "卡片",
+      "weatherShowCardLabel": "显示卡片背景",
+      "weatherShowCardAria": "在天气后方显示柔和渐变卡片",
+      "weatherHideCardAria": "移除卡片背景"
     }
   },
   "greeting": {
@@ -307,7 +325,7 @@
       "title": "背景设置",
       "moviesCount": "{{count}} 部电影",
       "selectAll": "全选",
-      "deselectAll": "取消全选（保留 1 个）",
+      "deselectAll": "取消全选",
       "noBackgrounds": "（无背景）",
       "show": "显示 ↓",
       "hide": "隐藏 ↑",

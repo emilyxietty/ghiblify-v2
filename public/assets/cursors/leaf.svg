@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="lf-body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a4d68a"/>
+      <stop offset="100%" stop-color="#5e9c4a"/>
+    </linearGradient>
+  </defs>
+  <!-- Plump rounded leaf — almost an asymmetric oval that bulges
+       wider on one side. Both ends are rounded (no sharp tips), so
+       it reads as a soft, friendly leaf rather than a pointed one. -->
+  <path d="M 6 18
+           C 4 13 7 6 12 4
+           C 17 4 20 9 18 14
+           C 16 18 11 20 6 18 Z"
+        fill="url(#lf-body)"
+        stroke="#3f7a32" stroke-width="0.6" stroke-linejoin="round"/>
+  <!-- Central vein, gently curved through the body. -->
+  <path d="M 6.5 17.5 Q 12 12 17 5.5"
+        stroke="#3f7a32" stroke-width="0.7" fill="none"
+        stroke-linecap="round" stroke-opacity="0.85"/>
+  <!-- Side veins curling off the central vein. -->
+  <path d="M 8.5 15.5 Q 10.5 13 13 12.5"
+        stroke="#3f7a32" stroke-width="0.45" fill="none"
+        stroke-linecap="round" stroke-opacity="0.7"/>
+  <path d="M 11 12.5 Q 13 10 15.5 9.5"
+        stroke="#3f7a32" stroke-width="0.45" fill="none"
+        stroke-linecap="round" stroke-opacity="0.7"/>
+</svg>

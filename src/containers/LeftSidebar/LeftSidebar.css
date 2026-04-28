@@ -477,7 +477,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 18px;
+    padding: 12px 18px;
     color: var(--light);
     font-size: 13px;
     font-weight: 600;
@@ -485,6 +485,37 @@
     text-transform: uppercase;
     user-select: none;
     transition: background 140ms ease;
+}
+
+/* Compact preview chip in a collapsible's summary — shows the active
+   choice (palette swatch / cursor sprite) so users see what's
+   selected without expanding. Sits to the right of the leading
+   "Settings" label, just before the chevron. */
+.collapsible-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    margin-right: 10px;
+    pointer-events: auto;
+}
+
+.collapsible-preview .preview-swatch {
+    width: 22px;
+    height: 22px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    pointer-events: auto;
+    cursor: default;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.collapsible-preview .preview-cursor-svg,
+.collapsible-preview .preview-cursor-img {
+    width: 18px;
+    height: 18px;
+    color: var(--light);
+    pointer-events: none;
 }
 
 .filter-collapsible-summary::-webkit-details-marker {
@@ -576,6 +607,60 @@
     margin-top: 8px;
 }
 
+/* Cursor presets — small grid, each cell a tinted card holding the
+   sprite or default-cursor glyph. Matches the visual feel of the
+   theme swatches but rounded-rect (not circular) so the cursor art
+   sits flat. */
+.cursor-swatches {
+    /* 7 columns — keeps each swatch compact so the row fits all 7
+       presets without wrapping at the default sidebar width. */
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.cursor-swatch {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-md);
+    color: var(--light);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 140ms ease, border-color 140ms ease,
+        background 140ms ease, box-shadow 140ms ease;
+}
+
+.cursor-swatch img,
+.cursor-swatch svg {
+    width: 44%;
+    height: 44%;
+    pointer-events: none;
+}
+
+.cursor-swatch:hover {
+    transform: scale(1.06);
+    border-color: color-mix(in srgb, var(--light) 38%, transparent);
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.cursor-swatch.is-active {
+    border-color: var(--yellow);
+    background: color-mix(in srgb, var(--yellow) 22%, transparent);
+    box-shadow: 0 0 0 1px var(--yellow),
+        0 4px 12px color-mix(in srgb, var(--yellow) 40%, transparent);
+}
+
+.cursor-swatch:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
 .theme-swatch {
     /* Fill the grid cell, stay perfectly circular. */
     width: 100%;
@@ -640,6 +725,35 @@
     justify-content: space-between;
     cursor: pointer;
     gap: 10px;
+}
+
+/* Wraps a label string + an inline help icon so they sit on the same
+   line as a single visual unit. The icon hover-tooltips via the
+   shared TooltipPortal (data-tooltip), independent from the switch
+   click target on the right. */
+.filter-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    color: color-mix(in srgb, var(--light) 65%, transparent);
+    cursor: help;
+    transition: color 140ms ease, background 140ms ease;
+}
+
+.filter-help:hover,
+.filter-help:focus-visible {
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    outline: none;
 }
 
 .contrast-toggle input[type="checkbox"] {

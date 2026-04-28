@@ -6,12 +6,18 @@
     position: fixed;
     background: var(--dark);
     color: var(--light);
-    padding: 5px 10px;
+    padding: 6px 10px;
     border-radius: var(--radius-sm);
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.02em;
-    white-space: nowrap;
+    /* Wrap long descriptions instead of forcing a single line that
+       runs off-screen. The max-width keeps short tooltips compact
+       while giving room for a sentence or two of help text. */
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 260px;
+    line-height: 1.4;
     z-index: 99999;
     pointer-events: none;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);

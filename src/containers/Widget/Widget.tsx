@@ -809,6 +809,13 @@ function buildContextMenuItems(args: {
           },
         })),
       },
+      {
+        type: "checkbox",
+        label: t("widgets.edit.weatherShowCardLabel"),
+        checked: !!s.showCard,
+        onClick: () =>
+          updateWidgetSettings("weather", { showCard: !s.showCard }),
+      },
     ];
   } else if (storageKey === "notes") {
     const s = widgets.notes.settings as NotesSettings;

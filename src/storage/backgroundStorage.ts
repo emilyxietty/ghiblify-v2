@@ -35,6 +35,10 @@ interface BackgroundBlob {
   blacklist?: string[];
   selection?: Record<string, boolean>;
   filters?: BackgroundFilters;
+  /** When true, the photo gently shifts in response to cursor
+   *  position to create a soft parallax / depth effect. Default
+   *  false (static, identical to legacy behavior). */
+  parallax?: boolean;
 }
 
 const KEY = "ghiblify_background";
@@ -160,5 +164,14 @@ export const readFilters = (): BackgroundFilters => ({
 export const writeFilters = (filters: BackgroundFilters) => {
   const next = readBlob();
   next.filters = filters;
+  writeBlob(next);
+};
+
+// Parallax (boolean)
+export const readParallax = (): boolean => readBlob().parallax === true;
+export const writeParallax = (on: boolean) => {
+  const next = readBlob();
+  if (on) next.parallax = true;
+  else delete next.parallax;
   writeBlob(next);
 };

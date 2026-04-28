@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <radialGradient id="petal-grad" cx="50%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#fff2f6"/>
+      <stop offset="55%" stop-color="#f8b8cc"/>
+      <stop offset="100%" stop-color="#e688a8"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(12 12) rotate(-22)">
+    <!-- Rounded cherry-blossom petal — wide-bottomed almond with a
+         soft notch at the top. Two mirrored cubics meet at (0,-3) for
+         the notch. -->
+    <path d="M 0 9
+             C -7 7 -8 -4 -3 -7
+             C -1 -5 -1 -4 0 -3
+             C 1 -4 1 -5 3 -7
+             C 8 -4 7 7 0 9 Z"
+          fill="url(#petal-grad)"
+          stroke="#d68aa0" stroke-width="0.35" stroke-linejoin="round" opacity="0.92"/>
+    <!-- Soft inner highlight (left side) so it reads painterly. -->
+    <path d="M -1 7 C -5 5 -5 -2 -2 -5"
+          fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.55"/>
+    <!-- Tiny pollen dot at the base. -->
+    <circle cx="0" cy="6" r="0.9" fill="#fff5a0" opacity="0.85"/>
+  </g>
+</svg>

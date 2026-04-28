@@ -966,6 +966,19 @@
    App shell
    =========================================================================== */
 
+html,
+body {
+    /* The new-tab page is a fixed-layout dashboard — never meant to
+       scroll. Locking both root nodes prevents the few-pixel
+       overscroll bounce that otherwise happens when a widget sits
+       at the very edge of the viewport, dragging the photo
+       background along with it. */
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
+
 body {
     margin: 0;
     padding: 0;

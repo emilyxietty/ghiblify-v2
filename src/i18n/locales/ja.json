@@ -34,7 +34,18 @@
     "headings": {
       "widgets": "ウィジェット",
       "appearance": "外観",
-      "background": "背景"
+      "background": "背景",
+      "cursor": "カーソル"
+    },
+    "cursor": {
+      "summaryLabel": "スタイル",
+      "default": "デフォルト",
+      "soot": "まっくろくろすけ",
+      "sparkle": "きらめき",
+      "petal": "花びら",
+      "bubble": "あわ",
+      "heart": "ハート",
+      "leaf": "葉っぱ"
     },
     "buttons": {
       "githubRepo": "GitHubリポジトリ",
@@ -51,7 +62,7 @@
       "modeToggleAria": "編集とドラッグモードを切替",
       "editWidgets": "編集モード",
       "resetAllWidgets": "ウィジェットをリセット",
-      "resetFilters": "フィルタをリセット",
+      "resetFilters": "背景設定をリセット",
       "selectBackgrounds": "背景を選択",
       "deleteBackground": "背景を削除",
       "deleteBackgroundAria": "現在の背景をローテーションから削除",
@@ -66,11 +77,13 @@
       "highContrast": "ハイコントラスト"
     },
     "filters": {
-      "heading": "フィルタ",
+      "heading": "設定",
       "blur": "ぼかし",
       "brightness": "明るさ",
       "contrast": "コントラスト",
-      "saturation": "彩度"
+      "saturation": "彩度",
+      "parallax": "視差効果",
+      "parallaxTooltip": "カーソルの動きに合わせて背景写真が少しずれ、奥行きを感じさせる演出です。前景が背景の少し奥のシーンの上に浮かんでいるように見えます。"
     },
     "filterUnits": {
       "px": "px",
@@ -148,7 +161,12 @@
       "weatherIconStyleAria": {
         "animated": "アイコンが動く — クリックで静止に切替",
         "still": "アイコンは静止 — クリックでアニメに切替"
-      }
+      },
+      "weatherShowCard": "カード",
+      "weatherHideCard": "カード",
+      "weatherShowCardLabel": "カード背景を表示",
+      "weatherShowCardAria": "天気の後ろにグラデーションカードを表示",
+      "weatherHideCardAria": "カード背景を非表示"
     }
   },
   "greeting": {
@@ -307,7 +325,7 @@
       "title": "背景設定",
       "moviesCount": "{{count}}本の映画",
       "selectAll": "すべて選択",
-      "deselectAll": "すべて解除(1つ残す)",
+      "deselectAll": "すべて解除",
       "noBackgrounds": "(背景なし)",
       "show": "表示 ↓",
       "hide": "非表示 ↑",

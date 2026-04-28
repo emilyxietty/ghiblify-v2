@@ -1,0 +1,198 @@
+/* Cursor whimsy — small particles that ride along with the OS cursor.
+   Mounted once at the App root by CursorEffect.tsx.
+   `pointer-events: none` everywhere so the effect never intercepts
+   clicks. `position: fixed` because all coordinates come from
+   MouseEvent.clientX/Y (viewport-relative). */
+
+.cursor-trail,
+.cursor-particle {
+    pointer-events: none;
+    position: fixed;
+    z-index: var(--z-portal, 99999);
+    /* Above the edit-overlay, below modals' own portals. The token
+       is shared so we move with the rest of the chrome layer. */
+}
+
+/* --- Trails (particle bursts) ----------------------------------------- */
+
+.cursor-trail {
+    /* Container stretches to viewport so individual particles can be
+       absolutely positioned anywhere. Keeps cleanup simple. */
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.cursor-particle {
+    width: 18px;
+    height: 18px;
+    /* Center the particle on its (left, top). */
+    margin-left: -9px;
+    margin-top: -9px;
+    will-change: transform, opacity;
+    /* Default: smooth trailing drift (ease-out, no overshoot).
+       Bouncy modes override this rule below. Values are seeded
+       per-particle via CSS variables on the inline style. */
+    animation: cursor-particle-drift 1100ms ease-out forwards;
+}
+
+/* Modes that should feel weightier and more playful — pop in,
+   bob, settle. Soot fluffballs, bubbles, and falling leaves all
+   benefit from the bounce arc. */
+.cursor-particle-soot,
+.cursor-particle-bubble,
+.cursor-particle-leaf {
+    animation: cursor-particle-bounce 1100ms cubic-bezier(0.34, 1.56, 0.64, 1)
+        forwards;
+}
+
+.cursor-particle img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* Initial scale before the keyframes start. */
+    transform: scale(var(--scale, 1));
+}
+
+/* Smooth trailing drift: particle fades in at the cursor, slides
+   toward its drift endpoint while shrinking + fading. No bounce —
+   used by sparkle, petal, heart so they read as a soft trail, not
+   playful pops. */
+@keyframes cursor-particle-drift {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(0) scale(0.6);
+    }
+    18% {
+        opacity: 1;
+        transform: translate3d(
+                calc(var(--drift-x, 0px) * 0.18),
+                calc(var(--drift-y, 0px) * 0.18),
+                0
+            )
+            rotate(calc(var(--rotate, 0deg) * 0.18))
+            scale(var(--scale, 1));
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(
+                var(--drift-x, 0px),
+                var(--drift-y, 0px),
+                0
+            )
+            rotate(var(--rotate, 0deg))
+            scale(calc(var(--scale, 1) * 0.55));
+    }
+}
+
+/* Bouncy drift: particle pops up, hangs, bobs once, then drifts to
+   its drift-x/drift-y endpoint while shrinking + fading. The
+   intermediate keyframes give it a gentle bounce arc instead of a
+   straight slide. */
+@keyframes cursor-particle-bounce {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(0) scale(0.3);
+    }
+    14% {
+        opacity: 1;
+        transform: translate3d(
+                calc(var(--drift-x, 0px) * 0.18),
+                calc(var(--drift-y, 0px) * 0.18 - 6px),
+                0
+            )
+            rotate(calc(var(--rotate, 0deg) * 0.18))
+            scale(calc(var(--scale, 1) * 1.15));
+    }
+    38% {
+        opacity: 1;
+        transform: translate3d(
+                calc(var(--drift-x, 0px) * 0.45),
+                calc(var(--drift-y, 0px) * 0.45 + 4px),
+                0
+            )
+            rotate(calc(var(--rotate, 0deg) * 0.45))
+            scale(var(--scale, 1));
+    }
+    62% {
+        opacity: 0.9;
+        transform: translate3d(
+                calc(var(--drift-x, 0px) * 0.7),
+                calc(var(--drift-y, 0px) * 0.7 - 3px),
+                0
+            )
+            rotate(calc(var(--rotate, 0deg) * 0.7))
+            scale(calc(var(--scale, 1) * 0.95));
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(
+                var(--drift-x, 0px),
+                var(--drift-y, 0px),
+                0
+            )
+            rotate(var(--rotate, 0deg))
+            scale(calc(var(--scale, 1) * 0.55));
+    }
+}
+
+/* Sparkle — soft glow around the twinkle. */
+.cursor-particle-sparkle {
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    margin-top: -8px;
+}
+
+.cursor-particle-sparkle img {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.75))
+        drop-shadow(0 0 6px rgba(255, 214, 107, 0.85));
+}
+
+/* Petal — drifts down with gravity; soft pink halo. */
+.cursor-particle-petal img {
+    filter: drop-shadow(0 1px 2px rgba(220, 130, 160, 0.4));
+}
+
+/* Soot fluffballs — slightly larger and softer than the other
+   trails so they read as little floating tufts. */
+.cursor-particle-soot {
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    margin-top: -11px;
+}
+
+.cursor-particle-soot img {
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+}
+
+/* Bubble — translucent, subtle blue rim. */
+.cursor-particle-bubble {
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+}
+
+.cursor-particle-bubble img {
+    filter: drop-shadow(0 0 3px rgba(180, 220, 255, 0.6));
+}
+
+/* Heart — warm pink halo so it pops on lighter backgrounds too. */
+.cursor-particle-heart img {
+    filter: drop-shadow(0 1px 2px rgba(220, 80, 110, 0.45));
+}
+
+/* Leaf — drifts down; gentle green shadow. */
+.cursor-particle-leaf img {
+    filter: drop-shadow(0 1px 2px rgba(80, 130, 70, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cursor-particle {
+        animation: none;
+        opacity: 0;
+    }
+}

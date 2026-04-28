@@ -34,7 +34,18 @@
     "headings": {
       "widgets": "Widgets",
       "appearance": "Appearance",
-      "background": "Background"
+      "background": "Background",
+      "cursor": "Cursor"
+    },
+    "cursor": {
+      "summaryLabel": "Style",
+      "default": "Default",
+      "soot": "Soot sprite",
+      "sparkle": "Sparkle",
+      "petal": "Petal",
+      "bubble": "Bubble",
+      "heart": "Heart",
+      "leaf": "Leaf"
     },
     "buttons": {
       "githubRepo": "Github Repo",
@@ -51,7 +62,7 @@
       "modeToggleAria": "Switch between Edit Widgets and Drag Mode",
       "editWidgets": "Edit Mode",
       "resetAllWidgets": "Reset All Widgets",
-      "resetFilters": "Reset Filters",
+      "resetFilters": "Reset background settings",
       "selectBackgrounds": "Select Backgrounds",
       "deleteBackground": "Delete background",
       "deleteBackgroundAria": "Remove the current background from the rotation",
@@ -66,11 +77,13 @@
       "highContrast": "High contrast"
     },
     "filters": {
-      "heading": "Filters",
+      "heading": "Settings",
       "blur": "Blur",
       "brightness": "Brightness",
       "contrast": "Contrast",
-      "saturation": "Saturation"
+      "saturation": "Saturation",
+      "parallax": "Parallax motion",
+      "parallaxTooltip": "Background photo gently shifts as you move the cursor — adds a subtle sense of depth, like the foreground floats in front of a slightly distant scene."
     },
     "filterUnits": {
       "px": "px",
@@ -148,7 +161,12 @@
       "weatherIconStyleAria": {
         "animated": "Icons animate — click to switch to still",
         "still": "Icons are still — click to switch to animated"
-      }
+      },
+      "weatherShowCard": "Card",
+      "weatherHideCard": "Card",
+      "weatherShowCardLabel": "Show card background",
+      "weatherShowCardAria": "Show a soft gradient card behind the weather",
+      "weatherHideCardAria": "Remove the card background"
     }
   },
   "greeting": {
@@ -307,7 +325,7 @@
       "title": "Background Settings",
       "moviesCount": "{{count}} movies",
       "selectAll": "Select All",
-      "deselectAll": "Deselect All (except 1)",
+      "deselectAll": "Deselect All",
       "noBackgrounds": "(no backgrounds)",
       "show": "Show ↓",
       "hide": "Hide ↑",

@@ -17,6 +17,23 @@
     z-index: 0;
 }
 
+/* Cursor-driven parallax (toggled by `background.parallax`).
+   Background.tsx writes --bg-shift-x / --bg-shift-y on this element
+   on mousemove (rAF-throttled). The pre-scale gives PARALLAX_RANGE
+   px of slack on each side so the shift never exposes a black
+   edge of the viewport. The transition smooths the motion so it
+   reads as a soft depth effect rather than a jitter. */
+.background-filter.background-parallax {
+    transform: translate3d(
+            var(--bg-shift-x, 0px),
+            var(--bg-shift-y, 0px),
+            0
+        )
+        scale(1.04);
+    transition: transform 240ms cubic-bezier(0.22, 0.7, 0.32, 1);
+    will-change: transform;
+}
+
 .background-content {
     position: relative;
     z-index: 10;

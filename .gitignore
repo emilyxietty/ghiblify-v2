@@ -5,3 +5,7 @@
 # Legacy v1 (jQuery) Ghiblify extension kept locally for reference
 # during the migration. Not part of the new build — 112MB of deps.
 /ghiblify
+
+# Embedded reference clone of the v1 repo under guide/. It carries
+# its own .git, so git treats it as a submodule unless ignored.
+/guide/ghiblify

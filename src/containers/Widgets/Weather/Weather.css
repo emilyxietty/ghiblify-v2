@@ -12,6 +12,165 @@
     max-width: 90vw;
     background: transparent;
     overflow: visible;
+    transition: background 220ms ease, box-shadow 220ms ease,
+        border-radius 220ms ease, padding 220ms ease;
+}
+
+/* Opt-in card surface (toggled by .weather-card-on). Each mood gets
+   a CSS gradient picked to match the weather + day/night vibe.
+   White text + halo from .weather-current reads on every variant.
+   The 360 ms `transition: background` smooths the swap when the
+   weather code or day/night flips on a long-open new tab. */
+.weather-widget.weather-card-on {
+    padding: 16px 18px;
+    /* Match the outer .widget shell's --radius-lg so the gradient
+       reaches the same rounded corners as the widget outline — no
+       photo bleeds through at the corners. */
+    border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    box-shadow:
+        0 12px 32px rgba(20, 28, 48, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    /* Default fallback gradient — used when no mood is set yet
+       (e.g. before the first fetch resolves). */
+    background: linear-gradient(
+        165deg,
+        rgba(146, 195, 240, 0.9) 0%,
+        rgba(196, 174, 226, 0.9) 55%,
+        rgba(248, 197, 212, 0.9) 100%
+    );
+    transition: background 360ms ease, border-color 360ms ease;
+    overflow: hidden;
+}
+
+/* --- Per-mood gradients --------------------------------------------------- */
+
+/* Clear sky — bright morning blue → warm sunlight */
+.weather-widget.weather-card-on[data-weather-mood="clear-day"] {
+    background: linear-gradient(
+        165deg,
+        rgba(120, 195, 240, 0.92) 0%,
+        rgba(180, 215, 240, 0.9) 55%,
+        rgba(248, 200, 130, 0.9) 100%
+    );
+}
+
+/* Clear night — deep navy → indigo with a hint of moonlight */
+.weather-widget.weather-card-on[data-weather-mood="clear-night"] {
+    background: linear-gradient(
+        165deg,
+        rgba(20, 32, 72, 0.92) 0%,
+        rgba(48, 38, 96, 0.92) 60%,
+        rgba(80, 56, 124, 0.9) 100%
+    );
+}
+
+/* Partly cloudy day — softer blue with peach undertone */
+.weather-widget.weather-card-on[data-weather-mood="p-cloudy-day"] {
+    background: linear-gradient(
+        165deg,
+        rgba(140, 180, 220, 0.9) 0%,
+        rgba(200, 200, 210, 0.88) 50%,
+        rgba(240, 192, 168, 0.88) 100%
+    );
+}
+
+/* Partly cloudy night — slate with a violet wash */
+.weather-widget.weather-card-on[data-weather-mood="p-cloudy-night"] {
+    background: linear-gradient(
+        165deg,
+        rgba(36, 48, 80, 0.92) 0%,
+        rgba(64, 64, 100, 0.9) 100%
+    );
+}
+
+/* Overcast day — pale blue-grey, low saturation */
+.weather-widget.weather-card-on[data-weather-mood="cloudy-day"] {
+    background: linear-gradient(
+        165deg,
+        rgba(140, 156, 172, 0.92) 0%,
+        rgba(184, 192, 200, 0.88) 100%
+    );
+}
+
+/* Overcast night — deeper slate */
+.weather-widget.weather-card-on[data-weather-mood="cloudy-night"] {
+    background: linear-gradient(
+        165deg,
+        rgba(48, 58, 72, 0.92) 0%,
+        rgba(72, 84, 98, 0.9) 100%
+    );
+}
+
+/* Rain day — wet stone, cool blue-grey */
+.weather-widget.weather-card-on[data-weather-mood="rain-day"] {
+    background: linear-gradient(
+        165deg,
+        rgba(96, 124, 148, 0.92) 0%,
+        rgba(124, 148, 168, 0.9) 100%
+    );
+}
+
+/* Rain night — almost black-blue */
+.weather-widget.weather-card-on[data-weather-mood="rain-night"] {
+    background: linear-gradient(
+        165deg,
+        rgba(36, 48, 64, 0.94) 0%,
+        rgba(60, 76, 96, 0.9) 100%
+    );
+}
+
+/* Snow day — pale icy blue → cool lavender → soft pink */
+.weather-widget.weather-card-on[data-weather-mood="snow-day"] {
+    background: linear-gradient(
+        165deg,
+        rgba(180, 208, 224, 0.9) 0%,
+        rgba(208, 200, 220, 0.9) 55%,
+        rgba(228, 208, 220, 0.9) 100%
+    );
+}
+
+/* Snow night — deeper icy violet */
+.weather-widget.weather-card-on[data-weather-mood="snow-night"] {
+    background: linear-gradient(
+        165deg,
+        rgba(56, 72, 96, 0.92) 0%,
+        rgba(88, 96, 128, 0.9) 100%
+    );
+}
+
+/* Fog — muted warm grey, no day/night variant (fog dims time-of-day cues) */
+.weather-widget.weather-card-on[data-weather-mood="fog"] {
+    background: linear-gradient(
+        165deg,
+        rgba(176, 180, 184, 0.92) 0%,
+        rgba(208, 200, 188, 0.9) 100%
+    );
+}
+
+/* Thunder — dramatic indigo + violet, hint of warm flash */
+.weather-widget.weather-card-on[data-weather-mood="thunder"] {
+    background: linear-gradient(
+        165deg,
+        rgba(40, 36, 64, 0.94) 0%,
+        rgba(72, 44, 96, 0.92) 50%,
+        rgba(112, 80, 132, 0.9) 100%
+    );
+}
+
+/* On Frost, keep the per-mood gradient as a soft tint but layer in
+   Frost's signature backdrop-blur + saturation so the card reads
+   as frosted glass with a hint of weather mood, instead of the
+   former full dark-glass override. The gradient's existing 0.9
+   alpha lets the photo + the frosted blur read through. */
+.theme-frost .weather-widget.weather-card-on {
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
 /* In edit mode, just give the shell a minimum width so the EditWidget

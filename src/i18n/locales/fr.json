@@ -34,7 +34,18 @@
     "headings": {
       "widgets": "Widgets",
       "appearance": "Apparence",
-      "background": "Arrière-plan"
+      "background": "Arrière-plan",
+      "cursor": "Curseur"
+    },
+    "cursor": {
+      "summaryLabel": "Style",
+      "default": "Par défaut",
+      "soot": "Noiraud",
+      "sparkle": "Étincelle",
+      "petal": "Pétale",
+      "bubble": "Bulle",
+      "heart": "Cœur",
+      "leaf": "Feuille"
     },
     "buttons": {
       "githubRepo": "Dépôt Github",
@@ -51,7 +62,7 @@
       "modeToggleAria": "Basculer entre Édition et Déplacement",
       "editWidgets": "Mode édition",
       "resetAllWidgets": "Réinitialiser les widgets",
-      "resetFilters": "Réinitialiser les filtres",
+      "resetFilters": "Réinitialiser les paramètres d'arrière-plan",
       "selectBackgrounds": "Choisir les arrière-plans",
       "deleteBackground": "Supprimer l'arrière-plan",
       "deleteBackgroundAria": "Retirer l'arrière-plan actuel de la rotation",
@@ -66,11 +77,13 @@
       "highContrast": "Contraste élevé"
     },
     "filters": {
-      "heading": "Filtres",
+      "heading": "Paramètres",
       "blur": "Flou",
       "brightness": "Luminosité",
       "contrast": "Contraste",
-      "saturation": "Saturation"
+      "saturation": "Saturation",
+      "parallax": "Effet parallaxe",
+      "parallaxTooltip": "La photo de fond se déplace légèrement quand vous bougez le curseur, ajoutant une douce sensation de profondeur — comme si le premier plan flottait devant une scène un peu plus éloignée."
     },
     "filterUnits": {
       "px": "px",
@@ -148,7 +161,12 @@
       "weatherIconStyleAria": {
         "animated": "Icônes animées — cliquer pour passer en fixe",
         "still": "Icônes fixes — cliquer pour passer en animé"
-      }
+      },
+      "weatherShowCard": "Carte",
+      "weatherHideCard": "Carte",
+      "weatherShowCardLabel": "Afficher l'arrière-plan en carte",
+      "weatherShowCardAria": "Afficher un dégradé doux derrière la météo",
+      "weatherHideCardAria": "Retirer l'arrière-plan en carte"
     }
   },
   "greeting": {
@@ -307,7 +325,7 @@
       "title": "Paramètres d'arrière-plan",
       "moviesCount": "{{count}} films",
       "selectAll": "Tout sélectionner",
-      "deselectAll": "Tout désélectionner (sauf 1)",
+      "deselectAll": "Tout désélectionner",
       "noBackgrounds": "(aucun fond)",
       "show": "Afficher ↓",
       "hide": "Masquer ↑",

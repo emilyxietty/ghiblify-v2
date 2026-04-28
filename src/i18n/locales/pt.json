@@ -34,7 +34,18 @@
     "headings": {
       "widgets": "Widgets",
       "appearance": "Aparência",
-      "background": "Plano de fundo"
+      "background": "Plano de fundo",
+      "cursor": "Cursor"
+    },
+    "cursor": {
+      "summaryLabel": "Estilo",
+      "default": "Padrão",
+      "soot": "Duende-da-fuligem",
+      "sparkle": "Brilho",
+      "petal": "Pétala",
+      "bubble": "Bolha",
+      "heart": "Coração",
+      "leaf": "Folha"
     },
     "buttons": {
       "githubRepo": "Repositório no Github",
@@ -51,7 +62,7 @@
       "modeToggleAria": "Alternar entre Editar e Arrastar",
       "editWidgets": "Modo edição",
       "resetAllWidgets": "Restaurar widgets",
-      "resetFilters": "Restaurar filtros",
+      "resetFilters": "Restaurar ajustes de fundo",
       "selectBackgrounds": "Selecionar planos de fundo",
       "deleteBackground": "Excluir plano de fundo",
       "deleteBackgroundAria": "Remover o plano de fundo atual da rotação",
@@ -66,11 +77,13 @@
       "highContrast": "Alto contraste"
     },
     "filters": {
-      "heading": "Filtros",
+      "heading": "Ajustes",
       "blur": "Desfoque",
       "brightness": "Brilho",
       "contrast": "Contraste",
-      "saturation": "Saturação"
+      "saturation": "Saturação",
+      "parallax": "Efeito parallax",
+      "parallaxTooltip": "A foto de fundo se desloca suavemente ao mover o cursor, criando uma sensação de profundidade — como se o primeiro plano flutuasse à frente de uma cena um pouco mais distante."
     },
     "filterUnits": {
       "px": "px",
@@ -148,7 +161,12 @@
       "weatherIconStyleAria": {
         "animated": "Ícones animados — clique para estático",
         "still": "Ícones estáticos — clique para animado"
-      }
+      },
+      "weatherShowCard": "Cartão",
+      "weatherHideCard": "Cartão",
+      "weatherShowCardLabel": "Mostrar fundo em cartão",
+      "weatherShowCardAria": "Mostrar um fundo em gradiente atrás do clima",
+      "weatherHideCardAria": "Remover o fundo em cartão"
     }
   },
   "greeting": {
@@ -307,7 +325,7 @@
       "title": "Configurações de plano de fundo",
       "moviesCount": "{{count}} filmes",
       "selectAll": "Selecionar tudo",
-      "deselectAll": "Desmarcar tudo (exceto 1)",
+      "deselectAll": "Desmarcar tudo",
       "noBackgrounds": "(sem planos de fundo)",
       "show": "Mostrar ↓",
       "hide": "Ocultar ↑",

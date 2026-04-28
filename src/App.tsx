@@ -10,6 +10,7 @@ import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
 import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
 import { Widget } from "./containers/Widget/Widget";
 import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
+import CursorEffect from "./components/CursorEffect/CursorEffect";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Greeting } from "./containers/Widgets/Greeting/Greeting";
@@ -261,6 +262,10 @@ const AppContent: React.FC = () => {
       )}
       <WelcomeModal open={showGuide} onClose={() => setShowGuide(false)} />
       <TooltipPortal />
+      {/* Cursor whimsy — companion sprite or particle trail beside
+          the OS cursor. Reads appearance.cursor; null when the
+          preset is "default". */}
+      <CursorEffect />
       <Background
         currentBackground={currentBackground}
         loading={bgLoading}
