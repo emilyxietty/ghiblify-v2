@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "Nouveautés",
-    "intro": "Mises à jour récentes de Ghiblify.",
+    "intro": "Un coup d'œil rapide sur les nouveautés.",
     "openTooltip": "Voir les changements récents",
     "openAria": "Voir le journal des modifications (version actuelle v{{version}})"
   },
@@ -102,6 +102,7 @@
     "callout": "Barre latérale droite — survolez le bord droit pour l'ouvrir",
     "settingsLabel": "Paramètres",
     "pickerLabel": "Choisissez les widgets à afficher dans la barre latérale droite",
+    "showBackgroundsLabel": "Afficher les arrière-plans",
     "resetLabel": "Réinitialiser la barre latérale",
     "resetConfirm": "Réinitialiser tous les paramètres de la barre latérale droite ? Les widgets du canevas ne sont pas affectés."
   },

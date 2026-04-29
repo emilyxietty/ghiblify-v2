@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "新機能",
-    "intro": "Ghiblify の最近の更新内容です。",
+    "intro": "最近の更新内容を簡単にまとめました。",
     "openTooltip": "最近の変更を見る",
     "openAria": "変更履歴を表示(現在のバージョン v{{version}})"
   },
@@ -102,6 +102,7 @@
     "callout": "右サイドバー — 画面の右端にカーソルを合わせると開きます",
     "settingsLabel": "設定",
     "pickerLabel": "右サイドバーに表示するウィジェットを選択",
+    "showBackgroundsLabel": "背景を表示",
     "resetLabel": "右サイドバーをリセット",
     "resetConfirm": "右サイドバーの設定をすべてリセットしますか?キャンバスのウィジェットには影響しません。"
   },

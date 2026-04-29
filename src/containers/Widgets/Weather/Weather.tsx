@@ -75,21 +75,31 @@ const formatHour = (iso: string, is24Hour: boolean) => {
 
 const Weather: React.FC = () => {
   const t = useT();
-  const { widgets } = useAppContext();
+  const { widgets, dockShowBackgrounds } = useAppContext();
   const { settings: rawSettings } = useWidgetSettings("weather");
   const inDock = useDockSurface();
   const isHalfInDock =
     inDock && widgets.weather.dockWidth === "half";
-  // Half-width dock cells aren't wide enough for the hourly /
-  // daily forecast strips — they wrap awkwardly. Force those off
-  // when rendering as a dock half. Stored settings are untouched;
-  // the user's full-width / canvas instance keeps its choice.
-  const settings = isHalfInDock
-    ? {
-        ...rawSettings,
-        sections: { ...rawSettings.sections, hourly: false, daily: false },
-      }
-    : rawSettings;
+  // Per-surface render overrides on top of the merged settings.
+  // Stored settings are never mutated here — these only affect the
+  // current render so the canvas / full-width instance keeps its
+  // own state untouched.
+  //   - Half-width dock: forecast strips would wrap, so hide them.
+  //   - Dock + global "Show backgrounds" on: force showCard so the
+  //     card surface joins the rest of the dock chrome.
+  const settings = {
+    ...rawSettings,
+    ...(isHalfInDock
+      ? {
+          sections: {
+            ...rawSettings.sections,
+            hourly: false,
+            daily: false,
+          },
+        }
+      : {}),
+    ...(inDock && dockShowBackgrounds ? { showCard: true } : {}),
+  };
   const { data, loading, error } = useWeather(settings.unit);
 
   const unitSuffix = `°${settings.unit}`;

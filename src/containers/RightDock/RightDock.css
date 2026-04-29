@@ -122,7 +122,12 @@
     flex: 1 1 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    /* 16px gap matches Apple's Notification Center widget stack
+       — bigger than the canvas-default 12px so each card reads as
+       its own discrete tile. align-items: stretch (the default)
+       makes half-width cells in the same row match the taller
+       sibling's height, so two halves on a row line up flush. */
+    gap: 16px;
     align-content: start;
     overflow-y: auto;
     overflow-x: hidden;
@@ -199,6 +204,16 @@
 
 .right-dock-settings-btn:hover {
     background: color-mix(in srgb, var(--light) 8%, transparent);
+}
+
+/* Toggle row inside the picker footer — borrows the LeftSidebar's
+   `.contrast-toggle` switch styles for visual consistency. Padding
+   matches the surrounding picker grid so it reads as part of the
+   same settings cluster. */
+.right-dock-toggle-row {
+    padding: 4px 4px;
+    font-size: 12px;
+    color: var(--light);
 }
 
 /* Reset button — only visible while the picker is expanded. Lives

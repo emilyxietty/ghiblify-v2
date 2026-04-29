@@ -76,8 +76,14 @@ export const RightDock: React.FC<RightDockProps> = ({
   children,
 }) => {
   const t = useT();
-  const { isDragging, widgets, setWidgetInRightSidebar, resetRightSidebar } =
-    useAppContext();
+  const {
+    isDragging,
+    widgets,
+    setWidgetInRightSidebar,
+    resetRightSidebar,
+    dockShowBackgrounds,
+    setDockShowBackgrounds,
+  } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const dockRef = useRef<HTMLElement | null>(null);
@@ -258,20 +264,34 @@ export const RightDock: React.FC<RightDockProps> = ({
             </div>
           )}
           {pickerOpen && (
-            <Button
-              className="right-dock-reset-btn"
-              variant="transparent"
-              size="small"
-              onClick={() => {
-                if (window.confirm(t("rightDock.resetConfirm")))
-                  resetRightSidebar();
-              }}
-              aria-label={t("rightDock.resetLabel")}
-              data-tooltip={t("rightDock.resetLabel")}
-            >
-              <RestoreIcon style={{ fontSize: 14 }} />
-              <span>{t("rightDock.resetLabel")}</span>
-            </Button>
+            <>
+              <label className="contrast-toggle right-dock-toggle-row">
+                <span>{t("rightDock.showBackgroundsLabel")}</span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={dockShowBackgrounds}
+                  onChange={(e) =>
+                    setDockShowBackgrounds(e.target.checked)
+                  }
+                />
+                <span className="contrast-switch" aria-hidden="true" />
+              </label>
+              <Button
+                className="right-dock-reset-btn"
+                variant="transparent"
+                size="small"
+                onClick={() => {
+                  if (window.confirm(t("rightDock.resetConfirm")))
+                    resetRightSidebar();
+                }}
+                aria-label={t("rightDock.resetLabel")}
+                data-tooltip={t("rightDock.resetLabel")}
+              >
+                <RestoreIcon style={{ fontSize: 14 }} />
+                <span>{t("rightDock.resetLabel")}</span>
+              </Button>
+            </>
           )}
           <Button
             className="right-dock-settings-btn"

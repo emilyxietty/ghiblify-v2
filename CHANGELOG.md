@@ -8,26 +8,29 @@ then prepend an entry here AND in `src/changelog.ts`.
 
 ## 2.1.0 — 2026-04-29
 
-- Right sidebar dock — slide-in right rail that hosts widgets, mutually
-  exclusive with the bookmarks panel.
-- Per-widget half/full width, drag-to-reorder, optional glass-card
-  background — managed from the dock's footer settings.
-- Per-surface settings: weather / info / avatar can have separate
-  config in the dock vs the canvas.
-- Welcome guide always corners bottom-right with passthrough so the
-  spotlight UI stays clickable.
-- Frost palette Todo hover no longer washes white; Todo widget on
-  canvas now grows with its container instead of capping at 5 rows.
-- Shift-outline no longer gets stuck on after a click steals keyup.
+- New right sidebar — slide it in from the right edge to keep your
+  favourite widgets always within reach.
+- Drag-and-drop to reorder, half or full widths, and a glass background
+  option so the dock matches your vibe.
+- Cursor animations — soot sprites, sparkles, falling petals, hearts,
+  leaves, and a few more whimsical trails.
+- Polish on the Welcome guide, palette dropdowns, and the Frost theme.
+- Bug fixes — sticky shift outline, the todo list cap, scrollbar
+  overlap, and a handful of smaller papercuts.
 
 ## 2.0.0 — 2026-04-25
 
-- Fresh React 19 + TypeScript rewrite of the v1 (jQuery) extension.
-- Hybrid storage layer — chrome.storage as source-of-truth +
-  localStorage mirror for sync first paint.
-- 14 themed palettes including Frost, weather card with mood-aware
-  backgrounds per WMO code, cursor whimsy presets.
-- i18n in 7 languages (en, ja, es, fr, zh, pt, ko) including welcome
-  guide and tooltips.
-- Z-index tokens, offline support with random fallback images, full
-  background gallery picker.
+- Complete revamp of Ghiblify — fresh design, smoother animations,
+  faster everything.
+- Language support for 7 languages: English, 日本語, Español, Français,
+  中文, Português, 한국어.
+- Faster loading and a more reliable saving layer so your settings
+  come back instantly.
+- Better edit and drag handling — Edit Mode, Drag Mode, and Shift-drag
+  now coexist without stepping on each other.
+- 14 new themed palettes including a glassy Frost mode, plus
+  high-contrast accessibility.
+- Bookmarks panel slides in from the right edge with cross-folder drag
+  and search.
+- New widgets and refreshed designs — weather card with mood-aware
+  backgrounds, sticky notes, pomodoro, and more.

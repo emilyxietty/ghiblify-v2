@@ -8,18 +8,60 @@
 .dock-widget {
     width: 100%;
     box-sizing: border-box;
-    border-radius: var(--radius-lg, 12px);
     position: relative;
+    border-radius: 18px;
+    /* Transparent by default — widgets that paint their own surface
+       (Notes' cream paper, Weather's card, Todo's container) read
+       cleanly, and naked widgets (Time, Date, Greeting, Info,
+       Avatar) sit straight on the photo. The optional global
+       "Show backgrounds" toggle in the dock picker footer adds a
+       glass card to the naked widgets — see the
+       `body.dock-show-bg` rule below. Notes / Weather / Todo are
+       intentionally excluded so we never get dark text on a dark
+       glass card. */
+    background: transparent;
     /* Stack inner content vertically and let each widget fill the
        column. Right-alignment is applied per-widget below — applying
-       it here cascaded into card widgets (Pomodoro, Todo, Notes,
-       Weather) and pushed their internal flex/text content against
-       the column edge so it looked clipped. */
+       it here cascaded into card widgets and pushed their internal
+       flex/text content against the column edge. */
     display: flex;
     flex-direction: column;
     align-items: stretch;
     /* Drag-and-drop reorder — see DockWidget.tsx. */
     cursor: grab;
+}
+
+/* Optional glass card behind "naked" dock widgets — only when the
+   user enables the global "Show backgrounds" toggle in the dock
+   footer. Excludes Notes (cream paper card with dark text — would
+   become unreadable behind a dark glass), Weather (its showCard
+   toggle handles its own surface), and Todo (already has its own
+   container chrome). */
+body.dock-show-bg .dock-widget-time,
+body.dock-show-bg .dock-widget-date,
+body.dock-show-bg .dock-widget-greeting,
+body.dock-show-bg .dock-widget-info,
+body.dock-show-bg .dock-widget-avatar {
+    background: rgba(
+        var(--dark-rgb, 31, 38, 32),
+        min(0.55, var(--surface-alpha-cap, 1))
+    );
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    padding: 14px 16px;
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.theme-frost body.dock-show-bg .dock-widget-time,
+.theme-frost body.dock-show-bg .dock-widget-date,
+.theme-frost body.dock-show-bg .dock-widget-greeting,
+.theme-frost body.dock-show-bg .dock-widget-info,
+.theme-frost body.dock-show-bg .dock-widget-avatar {
+    background: rgba(12, 18, 26, 0.55);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .dock-widget:active {
@@ -59,31 +101,14 @@
     bottom: -7px;
 }
 
-/* Optional glass card around naked widgets — same idea as
-   .widget-show-bg on the canvas Widget shell, but applied at the
-   dock-widget level so the card stretches to fill the grid cell
-   (full or half). Pomodoro / Todo / Notes / Weather paint their own
-   cards and ignore this. */
-.dock-widget.dock-widget-show-bg .dock-widget-content {
-    padding: 14px 16px;
-    border-radius: var(--radius-lg, 12px);
-    background: rgba(
-        var(--dark-rgb, 31, 38, 32),
-        min(0.55, var(--surface-alpha-cap, 1))
-    );
-    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
-    backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
-    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-}
-
-.theme-frost .dock-widget.dock-widget-show-bg .dock-widget-content {
-    background: rgba(12, 18, 26, 0.55);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: rgba(255, 255, 255, 0.96);
-}
+/* Widgets with built-in chrome (Notes' cream paper, Weather's
+   showCard, Todo's container) keep their own surfaces in the dock —
+   the wrapper `.dock-widget` is transparent by default, and the
+   optional global card surface only applies to naked widgets
+   (Time / Date / Greeting / Info / Avatar) via the
+   `body.dock-show-bg` rule above. So Notes shows its cream paper
+   the same way it does on the canvas, regardless of the
+   "Show backgrounds" toggle. */
 
 .dock-widget,
 .dock-widget * {
@@ -119,7 +144,9 @@
    settings are preserved — they apply on the canvas instance; the
    dock just renders the widget at dock-friendly dimensions. */
 
-/* Time — canvas default is 200px font; cap to 56px in the dock. */
+/* Time — canvas default is 200px font; cap to a dock-friendly size.
+   Full-width dock cell at 56px is comfortable; half-width (~150px
+   inner width) needs to drop to ~32px or "12:34 PM" overflows. */
 .dock-widget .time-container {
     align-items: flex-end !important;
     justify-content: flex-end !important;
@@ -133,6 +160,14 @@
 
 .dock-widget .time .time-period {
     font-size: 13px !important;
+}
+
+.dock-widget-half .time {
+    font-size: 32px !important;
+}
+
+.dock-widget-half .time .time-period {
+    font-size: 10px !important;
 }
 
 /* Date — its container is `align-items: center` by default. Flip
@@ -163,6 +198,14 @@
 .dock-widget .info-item {
     font-size: 14px !important;
     text-align: right !important;
+}
+
+/* Notes in a half-width dock cell — drop the textarea font from
+   14px to 12px so the cream paper doesn't overflow with too few
+   words per line. Full-width Notes keeps the canvas size. */
+.dock-widget-half .notes-textarea {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
 }
 
 /* Notes — its inline width/height pin a square footprint that's
@@ -216,11 +259,26 @@
    widget's own `.weather-widget` has padding + showCard styling
    that's already self-contained, so we just need to stretch the
    width when full, and tighten typography in a half-cell so "now"
-   + the temperature don't overflow a ~150px column. */
+   + the temperature don't overflow a ~150px column.
+
+   `height: 100%` lets the weather card grow to match a taller
+   sibling on the same row (e.g. paired half-width with Notes),
+   matching the macOS-style same-row equal-height behavior. The
+   bumped padding gives the temperature + icon more breathing room
+   so the card feels substantive rather than cramped. */
 .dock-widget .weather-widget {
     width: 100% !important;
     max-width: 100% !important;
+    height: 100% !important;
     box-sizing: border-box;
+    /* Tight horizontal padding so the temperature + condition text
+       have more usable inline width (the canvas defaults assumed a
+       wider tile). Vertical padding stays generous. */
+    padding: 14px 12px !important;
+}
+
+.dock-widget .weather-widget.weather-card-on {
+    padding: 16px 14px !important;
 }
 
 .dock-widget-half .weather-widget {
@@ -239,8 +297,26 @@
 }
 
 .dock-widget-half .weather-icon {
-    width: 36px !important;
-    height: 36px !important;
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+}
+
+/* Half-width cells are ~150px wide — there isn't room for icon +
+   text side-by-side without truncating the condition string. Stack
+   them vertically (icon over text) so each row gets the full cell
+   width. align-items: flex-start keeps the column right-aligned via
+   the dock's text-align rule below. */
+.dock-widget-half .weather-current {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+}
+
+.dock-widget-half .weather-current-text {
+    align-items: flex-end !important;
+    text-align: right !important;
+    width: 100%;
 }
 
 /* Hourly + daily forecast strips: allow horizontal scroll inside

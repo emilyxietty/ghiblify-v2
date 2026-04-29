@@ -955,28 +955,13 @@ export function buildContextMenuItems(args: {
   }
 
   if (mode === "dock") {
-    // Optional glass-card surface for "naked" widgets that don't
-    // paint their own card by default (Time, Date, Greeting, Info,
-    // Avatar). Dock-only — the canvas widget stays naked so the
-    // user's chosen layout reads against the photo background.
-    // Weather has its own showCard toggle; Pomodoro / Todo / Notes
-    // ship with a card unconditionally — they're omitted here.
-    const SUPPORTS_BACKGROUND: WidgetKey[] = [
-      "time",
-      "date",
-      "greeting",
-      "info",
-      "avatar",
-    ];
-    if (SUPPORTS_BACKGROUND.includes(storageKey)) {
-      const showBg = widgets[storageKey].showBackground;
-      extras.push({
-        type: "checkbox",
-        label: t("widgets.contextMenu.showBackground"),
-        checked: showBg,
-        onClick: () => setWidgetShowBackground(storageKey, !showBg),
-      });
-    }
+    // Background toggle is intentionally absent now — every dock
+    // widget paints a uniform glass card via `.dock-widget` CSS so
+    // the dock reads as one consistent design. The
+    // `setWidgetShowBackground` setter is kept on the context so
+    // stored values aren't broken, but the toggle no longer
+    // surfaces here.
+    void setWidgetShowBackground;
 
     // Dock layout: settings first (the primary reason to right-click
     // here), then a half/full width control (where allowed), then

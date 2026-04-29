@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "Novidades",
-    "intro": "Atualizações recentes do Ghiblify.",
+    "intro": "Um resumo rápido do que saiu recentemente.",
     "openTooltip": "Ver mudanças recentes",
     "openAria": "Ver registro de mudanças (versão atual v{{version}})"
   },
@@ -102,6 +102,7 @@
     "callout": "Barra lateral direita — passe o cursor pela borda direita para abrir",
     "settingsLabel": "Configurações",
     "pickerLabel": "Escolha os widgets a mostrar na barra lateral direita",
+    "showBackgroundsLabel": "Mostrar fundos",
     "resetLabel": "Redefinir barra lateral",
     "resetConfirm": "Redefinir todas as configurações da barra lateral direita? Os widgets do canvas não são afetados."
   },

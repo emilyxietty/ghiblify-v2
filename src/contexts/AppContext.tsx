@@ -193,6 +193,10 @@ interface AppContextType {
    *  of the background prefs. */
   backgroundParallax: boolean;
   setBackgroundParallax: (on: boolean) => void;
+  /** Global toggle for the optional glass card behind naked dock
+   *  widgets. Off by default — user opts in from the dock footer. */
+  dockShowBackgrounds: boolean;
+  setDockShowBackgrounds: (on: boolean) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
   /** URL of the photo currently painted by `<Background>`. Set by
@@ -542,6 +546,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     () => readParallax()
   );
 
+  // Optional glass-card surface behind every "naked" dock widget
+  // (Time, Date, Greeting, Info, Avatar). On by default so the dock
+  // reads as a cohesive card stack (matches Apple's Notification
+  // Center widget look); user can toggle off from the dock footer
+  // for a transparent / photo-blended look. Notes / Weather / Todo
+  // keep their own surfaces — Weather force-flips its showCard to
+  // match this toggle, so the whole dock visually agrees.
+  const [dockShowBackgrounds, setDockShowBackgroundsState] =
+    useState<boolean>(
+      () => readPersisted<boolean>("ghiblify_dock_show_bg", true) !== false
+    );
+
   const [backgroundSelection, setBackgroundSelection] = useState<
     Record<string, boolean>
   >(() => readSelection());
@@ -662,6 +678,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const setBackgroundParallax = (on: boolean) => {
     setBackgroundParallaxState(on);
     writeParallax(on);
+  };
+
+  const setDockShowBackgrounds = (on: boolean) => {
+    setDockShowBackgroundsState(on);
+    writePersisted("ghiblify_dock_show_bg", on);
   };
 
   const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
@@ -828,6 +849,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateBackgroundFilters,
         backgroundParallax,
         setBackgroundParallax,
+        dockShowBackgrounds,
+        setDockShowBackgrounds,
         backgroundSelection,
         updateBackgroundSelection,
         currentBackground,

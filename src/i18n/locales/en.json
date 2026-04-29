@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "What's new",
-    "intro": "Recent updates to Ghiblify. Click any version to recap what shipped.",
+    "intro": "A quick look at what's shipped recently.",
     "openTooltip": "View recent changes",
     "openAria": "View changelog (current version v{{version}})"
   },
@@ -102,6 +102,7 @@
     "callout": "Right sidebar — hover the right edge to open",
     "settingsLabel": "Settings",
     "pickerLabel": "Choose widgets to show in the right sidebar",
+    "showBackgroundsLabel": "Show backgrounds",
     "resetLabel": "Reset right sidebar",
     "resetConfirm": "Reset all right sidebar settings? Your canvas widgets are not affected."
   },

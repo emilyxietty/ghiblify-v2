@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "更新内容",
-    "intro": "Ghiblify 的最近更新。",
+    "intro": "最近的更新一览。",
     "openTooltip": "查看最近的更改",
     "openAria": "查看更新日志(当前版本 v{{version}})"
   },
@@ -102,6 +102,7 @@
     "callout": "右侧栏 — 将鼠标移到屏幕右侧打开",
     "settingsLabel": "设置",
     "pickerLabel": "选择要在右侧栏显示的小组件",
+    "showBackgroundsLabel": "显示背景",
     "resetLabel": "重置右侧栏",
     "resetConfirm": "重置所有右侧栏设置吗?画布上的小组件不受影响。"
   },

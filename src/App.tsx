@@ -72,6 +72,7 @@ const AppContent: React.FC = () => {
     setCurrentBackground,
     dragMode,
     setDragMode,
+    dockShowBackgrounds,
   } = useAppContext();
 
   // While Drag Mode is on, mark the body so widgets get the same
@@ -85,6 +86,17 @@ const AppContent: React.FC = () => {
       return () => document.body.classList.remove("drag-mode-on");
     }
   }, [dragMode]);
+
+  // Mirror the global "show dock backgrounds" toggle onto the body
+  // so DockWidget.css can scope the optional glass-card rule
+  // (`body.dock-show-bg .dock-widget-time`, etc) without each
+  // widget having to thread the flag.
+  useEffect(() => {
+    if (dockShowBackgrounds) {
+      document.body.classList.add("dock-show-bg");
+      return () => document.body.classList.remove("dock-show-bg");
+    }
+  }, [dockShowBackgrounds]);
 
   // Exit Drag Mode on outside click / Esc / Enter — same dismissal
   // model as global Edit Mode. Clicks on widgets, the sidebar, the

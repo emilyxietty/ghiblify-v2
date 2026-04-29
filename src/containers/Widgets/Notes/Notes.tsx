@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
 import "./Notes.css";
 
@@ -12,8 +13,14 @@ import "./Notes.css";
 // settings update after a brief idle.
 export const Notes: React.FC = () => {
   const t = useT();
-  const { widgets, updateWidgetSettings } = useAppContext();
-  const settings = widgets.notes.settings;
+  const { updateWidgetSettings } = useAppContext();
+  // Display reads merged settings — `showBorder` flips per surface
+  // (dock + canvas can have different border states, so the dock
+  // right-click toggle actually shows up). Writes for `content` go
+  // through `updateWidgetSettings` directly (canvas-only) so the
+  // user's typed text stays a single shared note: editing in the
+  // dock updates the canvas note and vice versa.
+  const { settings } = useWidgetSettings("notes");
   const [draft, setDraft] = useState(settings.content);
   const draftRef = useRef(draft);
   draftRef.current = draft;
