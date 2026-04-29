@@ -366,13 +366,14 @@
 .left-sidebar .widget-section {
     /* Grid layout — fixed column count, square cells. Icon size
        derives from card width / column count, so adding/removing
-       widgets keeps the grid tidy automatically. */
-    --widget-cols: 6;
+       widgets keeps the grid tidy automatically. 7 cells per row
+       packs the toggles tighter so more fit without scrolling. */
+    --widget-cols: 7;
     display: grid;
     grid-template-columns: repeat(var(--widget-cols), 1fr);
-    gap: 8px;
+    gap: 6px;
     background: var(--sidebar-card);
-    padding: 16px;
+    padding: 14px;
     border-radius: var(--radius-xl);
     border: 1px solid rgba(253, 246, 233, 0.06);
 }
@@ -399,6 +400,10 @@
 .widget-icon svg {
     color: var(--disabled-light);
     transition: color 160ms ease;
+    /* Match the smaller img size for the 7-column grid — keeps the
+       SVG-rendered toggles visually flush with the avatar (img). */
+    width: 18px;
+    height: 18px;
 }
 
 .widget-icon:hover {
@@ -450,10 +455,11 @@
 }
 
 /* Avatar tile — rounded image with a subtle dim when inactive.
-   Sized to match the smaller 36px widget-icon footprint. */
+   Slightly smaller than the canvas defaults to match the tighter
+   7-column widget grid. */
 .widget-icon img {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
