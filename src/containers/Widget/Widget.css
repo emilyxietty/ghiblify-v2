@@ -14,6 +14,11 @@
     animation: widget-fade-in 220ms ease both;
 }
 
+/* `showBackground` is intentionally dock-only — see DockWidget.css
+   for the glass-card rule. The canvas widget shell stays naked so
+   the user's chosen layout / typography reads cleanly against the
+   photo background; the dock surface is a separate concern. */
+
 @keyframes widget-fade-in {
     from {
         opacity: 0;

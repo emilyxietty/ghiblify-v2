@@ -35,13 +35,28 @@ const STORAGE_KEY = "ghiblify_todo";
 
 // Debounced persist — coalesces typing bursts on the inline edit
 // input so the storage layer doesn't take a write per keystroke.
-// Module-scoped because a single user only ever sees one Todo widget,
-// and we want the timer to survive remounts (the user tapping out of
-// edit mode and back in again shouldn't drop a pending write).
+// Module-scoped because the timer needs to survive remounts (the
+// user tapping out of edit mode and back in shouldn't drop a pending
+// write). Multiple Todo instances (canvas + dock) all share this
+// timer + the broadcast event below so they stay in sync.
 let persistTimer: number | null = null;
 let persistPendingValue: TodoItem[] | null = null;
+// Cross-instance sync: when one Todo widget updates the list, every
+// other mounted Todo (e.g. the dock copy) needs to re-render to the
+// new array. We dispatch a custom event with the next array as the
+// detail and have each instance subscribe.
+const TODO_CHANGE_EVENT = "ghiblify:todo:change";
+const broadcastTodos = (next: TodoItem[]) => {
+  window.dispatchEvent(
+    new CustomEvent<TodoItem[]>(TODO_CHANGE_EVENT, { detail: next })
+  );
+};
 const persistTodos = (next: TodoItem[]) => {
   persistPendingValue = next;
+  // Sibling instances should reflect the change immediately, even
+  // before the debounced storage write commits. Fire the event on
+  // every call to persistTodos.
+  broadcastTodos(next);
   if (persistTimer != null) window.clearTimeout(persistTimer);
   persistTimer = window.setTimeout(() => {
     if (persistPendingValue) writePersisted(STORAGE_KEY, persistPendingValue);
@@ -113,6 +128,18 @@ export const Todo: React.FC = () => {
       window.removeEventListener("pagehide", flushPersistTodos);
       flushPersistTodos();
     };
+  }, []);
+
+  // Cross-instance sync: when any other Todo widget calls
+  // persistTodos, mirror the new list into our local state so canvas
+  // and dock instances stay in lockstep without a page reload.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const next = (e as CustomEvent<TodoItem[]>).detail;
+      if (Array.isArray(next)) setTodos(next);
+    };
+    window.addEventListener(TODO_CHANGE_EVENT, handler);
+    return () => window.removeEventListener(TODO_CHANGE_EVENT, handler);
   }, []);
 
   useEffect(() => {

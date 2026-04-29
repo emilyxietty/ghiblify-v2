@@ -90,6 +90,15 @@
       "percent": "%"
     }
   },
+  "rightDock": {
+    "emptyTitle": "Barra lateral derecha",
+    "emptyHint": "Pulsa el botón Ajustes de abajo para elegir qué widgets aparecen aquí. Pueden estar en la barra lateral y en el lienzo al mismo tiempo.",
+    "callout": "Barra lateral derecha — pasa el cursor por el borde derecho para abrirla",
+    "settingsLabel": "Ajustes",
+    "pickerLabel": "Elige los widgets a mostrar en la barra lateral derecha",
+    "resetLabel": "Restablecer barra lateral",
+    "resetConfirm": "¿Restablecer todos los ajustes de la barra lateral derecha? Los widgets del lienzo no se verán afectados."
+  },
   "widgets": {
     "names": {
       "time": "Hora",
@@ -103,16 +112,23 @@
       "avatar": "Avatar",
       "bookmarks": "Marcadores",
       "weather": "Clima",
-      "notes": "Nota adhesiva"
+      "notes": "Nota adhesiva",
+      "rightSidebar": "Barra lateral derecha"
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
-      "hide": "Ocultar widget {{name}}"
+      "hide": "Ocultar widget {{name}}",
+      "disabledBy": "Desactiva primero {{other}} para activar esto"
     },
     "contextMenu": {
       "edit": "Editar {{name}}",
       "drag": "Arrastrar {{name}}",
       "hide": "Ocultar {{name}}",
+      "showInRightSidebar": "Mostrar en barra lateral derecha",
+      "hideFromRightSidebar": "Ocultar de la barra lateral derecha",
+      "dockWidthFull": "Ancho completo",
+      "dockWidthHalf": "Mitad de ancho",
+      "showBackground": "Mostrar fondo",
       "time12": "12 horas",
       "time24": "24 horas",
       "addLink": "Añadir nuevo enlace",

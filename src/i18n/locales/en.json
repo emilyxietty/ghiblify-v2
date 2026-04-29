@@ -90,6 +90,15 @@
       "percent": "%"
     }
   },
+  "rightDock": {
+    "emptyTitle": "Right sidebar",
+    "emptyHint": "Click the Settings button below to choose which widgets appear here. They can live in the right sidebar and on the canvas at the same time.",
+    "callout": "Right sidebar — hover the right edge to open",
+    "settingsLabel": "Settings",
+    "pickerLabel": "Choose widgets to show in the right sidebar",
+    "resetLabel": "Reset right sidebar",
+    "resetConfirm": "Reset all right sidebar settings? Your canvas widgets are not affected."
+  },
   "widgets": {
     "names": {
       "time": "Time",
@@ -103,16 +112,23 @@
       "avatar": "Avatar",
       "bookmarks": "Bookmarks",
       "weather": "Weather",
-      "notes": "Sticky note"
+      "notes": "Sticky note",
+      "rightSidebar": "Right sidebar"
     },
     "tooltip": {
       "show": "Show {{name}} widget",
-      "hide": "Hide {{name}} widget"
+      "hide": "Hide {{name}} widget",
+      "disabledBy": "Disable {{other}} first to enable this"
     },
     "contextMenu": {
       "edit": "Edit {{name}}",
       "drag": "Drag {{name}}",
       "hide": "Hide {{name}}",
+      "showInRightSidebar": "Show in right sidebar",
+      "hideFromRightSidebar": "Hide from right sidebar",
+      "dockWidthFull": "Full width",
+      "dockWidthHalf": "Half width",
+      "showBackground": "Show background",
       "time12": "12-hour",
       "time24": "24-hour",
       "addLink": "Add new link",

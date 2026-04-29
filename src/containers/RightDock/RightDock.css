@@ -1,0 +1,258 @@
+/* Right Dock — slide-in right rail, mirroring the bookmarks panel
+   pattern (RightSidebar.css). Hidden off-screen via translateX(100%)
+   and revealed on edge-hover. Doesn't shrink the canvas — overlays
+   it like the LeftSidebar / RightSidebar do.
+
+   The canvas-shrink rule from chunk 1 is removed alongside this
+   change; widgets keep their canvas positioning regardless of dock
+   open/closed state. */
+
+/* Transient callout shown when the dock is first toggled on —
+   mirrors the bookmarks panel's first-toggle callout so both
+   right-edge surfaces announce themselves the same way. */
+.right-dock-callout {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: 9000;
+    pointer-events: none;
+    animation: right-dock-callout 3.5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes right-dock-callout {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-12px);
+    }
+    8% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
+}
+
+:root {
+    /* 25px wider than the bookmarks RightSidebar (SIDEBAR_WIDTH =
+       360). The dock hosts full widget cards, which need more
+       breathing room than bookmarks' favicon + text rows. Must
+       match DOCK_WIDTH in RightDock.tsx — the JS constant drives
+       the edge-hover trigger geometry. */
+    --right-dock-width: 350px;
+}
+
+.right-dock {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(var(--right-dock-width), 100vw);
+    /* Transparent surface — unlike the bookmarks RightSidebar (which
+       paints a solid dark panel for legibility against tiny favicon +
+       text rows), the dock hosts widgets that already paint their own
+       glass / cardborder / weather-card surfaces. A solid background
+       here would double-up that chrome and hide the photo behind the
+       widgets. We let the photo show through and just rely on each
+       widget's own surface for legibility. */
+    background: transparent;
+    transform: translateX(100%);
+    /* Stack with the LeftSidebar tier (99999) so spotlight + portals
+       behave consistently. Edit-overlay sits below; modals stay
+       above via their own portals. */
+    z-index: 99999;
+    transition: transform 280ms cubic-bezier(0.32, 0.72, 0.32, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 18px 16px;
+    gap: 14px;
+    /* No scroll on the dock itself — scrolling is delegated to
+       `.right-dock-body` so the scrollbar lives inside the body's
+       padding, not flush against the dock's outer edge where it
+       used to overlap the widget cards. */
+    overflow: hidden;
+    box-sizing: border-box;
+    color: var(--light);
+    pointer-events: none;
+}
+
+/* Closed state has nothing interactive — bypassing pointer events
+   above lets the user click the canvas behind the dock's invisible
+   column. Re-enable when open so widgets are clickable. */
+.right-dock.open {
+    pointer-events: auto;
+}
+
+/* Children stay clickable in either state when present (we only
+   want the closed-state column to pass pointer events through). */
+.right-dock > * {
+    pointer-events: auto;
+}
+
+.right-dock.open {
+    transform: translateX(0);
+}
+
+/* Body wraps the widget stack (or empty-state) and grows to fill the
+   space between the dock's top and its settings footer.
+   Two-column grid so half-width widgets share a row; full-width
+   widgets span both columns via the `.dock-widget-full` modifier on
+   their wrapper.
+   Scrolls itself (the parent dock has `overflow: hidden`) — adds
+   right padding equal to the scrollbar width so the scrollbar
+   never overlaps a widget's right edge. `scrollbar-gutter: stable`
+   reserves the space so widgets don't shift left when content
+   exceeds the available height vs not. */
+.right-dock-body {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-content: start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    /* Extra right padding sits between the widget cards and the
+       scrollbar so they never visually crowd. The padding lives
+       INSIDE the scroll container; `scrollbar-gutter: stable`
+       reserves the scrollbar slot in addition to this padding. */
+    padding-right: 16px;
+    min-height: 0;
+}
+
+.right-dock-body > .dock-widget-full {
+    grid-column: 1 / -1;
+}
+
+.right-dock-body > .dock-widget-half {
+    grid-column: span 1;
+    /* Inside a half cell we still want the widget to fill its grid
+       track — without this the per-widget `width: 100%` overrides
+       compute against the dock-widget div, which is already grid-
+       sized, so the widget naturally fits. Just make sure
+       overflow doesn't bleed past the cell. */
+    min-width: 0;
+}
+
+/* Empty-state and any non-widget descendant still spans the column. */
+.right-dock-body > .right-dock-empty {
+    grid-column: 1 / -1;
+}
+
+/* Footer holds the settings button and (when expanded) the widget
+   picker grid. Painted as a glass card so it reads as a control
+   surface against the otherwise transparent dock. */
+.right-dock-footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--sidebar-card);
+    border: 1px solid rgba(253, 246, 233, 0.06);
+    border-radius: var(--radius-xl, 16px);
+    backdrop-filter: blur(14px) saturate(110%);
+    -webkit-backdrop-filter: blur(14px) saturate(110%);
+}
+
+/* Widget picker grid — mirrors the LeftSidebar widget toggle row.
+   Each cell is a `.widget-icon` button; the LeftSidebar.css rules
+   for `.widget-icon` (sizing, hover, active glow) apply here too
+   since we use the same className. */
+.right-dock-picker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.right-dock-settings-btn {
+    width: 100%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--light);
+    padding: 10px 14px !important;
+    border-radius: var(--radius-lg, 12px);
+    transition: background 140ms ease;
+}
+
+.right-dock-settings-btn:hover {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+}
+
+/* Reset button — only visible while the picker is expanded. Lives
+   underneath the Settings button so it reads as a secondary action
+   for "wipe my dock layout back to defaults". Smaller / muted so
+   it doesn't compete with the primary Settings toggle. */
+.right-dock-reset-btn {
+    width: 100%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--light-muted);
+    padding: 6px 10px !important;
+    border-radius: var(--radius-md, 8px);
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.right-dock-reset-btn:hover {
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    color: var(--light);
+}
+
+/* Empty-state placeholder — visible until widgets get routed here.
+   The dock body itself is transparent (so widgets blend with the
+   photo), but the placeholder card needs a backing so the hint text
+   stays readable on any photo. Glass surface matches the footer. */
+.right-dock-empty {
+    margin: auto 0;
+    text-align: center;
+    color: var(--light);
+    padding: 22px 18px;
+    background: var(--sidebar-card);
+    border: 1px solid rgba(253, 246, 233, 0.08);
+    border-radius: var(--radius-xl, 16px);
+    backdrop-filter: blur(14px) saturate(110%);
+    -webkit-backdrop-filter: blur(14px) saturate(110%);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.right-dock-empty-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin-bottom: 6px;
+}
+
+.right-dock-empty-hint {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--light-muted);
+}

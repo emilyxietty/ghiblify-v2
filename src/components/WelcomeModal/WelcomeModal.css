@@ -5,7 +5,13 @@
 .welcome-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 6000;
+    /* Above both default sidebars (99999) AND the spotlight sidebar
+       (100001) so the cornered guide is never covered. The
+       spotlight pulse + ring still bleed visually past the guide
+       (it's positioned bottom-right, leaving the highlighted
+       sidebar region clear) — but if they ever overlap, the guide
+       wins. */
+    z-index: 100002;
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
@@ -16,6 +22,21 @@
     animation: welcome-backdrop-in 200ms ease both;
     transition: background 220ms ease, backdrop-filter 220ms ease,
         -webkit-backdrop-filter 220ms ease;
+}
+
+/* Narrow viewports during spotlight tour — the sidebar is force-
+   opened (430px wide, z=6500) and would otherwise cover the
+   centered welcome dialog. Push the dialog right past the sidebar
+   so both stay clickable side-by-side. Cornered/passthrough slides
+   (adjustTime / drag / right-click) live in the bottom-right corner
+   and never overlap the left sidebar, so they're excluded. */
+@media (max-width: 1023px) {
+    body.spotlight-active
+        .welcome-backdrop:not(.is-cornered-mode):not(.is-passthrough) {
+        justify-content: flex-end;
+        padding-left: calc(var(--sidebar-width, 430px) + 16px);
+        padding-right: 16px;
+    }
 }
 
 /* Cornered mode — adjustTime + drag slides park the dialog in the

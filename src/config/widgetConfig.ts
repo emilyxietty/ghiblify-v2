@@ -106,6 +106,11 @@ export interface WeatherSettings {
 // and the sidebar toggle row can include it. Settings and position are
 // unused.
 export type BookmarksSettings = Record<string, never>;
+// Right Sidebar is a meta-widget — toggling it on enables a persistent
+// right-side dock that hosts other widgets. Position and settings are
+// unused; the dock contents come from each widget's `inRightSidebar`
+// flag (added in a later chunk).
+export type RightSidebarSettings = Record<string, never>;
 export interface NotesSettings {
   width: number;
   height: number;
@@ -131,6 +136,7 @@ export interface WidgetSettingsMap {
   bookmarks: BookmarksSettings;
   weather: WeatherSettings;
   notes: NotesSettings;
+  rightSidebar: RightSidebarSettings;
 }
 
 export type WidgetKey = keyof WidgetSettingsMap;
@@ -148,6 +154,7 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "bookmarks",
   "weather",
   "notes",
+  "rightSidebar",
 ];
 
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
@@ -308,6 +315,15 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // it. Not user-resizable — no width/height ResizeBound.
     settings: { width: 260, height: 260, content: "", showBorder: true },
     customControls: { notesShowBorder: true },
+  },
+  rightSidebar: {
+    name: "Right Sidebar",
+    // Position unused — the right sidebar is a fixed-position dock,
+    // not a positioned tile. Visibility drives the dock surface; the
+    // dock's contents are routed there by each widget's
+    // inRightSidebar flag (introduced in a later chunk).
+    position: { x: 0, y: 0 },
+    settings: {},
   },
 };
 

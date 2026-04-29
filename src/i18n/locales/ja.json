@@ -90,6 +90,15 @@
       "percent": "%"
     }
   },
+  "rightDock": {
+    "emptyTitle": "右サイドバー",
+    "emptyHint": "下の設定ボタンを押して、ここに表示するウィジェットを選んでください。右サイドバーとキャンバスの両方に同時に置けます。",
+    "callout": "右サイドバー — 画面の右端にカーソルを合わせると開きます",
+    "settingsLabel": "設定",
+    "pickerLabel": "右サイドバーに表示するウィジェットを選択",
+    "resetLabel": "右サイドバーをリセット",
+    "resetConfirm": "右サイドバーの設定をすべてリセットしますか?キャンバスのウィジェットには影響しません。"
+  },
   "widgets": {
     "names": {
       "time": "時計",
@@ -103,16 +112,23 @@
       "avatar": "アバター",
       "bookmarks": "ブックマーク",
       "weather": "天気",
-      "notes": "付箋"
+      "notes": "付箋",
+      "rightSidebar": "右サイドバー"
     },
     "tooltip": {
       "show": "{{name}}を表示",
-      "hide": "{{name}}を非表示"
+      "hide": "{{name}}を非表示",
+      "disabledBy": "これを有効にするにはまず{{other}}を無効にしてください"
     },
     "contextMenu": {
       "edit": "{{name}}を編集",
       "drag": "{{name}}を移動",
       "hide": "{{name}}を非表示",
+      "showInRightSidebar": "右サイドバーに表示",
+      "hideFromRightSidebar": "右サイドバーから外す",
+      "dockWidthFull": "全幅",
+      "dockWidthHalf": "半幅",
+      "showBackground": "背景を表示",
       "time12": "12時間制",
       "time24": "24時間制",
       "addLink": "新しいリンクを追加",

@@ -18,6 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import StarIcon from "@mui/icons-material/Star";
 import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import TimerIcon from "@mui/icons-material/Timer";
+import VerticalSplitIcon from "@mui/icons-material/VerticalSplit";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
@@ -84,9 +85,14 @@ const WIDGET_TOGGLES: Array<{
   { key: "quicklinks", icon: <LinkIcon /> },
   { key: "searchbar", icon: <SearchIcon /> },
   { key: "pomodoro", icon: <TimerIcon /> },
-  { key: "bookmarks", icon: <BookmarksIcon /> },
   { key: "weather", icon: <WbSunnyIcon /> },
   { key: "notes", icon: <StickyNote2Icon /> },
+  // Edge-panel toggles live at the end, side-by-side. They're
+  // mutually exclusive (both occupy the right edge); grouping them
+  // last reads as "the right-edge picker" instead of being scattered
+  // mid-grid.
+  { key: "bookmarks", icon: <BookmarksIcon /> },
+  { key: "rightSidebar", icon: <VerticalSplitIcon /> },
 ];
 
 const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
@@ -197,6 +203,27 @@ export const LeftSidebar: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSocialsModal, setShowSocialsModal] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
+  // Force the palette collapsible open while the welcome guide is
+  // spotlighting the "palette" step so swatches are visible without
+  // the user having to expand it. We don't force it closed afterward
+  // — once the user has it open, leave it open.
+  const paletteDetailsRef = useRef<HTMLDetailsElement | null>(null);
+  useEffect(() => {
+    if (sidebarSpotlight === "palette" && paletteDetailsRef.current) {
+      paletteDetailsRef.current.open = true;
+    }
+  }, [sidebarSpotlight]);
+
+  // Mirror the spotlight state onto the body so the welcome modal's
+  // CSS can push its dialog clear of the force-opened sidebar on
+  // narrow viewports (otherwise the sidebar covers the dialog and
+  // makes it unreachable).
+  useEffect(() => {
+    if (sidebarSpotlight) {
+      document.body.classList.add("spotlight-active");
+      return () => document.body.classList.remove("spotlight-active");
+    }
+  }, [sidebarSpotlight]);
 
   // Close sidebar when entering edit mode
   useEffect(() => {
@@ -377,20 +404,48 @@ export const LeftSidebar: React.FC = () => {
                 // Weather toggle gets a live Meteocons icon matching
                 // current conditions, instead of the static sun fallback.
                 const renderedIcon = key === "weather" ? liveWeatherIcon : icon;
+                // Bookmarks and Right Sidebar both occupy the right
+                // edge — they're mutually exclusive. While one is on,
+                // disable the other's toggle and show a tooltip
+                // explaining why so the affordance isn't a mystery.
+                let blockedBy: WidgetKey | null = null;
+                if (key === "rightSidebar" && widgets.bookmarks.visible)
+                  blockedBy = "bookmarks";
+                else if (key === "bookmarks" && widgets.rightSidebar.visible)
+                  blockedBy = "rightSidebar";
+                const blockedTooltip = blockedBy
+                  ? t("widgets.tooltip.disabledBy", {
+                      other: t(`widgets.names.${blockedBy}`),
+                    })
+                  : null;
                 return (
                   <Button
                     key={key}
-                    className={`widget-icon${visible ? " active" : ""}`}
+                    className={`widget-icon${visible ? " active" : ""}${
+                      blockedBy ? " widget-icon-blocked" : ""
+                    }`}
                     icon={renderedIcon}
                     size="medium"
                     variant="transparent"
-                    onClick={() => toggleWidgetVisibility(key)}
-                    aria-label={t(
-                      visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
-                      { name },
-                    )}
+                    onClick={() => {
+                      // Keep the button enabled (so the tooltip
+                      // mouseover handler still fires) but no-op the
+                      // click while blocked. Tooltip explains why.
+                      if (blockedBy) return;
+                      toggleWidgetVisibility(key);
+                    }}
+                    aria-label={
+                      blockedTooltip ??
+                      t(
+                        visible
+                          ? "widgets.tooltip.hide"
+                          : "widgets.tooltip.show",
+                        { name },
+                      )
+                    }
                     aria-pressed={visible}
-                    data-tooltip={name}
+                    aria-disabled={!!blockedBy}
+                    data-tooltip={blockedTooltip ?? name}
                   />
                 );
               })}
@@ -453,7 +508,7 @@ export const LeftSidebar: React.FC = () => {
             aria-labelledby="appearance-heading"
           >
             <h4 id="appearance-heading">{t("sidebar.headings.appearance")}</h4>
-            <details className="filter-collapsible">
+            <details className="filter-collapsible" ref={paletteDetailsRef}>
               <summary className="filter-collapsible-summary">
                 <span>{t("sidebar.filters.heading")}</span>
                 <span className="collapsible-preview" aria-hidden="true">

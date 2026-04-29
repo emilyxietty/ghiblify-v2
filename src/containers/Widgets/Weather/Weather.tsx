@@ -1,5 +1,7 @@
 import React from "react";
 import { useAppContext } from "../../../contexts/AppContext";
+import { useDockSurface } from "../../../contexts/DockSurfaceContext";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import {
   useWeather,
   WeatherDaily,
@@ -74,7 +76,20 @@ const formatHour = (iso: string, is24Hour: boolean) => {
 const Weather: React.FC = () => {
   const t = useT();
   const { widgets } = useAppContext();
-  const settings = widgets.weather.settings;
+  const { settings: rawSettings } = useWidgetSettings("weather");
+  const inDock = useDockSurface();
+  const isHalfInDock =
+    inDock && widgets.weather.dockWidth === "half";
+  // Half-width dock cells aren't wide enough for the hourly /
+  // daily forecast strips — they wrap awkwardly. Force those off
+  // when rendering as a dock half. Stored settings are untouched;
+  // the user's full-width / canvas instance keeps its choice.
+  const settings = isHalfInDock
+    ? {
+        ...rawSettings,
+        sections: { ...rawSettings.sections, hourly: false, daily: false },
+      }
+    : rawSettings;
   const { data, loading, error } = useWeather(settings.unit);
 
   const unitSuffix = `°${settings.unit}`;

@@ -23,6 +23,19 @@
     --todo-danger: #ff8a8a;
 }
 
+/* Frost — `--dark-rgb` is white in this palette (Frost is a "dark
+   glass" theme where the photo behind shows through), so the
+   default Todo surface tints rgba(255,255,255,…). The hover state
+   bumps alpha to 0.7, which reads as a nearly-pure-white wash that
+   washes out the text. Pin Todo's surface to a fixed dark slate
+   instead so the glass card stays readable on hover. */
+.theme-frost .todo-container {
+    --todo-surface-rgb: 12, 18, 26;
+    --todo-text: rgba(255, 255, 255, 0.96);
+    --todo-text-muted: rgba(255, 255, 255, 0.6);
+    --todo-border: rgba(255, 255, 255, 0.18);
+}
+
 /* when collapsed, keep the same widget width so header doesn't re-center */
 .todo-container.collapsed {
     min-width: 100px;
@@ -129,7 +142,14 @@
 
 .todo-list {
     width: 100%;
-    max-height: 240px;
+    /* Fill the remaining vertical space inside the .todo-container
+       (which is a flex column sized to the widget's chosen height).
+       The previous `max-height: 240px` capped the list at ~5 items
+       even when the user dragged the widget tall enough to fit
+       more — `flex: 1 1 auto; min-height: 0` lets the scrollable
+       region expand to whatever's left after the input bar. */
+    flex: 1 1 auto;
+    min-height: 0;
     list-style: none;
     /* No right padding — the scrollbar (when present) takes its 6px
        directly from the content area at the right edge. Top padding

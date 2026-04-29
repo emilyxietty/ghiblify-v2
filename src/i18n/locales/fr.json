@@ -90,6 +90,15 @@
       "percent": "%"
     }
   },
+  "rightDock": {
+    "emptyTitle": "Barre latérale droite",
+    "emptyHint": "Cliquez sur le bouton Paramètres ci-dessous pour choisir les widgets à afficher ici. Ils peuvent vivre dans la barre latérale et sur le canevas en même temps.",
+    "callout": "Barre latérale droite — survolez le bord droit pour l'ouvrir",
+    "settingsLabel": "Paramètres",
+    "pickerLabel": "Choisissez les widgets à afficher dans la barre latérale droite",
+    "resetLabel": "Réinitialiser la barre latérale",
+    "resetConfirm": "Réinitialiser tous les paramètres de la barre latérale droite ? Les widgets du canevas ne sont pas affectés."
+  },
   "widgets": {
     "names": {
       "time": "Heure",
@@ -103,16 +112,23 @@
       "avatar": "Avatar",
       "bookmarks": "Marque-pages",
       "weather": "Météo",
-      "notes": "Note"
+      "notes": "Note",
+      "rightSidebar": "Barre latérale droite"
     },
     "tooltip": {
       "show": "Afficher le widget {{name}}",
-      "hide": "Masquer le widget {{name}}"
+      "hide": "Masquer le widget {{name}}",
+      "disabledBy": "Désactivez d'abord {{other}} pour activer celui-ci"
     },
     "contextMenu": {
       "edit": "Modifier {{name}}",
       "drag": "Déplacer {{name}}",
       "hide": "Masquer {{name}}",
+      "showInRightSidebar": "Afficher dans la barre latérale droite",
+      "hideFromRightSidebar": "Retirer de la barre latérale droite",
+      "dockWidthFull": "Pleine largeur",
+      "dockWidthHalf": "Demi-largeur",
+      "showBackground": "Afficher l'arrière-plan",
       "time12": "12 heures",
       "time24": "24 heures",
       "addLink": "Ajouter un lien",

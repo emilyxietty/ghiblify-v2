@@ -115,10 +115,42 @@ export interface BackgroundFilters {
   saturation: number;
 }
 
+export type WidgetDockWidth = "half" | "full";
+
 export type WidgetEntry<K extends WidgetKey> = {
   visible: boolean;
   position: WidgetPosition;
+  /** When true, render an instance of this widget in the right dock
+   *  IN ADDITION to its canvas placement. Independent of `visible`:
+   *  a widget can be shown on the canvas, in the dock, in both, or
+   *  in neither. Only takes effect while the `rightSidebar` widget
+   *  is enabled. */
+  inRightSidebar: boolean;
+  /** How wide this widget renders inside the dock — either the full
+   *  column or half (so two widgets share a row). Only meaningful
+   *  for widgets the picker / context-menu opts in (Weather, Time,
+   *  Date, Avatar, Notes). Other dock widgets always span full. */
+  dockWidth: WidgetDockWidth;
+  /** Optional translucent glass card around the widget content. Off
+   *  by default for "naked" widgets (Time, Date, Greeting, Info,
+   *  Avatar). Widgets that already have their own card (Weather,
+   *  Pomodoro, Todo, Notes) ignore this field; their built-in card
+   *  is the surface. Dock-only — the canvas instance ignores it. */
+  showBackground: boolean;
+  /** Position of this widget within the right dock's vertical
+   *  stack. Lower values render first. Defaults to a per-widget
+   *  fallback so newly-docked widgets land at a stable position
+   *  before the user has dragged anything. The user reorders via
+   *  drag-and-drop on the dock; that updates dockOrder for every
+   *  currently-docked widget so the indices stay sequential. */
+  dockOrder: number;
   settings: WidgetSettingsMap[K];
+  /** Overrides applied on top of `settings` when this widget renders
+   *  inside the right dock. Lets the user keep e.g. a different
+   *  weather unit / forecast layout in the dock vs the canvas
+   *  without forking the widget logic. Empty by default — when
+   *  empty, the dock instance reads canvas settings unchanged. */
+  dockSettings: Partial<WidgetSettingsMap[K]>;
 };
 
 export type WidgetsState = { [K in WidgetKey]: WidgetEntry<K> };
@@ -181,6 +213,34 @@ interface AppContextType {
     key: K,
     patch: Partial<WidgetSettingsMap[K]>
   ) => void;
+  /** Patch the dock-only override layer for a widget. Has no effect
+   *  on the canvas instance — the canvas reads `settings`. */
+  updateWidgetDockSettings: <K extends WidgetKey>(
+    key: K,
+    patch: Partial<WidgetSettingsMap[K]>
+  ) => void;
+  /** Move a widget between the canvas and the right dock. The dock
+   *  must already be enabled (rightSidebar widget visible) for the
+   *  move to be visible; toggling this off restores canvas
+   *  positioning. */
+  setWidgetInRightSidebar: (key: WidgetKey, value: boolean) => void;
+  /** Set how wide a widget should render inside the dock. "full"
+   *  spans the column; "half" lets two widgets share a row. Stored
+   *  per-widget so users can mix half + full. */
+  setWidgetDockWidth: (key: WidgetKey, value: WidgetDockWidth) => void;
+  /** Toggle the optional glass-card surface on widgets that don't
+   *  paint one by default (Time, Date, Greeting, Info, Avatar). */
+  setWidgetShowBackground: (key: WidgetKey, value: boolean) => void;
+  /** Reorder docked widgets. Pass the array of currently-docked
+   *  keys in the new desired order; this rewrites every entry's
+   *  `dockOrder` to its index in the array so the sequence stays
+   *  contiguous. Other widgets' dockOrder is left alone. */
+  reorderDockedWidgets: (orderedKeys: WidgetKey[]) => void;
+  /** Reset every dock-only field on every widget back to defaults
+   *  (inRightSidebar=false, dockWidth=full, showBackground=false,
+   *  dockOrder=canonical index, dockSettings={}). The canvas-side
+   *  state (visible, position, settings) is left alone. */
+  resetRightSidebar: () => void;
 
   resetAllWidgets: () => void;
 }
@@ -195,6 +255,7 @@ const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "avatar",
   "pomodoro",
   "notes",
+  "rightSidebar",
 ]);
 
 const buildDefaultWidgets = (): WidgetsState => {
@@ -204,7 +265,16 @@ const buildDefaultWidgets = (): WidgetsState => {
     (out as Record<WidgetKey, unknown>)[key] = {
       visible: !HIDDEN_BY_DEFAULT.has(key),
       position: { ...cfg.position },
+      inRightSidebar: false,
+      dockWidth: "full" as WidgetDockWidth,
+      showBackground: false,
+      // Default order matches the canonical WIDGET_KEYS index so a
+      // freshly-docked widget lands at a stable position before the
+      // user has reordered anything. The user's drag-and-drop
+      // reassigns sequential integers across all docked widgets.
+      dockOrder: WIDGET_KEYS.indexOf(key),
       settings: structuredClone(cfg.settings),
+      dockSettings: {},
     };
   }
   return out;
@@ -239,8 +309,15 @@ const persistWidgets = (state: WidgetsState) => {
     if (entry.visible !== defaultVisible) out.visible = entry.visible;
     if (!positionsEqual(entry.position, cfg.position))
       out.position = entry.position;
+    if (entry.inRightSidebar) out.inRightSidebar = true;
+    if (entry.dockWidth !== "full") out.dockWidth = entry.dockWidth;
+    if (entry.showBackground) out.showBackground = true;
+    if (entry.dockOrder !== WIDGET_KEYS.indexOf(key))
+      out.dockOrder = entry.dockOrder;
     const settingsDiff = diffSettings(entry.settings, cfg.settings);
     if (Object.keys(settingsDiff).length > 0) out.settings = settingsDiff;
+    if (entry.dockSettings && Object.keys(entry.dockSettings).length > 0)
+      out.dockSettings = entry.dockSettings;
     if (Object.keys(out).length > 0) minimal[key] = out;
   }
   if (Object.keys(minimal).length === 0) {
@@ -406,8 +483,18 @@ const loadInitialWidgets = (): WidgetsState => {
       if (!stored) continue;
       if (stored.visible !== undefined) entry.visible = !!stored.visible;
       if (stored.position) entry.position = stored.position;
+      if (stored.inRightSidebar !== undefined)
+        entry.inRightSidebar = !!stored.inRightSidebar;
+      if (stored.dockWidth === "half" || stored.dockWidth === "full")
+        entry.dockWidth = stored.dockWidth;
+      if (stored.showBackground !== undefined)
+        entry.showBackground = !!stored.showBackground;
+      if (typeof stored.dockOrder === "number")
+        entry.dockOrder = stored.dockOrder;
       if (stored.settings)
         entry.settings = { ...entry.settings, ...stored.settings };
+      if (stored.dockSettings && typeof stored.dockSettings === "object")
+        entry.dockSettings = { ...stored.dockSettings };
     }
     if (legacyQL && legacyQL.length) {
       // Persist the freshly-imported quick links into the modern
@@ -639,6 +726,73 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
+  const updateWidgetDockSettings = <K extends WidgetKey>(
+    key: K,
+    patch: Partial<WidgetSettingsMap[K]>
+  ) => {
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        dockSettings: { ...prev[key].dockSettings, ...patch },
+      },
+    }));
+  };
+
+  const setWidgetInRightSidebar = (key: WidgetKey, value: boolean) => {
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], inRightSidebar: value },
+    }));
+    // Nudge the dock to peek open when a widget lands in it, so the
+    // user sees where their widget went instead of watching it
+    // "vanish" off the canvas. RightDock listens for this event.
+    if (value) {
+      window.dispatchEvent(new CustomEvent("ghiblify:rightDock:peek"));
+    }
+  };
+
+  const setWidgetDockWidth = (key: WidgetKey, value: WidgetDockWidth) => {
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], dockWidth: value },
+    }));
+  };
+
+  const setWidgetShowBackground = (key: WidgetKey, value: boolean) => {
+    setWidgets((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], showBackground: value },
+    }));
+  };
+
+  const reorderDockedWidgets = (orderedKeys: WidgetKey[]) => {
+    setWidgets((prev) => {
+      const next = { ...prev };
+      orderedKeys.forEach((key, idx) => {
+        next[key] = { ...next[key], dockOrder: idx };
+      });
+      return next;
+    });
+  };
+
+  const resetRightSidebar = () => {
+    setWidgets((prev) => {
+      const next = { ...prev };
+      (WIDGET_KEYS as readonly WidgetKey[]).forEach((key) => {
+        next[key] = {
+          ...next[key],
+          inRightSidebar: false,
+          dockWidth: "full",
+          showBackground: false,
+          dockOrder: WIDGET_KEYS.indexOf(key),
+          dockSettings: {},
+        };
+      });
+      return next;
+    });
+  };
+
   const resetAllWidgets = () => {
     if (!window.confirm("Are you sure you want to reset all widgets to default?"))
       return;
@@ -684,6 +838,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         toggleWidgetVisibility,
         updateWidgetPosition,
         updateWidgetSettings,
+        updateWidgetDockSettings,
+        setWidgetInRightSidebar,
+        setWidgetDockWidth,
+        setWidgetShowBackground,
+        reorderDockedWidgets,
+        resetRightSidebar,
         resetAllWidgets,
       }}
     >

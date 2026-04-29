@@ -509,22 +509,28 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     }
   };
 
-  // adjustTime, drag, and rightClick all need the dialog moved out of
-  // the viewport center so the Time widget (and its open context
-  // menu) is fully visible above the dialog.
+  // adjustTime, drag, and rightClick still need their slide-specific
+  // styling hooks. Keep these flags so the right-click backdrop can
+  // duck under the demo ContextMenu (z=5500).
   const isAdjustTime = slideId === "adjustTime";
   const isDragSlide = slideId === "drag";
   const isRightClickSlide = slideId === "rightClick";
   const isPaletteSlide = slideId === "palette";
   const isBackgroundSlide = slideId === "background";
-  const isCorneredMode = isAdjustTime || isDragSlide || isRightClickSlide;
-  // Passthrough lets clicks land on the underlying surfaces (Time
-  // widget edit chrome, sidebar, demo context menu) instead of the
-  // backdrop. Palette and background slides keep their dim/blur
-  // visually but need passthrough so the user can click the spotlit
-  // sidebar regions.
-  const isPassthrough =
-    isCorneredMode || isPaletteSlide || isBackgroundSlide;
+  // Every slide now uses the cornered (bottom-right) layout so the
+  // guide reads as a persistent companion instead of a center-screen
+  // modal that obscures the widgets / sidebar / canvas it's pointing
+  // at. Passthrough goes hand-in-hand with cornered so the user can
+  // interact with the rest of the page (sidebar spotlight, time
+  // widget demo, palette pulse) while the guide stays put.
+  const isCorneredMode = true;
+  const isPassthrough = true;
+  // Suppress unused warnings — these are kept for slide-specific
+  // styling hooks even though they no longer gate cornered mode.
+  void isAdjustTime;
+  void isDragSlide;
+  void isPaletteSlide;
+  void isBackgroundSlide;
 
   return (
     <>

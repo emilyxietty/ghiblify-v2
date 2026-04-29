@@ -1,0 +1,287 @@
+/* DockWidget — vertical-stack tile inside the right dock. Sizes to
+   the dock column width and to its content's natural height.
+   Heavy use of !important here to override inline styles that the
+   canvas Widget / individual widget components apply (fontSize,
+   width, height, position) — they're all keyed to canvas
+   coordinates and would burst out of the dock column otherwise. */
+
+.dock-widget {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: var(--radius-lg, 12px);
+    position: relative;
+    /* Stack inner content vertically and let each widget fill the
+       column. Right-alignment is applied per-widget below — applying
+       it here cascaded into card widgets (Pomodoro, Todo, Notes,
+       Weather) and pushed their internal flex/text content against
+       the column edge so it looked clipped. */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    /* Drag-and-drop reorder — see DockWidget.tsx. */
+    cursor: grab;
+}
+
+.dock-widget:active {
+    cursor: grabbing;
+}
+
+/* While dragging, dim the source widget. The drag image (browser-
+   generated) shows the actual widget at the cursor; the original
+   stays visible-but-faded so the user can see where they're
+   dragging from. */
+.dock-widget.is-dragging {
+    opacity: 0.4;
+}
+
+/* Drop-target indicator — a colored line on the side the dropped
+   widget will land. Above the target = drop-before; below = drop-
+   after. Uses outline so it doesn't shift layout when toggling. */
+.dock-widget.drop-before::before,
+.dock-widget.drop-after::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: color-mix(in srgb, var(--yellow, #f6c560) 90%, transparent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--yellow, #f6c560) 70%, transparent);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.dock-widget.drop-before::before {
+    top: -7px;
+}
+
+.dock-widget.drop-after::after {
+    bottom: -7px;
+}
+
+/* Optional glass card around naked widgets — same idea as
+   .widget-show-bg on the canvas Widget shell, but applied at the
+   dock-widget level so the card stretches to fill the grid cell
+   (full or half). Pomodoro / Todo / Notes / Weather paint their own
+   cards and ignore this. */
+.dock-widget.dock-widget-show-bg .dock-widget-content {
+    padding: 14px 16px;
+    border-radius: var(--radius-lg, 12px);
+    background: rgba(
+        var(--dark-rgb, 31, 38, 32),
+        min(0.55, var(--surface-alpha-cap, 1))
+    );
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.theme-frost .dock-widget.dock-widget-show-bg .dock-widget-content {
+    background: rgba(12, 18, 26, 0.55);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.96);
+}
+
+.dock-widget,
+.dock-widget * {
+    /* Hard cap — nothing inside a docked widget can exceed the
+       column. Stops Quicklinks' 600px width and Searchbar's 550px
+       from bursting out of the 360px dock. */
+    max-width: 100% !important;
+}
+
+.dock-widget-content {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* The canvas Widget wrapper carries `position: absolute`, free
+   coordinates (left/top), and a transform translate. None of that
+   makes sense in the dock's vertical flow — reset to relative,
+   natural-flow, full-column-width. */
+.dock-widget .widget {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+}
+
+/* --- Per-widget caps ---------------------------------------------------
+   Each widget hard-codes its own style.fontSize / style.width /
+   style.height from settings. Override the most disruptive cases so
+   they fit the dock column at a reasonable size. The user's stored
+   settings are preserved — they apply on the canvas instance; the
+   dock just renders the widget at dock-friendly dimensions. */
+
+/* Time — canvas default is 200px font; cap to 56px in the dock. */
+.dock-widget .time-container {
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+}
+
+.dock-widget .time {
+    font-size: 56px !important;
+    line-height: 1.05 !important;
+    text-align: right !important;
+}
+
+.dock-widget .time .time-period {
+    font-size: 13px !important;
+}
+
+/* Date — its container is `align-items: center` by default. Flip
+   to flex-end + right text so the date sits flush to the right
+   edge of the dock column / half-cell. */
+.dock-widget .date-container {
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    text-align: right !important;
+}
+
+.dock-widget .date {
+    font-size: 18px !important;
+    text-align: right !important;
+}
+
+/* Info — defaults to center-aligned flex column with center text;
+   the items themselves are also center-aligned via .info-item.
+   Override all three so the film info reads right-aligned. */
+.dock-widget .info-container,
+.dock-widget .info-wrapper {
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    text-align: right !important;
+}
+
+.dock-widget .info-container,
+.dock-widget .info-item {
+    font-size: 14px !important;
+    text-align: right !important;
+}
+
+/* Notes — its inline width/height pin a square footprint that's
+   often larger than the dock column. Drop both so the textarea
+   fills its dock cell. */
+.dock-widget .notes-widget {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+}
+
+/* Todo — fill the column width and grow with content up to half the
+   viewport height. The internal `.todo-list` scrolls when content
+   exceeds the cap. The Todo root class is `.todo-container` (not
+   `-widget`); both are kept here in case markup changes. */
+.dock-widget .todo-container,
+.dock-widget .todo-widget {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 50vh !important;
+    /* Override stored canvas width — Todo writes
+       `widgets.todo.settings.width/height` to inline styles for the
+       canvas drag-resize feature. The dock ignores those. */
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Inner list: stretch to fill the remaining vertical space inside
+   the 50vh-capped container instead of being pinned to its own
+   240px / 360px max. */
+.dock-widget .todo-list {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+}
+
+/* Avatar — cap the image to a sensible thumbnail and pin the
+   container to the right edge so the image sits flush-right. */
+.dock-widget .avatar-image,
+.dock-widget .avatar-container img {
+    width: 80px !important;
+    height: 80px !important;
+}
+
+.dock-widget .avatar-container {
+    align-items: flex-end !important;
+    text-align: right !important;
+}
+
+/* Weather — let the card and its strips fill the dock cell. The
+   widget's own `.weather-widget` has padding + showCard styling
+   that's already self-contained, so we just need to stretch the
+   width when full, and tighten typography in a half-cell so "now"
+   + the temperature don't overflow a ~150px column. */
+.dock-widget .weather-widget {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.dock-widget-half .weather-widget {
+    /* Tighter type for the half-width cell. The current temperature
+       reads as the dominant glyph; everything else shrinks. */
+    font-size: 12px !important;
+}
+
+.dock-widget-half .weather-temp {
+    font-size: 28px !important;
+    line-height: 1.05 !important;
+}
+
+.dock-widget-half .weather-current {
+    gap: 4px !important;
+}
+
+.dock-widget-half .weather-icon {
+    width: 36px !important;
+    height: 36px !important;
+}
+
+/* Hourly + daily forecast strips: allow horizontal scroll inside
+   the dock so a 7-cell row doesn't wrap or burst the column. The
+   canvas widget renders these without scroll because it's wide
+   enough; in the dock the column is fixed at <350px and we need
+   the user to swipe through. */
+.dock-widget .weather-strip {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    /* Hint the OS to expose a slim native scrollbar. Hidden by
+       default on macOS overlay scrollbars, visible on Windows. */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.dock-widget .weather-strip-cell {
+    flex: 0 0 auto;
+}
+
+/* Slim webkit scrollbar so the strip doesn't visually crowd the
+   surrounding card padding. */
+.dock-widget .weather-strip::-webkit-scrollbar {
+    height: 6px;
+}
+
+.dock-widget .weather-strip::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+}
+
+.dock-widget .weather-strip::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Hide the canvas widget's edit chrome (resize handle, edit pencil)
+   inside the dock — sizing is dock-controlled, not user-tunable
+   here. */
+.dock-widget .resize-handle,
+.dock-widget .widget-edit-button,
+.dock-widget .widget-pin-button {
+    display: none !important;
+}

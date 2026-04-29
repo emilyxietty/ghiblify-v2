@@ -90,6 +90,15 @@
       "percent": "%"
     }
   },
+  "rightDock": {
+    "emptyTitle": "右侧栏",
+    "emptyHint": "点击下方的「设置」按钮选择要在这里显示的小组件。它们可以同时出现在右侧栏和画布上。",
+    "callout": "右侧栏 — 将鼠标移到屏幕右侧打开",
+    "settingsLabel": "设置",
+    "pickerLabel": "选择要在右侧栏显示的小组件",
+    "resetLabel": "重置右侧栏",
+    "resetConfirm": "重置所有右侧栏设置吗?画布上的小组件不受影响。"
+  },
   "widgets": {
     "names": {
       "time": "时间",
@@ -103,16 +112,23 @@
       "avatar": "头像",
       "bookmarks": "书签",
       "weather": "天气",
-      "notes": "便签"
+      "notes": "便签",
+      "rightSidebar": "右侧栏"
     },
     "tooltip": {
       "show": "显示 {{name}} 小组件",
-      "hide": "隐藏 {{name}} 小组件"
+      "hide": "隐藏 {{name}} 小组件",
+      "disabledBy": "请先关闭{{other}},才能启用此项"
     },
     "contextMenu": {
       "edit": "编辑 {{name}}",
       "drag": "拖动 {{name}}",
       "hide": "隐藏 {{name}}",
+      "showInRightSidebar": "在右侧栏显示",
+      "hideFromRightSidebar": "从右侧栏隐藏",
+      "dockWidthFull": "整宽",
+      "dockWidthHalf": "半宽",
+      "showBackground": "显示背景",
       "time12": "12 小时制",
       "time24": "24 小时制",
       "addLink": "添加新链接",

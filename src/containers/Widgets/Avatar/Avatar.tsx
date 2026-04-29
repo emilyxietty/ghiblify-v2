@@ -2,7 +2,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import React from "react";
 import { AVATAR_OPTIONS } from "../../../config/avatarConfig";
-import { useAppContext } from "../../../contexts/AppContext";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import "./Avatar.css";
 
 interface AvatarProps {
@@ -10,8 +10,12 @@ interface AvatarProps {
 }
 
 export const Avatar: React.FC<AvatarProps> = () => {
-  const { widgets, updateWidgetSettings } = useAppContext();
-  const { selectedAvatar: avatar, size: avatarSize } = widgets.avatar.settings;
+  // Reads canvas settings on canvas, dock-merged settings in the
+  // dock — so each surface keeps its own selectedAvatar without
+  // forking the component. Cycle arrows write to whichever surface
+  // they're on.
+  const { settings, updateSettings } = useWidgetSettings("avatar");
+  const { selectedAvatar: avatar, size: avatarSize } = settings;
 
   const currentIndex = AVATAR_OPTIONS.findIndex((a) => a.value === avatar);
   const avatarData =
@@ -21,14 +25,14 @@ export const Avatar: React.FC<AvatarProps> = () => {
     e.stopPropagation();
     const next =
       currentIndex <= 0 ? AVATAR_OPTIONS.length - 1 : currentIndex - 1;
-    updateWidgetSettings("avatar", { selectedAvatar: AVATAR_OPTIONS[next].value });
+    updateSettings({ selectedAvatar: AVATAR_OPTIONS[next].value });
   };
 
   const cycleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     const next =
       currentIndex === AVATAR_OPTIONS.length - 1 ? 0 : currentIndex + 1;
-    updateWidgetSettings("avatar", { selectedAvatar: AVATAR_OPTIONS[next].value });
+    updateSettings({ selectedAvatar: AVATAR_OPTIONS[next].value });
   };
 
   return (

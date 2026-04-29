@@ -7,6 +7,8 @@ import { Button } from "./components/Button/Button";
 import WelcomeModal from "./components/WelcomeModal/WelcomeModal";
 import { Background } from "./containers/Background/Background";
 import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
+import { DockWidget } from "./containers/RightDock/DockWidget";
+import { RightDock } from "./containers/RightDock/RightDock";
 import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
 import { Widget } from "./containers/Widget/Widget";
 import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
@@ -22,6 +24,7 @@ import SearchBar from "./containers/Widgets/SearchBar/SearchBar";
 import { Time } from "./containers/Widgets/Time/Time";
 import { Todo } from "./containers/Widgets/Todo/Todo";
 import Weather from "./containers/Widgets/Weather/Weather";
+import { WidgetKey } from "./config/widgetConfig";
 import { AppProvider, useAppContext } from "./contexts/AppContext";
 import { useBackground } from "./hooks/useBackground";
 import { useInfoConfig } from "./hooks/useInfoConfig";
@@ -192,6 +195,67 @@ const AppContent: React.FC = () => {
       )}
       <LeftSidebar />
       <RightSidebar visible={widgets.bookmarks.visible} />
+      {(() => {
+        // The dock surface is independent of the canvas: a widget can
+        // appear in the dock, on the canvas, in both, or in neither.
+        // We render whatever has `inRightSidebar: true` here and
+        // leave canvas placement (driven by `visible`) untouched.
+        // RightDock is always mounted (gated internally on `visible`)
+        // so it can detect the off→on transition and fire its hint
+        // callout, the same way the bookmarks RightSidebar does.
+        // Excludes greeting, quicklinks, searchbar, and pomodoro —
+        // their canvas-tuned layouts don't compress cleanly into the
+        // dock column, so they're canvas-only by design.
+        const dockEntries: Array<{
+          key: WidgetKey;
+          element: React.ReactNode;
+        }> = [
+          { key: "time", element: <Time /> },
+          { key: "date", element: <DateDisplay /> },
+          { key: "todo", element: <Todo /> },
+          {
+            key: "info",
+            element:
+              !bgLoading && !infoLoading ? (
+                <Info
+                  titlejp={titlejp}
+                  title={title}
+                  year={year}
+                  screentime={screentime}
+                  quote={quote}
+                />
+              ) : null,
+          },
+          {
+            key: "avatar",
+            element: !bgLoading && !infoLoading ? <Avatar /> : null,
+          },
+          { key: "weather", element: <Weather /> },
+          { key: "notes", element: <Notes /> },
+        ];
+        const docked = dockEntries
+          .filter((e) => widgets[e.key].inRightSidebar && e.element)
+          // Render in user-defined order. dockOrder is an integer
+          // assigned by `reorderDockedWidgets` after a drag, or the
+          // canonical WIDGET_KEYS index when the user hasn't dragged
+          // yet — both produce a stable sort.
+          .sort(
+            (a, b) =>
+              widgets[a.key].dockOrder - widgets[b.key].dockOrder,
+          );
+        return (
+          <RightDock
+            visible={widgets.rightSidebar.visible}
+            hasWidgets={docked.length > 0}
+          >
+            {docked.map((e) => (
+              <DockWidget key={e.key} storageKey={e.key} visible={true}>
+                {e.element}
+              </DockWidget>
+            ))}
+          </RightDock>
+        );
+      })()}
       {(showWidgetEdits || editingWidgetKey || dragMode) && (
         <div className="edit-toggle-button">
           <Button

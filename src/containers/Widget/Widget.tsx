@@ -76,6 +76,9 @@ export const Widget: React.FC<WidgetProps> = ({
     editingWidgetKey,
     setEditingWidgetKey,
     toggleWidgetVisibility,
+    setWidgetInRightSidebar,
+    setWidgetDockWidth,
+    setWidgetShowBackground,
     dragMode,
     setDragMode,
     appearance,
@@ -157,23 +160,45 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging(isResizing);
   }, [isResizing, setIsDragging]);
 
-  // Show widget outlines when Shift is held
+  // Show widget outlines while Shift is held. The naive
+  // keydown/keyup pair gets stuck on if the user holds Shift, clicks
+  // something that focuses an input or steals the keyup (a portal
+  // handler with stopPropagation, a tab switch, alt-tab, etc.), then
+  // releases Shift outside this window. Belt-and-suspenders below:
+  //
+  //   keydown  → add the class on Shift down
+  //   keyup    → remove on Shift up (the happy path)
+  //   mousedown→ if shift isn't held when a click lands, force the
+  //              class off (catches the missed keyup)
+  //   blur     → window losing focus means we can't trust shift state
+  //   visibilitychange → tab switched away → same idea
   useEffect(() => {
+    const off = () => document.body.classList.remove("show-widget-outline");
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Shift") {
         document.body.classList.add("show-widget-outline");
       }
     }
     function handleKeyUp(e: KeyboardEvent) {
-      if (e.key === "Shift") {
-        document.body.classList.remove("show-widget-outline");
-      }
+      if (e.key === "Shift") off();
+    }
+    function handleMouseDown(e: MouseEvent) {
+      if (!e.shiftKey) off();
+    }
+    function handleVisibility() {
+      if (document.hidden) off();
     }
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("blur", off);
+    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("blur", off);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 
@@ -638,6 +663,9 @@ export const Widget: React.FC<WidgetProps> = ({
             setEditingWidgetKey,
             toggleWidgetVisibility,
             updateWidgetSettings,
+            setWidgetInRightSidebar,
+            setWidgetDockWidth,
+            setWidgetShowBackground,
             setDragMode,
             isFrost: appearance.theme === "frost",
           })}
@@ -659,7 +687,15 @@ const INFO_FIELD_KEYS = [
 // in EditWidget so users get the same toggles without entering edit
 // mode. Multi-select options become cascading submenus to keep the
 // root menu compact.
-function buildContextMenuItems(args: {
+//
+// `mode` selects the surface:
+//   "canvas" — full menu (Edit, Drag, Hide + extras). Hide toggles
+//     `visible`, removing the widget from BOTH canvas and dock.
+//   "dock"   — Edit/Drag are dropped (no-op in the dock; sizing is
+//     hard-coded). Hide only flips `inRightSidebar` so the canvas
+//     state is untouched. Settings extras come first since they're
+//     the user's primary use of right-click in the dock.
+export function buildContextMenuItems(args: {
   storageKey: WidgetKey;
   widgets: ReturnType<typeof useAppContext>["widgets"];
   t: (key: string, vars?: Record<string, string | number>) => string;
@@ -668,8 +704,12 @@ function buildContextMenuItems(args: {
   updateWidgetSettings: ReturnType<
     typeof useAppContext
   >["updateWidgetSettings"];
+  setWidgetInRightSidebar: (k: WidgetKey, value: boolean) => void;
+  setWidgetDockWidth: (k: WidgetKey, value: "half" | "full") => void;
+  setWidgetShowBackground: (k: WidgetKey, value: boolean) => void;
   setDragMode: (b: boolean) => void;
   isFrost: boolean;
+  mode?: "canvas" | "dock";
 }): ContextMenuItem[] {
   const {
     storageKey,
@@ -678,31 +718,38 @@ function buildContextMenuItems(args: {
     setEditingWidgetKey,
     toggleWidgetVisibility,
     updateWidgetSettings,
+    setWidgetInRightSidebar,
+    setWidgetDockWidth,
+    setWidgetShowBackground,
     setDragMode,
     isFrost,
+    mode = "canvas",
   } = args;
 
   const widgetName = t(`widgets.names.${storageKey}`);
-  const universal: ContextMenuItem[] = [
-    {
-      type: "action",
-      label: t("widgets.contextMenu.edit", { name: widgetName }),
-      onClick: () => setEditingWidgetKey(storageKey),
-      icon: <EditIcon style={{ fontSize: 14 }} />,
-    },
-    {
-      type: "action",
-      label: t("widgets.contextMenu.drag", { name: widgetName }),
-      onClick: () => setDragMode(true),
-      icon: <OpenWithIcon style={{ fontSize: 14 }} />,
-    },
-    {
-      type: "action",
-      label: t("widgets.contextMenu.hide", { name: widgetName }),
-      onClick: () => toggleWidgetVisibility(storageKey),
-      icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
-    },
-  ];
+  const universal: ContextMenuItem[] =
+    mode === "canvas"
+      ? [
+          {
+            type: "action",
+            label: t("widgets.contextMenu.edit", { name: widgetName }),
+            onClick: () => setEditingWidgetKey(storageKey),
+            icon: <EditIcon style={{ fontSize: 14 }} />,
+          },
+          {
+            type: "action",
+            label: t("widgets.contextMenu.drag", { name: widgetName }),
+            onClick: () => setDragMode(true),
+            icon: <OpenWithIcon style={{ fontSize: 14 }} />,
+          },
+          {
+            type: "action",
+            label: t("widgets.contextMenu.hide", { name: widgetName }),
+            onClick: () => toggleWidgetVisibility(storageKey),
+            icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
+          },
+        ]
+      : [];
 
   let extras: ContextMenuItem[] = [];
 
@@ -748,7 +795,15 @@ function buildContextMenuItems(args: {
     ];
   } else if (storageKey === "weather") {
     const s = widgets.weather.settings as WeatherSettings;
-    const sectionKeys = ["now", "hourly", "daily"] as const;
+    // Half-width dock cells aren't wide enough for the hourly /
+    // daily forecast strips, so hide those toggles entirely there
+    // — only "Now" stays selectable. The Weather component also
+    // forces those sections off at render time as a safety net.
+    const isHalfDock =
+      mode === "dock" && widgets.weather.dockWidth === "half";
+    const sectionKeys = isHalfDock
+      ? (["now"] as const)
+      : (["now", "hourly", "daily"] as const);
     const onlyOneOn =
       sectionKeys.filter((k) => s.sections[k]).length <= 1;
 
@@ -899,6 +954,76 @@ function buildContextMenuItems(args: {
     ];
   }
 
+  if (mode === "dock") {
+    // Optional glass-card surface for "naked" widgets that don't
+    // paint their own card by default (Time, Date, Greeting, Info,
+    // Avatar). Dock-only — the canvas widget stays naked so the
+    // user's chosen layout reads against the photo background.
+    // Weather has its own showCard toggle; Pomodoro / Todo / Notes
+    // ship with a card unconditionally — they're omitted here.
+    const SUPPORTS_BACKGROUND: WidgetKey[] = [
+      "time",
+      "date",
+      "greeting",
+      "info",
+      "avatar",
+    ];
+    if (SUPPORTS_BACKGROUND.includes(storageKey)) {
+      const showBg = widgets[storageKey].showBackground;
+      extras.push({
+        type: "checkbox",
+        label: t("widgets.contextMenu.showBackground"),
+        checked: showBg,
+        onClick: () => setWidgetShowBackground(storageKey, !showBg),
+      });
+    }
+
+    // Dock layout: settings first (the primary reason to right-click
+    // here), then a half/full width control (where allowed), then
+    // Hide.
+    //
+    // Some widgets are locked to a specific size in the dock and
+    // skip the half/full radio entirely:
+    //   Todo/Info — content-dense, half-cell breaks them.
+    //   Avatar   — small image tile, full-row reads as empty space.
+    const FULL_WIDTH_ONLY: WidgetKey[] = ["todo", "info"];
+    const HALF_WIDTH_ONLY: WidgetKey[] = ["avatar"];
+    const allowHalf =
+      !FULL_WIDTH_ONLY.includes(storageKey) &&
+      !HALF_WIDTH_ONLY.includes(storageKey);
+    const currentDockWidth = widgets[storageKey].dockWidth;
+    const widthControls: ContextMenuItem[] = allowHalf
+      ? [
+          {
+            type: "radio",
+            label: t("widgets.contextMenu.dockWidthFull"),
+            selected: currentDockWidth === "full",
+            onClick: () => setWidgetDockWidth(storageKey, "full"),
+          },
+          {
+            type: "radio",
+            label: t("widgets.contextMenu.dockWidthHalf"),
+            selected: currentDockWidth === "half",
+            onClick: () => setWidgetDockWidth(storageKey, "half"),
+          },
+        ]
+      : [];
+    const dockHide: ContextMenuItem = {
+      type: "action",
+      label: t("widgets.contextMenu.hide", { name: widgetName }),
+      onClick: () => setWidgetInRightSidebar(storageKey, false),
+      icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
+    };
+    const out: ContextMenuItem[] = [];
+    if (extras.length) {
+      out.push(...extras, { type: "separator" });
+    }
+    if (widthControls.length) {
+      out.push(...widthControls, { type: "separator" });
+    }
+    out.push(dockHide);
+    return out;
+  }
   return extras.length
     ? [...universal, { type: "separator" }, ...extras]
     : universal;

@@ -90,6 +90,15 @@
       "percent": "%"
     }
   },
+  "rightDock": {
+    "emptyTitle": "오른쪽 사이드바",
+    "emptyHint": "아래 설정 버튼을 눌러 여기에 표시할 위젯을 선택하세요. 오른쪽 사이드바와 캔버스에 동시에 둘 수 있습니다.",
+    "callout": "오른쪽 사이드바 — 화면 오른쪽 끝으로 마우스를 가져가면 열립니다",
+    "settingsLabel": "설정",
+    "pickerLabel": "오른쪽 사이드바에 표시할 위젯 선택",
+    "resetLabel": "오른쪽 사이드바 초기화",
+    "resetConfirm": "오른쪽 사이드바 설정을 모두 초기화할까요? 캔버스 위젯에는 영향이 없습니다."
+  },
   "widgets": {
     "names": {
       "time": "시계",
@@ -103,16 +112,23 @@
       "avatar": "아바타",
       "bookmarks": "북마크",
       "weather": "날씨",
-      "notes": "스티키 노트"
+      "notes": "스티키 노트",
+      "rightSidebar": "오른쪽 사이드바"
     },
     "tooltip": {
       "show": "{{name}} 위젯 표시",
-      "hide": "{{name}} 위젯 숨기기"
+      "hide": "{{name}} 위젯 숨기기",
+      "disabledBy": "이것을 활성화하려면 먼저 {{other}}을(를) 비활성화하세요"
     },
     "contextMenu": {
       "edit": "{{name}} 편집",
       "drag": "{{name}} 이동",
       "hide": "{{name}} 숨기기",
+      "showInRightSidebar": "오른쪽 사이드바에 표시",
+      "hideFromRightSidebar": "오른쪽 사이드바에서 숨기기",
+      "dockWidthFull": "전체 너비",
+      "dockWidthHalf": "반 너비",
+      "showBackground": "배경 표시",
       "time12": "12시간제",
       "time24": "24시간제",
       "addLink": "새 링크 추가",

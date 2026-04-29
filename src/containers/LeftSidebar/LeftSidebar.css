@@ -35,14 +35,15 @@
 
 /* ---------------------------------------------------------------------------
    Welcome-modal spotlight tour. The sidebar is force-opened, lifted
-   above the modal backdrop (z-index 6000), and a per-target pulse
-   animation highlights the relevant area. The sidebar stays fully
-   interactive — users can click the highlighted control without
-   closing the guide modal behind it.
+   above the modal backdrop (which sits at 100000, above the default
+   sidebar tier of 99999), and a per-target pulse animation
+   highlights the relevant area. The sidebar stays fully interactive
+   — users can click the highlighted control without closing the
+   guide modal behind it.
    --------------------------------------------------------------------------- */
 
 .left-sidebar.sidebar-spotlight {
-    z-index: 6500;
+    z-index: 100001;
     transform: translateX(0);
     pointer-events: auto;
 }
@@ -393,6 +394,22 @@
    with the warm yellow used for decorative accents elsewhere. */
 .widget-icon.active {
     background: color-mix(in srgb, var(--green) 22%, transparent);
+}
+
+/* Blocked = the toggle is unavailable because its mutually-exclusive
+   sibling is currently on (bookmarks vs right sidebar — both occupy
+   the right edge so we only allow one at a time). The button stays
+   enabled so the data-tooltip handler still fires; click is no-op. */
+.widget-icon.widget-icon-blocked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.widget-icon.widget-icon-blocked:hover,
+.widget-icon.widget-icon-blocked:active {
+    background: transparent;
+    transform: none;
+    box-shadow: none;
 }
 
 .widget-icon.active svg {

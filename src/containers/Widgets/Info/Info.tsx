@@ -1,5 +1,5 @@
 import React from "react";
-import { useAppContext } from "../../../contexts/AppContext";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import "./Info.css";
 
 interface InfoProps {
@@ -17,8 +17,12 @@ export const Info: React.FC<InfoProps> = ({
   screentime,
   quote,
 }) => {
-  const { widgets } = useAppContext();
-  const { infoFields, fontSize } = widgets.info.settings;
+  // Reads canvas settings on canvas, dock-merged settings in the
+  // dock — so the user can show different fields in each surface
+  // (e.g. just title + quote on the canvas, full breakdown in the
+  // dock) without forking the component.
+  const { settings } = useWidgetSettings("info");
+  const { infoFields, fontSize } = settings;
 
   return (
     <div className="info-container" style={{ fontSize: `${fontSize}px` }}>
