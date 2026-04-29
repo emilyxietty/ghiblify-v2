@@ -127,6 +127,35 @@
     flex-wrap: wrap;
 }
 
+/* Version chip beneath the bottom button group — small, muted text
+   that doubles as a click target opening the changelog modal. Sits
+   centered below the row so it reads as meta-info rather than a
+   primary action. */
+.sidebar-version {
+    align-self: center;
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    border-radius: var(--radius-pill, 999px);
+    color: var(--light-muted);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease,
+        border-color 140ms ease;
+}
+
+.sidebar-version:hover,
+.sidebar-version:focus-visible {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border-color: color-mix(in srgb, var(--light) 30%, transparent);
+    color: var(--light);
+    outline: none;
+}
+
 /* Language picker sits inline beside Rate / Report. The base
    .dropdown is `width: 100%`, which would push our two siblings
    onto the next line. Force the wrapper AND the inner toggle button

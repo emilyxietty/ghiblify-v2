@@ -13,6 +13,12 @@
     "exit": "Quitter",
     "offlineCallout": "Wi-Fi indisponible"
   },
+  "changelog": {
+    "title": "Nouveautés",
+    "intro": "Mises à jour récentes de Ghiblify.",
+    "openTooltip": "Voir les changements récents",
+    "openAria": "Voir le journal des modifications (version actuelle v{{version}})"
+  },
   "themes": {
     "ghibli": "Ghibli",
     "spirited": "Le Voyage de Chihiro",

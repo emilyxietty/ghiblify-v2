@@ -13,6 +13,12 @@
     "exit": "Exit",
     "offlineCallout": "Wi-Fi is not currently available"
   },
+  "changelog": {
+    "title": "What's new",
+    "intro": "Recent updates to Ghiblify. Click any version to recap what shipped.",
+    "openTooltip": "View recent changes",
+    "openAria": "View changelog (current version v{{version}})"
+  },
   "themes": {
     "ghibli": "Ghibli",
     "spirited": "Spirited Away",

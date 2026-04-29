@@ -22,7 +22,9 @@ import VerticalSplitIcon from "@mui/icons-material/VerticalSplit";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import React, { useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
+import { ChangelogModal } from "../../components/ChangelogModal/ChangelogModal";
 import ReportModal from "../../components/ReportModal/ReportModal";
+import { CHANGELOG } from "../../changelog";
 import SocialsModal from "../../components/SocialsModal/SocialsModal";
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
@@ -202,6 +204,7 @@ export const LeftSidebar: React.FC = () => {
   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSocialsModal, setShowSocialsModal] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
   // Force the palette collapsible open while the welcome guide is
   // spotlighting the "palette" step so swatches are visible without
@@ -831,6 +834,22 @@ export const LeftSidebar: React.FC = () => {
               onChange={(code) => setLocale(code)}
             />
           </div>
+
+          {/* Version chip — clickable, opens the changelog modal so
+              users can see what shipped recently. Reads the manifest
+              version from CHANGELOG[0] (the most recent entry) so
+              we don't drift between the chip and the JSON. */}
+          <button
+            type="button"
+            className="sidebar-version"
+            onClick={() => setShowChangelog(true)}
+            aria-label={t("changelog.openAria", {
+              version: CHANGELOG[0]?.version ?? "",
+            })}
+            data-tooltip={t("changelog.openTooltip")}
+          >
+            v{CHANGELOG[0]?.version ?? ""}
+          </button>
         </div>
       </aside>
       {showBackgroundSettings && (
@@ -842,6 +861,10 @@ export const LeftSidebar: React.FC = () => {
       <ReportModal
         open={showReportModal}
         onClose={() => setShowReportModal(false)}
+      />
+      <ChangelogModal
+        open={showChangelog}
+        onClose={() => setShowChangelog(false)}
       />
       <SocialsModal
         open={showSocialsModal}

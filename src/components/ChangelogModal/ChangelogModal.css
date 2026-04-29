@@ -1,0 +1,143 @@
+/* Changelog modal — same visual language as ReportModal so the two
+   sidebar-spawned dialogs feel like siblings. Backdrop dim/blur,
+   centered card, rounded close button in the corner. */
+
+.changelog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: changelog-backdrop-in 200ms ease both;
+}
+
+@keyframes changelog-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.changelog-dialog {
+    position: relative;
+    width: min(520px, 100%);
+    max-height: min(78vh, 640px);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.96);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: 28px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    animation: changelog-dialog-in 240ms cubic-bezier(0.32, 0.72, 0.32, 1)
+        both;
+    outline: none;
+}
+
+@keyframes changelog-dialog-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.changelog-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--light-muted);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.changelog-close:hover,
+.changelog-close:focus-visible {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+    outline: none;
+}
+
+.changelog-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.changelog-intro {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--light-muted);
+}
+
+.changelog-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    /* The dialog has its own height cap; the list scrolls when the
+       full release history exceeds that. */
+    min-height: 0;
+}
+
+.changelog-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.changelog-entry-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--light) 12%, transparent);
+}
+
+.changelog-version {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--light);
+}
+
+.changelog-date {
+    font-size: 12px;
+    color: var(--light-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.changelog-highlights {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--light);
+}
+
+.changelog-highlights li::marker {
+    color: color-mix(in srgb, var(--light) 50%, transparent);
+}

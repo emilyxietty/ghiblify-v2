@@ -13,6 +13,12 @@
     "exit": "종료",
     "offlineCallout": "Wi-Fi를 사용할 수 없습니다"
   },
+  "changelog": {
+    "title": "새로운 기능",
+    "intro": "Ghiblify의 최근 업데이트입니다.",
+    "openTooltip": "최근 변경 사항 보기",
+    "openAria": "변경 로그 보기 (현재 버전 v{{version}})"
+  },
   "themes": {
     "ghibli": "지브리",
     "spirited": "센과 치히로",
