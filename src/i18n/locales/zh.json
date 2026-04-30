@@ -51,7 +51,9 @@
       "petal": "花瓣",
       "bubble": "泡泡",
       "heart": "爱心",
-      "leaf": "叶子"
+      "leaf": "叶子",
+      "strawberry": "草莓",
+      "rainbow": "彩虹"
     },
     "buttons": {
       "githubRepo": "Github 仓库",
@@ -90,10 +92,6 @@
       "saturation": "饱和度",
       "parallax": "视差效果",
       "parallaxTooltip": "光标移动时背景照片会轻微跟随，营造出柔和的纵深感 — 仿佛前景悬浮在略远的场景之上。"
-    },
-    "filterUnits": {
-      "px": "px",
-      "percent": "%"
     }
   },
   "rightDock": {
@@ -125,7 +123,7 @@
     "tooltip": {
       "show": "显示 {{name}} 小组件",
       "hide": "隐藏 {{name}} 小组件",
-      "disabledBy": "请先关闭{{other}},才能启用此项"
+      "disabledBy": "请先关闭{{other}}，才能启用{{this}}"
     },
     "contextMenu": {
       "edit": "编辑 {{name}}",
@@ -141,11 +139,16 @@
       "addLink": "添加新链接",
       "focusModeOn": "进入专注模式",
       "focusModeOff": "退出专注模式",
-      "selectAvatar": "选择头像"
+      "selectAvatar": "选择头像",
+      "pomodoroSizeLarge": "大",
+      "pomodoroSizeSmall": "小",
+      "pomodoroSizeMedium": "中"
     },
     "edit": {
       "ariaEdit": "编辑 {{key}} 小组件",
       "tooltipEdit": "编辑",
+      "ariaHide": "隐藏 {{key}} 小组件",
+      "tooltipHide": "隐藏",
       "opacity": "不透明度",
       "opacityAria": "小组件不透明度",
       "blur": "模糊",
@@ -169,8 +172,6 @@
       "notesShowBorderAria": "显示便签边框",
       "notesHideBorderAria": "隐藏便签边框",
       "weatherUnitAria": "切换摄氏/华氏",
-      "weatherUnitC": "°C",
-      "weatherUnitF": "°F",
       "weatherSections": {
         "now": "现在",
         "hourly": "每小时",
@@ -189,7 +190,11 @@
       "weatherHideCard": "卡片",
       "weatherShowCardLabel": "显示卡片背景",
       "weatherShowCardAria": "在天气后方显示柔和渐变卡片",
-      "weatherHideCardAria": "移除卡片背景"
+      "weatherHideCardAria": "移除卡片背景",
+      "pomodoroSizeLabel": "尺寸",
+      "pomodoroSizeSmall": "小",
+      "pomodoroSizeMedium": "中",
+      "pomodoroSizeLarge": "大"
     }
   },
   "greeting": {
@@ -235,8 +240,6 @@
     "doneDeleteTooltip": "完成删除",
     "labelPlaceholder": "标签（可选）",
     "labelSrOnly": "标签（可选）",
-    "urlPlaceholder": "https://example.com",
-    "urlSrOnly": "URL",
     "emptyMessage": "暂无快速链接，请在上方添加。"
   },
   "pomodoro": {
@@ -277,7 +280,6 @@
     "ariaLabel": "便签"
   },
   "weather": {
-    "unavailable": "N/A",
     "offline": "离线",
     "permissionDenied": "位置权限被拒绝。请在 Chrome 中启用以查看本地天气。",
     "permissionUnavailable": "此环境下无法使用地理定位。",
@@ -341,7 +343,10 @@
     "copyAria": "复制邮箱地址",
     "copied": "已复制！",
     "openMailAria": "在邮件应用中打开",
-    "openMail": "打开邮件应用"
+    "openMail": "打开邮件应用",
+    "orLabel": "或",
+    "discordTitle": "加入 Discord",
+    "discordSub": "和我以及社区聊聊"
   },
   "background": {
     "modal": {
@@ -428,8 +433,8 @@
         "title": "移动小组件",
         "body1Pre": "按住 ",
         "body1Post": " 并拖动上方的时间小组件以重新定位。小组件会对齐到网格线。",
-        "body2": "不想一直按 Shift？从顶部栏开启拖动模式，所有小组件都可拖动直到点击完成。",
-        "hint": "按下 Shift 时光标会变成抓取手 — 这就是提示。"
+        "body2": "需要长时间整理时，从编辑模式顶部栏开启拖动模式（或右键任意小组件 → 拖动小组件）。所有小组件都可拖动，直到点击完成。",
+        "hint": "按住 D 或开启拖动模式时光标会变成抓手 — 那就是信号。"
       },
       "rightClick": {
         "title": "右键单击进行快速操作",
@@ -459,5 +464,8 @@
         "navigateGuide": "在本指南中翻页"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "想拖动？按 d 键。"
   }
 }

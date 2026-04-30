@@ -20,11 +20,8 @@
     "openAria": "Ver registro de mudanças (versão atual v{{version}})"
   },
   "themes": {
-    "ghibli": "Ghibli",
     "spirited": "A Viagem de Chihiro",
     "howls": "Howl",
-    "totoro": "Totoro",
-    "ponyo": "Ponyo",
     "sky": "Céu",
     "butter": "Manteiga",
     "mint": "Menta",
@@ -38,10 +35,8 @@
     "ariaLabel": "Configurações",
     "externalLinksLabel": "Links externos",
     "headings": {
-      "widgets": "Widgets",
       "appearance": "Aparência",
-      "background": "Plano de fundo",
-      "cursor": "Cursor"
+      "background": "Plano de fundo"
     },
     "cursor": {
       "summaryLabel": "Estilo",
@@ -51,7 +46,9 @@
       "petal": "Pétala",
       "bubble": "Bolha",
       "heart": "Coração",
-      "leaf": "Folha"
+      "leaf": "Folha",
+      "strawberry": "Morango",
+      "rainbow": "Arco-íris"
     },
     "buttons": {
       "githubRepo": "Repositório no Github",
@@ -90,10 +87,6 @@
       "saturation": "Saturação",
       "parallax": "Efeito parallax",
       "parallaxTooltip": "A foto de fundo se desloca suavemente ao mover o cursor, criando uma sensação de profundidade — como se o primeiro plano flutuasse à frente de uma cena um pouco mais distante."
-    },
-    "filterUnits": {
-      "px": "px",
-      "percent": "%"
     }
   },
   "rightDock": {
@@ -116,7 +109,6 @@
       "quicklinks": "Links rápidos",
       "searchbar": "Barra de pesquisa",
       "pomodoro": "Cronômetro Pomodoro",
-      "avatar": "Avatar",
       "bookmarks": "Favoritos",
       "weather": "Clima",
       "notes": "Bilhete",
@@ -125,7 +117,7 @@
     "tooltip": {
       "show": "Mostrar widget {{name}}",
       "hide": "Ocultar widget {{name}}",
-      "disabledBy": "Desative {{other}} primeiro para ativar isto"
+      "disabledBy": "Desative {{other}} primeiro para ativar {{this}}"
     },
     "contextMenu": {
       "edit": "Editar {{name}}",
@@ -141,11 +133,16 @@
       "addLink": "Adicionar novo link",
       "focusModeOn": "Modo concentração",
       "focusModeOff": "Sair do modo concentração",
-      "selectAvatar": "Escolher avatar"
+      "selectAvatar": "Escolher avatar",
+      "pomodoroSizeLarge": "Grande",
+      "pomodoroSizeSmall": "Pequeno",
+      "pomodoroSizeMedium": "Médio"
     },
     "edit": {
       "ariaEdit": "Editar widget {{key}}",
       "tooltipEdit": "Editar",
+      "ariaHide": "Ocultar widget {{key}}",
+      "tooltipHide": "Ocultar",
       "opacity": "Opacidade",
       "opacityAria": "Opacidade do widget",
       "blur": "Desfoque",
@@ -169,8 +166,6 @@
       "notesShowBorderAria": "Mostrar a borda do bilhete",
       "notesHideBorderAria": "Ocultar a borda do bilhete",
       "weatherUnitAria": "Alternar Celsius / Fahrenheit",
-      "weatherUnitC": "°C",
-      "weatherUnitF": "°F",
       "weatherSections": {
         "now": "Agora",
         "hourly": "Por hora",
@@ -189,7 +184,11 @@
       "weatherHideCard": "Cartão",
       "weatherShowCardLabel": "Mostrar fundo em cartão",
       "weatherShowCardAria": "Mostrar um fundo em gradiente atrás do clima",
-      "weatherHideCardAria": "Remover o fundo em cartão"
+      "weatherHideCardAria": "Remover o fundo em cartão",
+      "pomodoroSizeLabel": "Tamanho",
+      "pomodoroSizeSmall": "P",
+      "pomodoroSizeMedium": "M",
+      "pomodoroSizeLarge": "G"
     }
   },
   "greeting": {
@@ -220,7 +219,6 @@
     "tooltipButton": "Buscar"
   },
   "quicklinks": {
-    "trigger": "Links",
     "ariaDialog": "Links rápidos",
     "addAria": "Adicionar novo link rápido",
     "addTooltip": "Adicionar link",
@@ -236,11 +234,9 @@
     "labelPlaceholder": "Rótulo (opcional)",
     "labelSrOnly": "Rótulo (opcional)",
     "urlPlaceholder": "https://exemplo.com",
-    "urlSrOnly": "URL",
     "emptyMessage": "Sem links rápidos. Adicione um acima."
   },
   "pomodoro": {
-    "modeFocus": "Pomodoro",
     "modeBreak": "Pausa",
     "minsLabel": "min",
     "play": "Iniciar",
@@ -278,7 +274,6 @@
   },
   "weather": {
     "unavailable": "N/D",
-    "offline": "Offline",
     "permissionDenied": "Permissão de localização negada. Habilite no Chrome para ver o clima local.",
     "permissionUnavailable": "Geolocalização indisponível neste contexto.",
     "fetchError": "Não foi possível carregar o clima. Tente novamente.",
@@ -341,7 +336,10 @@
     "copyAria": "Copiar endereço de e-mail",
     "copied": "Copiado!",
     "openMailAria": "Abrir no app de e-mail",
-    "openMail": "Abrir app de e-mail"
+    "openMail": "Abrir app de e-mail",
+    "orLabel": "ou",
+    "discordTitle": "Entre no Discord",
+    "discordSub": "Converse comigo e com a comunidade"
   },
   "background": {
     "modal": {
@@ -428,8 +426,8 @@
         "title": "Mova os widgets",
         "body1Pre": "Mantenha ",
         "body1Post": " e arraste o widget de Hora para reposicioná-lo. Os widgets se ajustam à grade.",
-        "body2": "Não quer manter Shift? Ative o Modo arrastar na barra superior e todos os widgets ficarão móveis até clicar em Concluído.",
-        "hint": "O cursor vira uma mão quando Shift está pressionado — essa é a sua dica."
+        "body2": "Para reorganizar por mais tempo, ative o Modo arrastar na barra superior do Modo edição (ou clique direito em qualquer widget → Arrastar). Todos os widgets continuam arrastáveis até você clicar em Concluído.",
+        "hint": "O cursor vira uma mão quando D está pressionado ou o Modo arrastar está ativo — esse é o sinal."
       },
       "rightClick": {
         "title": "Clique direito para ações rápidas",
@@ -459,5 +457,8 @@
         "navigateGuide": "Navegar pelos slides deste guia"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "Quer arrastar? Pressione d."
   }
 }

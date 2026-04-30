@@ -43,7 +43,7 @@ body.dock-show-bg .dock-widget-greeting,
 body.dock-show-bg .dock-widget-info,
 body.dock-show-bg .dock-widget-avatar {
     background: rgba(
-        var(--dark-rgb, 31, 38, 32),
+        var(--surface-rgb, 31, 38, 32),
         min(0.55, var(--surface-alpha-cap, 1))
     );
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
@@ -53,15 +53,6 @@ body.dock-show-bg .dock-widget-avatar {
     -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
         saturate(var(--surface-saturate, 1));
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-}
-
-.theme-frost body.dock-show-bg .dock-widget-time,
-.theme-frost body.dock-show-bg .dock-widget-date,
-.theme-frost body.dock-show-bg .dock-widget-greeting,
-.theme-frost body.dock-show-bg .dock-widget-info,
-.theme-frost body.dock-show-bg .dock-widget-avatar {
-    background: rgba(12, 18, 26, 0.55);
-    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .dock-widget:active {

@@ -3,6 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import FaceIcon from "@mui/icons-material/Face";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
 import PlaceIcon from "@mui/icons-material/Place";
+import RemoveIcon from "@mui/icons-material/Remove";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import {
@@ -160,44 +161,63 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging(isResizing);
   }, [isResizing, setIsDragging]);
 
-  // Show widget outlines while Shift is held. The naive
-  // keydown/keyup pair gets stuck on if the user holds Shift, clicks
-  // something that focuses an input or steals the keyup (a portal
-  // handler with stopPropagation, a tab switch, alt-tab, etc.), then
-  // releases Shift outside this window. Belt-and-suspenders below:
+  // Held-to-drag affordance — press and hold 'd' to make widgets
+  // draggable, release 'd' to stop. Replaces the old Shift-held
+  // behavior, which had two problems: (1) Shift is also a modifier
+  // for OS shortcuts like Cmd+Shift+4 (macOS screenshot), which
+  // intercepts the keyup so the outline got stuck on; (2) Shift is
+  // commonly held while typing capitals or selecting text. 'd' is
+  // a plain key with no OS-level claim, so the held-state stays
+  // reliable.
   //
-  //   keydown  → add the class on Shift down
-  //   keyup    → remove on Shift up (the happy path)
-  //   mousedown→ if shift isn't held when a click lands, force the
-  //              class off (catches the missed keyup)
-  //   blur     → window losing focus means we can't trust shift state
-  //   visibilitychange → tab switched away → same idea
+  // Skipped when an <input>, <textarea>, <select>, or contentEditable
+  // is focused so typing 'd' in todos / notes / search doesn't
+  // accidentally enable drag.
+  //
+  // Belt-and-suspenders: blur and visibilitychange clear the class
+  // unconditionally so a window-focus loss can't leave it stuck.
   useEffect(() => {
-    const off = () => document.body.classList.remove("show-widget-outline");
+    const set = (on: boolean) => {
+      document.body.classList.toggle("show-widget-outline", on);
+    };
+    const isTypingTarget = (t: EventTarget | null) => {
+      const el = t as HTMLElement | null;
+      const tag = el?.tagName;
+      return (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        !!el?.isContentEditable
+      );
+    };
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Shift") {
-        document.body.classList.add("show-widget-outline");
-      }
+      if (e.key !== "d" && e.key !== "D") return;
+      // Plain 'd' only — combos (Cmd+D bookmark, etc.) shouldn't
+      // trigger drag.
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+      // Don't preventDefault — 'd' doesn't have any default browser
+      // action we'd be blocking, and preventDefault breaks repeats.
+      set(true);
     }
     function handleKeyUp(e: KeyboardEvent) {
-      if (e.key === "Shift") off();
+      if (e.key !== "d" && e.key !== "D") return;
+      set(false);
     }
-    function handleMouseDown(e: MouseEvent) {
-      if (!e.shiftKey) off();
+    function handleBlur() {
+      set(false);
     }
     function handleVisibility() {
-      if (document.hidden) off();
+      set(false);
     }
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("blur", off);
+    window.addEventListener("blur", handleBlur);
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("blur", off);
+      window.removeEventListener("blur", handleBlur);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
@@ -483,19 +503,30 @@ export const Widget: React.FC<WidgetProps> = ({
 
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
     // Two ways to opt into widget dragging:
-    //   1. Shift + left-click (one-shot drag without leaving normal mode)
-    //   2. Drag Mode is on (sticky mode toggled from sidebar / right-click)
-    // Holding shift OR being in drag mode means the user wants to move
-    // the widget, so we don't bail on interactive children (buttons,
-    // inputs) — that was the source of inconsistent drag behavior in
-    // edit mode where overlay controls cover most of the widget surface.
+    //   1. Hold 'd' + left-click (one-shot drag without leaving
+    //      normal mode). The 'd' keydown/keyup effect above keeps
+    //      `body.show-widget-outline` in sync with the held state,
+    //      so reading the class is the cheapest authoritative
+    //      check at click time.
+    //   2. Drag Mode is on (sticky mode toggled from sidebar /
+    //      right-click).
     if (e.button !== 0) return;
-    if (!e.shiftKey && !dragMode) return;
+    const dHeld = document.body.classList.contains("show-widget-outline");
+    if (!dHeld && !dragMode) {
+      // Shift+click is the OLD drag affordance; users coming from
+      // earlier versions might still try it. Surface a transient
+      // hint nudging them toward 'd' without actually performing a
+      // drag. App.tsx renders the callout.
+      if (e.shiftKey) {
+        window.dispatchEvent(new CustomEvent("ghiblify:shift-drag-hint"));
+      }
+      return;
+    }
     if (isResizing) return;
 
     // Don't hijack mousedowns that originated on the resize handle or
-    // the Shift+pencil quick-edit button — those have their own click
-    // handlers and the drag flow swallows the click.
+    // the quick-edit button — those have their own click handlers and
+    // the drag flow swallows the click.
     const target = e.target as HTMLElement | null;
     if (target?.closest?.(".widget-resize-handle")) return;
     if (target?.closest?.(".widget-quick-edit")) return;
@@ -633,9 +664,12 @@ export const Widget: React.FC<WidgetProps> = ({
             title={t("widgets.edit.resizeTitle")}
           ></div>
         )}
-      {/* Shift-only quick-edit pencil — only visible while Shift is held
-          and the widget isn't already in edit mode. Lets you jump straight
-          into editing one widget without going through the sidebar. */}
+      {/* Drag-mode-only quick controls — only visible while `d` is held
+          and the widget isn't already in edit mode. The pencil at top-
+          right jumps straight into editing this widget; the minus at
+          top-left hides the widget without opening any menu. CSS class
+          .show-widget-outline (toggled by the held-d effect above)
+          fades both in. */}
       {!isEditingThis && (
         <button
           type="button"
@@ -649,6 +683,21 @@ export const Widget: React.FC<WidgetProps> = ({
           tabIndex={-1}
         >
           <EditIcon style={{ fontSize: 14 }} />
+        </button>
+      )}
+      {!isEditingThis && (
+        <button
+          type="button"
+          className="widget-quick-hide"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleWidgetVisibility(storageKey);
+          }}
+          aria-label={t("widgets.edit.ariaHide", { key: storageKey })}
+          data-tooltip={t("widgets.edit.tooltipHide")}
+          tabIndex={-1}
+        >
+          <RemoveIcon style={{ fontSize: 16 }} />
         </button>
       )}
       <div className="widget-content">{children}</div>
@@ -915,6 +964,18 @@ export function buildContextMenuItems(args: {
     } catch {
       /* ignore — default to false */
     }
+    const pSettings = widgets.pomodoro.settings as {
+      size?: "small" | "medium" | "large" | "compact" | "regular";
+    };
+    // Anything that isn't a known current size (small/medium/large)
+    // collapses to "medium" — covers legacy "compact" / "regular"
+    // labels and any other stale value, so the default experience
+    // is always medium.
+    const rawSize = pSettings.size ?? "medium";
+    const currentSize: "small" | "medium" | "large" =
+      rawSize === "small" || rawSize === "medium" || rawSize === "large"
+        ? rawSize
+        : "medium";
     extras = [
       {
         type: "action",
@@ -926,6 +987,28 @@ export function buildContextMenuItems(args: {
           window.dispatchEvent(
             new CustomEvent("ghiblify:pomodoro:toggle-focus")
           ),
+      },
+      { type: "separator" },
+      {
+        type: "radio",
+        label: t("widgets.contextMenu.pomodoroSizeSmall"),
+        selected: currentSize === "small",
+        onClick: () =>
+          updateWidgetSettings("pomodoro", { size: "small" } as never),
+      },
+      {
+        type: "radio",
+        label: t("widgets.contextMenu.pomodoroSizeMedium"),
+        selected: currentSize === "medium",
+        onClick: () =>
+          updateWidgetSettings("pomodoro", { size: "medium" } as never),
+      },
+      {
+        type: "radio",
+        label: t("widgets.contextMenu.pomodoroSizeLarge"),
+        selected: currentSize === "large",
+        onClick: () =>
+          updateWidgetSettings("pomodoro", { size: "large" } as never),
       },
     ];
   } else if (storageKey === "info") {

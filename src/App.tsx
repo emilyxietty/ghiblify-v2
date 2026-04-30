@@ -40,6 +40,51 @@ const AppContent: React.FC = () => {
   const [showOfflineCallout, setShowOfflineCallout] = React.useState<boolean>(
     () => (typeof navigator !== "undefined" ? !navigator.onLine : false)
   );
+  // Transient hint shown when the user does anything that suggests
+  // they're expecting the old Shift-drag behavior. Two triggers:
+  //   1. Pressing Shift in isolation (most direct reach for the
+  //      old affordance) — captured by the keydown listener below.
+  //   2. Shift+clicking a widget — Widget.tsx dispatches
+  //      `ghiblify:shift-drag-hint` from handleWidgetMouseDown.
+  // Both routes converge on the same callout state with a 4-second
+  // cooldown so it doesn't flicker if the user keeps trying.
+  const [showShiftHint, setShowShiftHint] = React.useState(false);
+  const shiftHintCooldownRef = React.useRef(0);
+  React.useEffect(() => {
+    const showHint = () => {
+      const now = Date.now();
+      if (now - shiftHintCooldownRef.current < 4000) return;
+      shiftHintCooldownRef.current = now;
+      setShowShiftHint(true);
+      window.setTimeout(() => setShowShiftHint(false), 3000);
+    };
+    const handleEvent = () => showHint();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Shift") return;
+      // Skip OS shortcut combos (Cmd+Shift+4, etc).
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Skip key-repeat fires while held — one show per press is plenty.
+      if (e.repeat) return;
+      // Skip when the user is typing — Shift is normal there.
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      showHint();
+    };
+    window.addEventListener("ghiblify:shift-drag-hint", handleEvent);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("ghiblify:shift-drag-hint", handleEvent);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
   const wasOnline = React.useRef<boolean>(online);
   React.useEffect(() => {
     if (!online && wasOnline.current) setShowOfflineCallout(true);
@@ -133,6 +178,7 @@ const AppContent: React.FC = () => {
     setCurrentBackground(currentBackground);
   }, [currentBackground, setCurrentBackground]);
 
+
   //   const widgetsContainerRef = useRef<HTMLDivElement>(null);
 
   // Exit GLOBAL edit mode on outside click / Esc / Enter.
@@ -203,6 +249,15 @@ const AppContent: React.FC = () => {
       {showOfflineCallout && (
         <div className="offline-callout" role="status" aria-live="polite">
           {t("common.offlineCallout")}
+        </div>
+      )}
+      {showShiftHint && (
+        <div
+          className="shift-drag-hint-callout"
+          role="status"
+          aria-live="polite"
+        >
+          {t("dragHint.shiftFallback")}
         </div>
       )}
       <LeftSidebar />

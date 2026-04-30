@@ -138,6 +138,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.weatherIconStyle ||
     controls?.weatherCard ||
     controls?.notesShowBorder ||
+    controls?.pomodoroSize ||
     supportsSlider
   );
 
@@ -211,6 +212,54 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             }
           />
         )}
+        {controls?.pomodoroSize && (() => {
+          // Pomodoro size pill — three-segment selector (S / M / L)
+          // that mirrors the right-click radio. Reads the stored
+          // value (with legacy "compact" / "regular" mapping) so
+          // the active segment shows correctly for older users.
+          const raw = (
+            widgets.pomodoro.settings as { size?: string }
+          ).size ?? "medium";
+          // Default-to-medium for any non-current value (covers
+          // legacy "compact" / "regular" and any other stale label).
+          const cur: "small" | "medium" | "large" =
+            raw === "small" || raw === "medium" || raw === "large"
+              ? raw
+              : "medium";
+          const SIZES: Array<{
+            key: "small" | "medium" | "large";
+            label: string;
+          }> = [
+            { key: "small", label: t("widgets.edit.pomodoroSizeSmall") },
+            { key: "medium", label: t("widgets.edit.pomodoroSizeMedium") },
+            { key: "large", label: t("widgets.edit.pomodoroSizeLarge") },
+          ];
+          return (
+            <div
+              className="widget-pomodoro-size"
+              role="radiogroup"
+              aria-label={t("widgets.edit.pomodoroSizeLabel")}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {SIZES.map((s) => (
+                <Button
+                  key={s.key}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateWidgetSettings("pomodoro", {
+                      size: s.key,
+                    } as never);
+                  }}
+                  variant={cur === s.key ? "light" : "dark"}
+                  size="small"
+                  className="btn-text-toggle"
+                  icon={s.label}
+                  aria-pressed={cur === s.key}
+                />
+              ))}
+            </div>
+          );
+        })()}
         {controls?.weatherUnit && (
           <Button
             onClick={(e) => {

@@ -419,6 +419,7 @@ export const LeftSidebar: React.FC = () => {
                 const blockedTooltip = blockedBy
                   ? t("widgets.tooltip.disabledBy", {
                       other: t(`widgets.names.${blockedBy}`),
+                      this: name,
                     })
                   : null;
                 return (
@@ -724,6 +725,22 @@ export const LeftSidebar: React.FC = () => {
                       </span>
                     );
                   }
+                  if (cur === "rainbow") {
+                    // No SVG asset for rainbow — render the same
+                    // gradient pill the picker swatch uses so the
+                    // collapsed summary mirrors the chosen state.
+                    return (
+                      <span
+                        className="collapsible-preview"
+                        data-tooltip={label}
+                      >
+                        <span
+                          className="preview-cursor-rainbow"
+                          aria-hidden="true"
+                        />
+                      </span>
+                    );
+                  }
                   return (
                     <span
                       className="collapsible-preview"
@@ -780,6 +797,20 @@ export const LeftSidebar: React.FC = () => {
                           strokeLinejoin="round"
                         />
                       </svg>
+                    ) : name === "rainbow" ? (
+                      // Rainbow has no SVG asset — render a tiny
+                      // gradient swatch so the picker tile previews
+                      // what the trail will look like.
+                      // NOTE: classname is intentionally distinct
+                      // from the button's `cursor-swatch-rainbow`
+                      // (added by the template above) — a shared
+                      // class made the gradient-pill rule (width
+                      // 70%, height 24%) match the button itself
+                      // and shrink it to an unclickable strip.
+                      <span
+                        className="cursor-swatch-rainbow-pill"
+                        aria-hidden="true"
+                      />
                     ) : (
                       <img
                         src={`/assets/cursors/${name}.svg`}

@@ -1,3 +1,4 @@
+import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import EmailIcon from "@mui/icons-material/Email";
@@ -7,6 +8,7 @@ import { Button } from "../Button/Button";
 import "./ReportModal.css";
 
 const CONTACT_EMAIL = "emily.xietty@gmail.com";
+const DISCORD_INVITE = "https://discord.gg/rvwmFgKW";
 
 interface ReportModalProps {
   open: boolean;
@@ -101,6 +103,35 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
             {t("report.openMail")}
           </Button>
         </div>
+
+        {/* Secondary path — chatty users prefer Discord over email
+            for "I noticed this", "what about a feature for...", etc.
+            Sits below the email block as an alternative, separated
+            by a thin divider so the dialog reads as
+            "primary + alternative" rather than two equally-weighted
+            options. */}
+        <div className="report-divider" aria-hidden="true">
+          <span>{t("report.orLabel")}</span>
+        </div>
+
+        <a
+          className="report-discord-card"
+          href={DISCORD_INVITE}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="report-discord-icon" aria-hidden="true">
+            <ChatIcon style={{ fontSize: 20 }} />
+          </span>
+          <span className="report-discord-meta">
+            <span className="report-discord-title">
+              {t("report.discordTitle")}
+            </span>
+            <span className="report-discord-sub">
+              {t("report.discordSub")}
+            </span>
+          </span>
+        </a>
       </div>
     </div>
   );

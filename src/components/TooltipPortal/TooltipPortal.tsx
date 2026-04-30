@@ -94,6 +94,21 @@ export const TooltipPortal: React.FC = () => {
       if (next) setTip(next);
     };
 
+    // Hide the tooltip if its trigger element is removed from the DOM
+    // mid-hover (e.g. the user clicks a button that unmounts the widget
+    // it sits on — no mouseout fires because the element disappears
+    // rather than the cursor leaving it). Without this the tooltip
+    // would orphan and stay on screen until the next pointer move.
+    const removalObserver = new MutationObserver(() => {
+      if (currentTarget && !document.body.contains(currentTarget)) {
+        hide();
+      }
+    });
+    removalObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
     document.addEventListener("mouseover", onOver);
     document.addEventListener("mouseout", onOut);
     document.addEventListener("focusin", onFocus);
@@ -102,6 +117,7 @@ export const TooltipPortal: React.FC = () => {
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
+      removalObserver.disconnect();
       document.removeEventListener("mouseover", onOver);
       document.removeEventListener("mouseout", onOut);
       document.removeEventListener("focusin", onFocus);

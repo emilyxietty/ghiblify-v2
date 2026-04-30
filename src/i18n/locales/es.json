@@ -20,11 +20,8 @@
     "openAria": "Ver registro de cambios (versión actual v{{version}})"
   },
   "themes": {
-    "ghibli": "Ghibli",
     "spirited": "El viaje de Chihiro",
     "howls": "Howl",
-    "totoro": "Totoro",
-    "ponyo": "Ponyo",
     "sky": "Cielo",
     "butter": "Mantequilla",
     "mint": "Menta",
@@ -38,10 +35,8 @@
     "ariaLabel": "Ajustes",
     "externalLinksLabel": "Enlaces externos",
     "headings": {
-      "widgets": "Widgets",
       "appearance": "Apariencia",
-      "background": "Fondo",
-      "cursor": "Cursor"
+      "background": "Fondo"
     },
     "cursor": {
       "summaryLabel": "Estilo",
@@ -51,7 +46,9 @@
       "petal": "Pétalo",
       "bubble": "Burbuja",
       "heart": "Corazón",
-      "leaf": "Hoja"
+      "leaf": "Hoja",
+      "strawberry": "Fresa",
+      "rainbow": "Arcoíris"
     },
     "buttons": {
       "githubRepo": "Repositorio de Github",
@@ -90,10 +87,6 @@
       "saturation": "Saturación",
       "parallax": "Efecto parallax",
       "parallaxTooltip": "La foto de fondo se desplaza suavemente al mover el cursor, creando una sensación de profundidad — como si el primer plano flotara sobre una escena un poco más lejana."
-    },
-    "filterUnits": {
-      "px": "px",
-      "percent": "%"
     }
   },
   "rightDock": {
@@ -116,7 +109,6 @@
       "quicklinks": "Accesos rápidos",
       "searchbar": "Barra de búsqueda",
       "pomodoro": "Temporizador Pomodoro",
-      "avatar": "Avatar",
       "bookmarks": "Marcadores",
       "weather": "Clima",
       "notes": "Nota adhesiva",
@@ -125,7 +117,7 @@
     "tooltip": {
       "show": "Mostrar widget {{name}}",
       "hide": "Ocultar widget {{name}}",
-      "disabledBy": "Desactiva primero {{other}} para activar esto"
+      "disabledBy": "Desactiva primero {{other}} para activar {{this}}"
     },
     "contextMenu": {
       "edit": "Editar {{name}}",
@@ -141,11 +133,16 @@
       "addLink": "Añadir nuevo enlace",
       "focusModeOn": "Modo concentración",
       "focusModeOff": "Salir del modo concentración",
-      "selectAvatar": "Elegir avatar"
+      "selectAvatar": "Elegir avatar",
+      "pomodoroSizeLarge": "Grande",
+      "pomodoroSizeSmall": "Pequeño",
+      "pomodoroSizeMedium": "Mediano"
     },
     "edit": {
       "ariaEdit": "Editar widget {{key}}",
       "tooltipEdit": "Editar",
+      "ariaHide": "Ocultar widget {{key}}",
+      "tooltipHide": "Ocultar",
       "opacity": "Opacidad",
       "opacityAria": "Opacidad del widget",
       "blur": "Desenfoque",
@@ -169,8 +166,6 @@
       "notesShowBorderAria": "Mostrar el borde de la nota",
       "notesHideBorderAria": "Ocultar el borde de la nota",
       "weatherUnitAria": "Alternar Celsius / Fahrenheit",
-      "weatherUnitC": "°C",
-      "weatherUnitF": "°F",
       "weatherSections": {
         "now": "Ahora",
         "hourly": "Por hora",
@@ -189,7 +184,11 @@
       "weatherHideCard": "Tarjeta",
       "weatherShowCardLabel": "Mostrar tarjeta de fondo",
       "weatherShowCardAria": "Mostrar un fondo en degradado detrás del clima",
-      "weatherHideCardAria": "Quitar el fondo de tarjeta"
+      "weatherHideCardAria": "Quitar el fondo de tarjeta",
+      "pomodoroSizeLabel": "Tamaño",
+      "pomodoroSizeSmall": "S",
+      "pomodoroSizeMedium": "M",
+      "pomodoroSizeLarge": "L"
     }
   },
   "greeting": {
@@ -236,11 +235,9 @@
     "labelPlaceholder": "Etiqueta (opcional)",
     "labelSrOnly": "Etiqueta (opcional)",
     "urlPlaceholder": "https://ejemplo.com",
-    "urlSrOnly": "URL",
     "emptyMessage": "Aún no hay accesos rápidos. Añade uno arriba."
   },
   "pomodoro": {
-    "modeFocus": "Pomodoro",
     "modeBreak": "Descanso",
     "minsLabel": "min",
     "play": "Iniciar",
@@ -341,7 +338,10 @@
     "copyAria": "Copiar correo electrónico",
     "copied": "¡Copiado!",
     "openMailAria": "Abrir en app de correo",
-    "openMail": "Abrir app de correo"
+    "openMail": "Abrir app de correo",
+    "orLabel": "o",
+    "discordTitle": "Únete a Discord",
+    "discordSub": "Chatea conmigo y con la comunidad"
   },
   "background": {
     "modal": {
@@ -428,8 +428,8 @@
         "title": "Mueve los widgets",
         "body1Pre": "Mantén ",
         "body1Post": " y arrastra el widget de Hora para reposicionarlo. Los widgets se ajustan a una rejilla.",
-        "body2": "¿No quieres mantener Shift? Activa Modo arrastrar desde la barra superior y todos los widgets serán movibles hasta hacer clic en Listo.",
-        "hint": "El cursor se vuelve una mano cuando Shift está pulsado — esa es tu pista."
+        "body2": "Para reorganizar varios widgets, activa el Modo arrastrar desde la barra superior del Modo edición (o haz clic derecho en cualquier widget → Arrastrar widget). Todos los widgets siguen arrastrables hasta que pulses Listo.",
+        "hint": "El cursor se convierte en una mano cuando mantienes D o el Modo arrastrar está activo — esa es tu pista."
       },
       "rightClick": {
         "title": "Clic derecho para acciones rápidas",
@@ -459,5 +459,8 @@
         "navigateGuide": "Navegar las diapositivas de la guía"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "¿Quieres arrastrar? Pulsa d en su lugar."
   }
 }

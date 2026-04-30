@@ -93,7 +93,7 @@
     position: relative;
     width: min(560px, 100%);
     max-height: min(80vh, 640px);
-    background: rgba(var(--dark-rgb, 31, 38, 32), 0.96);
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
     color: var(--light);
     border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
     border-radius: var(--radius-xl);
@@ -482,6 +482,21 @@
     background: color-mix(in srgb, var(--green) 18%, transparent);
     border-color: color-mix(in srgb, var(--green) 60%, transparent);
     color: var(--green, #5e8a4f);
+}
+
+/* Blocked = the toggle is unavailable because its mutually-exclusive
+   sibling (bookmarks ↔ right sidebar) is on. Kept enabled so the
+   data-tooltip explanation still surfaces on hover; the click is
+   no-op in TSX. Matches the LeftSidebar widget grid treatment. */
+.welcome-widget-toggle.is-blocked {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.welcome-widget-toggle.is-blocked:hover,
+.welcome-widget-toggle.is-blocked:active {
+    background: transparent;
+    transform: none;
 }
 
 .welcome-widget-toggle:focus-visible {

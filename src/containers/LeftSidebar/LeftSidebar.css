@@ -570,6 +570,28 @@
     pointer-events: none;
 }
 
+/* Rainbow preview pill in the cursor section's collapsed summary —
+   no SVG asset to render, so we paint the same gradient stripe the
+   picker swatch uses. Sized to match the other preview glyphs. */
+.collapsible-preview .preview-cursor-rainbow {
+    display: block;
+    width: 22px;
+    height: 6px;
+    border-radius: 999px;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        #ff5b6a,
+        #ff9a3d,
+        #ffd84d,
+        #5fc56e,
+        #56b8ff,
+        #7a72ff,
+        #b969ff
+    );
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 .filter-collapsible-summary::-webkit-details-marker {
     display: none;
 }
@@ -664,10 +686,12 @@
    theme swatches but rounded-rect (not circular) so the cursor art
    sits flat. */
 .cursor-swatches {
-    /* 7 columns — keeps each swatch compact so the row fits all 7
-       presets without wrapping at the default sidebar width. */
+    /* 9 columns — fits all current cursor presets (default + 8
+       effects: soot, sparkle, petal, bubble, heart, leaf,
+       strawberry, rainbow) on one row at the default sidebar
+       width. */
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     gap: 6px;
 }
 
@@ -693,6 +717,31 @@
     width: 44%;
     height: 44%;
     pointer-events: none;
+}
+
+/* Rainbow swatch preview — small gradient pill in place of an SVG.
+   Mirrors the actual trail palette in CursorEffect.tsx so the
+   picker tile previews what you'll get. Class is `…-pill` (not
+   `cursor-swatch-rainbow`) because the button itself already
+   carries `cursor-swatch-rainbow` from the template, and a shared
+   class would shrink the button to an unclickable strip. */
+.cursor-swatch-rainbow-pill {
+    display: block;
+    width: 70%;
+    height: 24%;
+    border-radius: 999px;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        #ff5b6a,
+        #ff9a3d,
+        #ffd84d,
+        #5fc56e,
+        #56b8ff,
+        #7a72ff,
+        #b969ff
+    );
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .cursor-swatch:hover {

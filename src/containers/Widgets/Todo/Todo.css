@@ -7,11 +7,12 @@
     gap: 10px;
     padding: 14px;
     box-sizing: border-box;
-    /* Single theme-tinted surface. The palette's --dark-rgb supplies
-       the surface color and --light supplies the contrast-safe text
-       color (every palette guarantees this pair is readable). The
-       per-widget opacity slider drives --todo-opacity inline. */
-    --todo-surface-rgb: var(--dark-rgb);
+    /* Single theme-tinted surface. Uses the global --surface-rgb
+       token (which tracks --dark-rgb on most themes but pins to
+       a fixed dark slate on Frost where --dark-rgb is white).
+       --light supplies the contrast-safe text color. The per-
+       widget opacity slider drives --todo-opacity inline. */
+    --todo-surface-rgb: var(--surface-rgb, 31, 38, 32);
     --todo-text: var(--light);
     --todo-text-muted: color-mix(in srgb, var(--light) 60%, transparent);
     --todo-border: color-mix(in srgb, var(--light) 22%, transparent);
@@ -23,14 +24,14 @@
     --todo-danger: #ff8a8a;
 }
 
-/* Frost — `--dark-rgb` is white in this palette (Frost is a "dark
-   glass" theme where the photo behind shows through), so the
-   default Todo surface tints rgba(255,255,255,…). The hover state
-   bumps alpha to 0.7, which reads as a nearly-pure-white wash that
-   washes out the text. Pin Todo's surface to a fixed dark slate
-   instead so the glass card stays readable on hover. */
+/* Frost-specific Todo overrides — text and border tokens that
+   AREN'T derived from the global --surface-rgb token. The surface
+   itself is handled automatically via --surface-rgb (set to a
+   fixed dark slate in `.theme-frost` in App.css), so we don't
+   re-declare the background here. We just need to swap the text
+   color tokens (Frost's --light is white-on-dark) and a frost-
+   appropriate border tint. */
 .theme-frost .todo-container {
-    --todo-surface-rgb: 12, 18, 26;
     --todo-text: rgba(255, 255, 255, 0.96);
     --todo-text-muted: rgba(255, 255, 255, 0.6);
     --todo-border: rgba(255, 255, 255, 0.18);

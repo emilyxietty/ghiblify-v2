@@ -190,6 +190,46 @@
     filter: drop-shadow(0 1px 2px rgba(80, 130, 70, 0.45));
 }
 
+/* Strawberry — drifts down like fruit; soft red/pink halo so the
+   berry pops against a busy photo. */
+.cursor-particle-strawberry img {
+    filter: drop-shadow(0 1px 2px rgba(180, 30, 60, 0.45));
+}
+
+/* Rainbow — small colored dot, rendered as a span (no SVG asset).
+   The color comes from `--rainbow-color` set inline per particle so
+   each spawn cycles through the rainbow palette in CursorEffect.tsx.
+   Slim drop-shadow in the same color makes the dot read as a
+   glowing chip rather than a flat circle. */
+.cursor-particle-rainbow {
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    margin-top: -6px;
+}
+
+.cursor-particle-rainbow-dot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--rainbow-color, #ff5b6a);
+    box-shadow: 0 0 8px var(--rainbow-color, #ff5b6a);
+}
+
+/* Rainbow canvas — pinned to viewport, NEVER intercepts pointer
+   events (would otherwise eat clicks on widgets and the
+   background). Same z-index tier as portals so it sits above
+   widgets but below modals. Without this rule the bare <canvas>
+   defaults to inline-block flow and pushes the body content,
+   visually "destroying" the page layout. */
+.cursor-rainbow-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: var(--z-portal, 99999);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .cursor-particle {
         animation: none;

@@ -67,9 +67,19 @@ export interface SearchBarSettings {
   /** 0–100 — Frost blur intensity. */
   blur: number;
 }
-// Pomodoro is self-contained — it owns its own localStorage and runs a
-// leader-election loop. Nothing in context state for it.
-export type PomodoroSettings = Record<string, never>;
+// Pomodoro owns its own localStorage for the timer state + leader
+// election. The settings here are just the visual chrome — size
+// preset (small / medium / large) and opacity. The card snaps
+// to one of three preset footprints rather than free-resizing,
+// so each size has its own dedicated layout (small hides text
+// labels on controls, large gets generous breathing room).
+export type PomodoroSize = "small" | "medium" | "large";
+
+export interface PomodoroSettings {
+  size: PomodoroSize;
+  /** 0–100 — surface alpha, drives the card's background opacity. */
+  opacity: number;
+}
 export interface WeatherSections {
   /** Current conditions (location + temp + condition). */
   now: boolean;
@@ -177,6 +187,7 @@ export interface CustomControls {
   weatherIconStyle?: boolean;
   weatherCard?: boolean;
   notesShowBorder?: boolean;
+  pomodoroSize?: boolean;
 }
 
 export interface WidgetConfig<K extends WidgetKey> {
@@ -278,7 +289,12 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   pomodoro: {
     name: "Pomodoro",
     position: { x: 86.83040935672514, y: 57.429153924566776 },
-    settings: {},
+    settings: { size: "medium", opacity: 100 },
+    // No width/height ResizeBound — Pomodoro snaps to small /
+    // medium / large via the right-click size radio (or the
+    // EditWidget overlay) rather than free-resize, so each preset
+    // has its own crafted layout.
+    customControls: { pomodoroSize: true },
   },
   bookmarks: {
     name: "Bookmarks",

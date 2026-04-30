@@ -51,7 +51,9 @@
       "petal": "꽃잎",
       "bubble": "비눗방울",
       "heart": "하트",
-      "leaf": "나뭇잎"
+      "leaf": "나뭇잎",
+      "strawberry": "딸기",
+      "rainbow": "무지개"
     },
     "buttons": {
       "githubRepo": "Github 저장소",
@@ -90,10 +92,6 @@
       "saturation": "채도",
       "parallax": "패럴랙스 효과",
       "parallaxTooltip": "커서를 움직이면 배경 사진이 살짝 함께 움직여 깊이감을 만들어줍니다 — 마치 전경이 조금 멀리 있는 풍경 앞에 떠 있는 듯한 느낌입니다."
-    },
-    "filterUnits": {
-      "px": "px",
-      "percent": "%"
     }
   },
   "rightDock": {
@@ -125,7 +123,7 @@
     "tooltip": {
       "show": "{{name}} 위젯 표시",
       "hide": "{{name}} 위젯 숨기기",
-      "disabledBy": "이것을 활성화하려면 먼저 {{other}}을(를) 비활성화하세요"
+      "disabledBy": "{{this}}을(를) 활성화하려면 먼저 {{other}}을(를) 비활성화하세요"
     },
     "contextMenu": {
       "edit": "{{name}} 편집",
@@ -141,11 +139,16 @@
       "addLink": "새 링크 추가",
       "focusModeOn": "집중 모드",
       "focusModeOff": "집중 모드 종료",
-      "selectAvatar": "아바타 선택"
+      "selectAvatar": "아바타 선택",
+      "pomodoroSizeLarge": "크게",
+      "pomodoroSizeSmall": "작게",
+      "pomodoroSizeMedium": "보통"
     },
     "edit": {
       "ariaEdit": "{{key}} 위젯 편집",
       "tooltipEdit": "편집",
+      "ariaHide": "{{key}} 위젯 숨기기",
+      "tooltipHide": "숨기기",
       "opacity": "불투명도",
       "opacityAria": "위젯 불투명도",
       "blur": "블러",
@@ -169,8 +172,6 @@
       "notesShowBorderAria": "노트 테두리 표시",
       "notesHideBorderAria": "노트 테두리 숨기기",
       "weatherUnitAria": "섭씨/화씨 전환",
-      "weatherUnitC": "°C",
-      "weatherUnitF": "°F",
       "weatherSections": {
         "now": "현재",
         "hourly": "시간별",
@@ -189,7 +190,11 @@
       "weatherHideCard": "카드",
       "weatherShowCardLabel": "카드 배경 표시",
       "weatherShowCardAria": "날씨 뒤에 부드러운 그라데이션 카드 표시",
-      "weatherHideCardAria": "카드 배경 숨기기"
+      "weatherHideCardAria": "카드 배경 숨기기",
+      "pomodoroSizeLabel": "크기",
+      "pomodoroSizeSmall": "S",
+      "pomodoroSizeMedium": "M",
+      "pomodoroSizeLarge": "L"
     }
   },
   "greeting": {
@@ -235,8 +240,6 @@
     "doneDeleteTooltip": "완료",
     "labelPlaceholder": "라벨 (선택)",
     "labelSrOnly": "라벨 (선택)",
-    "urlPlaceholder": "https://example.com",
-    "urlSrOnly": "URL",
     "emptyMessage": "빠른 링크가 없습니다. 위에 추가해 보세요."
   },
   "pomodoro": {
@@ -277,7 +280,6 @@
     "ariaLabel": "스티키 노트"
   },
   "weather": {
-    "unavailable": "N/A",
     "offline": "오프라인",
     "permissionDenied": "위치 권한이 거부되었습니다. Chrome에서 활성화하세요.",
     "permissionUnavailable": "이 환경에서는 위치 정보를 사용할 수 없습니다.",
@@ -341,7 +343,10 @@
     "copyAria": "이메일 주소 복사",
     "copied": "복사됨!",
     "openMailAria": "메일 앱에서 열기",
-    "openMail": "메일 앱 열기"
+    "openMail": "메일 앱 열기",
+    "orLabel": "또는",
+    "discordTitle": "Discord에 참여하기",
+    "discordSub": "저와 커뮤니티에서 대화하세요"
   },
   "background": {
     "modal": {
@@ -428,8 +433,8 @@
         "title": "위젯 이동",
         "body1Pre": "",
         "body1Post": "을(를) 누른 채 위의 시계 위젯을 끌어 위치를 옮기세요. 위젯은 격자에 스냅됩니다.",
-        "body2": "Shift를 계속 누르고 싶지 않다면 상단 막대에서 드래그 모드를 켜세요. 완료를 클릭할 때까지 모든 위젯이 드래그됩니다.",
-        "hint": "Shift를 누르면 커서가 잡는 손으로 변합니다 — 그게 신호입니다."
+        "body2": "오래 정리하려면 편집 모드 상단 막대에서 드래그 모드를 켜세요(위젯 우클릭 → 드래그도 가능). 완료를 클릭할 때까지 모든 위젯이 드래그 가능합니다.",
+        "hint": "D를 누르고 있거나 드래그 모드가 켜져 있으면 커서가 손 모양으로 바뀝니다 — 그게 신호입니다."
       },
       "rightClick": {
         "title": "우클릭으로 빠른 작업",
@@ -459,5 +464,8 @@
         "navigateGuide": "가이드 슬라이드 탐색"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "드래그하려면 d를 누르세요."
   }
 }

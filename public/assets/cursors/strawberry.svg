@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <radialGradient id="berry-body" cx="0.42" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#ff8a9a"/>
+      <stop offset="55%" stop-color="#ee4860"/>
+      <stop offset="100%" stop-color="#b41d3a"/>
+    </radialGradient>
+    <radialGradient id="berry-shine" cx="0.32" cy="0.3" r="0.28">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Berry body — wider at the shoulders, tapered to a rounded
+       point at the bottom. Drawn with cubic curves so the silhouette
+       looks plump, not pointed. -->
+  <path d="M 12 6.6
+           C 7.4 6.6 4.6 9.6 4.6 13.2
+           C 4.6 17.4 8.4 21.4 12 21.4
+           C 15.6 21.4 19.4 17.4 19.4 13.2
+           C 19.4 9.6 16.6 6.6 12 6.6 Z"
+        fill="url(#berry-body)"
+        stroke="#8a1330" stroke-width="0.5" stroke-linejoin="round"/>
+  <!-- Tiny golden seeds, scattered. Stagger keeps it organic. -->
+  <g fill="#fff5b8" stroke="#c2922a" stroke-width="0.25">
+    <ellipse cx="8.2"  cy="11.0" rx="0.6" ry="0.9" transform="rotate(-18 8.2 11)"/>
+    <ellipse cx="11.0" cy="10.4" rx="0.6" ry="0.9" transform="rotate(8 11 10.4)"/>
+    <ellipse cx="14.0" cy="11.2" rx="0.6" ry="0.9" transform="rotate(22 14 11.2)"/>
+    <ellipse cx="9.0"  cy="14.0" rx="0.6" ry="0.9" transform="rotate(-12 9 14)"/>
+    <ellipse cx="12.0" cy="13.6" rx="0.6" ry="0.9" transform="rotate(4 12 13.6)"/>
+    <ellipse cx="15.0" cy="14.2" rx="0.6" ry="0.9" transform="rotate(18 15 14.2)"/>
+    <ellipse cx="10.4" cy="17.0" rx="0.6" ry="0.9" transform="rotate(-6 10.4 17)"/>
+    <ellipse cx="13.4" cy="17.0" rx="0.6" ry="0.9" transform="rotate(10 13.4 17)"/>
+  </g>
+  <!-- Green calyx — five star-leaf points at the top. -->
+  <path d="M 6.4 7.4
+           L 8.6 5.4 L 9.6 7.6 L 12 4.6 L 14.4 7.6 L 15.4 5.4 L 17.6 7.4
+           C 16.2 8.6 14.2 9.0 12 9.0 C 9.8 9.0 7.8 8.6 6.4 7.4 Z"
+        fill="#4ea84a"
+        stroke="#2f6c2f" stroke-width="0.4" stroke-linejoin="round"/>
+  <!-- Tiny stem nub. -->
+  <path d="M 12 4.6 L 12.4 3.0" stroke="#2f6c2f" stroke-width="0.7"
+        stroke-linecap="round" fill="none"/>
+  <!-- Glossy upper-left highlight. -->
+  <ellipse cx="9.4" cy="10.6" rx="2.2" ry="1.4" fill="url(#berry-shine)"/>
+</svg>

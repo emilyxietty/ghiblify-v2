@@ -93,6 +93,8 @@ export const CURSOR_NAMES = [
   "bubble",
   "heart",
   "leaf",
+  "strawberry",
+  "rainbow",
 ] as const;
 export type CursorName = (typeof CURSOR_NAMES)[number];
 

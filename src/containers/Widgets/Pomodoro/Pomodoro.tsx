@@ -5,6 +5,7 @@ import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite
 import ReplayCircleFilledIcon from "@mui/icons-material/ReplayCircleFilled";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button/Button";
+import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import "./Pomodoro.css";
 
@@ -468,9 +469,51 @@ const Pomodoro: React.FC = () => {
     }
   }, [isRunning, isBreak, pomodoroSecondsLeft, breakSecondsLeft]);
 
+  // Pomodoro snaps to one of three discrete size presets — small,
+  // medium, large — picked from the right-click menu or the edit
+  // overlay. Each preset has its own crafted layout
+  // (see Pomodoro.css `.size-small` etc.), so we don't expose a
+  // free-resize handle.
+  // Stored values from before the rename ("compact" / "regular")
+  // get normalised to the new names so existing users don't see a
+  // jarring layout shift on first open after the rename.
+  const { widgets } = useAppContext();
+  const { size, opacity } = widgets.pomodoro.settings;
+  // Cast through string so legacy stored values from before the rename
+  // ("compact" / "regular") still match — the type system sees only the
+  // new union, but storage may carry the old labels.
+  // Anything that isn't a known current size collapses to "medium" so
+  // the default experience is medium for both fresh users (config
+  // default is "medium") and users carrying over a legacy value.
+  const sizeStr = size as unknown as string;
+  const normalizedSize: "small" | "medium" | "large" =
+    sizeStr === "small" || sizeStr === "medium" || sizeStr === "large"
+      ? sizeStr
+      : "medium";
+  const SIZE_DIMS: Record<string, { width: number; height: number }> = {
+    small: { width: 160, height: 200 },
+    medium: { width: 220, height: 260 },
+    large: { width: 300, height: 340 },
+  };
+  const dims = SIZE_DIMS[normalizedSize];
+
+  // Focus mode forces a single static, near-fullscreen layout regardless
+  // of the size preset — the overrides live in Pomodoro.css under
+  // `body.pomodoro-focus`, so we must NOT emit the size-* class or the
+  // inline width/height (inline styles would beat the focus stylesheet
+  // since they have higher CSS priority than non-!important rules).
   return (
     <div
-      className={`pomodoro-widget widget-header${isBreak ? " break-mode" : ""}`}
+      className={`pomodoro-widget widget-header${
+        focusMode ? "" : ` size-${normalizedSize}`
+      }${isBreak ? " break-mode" : ""}`}
+      style={{
+        ...(focusMode
+          ? {}
+          : { width: `${dims.width}px`, height: `${dims.height}px` }),
+        ["--pomodoro-opacity" as string]:
+          (typeof opacity === "number" ? opacity : 100) / 100,
+      }}
     >
       <div className="pomodoro-switch-header">
         <h2

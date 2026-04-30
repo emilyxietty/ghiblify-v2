@@ -15,7 +15,7 @@
        spotlight z-index (6500) — the picker is a focused modal and
        must always sit on top of any other surface that can be open
        behind it (sidebar, guide, etc.). */
-    z-index: 7000;
+    z-index: 100002;
     padding: 24px;
     animation: bg-modal-overlay-in 200ms ease both;
 }
@@ -32,7 +32,7 @@
 .background-modal {
     width: min(880px, 100%);
     max-height: min(86vh, 720px);
-    background: rgba(var(--dark-rgb, 31, 38, 32), 0.96);
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
     color: var(--light);
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),

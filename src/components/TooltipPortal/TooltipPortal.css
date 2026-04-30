@@ -18,7 +18,7 @@
     word-wrap: break-word;
     max-width: 260px;
     line-height: 1.4;
-    z-index: 99999;
+    z-index: var(--z-tooltip, 100300);
     pointer-events: none;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);

@@ -10,7 +10,9 @@ import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
 import SearchIcon from "@mui/icons-material/Search";
+import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 import TimerIcon from "@mui/icons-material/Timer";
+import VerticalSplitIcon from "@mui/icons-material/VerticalSplit";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../BackgroundSettingsModal/BackgroundSettingsModal";
@@ -48,6 +50,10 @@ const SLIDE_IDS = [
 
 type SlideId = (typeof SLIDE_IDS)[number];
 
+// Mirror LeftSidebar's WIDGET_TOGGLES (minus avatar — that one has
+// its own special tile rendered below this grid because the icon is
+// the live avatar image, not a static glyph). Keep this list in
+// sync whenever a new widget toggle is added on the left sidebar.
 const WIDGET_TUTORIAL_TOGGLES: Array<{
   key: WidgetKey;
   icon: React.ReactElement;
@@ -60,8 +66,10 @@ const WIDGET_TUTORIAL_TOGGLES: Array<{
   { key: "quicklinks", icon: <LinkIcon /> },
   { key: "searchbar", icon: <SearchIcon /> },
   { key: "pomodoro", icon: <TimerIcon /> },
-  { key: "bookmarks", icon: <BookmarksIcon /> },
   { key: "weather", icon: <WbSunnyIcon /> },
+  { key: "notes", icon: <StickyNote2Icon /> },
+  { key: "bookmarks", icon: <BookmarksIcon /> },
+  { key: "rightSidebar", icon: <VerticalSplitIcon /> },
 ];
 
 interface WelcomeModalProps {
@@ -201,18 +209,43 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         {WIDGET_TUTORIAL_TOGGLES.map(({ key, icon }) => {
           const visible = widgets[key].visible;
           const name = t(`widgets.names.${key}`);
+          // Mirror LeftSidebar's mutual-exclusion gating: bookmarks
+          // and the right sidebar both occupy the right edge, so
+          // only one can be on at a time. The disabled toggle keeps
+          // its tooltip explaining why ("Disable X first to enable
+          // {{this}}"), matching the LeftSidebar UX.
+          let blockedBy: WidgetKey | null = null;
+          if (key === "rightSidebar" && widgets.bookmarks.visible)
+            blockedBy = "bookmarks";
+          else if (key === "bookmarks" && widgets.rightSidebar.visible)
+            blockedBy = "rightSidebar";
+          const blockedTooltip = blockedBy
+            ? t("widgets.tooltip.disabledBy", {
+                other: t(`widgets.names.${blockedBy}`),
+                this: name,
+              })
+            : null;
           return (
             <button
               key={key}
               type="button"
-              className={`welcome-widget-toggle${visible ? " is-active" : ""}`}
-              onClick={() => toggleWidgetVisibility(key)}
+              className={`welcome-widget-toggle${visible ? " is-active" : ""}${
+                blockedBy ? " is-blocked" : ""
+              }`}
+              onClick={() => {
+                if (blockedBy) return;
+                toggleWidgetVisibility(key);
+              }}
               aria-pressed={visible}
-              aria-label={t(
-                visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
-                { name }
-              )}
-              data-tooltip={name}
+              aria-disabled={!!blockedBy}
+              aria-label={
+                blockedTooltip ??
+                t(
+                  visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
+                  { name }
+                )
+              }
+              data-tooltip={blockedTooltip ?? name}
             >
               <span className="welcome-widget-toggle-icon">{icon}</span>
               <span className="welcome-widget-toggle-label">{name}</span>
@@ -423,7 +456,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             {renderAdjustTimeTutorial()}
             <p>
               {t("welcome.slides.adjustTime.body2Pre")}
-              <Key>Shift</Key>
+              <Key>d</Key>
               {t("welcome.slides.adjustTime.body2Post")}
             </p>
           </>
@@ -433,7 +466,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
           <>
             <p>
               {t("welcome.slides.drag.body1Pre")}
-              <Key>Shift</Key>
+              <Key>d</Key>
               {t("welcome.slides.drag.body1Post")}
             </p>
             <p>{t("welcome.slides.drag.body2")}</p>
@@ -473,13 +506,13 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             </li>
             <li>
               <span className="welcome-shortcut-keys">
-                <Key>Shift</Key> + drag
+                <Key>d</Key> + drag
               </span>
               <span>{t("welcome.slides.shortcuts.moveWidget")}</span>
             </li>
             <li>
               <span className="welcome-shortcut-keys">
-                <Key>Shift</Key> +{" "}
+                <Key>d</Key> +{" "}
                 <span className="welcome-icon-key" aria-label="edit pencil icon">
                   <EditIcon style={{ fontSize: 14 }} />
                 </span>

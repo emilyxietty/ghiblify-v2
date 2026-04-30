@@ -19,7 +19,7 @@
     letter-spacing: 0.02em;
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    z-index: 9000;
+    z-index: var(--z-tooltip, 100300);
     pointer-events: none;
     animation: bookmarks-callout 3.5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }

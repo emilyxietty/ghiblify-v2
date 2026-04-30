@@ -77,11 +77,14 @@
     /* cursor: grab; */
 }
 
-/* Default cursor is plain — widget content (todo items, links, etc.)
-   handles its own cursors. Grab/grabbing only when Shift is held, see
-   the .show-widget-outline rules at the bottom of this file. */
+/* Pointer cursor on the widget shell signals interactability — the
+   widget responds to right-click (context menu), shift-drag (move),
+   and quick-edit pencil. Inner content (textareas, links, todo
+   checkboxes) sets its own cursor and overrides this. The
+   .show-widget-outline / .drag-mode-on rules below replace this
+   with grab/grabbing while those modes are active. */
 .widget.draggable {
-    cursor: default;
+    cursor: pointer;
 }
 
 .widget-content {
@@ -186,6 +189,48 @@
 }
 
 .widget-quick-edit:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Quick-hide minus — mirror of .widget-quick-edit at the top-LEFT
+   corner. Same fade-in on `.show-widget-outline`, same chrome, just
+   semantically different (toggles widget visibility off rather than
+   opening the edit overlay). */
+.widget-quick-hide {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease, background 140ms ease;
+    z-index: 100;
+}
+
+.show-widget-outline .widget-quick-hide {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.widget-quick-hide:hover {
+    background: rgba(0, 0, 0, 0.92);
+    transform: scale(1.08);
+}
+
+.widget-quick-hide:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
 }

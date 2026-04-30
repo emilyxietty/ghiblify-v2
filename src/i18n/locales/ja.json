@@ -51,7 +51,9 @@
       "petal": "花びら",
       "bubble": "あわ",
       "heart": "ハート",
-      "leaf": "葉っぱ"
+      "leaf": "葉っぱ",
+      "strawberry": "いちご",
+      "rainbow": "虹"
     },
     "buttons": {
       "githubRepo": "GitHubリポジトリ",
@@ -90,10 +92,6 @@
       "saturation": "彩度",
       "parallax": "視差効果",
       "parallaxTooltip": "カーソルの動きに合わせて背景写真が少しずれ、奥行きを感じさせる演出です。前景が背景の少し奥のシーンの上に浮かんでいるように見えます。"
-    },
-    "filterUnits": {
-      "px": "px",
-      "percent": "%"
     }
   },
   "rightDock": {
@@ -125,7 +123,7 @@
     "tooltip": {
       "show": "{{name}}を表示",
       "hide": "{{name}}を非表示",
-      "disabledBy": "これを有効にするにはまず{{other}}を無効にしてください"
+      "disabledBy": "{{this}}を有効にするには、まず{{other}}を無効にしてください"
     },
     "contextMenu": {
       "edit": "{{name}}を編集",
@@ -141,11 +139,16 @@
       "addLink": "新しいリンクを追加",
       "focusModeOn": "集中モードに入る",
       "focusModeOff": "集中モードを終了",
-      "selectAvatar": "アバターを選ぶ"
+      "selectAvatar": "アバターを選ぶ",
+      "pomodoroSizeLarge": "大",
+      "pomodoroSizeSmall": "小",
+      "pomodoroSizeMedium": "中"
     },
     "edit": {
       "ariaEdit": "{{key}}ウィジェットを編集",
       "tooltipEdit": "編集",
+      "ariaHide": "{{key}}ウィジェットを非表示",
+      "tooltipHide": "非表示",
       "opacity": "透明度",
       "opacityAria": "ウィジェットの透明度",
       "blur": "ぼかし",
@@ -169,8 +172,6 @@
       "notesShowBorderAria": "メモの枠を表示",
       "notesHideBorderAria": "メモの枠を非表示",
       "weatherUnitAria": "摂氏/華氏を切替",
-      "weatherUnitC": "°C",
-      "weatherUnitF": "°F",
       "weatherSections": {
         "now": "現在",
         "hourly": "1時間ごと",
@@ -189,7 +190,11 @@
       "weatherHideCard": "カード",
       "weatherShowCardLabel": "カード背景を表示",
       "weatherShowCardAria": "天気の後ろにグラデーションカードを表示",
-      "weatherHideCardAria": "カード背景を非表示"
+      "weatherHideCardAria": "カード背景を非表示",
+      "pomodoroSizeLabel": "サイズ",
+      "pomodoroSizeSmall": "小",
+      "pomodoroSizeMedium": "中",
+      "pomodoroSizeLarge": "大"
     }
   },
   "greeting": {
@@ -235,8 +240,6 @@
     "doneDeleteTooltip": "削除を終了",
     "labelPlaceholder": "ラベル(任意)",
     "labelSrOnly": "ラベル(任意)",
-    "urlPlaceholder": "https://example.com",
-    "urlSrOnly": "URL",
     "emptyMessage": "クイックリンクはまだありません。上から追加してください。"
   },
   "pomodoro": {
@@ -277,7 +280,6 @@
     "ariaLabel": "付箋"
   },
   "weather": {
-    "unavailable": "N/A",
     "offline": "オフライン",
     "permissionDenied": "位置情報の許可が拒否されました。Chromeで有効にしてください。",
     "permissionUnavailable": "この環境では位置情報を利用できません。",
@@ -341,7 +343,10 @@
     "copyAria": "メールアドレスをコピー",
     "copied": "コピーしました!",
     "openMailAria": "メールアプリで開く",
-    "openMail": "メールアプリを開く"
+    "openMail": "メールアプリを開く",
+    "orLabel": "または",
+    "discordTitle": "Discordに参加",
+    "discordSub": "私やコミュニティとチャット"
   },
   "background": {
     "modal": {
@@ -428,8 +433,8 @@
         "title": "ウィジェットを移動",
         "body1Pre": "",
         "body1Post": "を押しながら上の時計をドラッグして配置できます。ウィジェットはグリッドにスナップします。",
-        "body2": "Shiftを押し続けたくない場合は、編集モードからドラッグモードを有効にすれば全ウィジェットがドラッグ可能になります。",
-        "hint": "Shift押下中はカーソルがつかむ手に変わります。"
+        "body2": "長く並び替えるなら、編集モード上部のドラッグモードを切り替えてください(ウィジェット右クリック → 移動でも可)。「完了」を押すまで、すべてのウィジェットを移動できます。",
+        "hint": "Dを押している間やドラッグモードがオンのとき、カーソルが手の形になります — それが目印です。"
       },
       "rightClick": {
         "title": "右クリックでクイック操作",
@@ -459,5 +464,8 @@
         "navigateGuide": "ガイドのスライド移動"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "ドラッグしたいですか?dを押してください。"
   }
 }

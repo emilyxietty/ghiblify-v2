@@ -12,24 +12,59 @@
  * which strings haven't been translated yet).
  */
 
+// English is the fallback baseline — always present so any missing
+// translation in another locale falls through to a real string. The
+// other 12 locales are loaded lazily on demand via dynamic import so
+// they DON'T ship in the initial JS bundle. Vite splits each
+// `import("./locales/<code>.json")` into its own chunk that's only
+// fetched when the user picks that language. After the dynamic
+// import resolves, the dictionary populates and listeners notify so
+// the UI re-renders with translated strings.
 import en from "./locales/en.json";
-import es from "./locales/es.json";
-import fr from "./locales/fr.json";
-import ja from "./locales/ja.json";
-import ko from "./locales/ko.json";
-import pt from "./locales/pt.json";
-import zh from "./locales/zh.json";
 
 type Dict = Record<string, unknown>;
 
 const dictionaries: Record<string, Dict> = {
   en: en as Dict,
-  ja: ja as Dict,
-  ko: ko as Dict,
-  es: es as Dict,
-  fr: fr as Dict,
-  pt: pt as Dict,
-  zh: zh as Dict,
+};
+
+// Lazy loaders. Keys here are the supported codes. Listing them
+// statically (rather than `import(\`./locales/${code}.json\`)` from a
+// variable) lets Vite see each as a separate chunk at build time. */
+const loaders: Record<string, () => Promise<Dict>> = {
+  ja: () => import("./locales/ja.json").then((m) => m.default as Dict),
+  ko: () => import("./locales/ko.json").then((m) => m.default as Dict),
+  es: () => import("./locales/es.json").then((m) => m.default as Dict),
+  fr: () => import("./locales/fr.json").then((m) => m.default as Dict),
+  pt: () => import("./locales/pt.json").then((m) => m.default as Dict),
+  zh: () => import("./locales/zh.json").then((m) => m.default as Dict),
+};
+
+// Track in-flight loads so concurrent setLocale calls share one
+// network/parse pass instead of fetching the same chunk twice.
+const inflight: Record<string, Promise<Dict> | undefined> = {};
+
+const ensureLoaded = (code: string): Promise<Dict> => {
+  if (dictionaries[code]) return Promise.resolve(dictionaries[code]);
+  const loader = loaders[code];
+  if (!loader) return Promise.resolve(dictionaries.en);
+  if (inflight[code]) return inflight[code]!;
+  const p = loader()
+    .then((dict) => {
+      dictionaries[code] = dict;
+      delete inflight[code];
+      // Wake up the UI so anything that already rendered with the
+      // English fallback can re-render with the proper strings.
+      listeners.forEach((l) => l());
+      return dict;
+    })
+    .catch((err) => {
+      delete inflight[code];
+      console.warn(`[i18n] Failed to load locale "${code}":`, err);
+      return dictionaries.en;
+    });
+  inflight[code] = p;
+  return p;
 };
 
 // Languages exposed in the UI picker. The `label` is shown in the
@@ -59,14 +94,22 @@ import {
 
 const STORAGE_KEY = "ghiblify_locale";
 
+const isKnownLocale = (code: string): boolean =>
+  code === "en" || code in loaders;
+
 const readPersistedLocale = (): string => {
   const v = readPersisted<string | null>(STORAGE_KEY, null);
-  if (v && dictionaries[v]) return v;
+  if (v && isKnownLocale(v)) return v;
   return "en";
 };
 
 let currentLocale: string = readPersistedLocale();
 const listeners = new Set<() => void>();
+
+// Boot — kick off the saved locale's load (no-op for en, fire and
+// forget for everything else). Until the chunk arrives, lookups
+// fall back to en so the first paint is never blank.
+if (currentLocale !== "en") ensureLoaded(currentLocale);
 
 // Note: <html lang> is intentionally NOT mutated when the user
 // switches locale — the page markup stays English-tagged regardless,
@@ -74,23 +117,29 @@ const listeners = new Set<() => void>();
 // browser-language heuristics consistent.
 
 export function setLocale(locale: string): void {
-  if (!dictionaries[locale]) {
+  if (!isKnownLocale(locale)) {
     console.warn(`[i18n] Unknown locale "${locale}", staying on "${currentLocale}"`);
     return;
   }
   currentLocale = locale;
   writePersisted(STORAGE_KEY, locale);
+  // Fire listeners now so the picker UI flips immediately. The
+  // strings might still be in English for a beat while the chunk
+  // loads — `ensureLoaded` fires a second notify on resolve so the
+  // UI re-renders with the proper translations.
   listeners.forEach((l) => l());
+  if (locale !== "en") ensureLoaded(locale);
 }
 
 // Cross-device sync — when chrome.storage.sync delivers a remote
 // locale update from another Chrome install, switch to it without
 // requiring a reload. Skip if the value is already what we have.
 subscribePersisted(STORAGE_KEY, (next) => {
-  if (typeof next !== "string" || !dictionaries[next]) return;
+  if (typeof next !== "string" || !isKnownLocale(next)) return;
   if (next === currentLocale) return;
   currentLocale = next;
   listeners.forEach((l) => l());
+  if (next !== "en") ensureLoaded(next);
 });
 
 export function getLocale(): string {

@@ -1,3 +1,4 @@
+import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -43,6 +44,13 @@ const SOCIALS: SocialLink[] = [
     icon: <LinkedInIcon />,
     label: "LinkedIn",
     handle: "emilyxietty",
+  },
+  {
+    key: "discord",
+    href: "https://discord.gg/rvwmFgKW",
+    icon: <ChatIcon />,
+    label: "Discord",
+    handle: "Join the community",
   },
 ];
 

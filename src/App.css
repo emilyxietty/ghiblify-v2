@@ -69,6 +69,19 @@
        to read through, regardless of where the user puts the slider. */
     --surface-alpha-cap: 1;
 
+    /* Surface RGB triple for widget cards / modals / tooltips —
+       anything that paints `rgba(<this>, alpha)` as its background.
+       Defaults to the active palette's --dark-rgb so widgets pick
+       up the palette tint on most themes.
+       The Frost theme remaps --dark-rgb to white (because Frost is
+       a "dark glass" palette where the photo behind shows through
+       every widget), which would render every card white-on-white.
+       Frost overrides --surface-rgb to a fixed dark slate further
+       down. Modals, tooltips, and per-widget cards use this token
+       instead of --dark-rgb directly so Frost works without per-
+       site overrides. */
+    --surface-rgb: var(--dark-rgb, 31, 38, 32);
+
     /* Z-index tiers. Use these instead of ad-hoc values so layers
        compose predictably. Existing in-stacking-context values
        (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
@@ -76,9 +89,10 @@
        layers that previously used arms-race values like 10M / 20T. */
     --z-edit-overlay: 10000;          /* dim covering sidebars + widgets in edit mode */
     --z-edit-overlay-content: 10001;  /* widget content that must poke above the dim */
-    --z-portal: 99999;                /* body-portaled menus + callouts */
-    --z-resize-handle: 100000;        /* always-on-top corner grip */
-    --z-tutorial-pulse: 100001;       /* tutorial-only pulse above the handle */
+    --z-portal: 100100;               /* body-portaled context menus + dropdowns (above modals at 100002) */
+    --z-resize-handle: 100200;        /* always-on-top corner grip */
+    --z-tutorial-pulse: 100201;       /* tutorial-only pulse above the handle */
+    --z-tooltip: 100300;              /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) — highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
 
     /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
        pills, callouts — anything that's NOT a widget surface and
@@ -355,15 +369,14 @@
 /* Bloom — Pomodoro break mode uses var(--red-dark) which on this
    palette is a vivid hot pink (#c22c6e) — dialed down to a deeper,
    softer berry so the break timer doesn't glare against the rest of
-   the pink-and-green theme. Focus mode (var(--purple-dark)) is fine. */
+   the pink-and-green theme. Focus mode (var(--purple-dark)) is fine.
+   Surface tint goes through rgba(...) with --pomodoro-opacity as the
+   alpha so the per-widget opacity slider keeps working. (The earlier
+   `background:` shorthand with a hardcoded `#c45a85` ignored the
+   opacity setting entirely on this theme.) */
 .theme-spring .pomodoro-widget.break-mode {
-    background:
-        radial-gradient(
-            ellipse at top left,
-            color-mix(in srgb, var(--light) 12%, transparent) 0%,
-            transparent 60%
-        ),
-        #c45a85;
+    background-color: rgba(196, 90, 133, var(--pomodoro-opacity, 1));
+    background-image: none;
 }
 
 /* Bloom — active widget-icon glow uses green (the second co-star)
@@ -387,13 +400,14 @@
    (applied to <html> for any non-light-mode theme) so the fix
    covers Ghibli / Howl's / Totoro / Ponyo / Sky / Dark / Frost. */
 .palette-dark .pomodoro-widget.break-mode {
-    background:
-        radial-gradient(
-            ellipse at top left,
-            rgba(255, 255, 255, 0.18) 0%,
-            transparent 60%
-        ),
-        #3a6480;
+    /* rgba(...) with --pomodoro-opacity as the alpha so the opacity
+       slider visibly fades the surface. Previously this rule used
+       `background:` with a hardcoded `#3a6480`, which has higher
+       specificity than the base `.pomodoro-widget.break-mode` and
+       was silently winning the cascade — masking the slider's effect
+       for every dark-palette user (most Ghibli themes). */
+    background-color: rgba(58, 100, 128, var(--pomodoro-opacity, 1));
+    background-image: none;
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.22);
 }
@@ -558,6 +572,12 @@
     --surface-blur: 30px;
     --surface-saturate: 1.7;
     --surface-alpha-cap: 0.22;
+    /* Pin the surface tint to a fixed dark slate so widget cards,
+       modals, tooltips, dock chrome, etc. all read as Frost's dark
+       glass automatically — no per-component .theme-frost override
+       needed. (Without this, cards using `rgba(var(--surface-rgb),…)`
+       would inherit the white --dark-rgb above and disappear.) */
+    --surface-rgb: 10, 14, 20;
 }
 
 /* Frost-only glass treatment.
@@ -751,13 +771,18 @@
    state without abandoning the frosted aesthetic. White text stays
    for contrast on the dark glass. */
 .theme-frost .pomodoro-widget.break-mode {
-    background:
-        radial-gradient(
-            ellipse at top left,
-            rgba(155, 200, 219, 0.2) 0%,
-            transparent 60%
-        ),
-        rgba(15, 30, 50, 0.7) !important;
+    /* Fold --pomodoro-opacity into the alpha so the slider works on
+       Frost too. The base alpha is 0.7 (the original frost-glass
+       blue), multiplied by the user's opacity setting via calc().
+       background-image cleared so no fixed-alpha gradient layer
+       persists at low opacity. */
+    background-color: rgba(
+        15,
+        30,
+        50,
+        calc(0.7 * var(--pomodoro-opacity, 1))
+    ) !important;
+    background-image: none !important;
     color: #ffffff !important;
     border-color: rgba(155, 200, 219, 0.5) !important;
     box-shadow: 0 0 0 1px rgba(155, 200, 219, 0.2),
@@ -1018,7 +1043,7 @@ body {
     letter-spacing: 0.02em;
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    z-index: var(--z-portal);
+    z-index: var(--z-tooltip);
     pointer-events: none;
     animation: offline-callout-in 5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }
@@ -1040,6 +1065,29 @@ body {
         opacity: 0;
         transform: translateX(-50%) translateY(-8px);
     }
+}
+
+/* Transient hint shown when the user shift-clicks a widget — old
+   versions used Shift-drag; the new affordance is the 'd' key.
+   Same visual language as `.offline-callout` so the notification
+   layer reads as one coherent system. */
+.shift-drag-hint-callout {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: var(--z-tooltip);
+    pointer-events: none;
+    animation: offline-callout-in 3s cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }
 
 .edit-toggle-button {

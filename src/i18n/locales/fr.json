@@ -8,7 +8,6 @@
     "add": "Ajouter",
     "edit": "Modifier",
     "reset": "Réinitialiser",
-    "guide": "Guide",
     "search": "Rechercher",
     "exit": "Quitter",
     "offlineCallout": "Wi-Fi indisponible"
@@ -20,11 +19,8 @@
     "openAria": "Voir le journal des modifications (version actuelle v{{version}})"
   },
   "themes": {
-    "ghibli": "Ghibli",
     "spirited": "Le Voyage de Chihiro",
     "howls": "Hauru",
-    "totoro": "Totoro",
-    "ponyo": "Ponyo",
     "sky": "Ciel",
     "butter": "Beurre",
     "mint": "Menthe",
@@ -38,25 +34,24 @@
     "ariaLabel": "Paramètres",
     "externalLinksLabel": "Liens externes",
     "headings": {
-      "widgets": "Widgets",
       "appearance": "Apparence",
       "background": "Arrière-plan",
       "cursor": "Curseur"
     },
     "cursor": {
-      "summaryLabel": "Style",
       "default": "Par défaut",
       "soot": "Noiraud",
       "sparkle": "Étincelle",
       "petal": "Pétale",
       "bubble": "Bulle",
       "heart": "Cœur",
-      "leaf": "Feuille"
+      "leaf": "Feuille",
+      "strawberry": "Fraise",
+      "rainbow": "Arc-en-ciel"
     },
     "buttons": {
       "githubRepo": "Dépôt Github",
       "buyCoffee": "Offrir un café",
-      "guide": "Guide",
       "guideAria": "Ouvrir le guide",
       "rate": "Noter",
       "rateAria": "Noter Ghiblify sur le Chrome Web Store",
@@ -78,7 +73,6 @@
       "unfavoriteBackgroundAria": "Retirer des favoris"
     },
     "appearance": {
-      "palette": "Palette",
       "paletteAria": "Palette de couleurs",
       "highContrast": "Contraste élevé"
     },
@@ -87,13 +81,8 @@
       "blur": "Flou",
       "brightness": "Luminosité",
       "contrast": "Contraste",
-      "saturation": "Saturation",
       "parallax": "Effet parallaxe",
       "parallaxTooltip": "La photo de fond se déplace légèrement quand vous bougez le curseur, ajoutant une douce sensation de profondeur — comme si le premier plan flottait devant une scène un peu plus éloignée."
-    },
-    "filterUnits": {
-      "px": "px",
-      "percent": "%"
     }
   },
   "rightDock": {
@@ -109,14 +98,12 @@
   "widgets": {
     "names": {
       "time": "Heure",
-      "date": "Date",
       "greeting": "Salutation",
       "info": "Infos film",
       "todo": "Liste de tâches",
       "quicklinks": "Liens rapides",
       "searchbar": "Barre de recherche",
       "pomodoro": "Minuteur Pomodoro",
-      "avatar": "Avatar",
       "bookmarks": "Marque-pages",
       "weather": "Météo",
       "notes": "Note",
@@ -125,7 +112,7 @@
     "tooltip": {
       "show": "Afficher le widget {{name}}",
       "hide": "Masquer le widget {{name}}",
-      "disabledBy": "Désactivez d'abord {{other}} pour activer celui-ci"
+      "disabledBy": "Désactivez d'abord {{other}} pour activer {{this}}"
     },
     "contextMenu": {
       "edit": "Modifier {{name}}",
@@ -141,11 +128,16 @@
       "addLink": "Ajouter un lien",
       "focusModeOn": "Mode concentration",
       "focusModeOff": "Quitter le mode concentration",
-      "selectAvatar": "Choisir un avatar"
+      "selectAvatar": "Choisir un avatar",
+      "pomodoroSizeLarge": "Grand",
+      "pomodoroSizeSmall": "Petit",
+      "pomodoroSizeMedium": "Moyen"
     },
     "edit": {
       "ariaEdit": "Modifier le widget {{key}}",
       "tooltipEdit": "Modifier",
+      "ariaHide": "Masquer le widget {{key}}",
+      "tooltipHide": "Masquer",
       "opacity": "Opacité",
       "opacityAria": "Opacité du widget",
       "blur": "Flou",
@@ -169,14 +161,11 @@
       "notesShowBorderAria": "Afficher la bordure de la note",
       "notesHideBorderAria": "Masquer la bordure de la note",
       "weatherUnitAria": "Basculer Celsius / Fahrenheit",
-      "weatherUnitC": "°C",
-      "weatherUnitF": "°F",
       "weatherSections": {
         "now": "Maintenant",
         "hourly": "Par heure",
         "daily": "Quotidien"
       },
-      "weatherSectionsLabel": "Sections",
       "weatherIconStyle": {
         "animated": "Animé",
         "still": "Fixe"
@@ -189,7 +178,11 @@
       "weatherHideCard": "Carte",
       "weatherShowCardLabel": "Afficher l'arrière-plan en carte",
       "weatherShowCardAria": "Afficher un dégradé doux derrière la météo",
-      "weatherHideCardAria": "Retirer l'arrière-plan en carte"
+      "weatherHideCardAria": "Retirer l'arrière-plan en carte",
+      "pomodoroSizeLabel": "Taille",
+      "pomodoroSizeSmall": "S",
+      "pomodoroSizeMedium": "M",
+      "pomodoroSizeLarge": "L"
     }
   },
   "greeting": {
@@ -236,15 +229,12 @@
     "labelPlaceholder": "Étiquette (facultatif)",
     "labelSrOnly": "Étiquette (facultatif)",
     "urlPlaceholder": "https://exemple.com",
-    "urlSrOnly": "URL",
     "emptyMessage": "Aucun lien rapide. Ajoutez-en un ci-dessus."
   },
   "pomodoro": {
-    "modeFocus": "Pomodoro",
     "modeBreak": "Pause",
     "minsLabel": "min",
     "play": "Démarrer",
-    "pause": "Pause",
     "reset": "Réinitialiser",
     "focus": "Concentration",
     "exit": "Quitter",
@@ -341,7 +331,10 @@
     "copyAria": "Copier l'adresse e-mail",
     "copied": "Copié !",
     "openMailAria": "Ouvrir dans l'app mail",
-    "openMail": "Ouvrir l'app mail"
+    "openMail": "Ouvrir l'app mail",
+    "orLabel": "ou",
+    "discordTitle": "Rejoignez le Discord",
+    "discordSub": "Discutez avec moi et la communauté"
   },
   "background": {
     "modal": {
@@ -428,8 +421,8 @@
         "title": "Déplacez les widgets",
         "body1Pre": "Maintenez ",
         "body1Post": " et glissez le widget Heure pour le repositionner. Les widgets s'alignent sur la grille.",
-        "body2": "Vous ne voulez pas maintenir Shift ? Activez le Mode déplacement depuis la barre supérieure et tous les widgets deviennent déplaçables jusqu'à Terminé.",
-        "hint": "Le curseur se transforme en main quand Shift est enfoncé — c'est votre indice."
+        "body2": "Pour des réagencements plus longs, activez le Mode déplacement depuis la barre supérieure du Mode édition (ou clic droit sur un widget → Déplacer). Chaque widget reste déplaçable jusqu'à ce que vous cliquiez sur Terminé.",
+        "hint": "Le curseur devient une main quand D est maintenu ou que le Mode déplacement est actif — c'est votre signal."
       },
       "rightClick": {
         "title": "Clic droit pour des actions rapides",
@@ -459,5 +452,8 @@
         "navigateGuide": "Naviguer dans les diapositives du guide"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "Pour déplacer, appuyez plutôt sur d."
   }
 }

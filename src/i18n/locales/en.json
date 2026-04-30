@@ -51,7 +51,9 @@
       "petal": "Petal",
       "bubble": "Bubble",
       "heart": "Heart",
-      "leaf": "Leaf"
+      "leaf": "Leaf",
+      "strawberry": "Strawberry",
+      "rainbow": "Rainbow"
     },
     "buttons": {
       "githubRepo": "Github Repo",
@@ -125,7 +127,7 @@
     "tooltip": {
       "show": "Show {{name}} widget",
       "hide": "Hide {{name}} widget",
-      "disabledBy": "Disable {{other}} first to enable this"
+      "disabledBy": "Disable {{other}} first to enable {{this}}"
     },
     "contextMenu": {
       "edit": "Edit {{name}}",
@@ -141,11 +143,16 @@
       "addLink": "Add new link",
       "focusModeOn": "Enter focus mode",
       "focusModeOff": "Exit focus mode",
-      "selectAvatar": "Choose avatar"
+      "selectAvatar": "Choose avatar",
+      "pomodoroSizeLarge": "Large",
+      "pomodoroSizeSmall": "Small",
+      "pomodoroSizeMedium": "Medium"
     },
     "edit": {
       "ariaEdit": "Edit {{key}} widget",
       "tooltipEdit": "Edit",
+      "ariaHide": "Hide {{key}} widget",
+      "tooltipHide": "Hide",
       "opacity": "Opacity",
       "opacityAria": "Widget opacity",
       "blur": "Blur",
@@ -189,7 +196,11 @@
       "weatherHideCard": "Card",
       "weatherShowCardLabel": "Show card background",
       "weatherShowCardAria": "Show a soft gradient card behind the weather",
-      "weatherHideCardAria": "Remove the card background"
+      "weatherHideCardAria": "Remove the card background",
+      "pomodoroSizeLabel": "Size",
+      "pomodoroSizeSmall": "S",
+      "pomodoroSizeMedium": "M",
+      "pomodoroSizeLarge": "L"
     }
   },
   "greeting": {
@@ -341,7 +352,10 @@
     "copyAria": "Copy email address",
     "copied": "Copied!",
     "openMailAria": "Open in mail app",
-    "openMail": "Open mail app"
+    "openMail": "Open mail app",
+    "orLabel": "or",
+    "discordTitle": "Join the Discord",
+    "discordSub": "Chat with me + the community"
   },
   "background": {
     "modal": {
@@ -428,8 +442,8 @@
         "title": "Move widgets around",
         "body1Pre": "Hold ",
         "body1Post": " and click-drag the Time widget above to reposition it. Widgets snap to grid lines (left edge, center, right edge) so they stay tidy.",
-        "body2": "Don't want to keep holding Shift? Toggle Drag Mode from Edit Mode's top bar (or right-click any widget → Drag widget) and every widget becomes draggable until you click Done.",
-        "hint": "The cursor turns into a grab hand when Shift is down — that's your cue. This works on every widget."
+        "body2": "For longer rearranging, toggle Drag Mode from Edit Mode's top bar (or right-click any widget → Drag widget). Every widget stays draggable until you click Done.",
+        "hint": "The cursor turns into a grab hand while D is held or Drag Mode is on — that's your cue."
       },
       "rightClick": {
         "title": "Right-click for quick actions",
@@ -459,5 +473,8 @@
         "navigateGuide": "Navigate slides in this guide"
       }
     }
+  },
+  "dragHint": {
+    "shiftFallback": "Trying to drag? Press d instead."
   }
 }
