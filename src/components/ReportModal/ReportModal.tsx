@@ -1,10 +1,10 @@
-import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import EmailIcon from "@mui/icons-material/Email";
 import React, { useEffect, useRef, useState } from "react";
 import { useT } from "../../i18n/i18n";
 import { Button } from "../Button/Button";
+import { DiscordIcon } from "../DiscordIcon/DiscordIcon";
 import "./ReportModal.css";
 
 const CONTACT_EMAIL = "emily.xietty@gmail.com";
@@ -121,7 +121,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
           rel="noopener noreferrer"
         >
           <span className="report-discord-icon" aria-hidden="true">
-            <ChatIcon style={{ fontSize: 20 }} />
+            <DiscordIcon style={{ fontSize: 20 }} />
           </span>
           <span className="report-discord-meta">
             <span className="report-discord-title">
