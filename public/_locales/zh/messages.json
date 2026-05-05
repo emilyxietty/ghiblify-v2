@@ -1,0 +1,10 @@
+{
+  "extDescription": {
+    "message": "灵感源自吉卜力工作室的新标签页，包含小组件、主题、天气、番茄钟、便签、快速链接和书签。",
+    "description": "Extension description shown in the Chrome Web Store listing."
+  },
+  "actionTitle": {
+    "message": "Ghiblify — 选项",
+    "description": "Tooltip on the toolbar action icon."
+  }
+}

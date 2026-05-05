@@ -14,7 +14,8 @@
   },
   "changelog": {
     "title": "Nouveautés",
-    "intro": "Un coup d'œil rapide sur les nouveautés.",
+    "intro": "Les mises à jour arrivent vite — rejoignez le Discord pour voir les nouveautés et discuter avec la communauté.",
+    "joinButton": "Rejoindre le Discord",
     "openTooltip": "Voir les changements récents",
     "openAria": "Voir le journal des modifications (version actuelle v{{version}})"
   },
@@ -76,6 +77,11 @@
       "paletteAria": "Palette de couleurs",
       "highContrast": "Contraste élevé"
     },
+    "fonts": {
+      "heading": "Police",
+      "aria": "Sélecteur de police",
+      "default": "Par défaut"
+    },
     "filters": {
       "heading": "Paramètres",
       "blur": "Flou",
@@ -125,6 +131,7 @@
       "showBackground": "Afficher l'arrière-plan",
       "time12": "12 heures",
       "time24": "24 heures",
+      "textShadow": "Ombre du texte",
       "addLink": "Ajouter un lien",
       "focusModeOn": "Mode concentration",
       "focusModeOff": "Quitter le mode concentration",
@@ -142,6 +149,8 @@
       "opacityAria": "Opacité du widget",
       "blur": "Flou",
       "blurAria": "Intensité du flou",
+      "textShadow": "Ombre du texte",
+      "textShadowAria": "Intensité de l'ombre du texte",
       "noCustomization": "Aucune personnalisation disponible",
       "darkModeAria": "Activer/désactiver le mode sombre",
       "timeFormatAria": "Basculer 12/24 h",

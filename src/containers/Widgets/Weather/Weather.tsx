@@ -12,35 +12,11 @@ import "./Weather.css";
 
 // Map a WMO weather code → a Meteocons SVG filename (without extension).
 // Meteocons by Bas Milius (https://bas.dev/work/meteocons) — MIT licensed.
-// SVGs are the animated "fill" variant from the upstream `production/fill/svg/`
-// directory; they self-animate via embedded SMIL when rendered as <img>.
-// Day/night picks the matching glyph for codes 0–3; cloudier codes use
-// the same icon either way.
-export const codeToIconName = (code: number, isDay: boolean): string => {
-  if (code === 0) return isDay ? "clear-day" : "clear-night";
-  if (code === 1) return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
-  if (code === 2) return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
-  if (code === 3) return isDay ? "overcast-day" : "overcast-night";
-  if (code === 45 || code === 48) return "fog";
-  if (code >= 51 && code <= 57) return "drizzle";
-  if (code >= 61 && code <= 67) return "rain";
-  if (code >= 71 && code <= 77) return "snow";
-  if (code >= 80 && code <= 82) return "rain";
-  if (code === 85 || code === 86) return "snow";
-  if (code >= 95) return "thunderstorms";
-  return "cloudy";
-};
-
-export const iconUrl = (name: string, style: "animated" | "still"): string => {
-  // Inside a Chrome extension we'd want chrome.runtime.getURL, but the
-  // build pipeline already serves /public at the extension root, so a
-  // root-relative path resolves identically and works in dev preview too.
-  // Animated SVGs sit at the top level; their static counterparts are
-  // mirrored in the `still/` subfolder.
-  return style === "still"
-    ? `/assets/weather/still/${name}.svg`
-    : `/assets/weather/${name}.svg`;
-};
+// Helpers `codeToIconName` and `iconUrl` live in `./weatherIcons.ts`
+// (separate file so LeftSidebar's live weather chip can use them
+// without dragging the whole Weather widget body into the main
+// bundle). Import them locally where needed.
+import { codeToIconName, iconUrl } from "./weatherIcons";
 
 interface WeatherIconProps {
   code: number;
@@ -197,7 +173,44 @@ const Weather: React.FC = () => {
     >
       {loading && (
         <div className="weather-loading" role="status" aria-live="polite">
-          <span className="weather-spinner" aria-hidden="true" />
+          {sections.now && (
+            <div className="weather-current weather-skeleton">
+              <span className="weather-icon weather-icon-placeholder">
+                <span className="weather-spinner" aria-hidden="true" />
+              </span>
+              <div className="weather-current-text">
+                <div className="weather-skeleton-line weather-skeleton-temp" />
+                <div className="weather-skeleton-line weather-skeleton-condition" />
+                <div className="weather-skeleton-line weather-skeleton-feels" />
+              </div>
+            </div>
+          )}
+          {sections.hourly && (
+            <div className="weather-strip">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div className="weather-strip-cell weather-skeleton" key={i}>
+                  <span className="weather-skeleton-line weather-skeleton-cell-label" />
+                  <span className="weather-strip-icon weather-icon-placeholder">
+                    <span className="weather-spinner" aria-hidden="true" />
+                  </span>
+                  <span className="weather-skeleton-line weather-skeleton-cell-temp" />
+                </div>
+              ))}
+            </div>
+          )}
+          {sections.daily && (
+            <div className="weather-strip">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div className="weather-strip-cell weather-skeleton" key={i}>
+                  <span className="weather-skeleton-line weather-skeleton-cell-label" />
+                  <span className="weather-strip-icon weather-icon-placeholder">
+                    <span className="weather-spinner" aria-hidden="true" />
+                  </span>
+                  <span className="weather-skeleton-line weather-skeleton-cell-temp" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
       {!loading && error && error === "offline" && (

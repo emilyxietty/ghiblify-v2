@@ -52,8 +52,15 @@ export const Time: React.FC = () => {
     .trim();
   const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
 
+  // CSS custom property — multiplied into every text-shadow alpha in
+  // Time.css. settings.textShadow is 0-200 (% of base); divide by 100
+  // to get the multiplier.
+  const shadowStyle = {
+    "--text-shadow-strength": `${(timeSettings.textShadow ?? 100) / 100}`,
+  } as React.CSSProperties;
+
   return (
-    <div className="time-container">
+    <div className="time-container" style={shadowStyle}>
       <div className="time" style={{ fontSize: `${timeSettings.fontSize}px` }}>
         {timeDigits}
         {period && (

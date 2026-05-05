@@ -1,15 +1,17 @@
 /**
  * Changelog modal — opens from the version button at the bottom of
- * the LeftSidebar. Reads the curated entry list from
- * `src/changelog.ts` and renders it as a scrollable list of release
- * notes. Backdrop click and Esc both close.
+ * the LeftSidebar. Rather than maintaining release notes inside the
+ * extension code (which would mean a new build + CWS review for every
+ * "what's new" tweak), we point users at the Discord where the latest
+ * updates are posted. Backdrop click and Esc both close.
  */
 
-import CloseIcon from "@mui/icons-material/Close";
 import React, { useEffect, useRef } from "react";
-import { CHANGELOG } from "../../changelog";
 import { useT } from "../../i18n/i18n";
+import { CloseIcon, DiscordIcon } from "../Icons/Icons";
 import "./ChangelogModal.css";
+
+const DISCORD_INVITE = "https://discord.gg/rvwmFgKW";
 
 interface ChangelogModalProps {
   open: boolean;
@@ -66,21 +68,19 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
         </h2>
         <p className="changelog-intro">{t("changelog.intro")}</p>
 
-        <ol className="changelog-list">
-          {CHANGELOG.map((entry) => (
-            <li key={entry.version} className="changelog-entry">
-              <header className="changelog-entry-header">
-                <span className="changelog-version">v{entry.version}</span>
-                <span className="changelog-date">{entry.date}</span>
-              </header>
-              <ul className="changelog-highlights">
-                {entry.highlights.map((line, i) => (
-                  <li key={i}>{line}</li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ol>
+        <a
+          className="changelog-discord-card"
+          href={DISCORD_INVITE}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="changelog-discord-icon" aria-hidden="true">
+            <DiscordIcon style={{ fontSize: 22 }} />
+          </span>
+          <span className="changelog-discord-label">
+            {t("changelog.joinButton")}
+          </span>
+        </a>
       </div>
     </div>
   );

@@ -1,0 +1,10 @@
+{
+  "extDescription": {
+    "message": "스튜디오 지브리에서 영감을 받은 새 탭. 위젯, 테마, 날씨, 뽀모도로, 스티키 노트, 빠른 링크, 북마크 기능 포함.",
+    "description": "Extension description shown in the Chrome Web Store listing."
+  },
+  "actionTitle": {
+    "message": "Ghiblify — 옵션",
+    "description": "Tooltip on the toolbar action icon."
+  }
+}

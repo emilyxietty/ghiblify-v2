@@ -1,7 +1,6 @@
-import ListIcon from "@mui/icons-material/List";
-import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import React from "react";
 import { Button } from "../../components/Button/Button";
+import { ListIcon, ViewModuleIcon } from "../Icons/Icons";
 import {
   AvatarSettings,
   getWidgetConfig,
@@ -122,6 +121,22 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     : 50;
   const handleSliderChange = (value: number) => {
     updateWidgetSettings(storageKey, { [sliderField]: value } as never);
+  };
+
+  // Text-shadow strength slider — auto-renders for any widget whose
+  // settings include `textShadow` (currently Time, Date, Greeting).
+  // Range 0-200; 100 = the historical default. Drives the
+  // --text-shadow-strength CSS variable on each widget root.
+  const supportsTextShadow = "textShadow" in (widgetConfig.settings as Record<string, unknown>);
+  // `??` not `||` — `||` would snap-back to 100 when the user drags
+  // to 0 (since 0 is falsy), making the slider appear locked at the
+  // bottom of the range.
+  const rawTextShadow = settings.textShadow;
+  const textShadowValue = supportsTextShadow
+    ? Math.round(typeof rawTextShadow === "number" ? rawTextShadow : 100)
+    : 100;
+  const handleTextShadowChange = (value: number) => {
+    updateWidgetSettings(storageKey, { textShadow: value } as never);
   };
 
   const hasAnyControls = !!(
@@ -386,6 +401,29 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 : t("widgets.edit.opacityAria")
             }
             onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+            className="widget-opacity-slider"
+          />
+        </div>
+      )}
+      {supportsTextShadow && (
+        <div
+          className="widget-opacity-control"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <label className="widget-opacity-label">
+            <span>{t("widgets.edit.textShadow")}</span>
+            <span>{textShadowValue}%</span>
+          </label>
+          <input
+            id={`widget-${storageKey}-textShadow`}
+            type="range"
+            min={0}
+            max={200}
+            step={10}
+            value={textShadowValue}
+            aria-valuetext={`${textShadowValue} percent`}
+            aria-label={t("widgets.edit.textShadowAria")}
+            onChange={(e) => handleTextShadowChange(parseInt(e.target.value))}
             className="widget-opacity-slider"
           />
         </div>

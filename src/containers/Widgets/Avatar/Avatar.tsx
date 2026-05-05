@@ -1,8 +1,7 @@
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import React from "react";
 import { AVATAR_OPTIONS } from "../../../config/avatarConfig";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
+import { ArrowBackIosNewIcon, ArrowForwardIosIcon } from "../../../components/Icons/Icons";
 import "./Avatar.css";
 
 interface AvatarProps {

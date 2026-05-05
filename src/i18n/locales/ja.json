@@ -15,7 +15,8 @@
   },
   "changelog": {
     "title": "新機能",
-    "intro": "最近の更新内容を簡単にまとめました。",
+    "intro": "アップデートは頻繁にリリースされます — Discordに参加して最新情報やコミュニティとの交流をお楽しみください。",
+    "joinButton": "Discordに参加",
     "openTooltip": "最近の変更を見る",
     "openAria": "変更履歴を表示(現在のバージョン v{{version}})"
   },
@@ -84,6 +85,11 @@
       "paletteAria": "カラーパレット",
       "highContrast": "ハイコントラスト"
     },
+    "fonts": {
+      "heading": "フォント",
+      "aria": "フォント選択",
+      "default": "デフォルト"
+    },
     "filters": {
       "heading": "設定",
       "blur": "ぼかし",
@@ -136,6 +142,7 @@
       "showBackground": "背景を表示",
       "time12": "12時間制",
       "time24": "24時間制",
+      "textShadow": "テキストの影",
       "addLink": "新しいリンクを追加",
       "focusModeOn": "集中モードに入る",
       "focusModeOff": "集中モードを終了",
@@ -153,6 +160,8 @@
       "opacityAria": "ウィジェットの透明度",
       "blur": "ぼかし",
       "blurAria": "ウィジェットのぼかし量",
+      "textShadow": "テキストの影",
+      "textShadowAria": "テキストの影の強さ",
       "noCustomization": "カスタマイズはありません",
       "darkModeAria": "ダークモード切替",
       "timeFormatAria": "12/24時間制を切替",

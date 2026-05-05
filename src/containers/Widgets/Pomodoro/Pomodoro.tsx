@@ -1,12 +1,9 @@
-import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
-import CloseIcon from "@mui/icons-material/Close";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite";
-import ReplayCircleFilledIcon from "@mui/icons-material/ReplayCircleFilled";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button/Button";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import { CloseIcon } from "../../../components/Icons/Icons";
+import { CenterFocusStrongIcon, PauseCircleIcon, PlayCircleFilledWhiteIcon, ReplayCircleFilledIcon } from "../../../components/Icons/Icons";
 import "./Pomodoro.css";
 
 const DEFAULT_POMODORO_MINUTES = 25;

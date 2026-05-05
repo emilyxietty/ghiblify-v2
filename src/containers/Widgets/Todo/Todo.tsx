@@ -1,11 +1,9 @@
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import EditIcon from "@mui/icons-material/Edit";
 import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import { EditIcon } from "../../../components/Icons/Icons";
+import { CheckIcon, ClearIcon, DragIndicatorIcon } from "../../../components/Icons/Icons";
 import {
   clearLegacyTodos,
   readLegacyTodos,

@@ -1,0 +1,10 @@
+{
+  "extDescription": {
+    "message": "A Studio Ghibli–inspired new tab with widgets, themes, weather, pomodoro, sticky notes, quick links, and bookmarks.",
+    "description": "Extension description shown in the Chrome Web Store listing."
+  },
+  "actionTitle": {
+    "message": "Ghiblify — Options",
+    "description": "Tooltip on the toolbar action icon."
+  }
+}

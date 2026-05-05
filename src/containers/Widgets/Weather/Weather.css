@@ -319,12 +319,95 @@
     padding: 8px 4px;
 }
 
-/* Loading state — a minimal circular spinner, no text. */
+/* Loading state — a skeleton mirroring the real widget's layout
+   (now / hourly / daily blocks the user has enabled). The skeleton
+   uses shimmery placeholder bars for text fields, and reserves a
+   circular spot for each icon where the spinner spins. Keeps the
+   loading state shaped like the eventual content so first paint
+   doesn't feel like a layout-jolt when data arrives. */
 .weather-loading {
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Shimmery placeholder bar for text fields. Gradient background +
+   moving background-position gives a subtle left-to-right pulse. */
+.weather-skeleton-line {
+    display: block;
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.16) 50%,
+        rgba(255, 255, 255, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: weather-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.weather-skeleton-temp {
+    width: 64%;
+    height: 22px;
+}
+
+.weather-skeleton-condition {
+    width: 50%;
+    height: 12px;
+}
+
+.weather-skeleton-feels {
+    width: 70%;
+    height: 11px;
+}
+
+.weather-skeleton-cell-label {
+    width: 70%;
+    height: 10px;
+}
+
+.weather-skeleton-cell-temp {
+    width: 60%;
+    height: 12px;
+}
+
+/* Circular spot where an icon would sit. Spinner inside provides
+   the "still loading" visual cue without being the only loading
+   element. Sized to match the live .weather-icon / .weather-strip-icon
+   so the layout doesn't jump when real data arrives. */
+.weather-icon-placeholder {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 16px 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.weather-current .weather-icon-placeholder {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+}
+
+.weather-strip-cell .weather-icon-placeholder {
+    width: 28px;
+    height: 28px;
+}
+
+.weather-strip-cell .weather-icon-placeholder .weather-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+@keyframes weather-skeleton-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .weather-spinner {
@@ -344,7 +427,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .weather-spinner {
+    .weather-spinner,
+    .weather-skeleton-line {
         animation: none;
     }
 }

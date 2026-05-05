@@ -1,10 +1,32 @@
 # Changelog
 
-Notable changes per release. Mirrors `src/changelog.ts`, which is what
-the in-app version button at the bottom of the left sidebar reads.
+Notable changes per release. The in-app "What's new" modal no longer
+mirrors this file — it points users to the Discord for live release
+notes — so this stays as a developer-facing changelog only.
 
 When bumping the version: update `package.json` + `public/manifest.json`,
-then prepend an entry here AND in `src/changelog.ts`.
+then prepend an entry here.
+
+## 2.2.0 — 2026-05-03
+
+- Background images now reliably load worldwide. The kiki gallery and a
+  handful of other wallpapers used to break in the UK and a few other
+  regions because their imgur host is unreachable there; all 45 are now
+  bundled with the extension as compressed WebPs and load from local
+  disk. Adds ~13 MB to the extension package.
+- Real Discord brand mark in the Socials and Report modals (replaces
+  the generic chat-bubble icon).
+- "Report a bug" Discord card subtitle updated across all 7 locales to
+  match its purpose.
+- Chrome Web Store listing now localizes for the user's Chrome UI
+  language (description + toolbar tooltip), via the manifest's
+  `default_locale` + `_locales/<lang>/messages.json`. Hybrid setup —
+  the in-app Language switcher still works exactly as before.
+- "What's new" modal points users to Discord for live release notes
+  instead of carrying release notes in code (no more code-bundled
+  changelog → no more rebuild-per-tweak loop). The version chip in the
+  sidebar now reads straight from the manifest at runtime so it can
+  never drift from what actually shipped. Removed `src/changelog.ts`.
 
 ## 2.1.0 — 2026-04-29
 

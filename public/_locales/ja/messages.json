@@ -1,0 +1,10 @@
+{
+  "extDescription": {
+    "message": "スタジオジブリにインスパイアされた新しいタブ。ウィジェット、テーマ、天気、ポモドーロ、付箋、クイックリンク、ブックマーク機能付き。",
+    "description": "Extension description shown in the Chrome Web Store listing."
+  },
+  "actionTitle": {
+    "message": "Ghiblify — オプション",
+    "description": "Tooltip on the toolbar action icon."
+  }
+}

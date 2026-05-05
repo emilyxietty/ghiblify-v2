@@ -40,7 +40,11 @@ export const DateDisplay: React.FC = () => {
   return (
     <div
       className="date-container"
-      style={{ fontSize: `${dateSettings.fontSize}px` }}
+      style={{
+        fontSize: `${dateSettings.fontSize}px`,
+        // Drives the calc() multiplier on text-shadow alpha in Date.css.
+        ["--text-shadow-strength" as never]: `${(dateSettings.textShadow ?? 100) / 100}`,
+      }}
     >
       <div className="date">{formattedDate}</div>
     </div>

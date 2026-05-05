@@ -15,7 +15,8 @@
   },
   "changelog": {
     "title": "What's new",
-    "intro": "A quick look at what's shipped recently.",
+    "intro": "Updates ship fast — join the Discord to see what's new and chat with the community.",
+    "joinButton": "Join the Discord",
     "openTooltip": "View recent changes",
     "openAria": "View changelog (current version v{{version}})"
   },
@@ -84,6 +85,11 @@
       "paletteAria": "Color palette",
       "highContrast": "High contrast"
     },
+    "fonts": {
+      "heading": "Font",
+      "aria": "Font picker",
+      "default": "Default"
+    },
     "filters": {
       "heading": "Settings",
       "blur": "Blur",
@@ -140,6 +146,7 @@
       "showBackground": "Show background",
       "time12": "12-hour",
       "time24": "24-hour",
+      "textShadow": "Text shadow",
       "addLink": "Add new link",
       "focusModeOn": "Enter focus mode",
       "focusModeOff": "Exit focus mode",
@@ -157,6 +164,8 @@
       "opacityAria": "Widget opacity",
       "blur": "Blur",
       "blurAria": "Widget blur amount",
+      "textShadow": "Text shadow",
+      "textShadowAria": "Text shadow strength",
       "noCustomization": "No customization available",
       "darkModeAria": "Toggle dark mode",
       "timeFormatAria": "Toggle 12/24 hour format",

@@ -102,14 +102,90 @@
 }
 
 .sidebar-content {
-    padding: 32px 24px;
+    /* Top/bottom padding is intentionally 0 — the sticky header and
+       footer bake their own 32px spacing into their padding-top /
+       padding-bottom so they can sit FLUSH against the sidebar's
+       edges. A non-zero vertical padding here would create a strip
+       below/above the sticky bands that they couldn't reach (sticky
+       containing block is the parent's content-box, which excludes
+       padding). */
+    padding: 0 24px;
     color: var(--light);
     display: flex;
     flex-direction: column;
     gap: 24px;
     overflow-y: auto;
-    min-height: 100vh;
+    /* min-height was 100vh; that defeated sticky-footer behavior on
+       short viewports because the content always exceeded the
+       viewport even when it logically fit. Use full height of the
+       parent <aside> instead — content scrolls inside, footer stays
+       pinned via the sticky rule below. */
+    height: 100%;
     box-sizing: border-box;
+}
+
+/* Pinned header — Guide + My Socials + Buy Me a Coffee stay visible
+   at the top of the sidebar even when the sections below scroll.
+   Mirrors .sidebar-footer's mechanic, but pinned to top with the
+   fade gradient flipped. The negative top margin and matching
+   padding eat into .sidebar-content's top padding so there's no
+   visible gap above the sticky band. */
+.sidebar-header {
+    position: sticky;
+    top: 0;
+    /* Horizontal negative margins escape .sidebar-content's side
+       padding so the band runs edge-to-edge; matching positive
+       padding keeps the inner buttons in their original rhythm.
+       Vertical 32px now lives entirely inside the band's padding-top
+       (sidebar-content has no vertical padding). */
+    margin: 0 -24px;
+    padding: 32px 24px 16px;
+    /* Solid sidebar-bg up top (under the buttons) + a soft fade in
+       the bottom 16px so the band blends into the scrolling content
+       instead of showing a hard horizontal seam. */
+    background: linear-gradient(
+        to bottom,
+        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) 0,
+        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) calc(100% - 16px),
+        transparent 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2;
+}
+
+/* Pinned footer — Report a Bug + Rate + Language picker + version
+   chip stay visible at the bottom of the sidebar even when the
+   sections above overflow. `position: sticky` keeps the wrapper at
+   the bottom of the .sidebar-content scroll context; the
+   semi-opaque background + blur obscures content scrolling beneath
+   so the footer reads as a pinned tray. */
+.sidebar-footer {
+    position: sticky;
+    bottom: 0;
+    /* Horizontal negative margins escape .sidebar-content's side
+       padding so the band sits flush against the sidebar's left/right
+       edges. Matching positive padding keeps the inner button row +
+       version chip aligned to the original content rhythm. */
+    margin: auto -24px 0;
+    padding: 16px 24px 32px;
+    /* Flex column — needed so the .sidebar-version chip's
+       `align-self: center` actually does something. Without this the
+       chip would default to stretching the full width / left-aligning. */
+    display: flex;
+    flex-direction: column;
+    /* Soft fade at the top edge (where the band meets scrolling
+       content), then solid sidebar-bg under the buttons + version
+       chip. Mirrors the .sidebar-header fade in reverse. */
+    background: linear-gradient(
+        to top,
+        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) 0,
+        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) calc(100% - 16px),
+        transparent 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 2;
 }
 
 .sidebar-section {
@@ -118,10 +194,10 @@
     gap: 12px;
 }
 
-/* Push the bottom button-group (Guide / Report Issue) flush to the
-   bottom of the sidebar regardless of how much content sits above. */
+/* Bottom button-group inside the pinned footer. The push-to-bottom
+   `margin-top: auto` is now on `.sidebar-footer` (the sticky wrapper);
+   here we just keep the divider line + wrap behavior. */
 .sidebar-bottom {
-    margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
     flex-wrap: wrap;
@@ -996,4 +1072,59 @@
 .left-sidebar {
     scrollbar-width: thin;
     scrollbar-color: rgba(253, 246, 233, 0.2) transparent;
+}
+
+/* Font picker — vertical list of buttons. Each option's label is
+   rendered IN that font so the picker doubles as a live preview.
+   Mirrors theme-swatch states (hover/focus/selected) so the two
+   pickers feel related. */
+.font-swatches {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.font-swatch {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        transform 140ms ease;
+    text-align: left;
+}
+
+.font-swatch:hover {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    border-color: color-mix(in srgb, var(--light) 22%, transparent);
+}
+
+.font-swatch:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.font-swatch.is-selected {
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+    border-color: color-mix(in srgb, var(--light) 38%, transparent);
+}
+
+/* Aa preview chip in the picker's collapsed summary — uses the same
+   fontFamily as the active selection so users see at a glance which
+   font is on. */
+.collapsible-preview {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--light);
 }

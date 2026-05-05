@@ -1,12 +1,7 @@
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AddIcon from "@mui/icons-material/Add";
-import CancelIcon from "@mui/icons-material/Cancel";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import OpenWithIcon from "@mui/icons-material/OpenWith";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button/Button";
+import { DeleteOutlineIcon, EditIcon, OpenWithIcon } from "../../../components/Icons/Icons";
+import { AddCircleIcon, AddIcon, CancelIcon, VisibilityOffIcon } from "../../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,

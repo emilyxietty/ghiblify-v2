@@ -1,11 +1,6 @@
-import CloseIcon from "@mui/icons-material/Close";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import React, { useEffect, useRef } from "react";
 import { useT } from "../../i18n/i18n";
-import { DiscordIcon } from "../DiscordIcon/DiscordIcon";
+import { CloseIcon, DiscordIcon, GitHubIcon, InstagramIcon, LinkedInIcon, TikTokIcon } from "../Icons/Icons";
 import "./SocialsModal.css";
 
 interface SocialLink {
@@ -34,7 +29,7 @@ const SOCIALS: SocialLink[] = [
   {
     key: "tiktok",
     href: "https://tiktok.com/@pianokaisen",
-    icon: <MusicNoteIcon />,
+    icon: <TikTokIcon />,
     label: "TikTok",
     handle: "@pianokaisen",
   },

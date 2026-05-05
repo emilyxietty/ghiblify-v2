@@ -1,22 +1,8 @@
-import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
-import BookmarksIcon from "@mui/icons-material/Bookmarks";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
-import LinkIcon from "@mui/icons-material/Link";
-import SearchIcon from "@mui/icons-material/Search";
-import StickyNote2Icon from "@mui/icons-material/StickyNote2";
-import TimerIcon from "@mui/icons-material/Timer";
-import VerticalSplitIcon from "@mui/icons-material/VerticalSplit";
-import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BackgroundSettingsModal } from "../BackgroundSettingsModal/BackgroundSettingsModal";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
+import { ChevronRightIcon, CloseIcon, EditIcon, FormatQuoteIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../Icons/Icons";
+import { AccessTimeFilledIcon, BookmarksIcon, CalendarTodayIcon, CheckBoxIcon, ChevronLeftIcon, EmojiEmotionsIcon, LinkIcon, TimerIcon, VerticalSplitIcon } from "../Icons/Icons";
 import {
   TimeSettings,
   WidgetKey,

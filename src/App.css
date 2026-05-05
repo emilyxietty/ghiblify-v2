@@ -1004,12 +1004,47 @@ body {
 }
 
 
+/* Bundled font set — woff2 files live at public/assets/fonts/. Each
+   is the latin subset, regular weight only. font-display:swap keeps
+   initial paint on the system stack; the chosen face fades in
+   once loaded. */
+@font-face {
+    font-family: 'Fredoka';
+    src: url('/assets/fonts/fredoka.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+/* Digital / monospace */
+@font-face {
+    font-family: 'Space Mono';
+    src: url('/assets/fonts/space-mono.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* The system stack — also the fallback when a glyph is missing.
+   --app-font defaults here and per-font classes below override for
+   the user's chosen face. Mono fonts fall back to the system mono
+   stack rather than the proportional one for sensible-looking
+   missing-glyph behavior. */
+:root {
+    --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+        'Helvetica Neue', sans-serif;
+    --font-system-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas',
+        'Liberation Mono', 'Menlo', monospace;
+    --app-font: var(--font-system);
+}
+
+html.font-fredoka { --app-font: 'Fredoka', var(--font-system); }
+html.font-space-mono { --app-font: 'Space Mono', var(--font-system-mono); }
+
 body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-        sans-serif;
+    font-family: var(--app-font);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #000;

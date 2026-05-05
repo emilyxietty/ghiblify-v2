@@ -1,8 +1,7 @@
-import CheckIcon from "@mui/icons-material/Check";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ChevronRightIcon } from "../Icons/Icons";
+import { CheckIcon, RadioButtonCheckedIcon } from "../Icons/Icons";
 import "./ContextMenu.css";
 
 // A right-click menu used by widgets and the background. Supports

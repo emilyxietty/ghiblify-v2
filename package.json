@@ -1,6 +1,6 @@
 {
   "name": "ghiblify-v2",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "index.js",
   "scripts": {
     "dev": "vite build --watch",
@@ -12,19 +12,15 @@
   "license": "ISC",
   "description": "Beautiful Studio Ghibli-inspired new tab page",
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.3.5",
-    "@mui/material": "^7.3.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.2.1",
     "@types/chrome": "^0.1.29",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.7.0",
+    "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^5.0.0",
     "vite": "^6.4.1",
     "vite-plugin-svgr": "^4.5.0"

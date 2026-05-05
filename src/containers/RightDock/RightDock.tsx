@@ -18,21 +18,14 @@
  * widget right-click menu short and discoverable in one spot.
  */
 
-import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import FaceIcon from "@mui/icons-material/Face";
-import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
-import RestoreIcon from "@mui/icons-material/Restore";
-import SettingsIcon from "@mui/icons-material/Settings";
-import StickyNote2Icon from "@mui/icons-material/StickyNote2";
-import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import { WidgetKey } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
+import { FormatQuoteIcon, RestoreIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
+import { AccessTimeFilledIcon, CalendarTodayIcon, CheckBoxIcon, FaceIcon, SettingsIcon } from "../../components/Icons/Icons";
 import "./RightDock.css";
 
 // Slightly narrower than the bookmarks panel (360). The dock hosts

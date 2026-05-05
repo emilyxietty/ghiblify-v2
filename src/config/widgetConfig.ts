@@ -22,13 +22,19 @@ export interface QuicklinkItem {
 export interface TimeSettings {
   fontSize: number;
   is24Hour: boolean;
+  /** 0-200, % of the base CSS text-shadow alpha. Default 100 keeps
+   *  the historical shadow exactly as-is; 0 removes it; 200 doubles
+   *  the alpha for legibility on very busy/light backgrounds. */
+  textShadow: number;
 }
 export interface DateSettings {
   fontSize: number;
+  textShadow: number;
 }
 export interface GreetingSettings {
   fontSize: number;
   name: string;
+  textShadow: number;
 }
 export interface InfoSettings {
   fontSize: number;
@@ -212,20 +218,20 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   time: {
     name: "Time",
     position: { x: 50, y: 24.77064220183486 },
-    settings: { fontSize: 200, is24Hour: false },
+    settings: { fontSize: 200, is24Hour: false, textShadow: 100 },
     fontSize: { min: 20, max: 250, step: 20 },
     customControls: { timeFormat: true },
   },
   date: {
     name: "Date",
     position: { x: 50, y: 50 },
-    settings: { fontSize: 24 },
+    settings: { fontSize: 24, textShadow: 100 },
     fontSize: { min: 10, max: 50, step: 5 },
   },
   greeting: {
     name: "Greeting",
     position: { x: 50, y: 21.498311671763506 },
-    settings: { fontSize: 28, name: "" },
+    settings: { fontSize: 28, name: "", textShadow: 100 },
     fontSize: { min: 14, max: 60, step: 4 },
   },
   info: {

@@ -15,7 +15,8 @@
   },
   "changelog": {
     "title": "Novidades",
-    "intro": "Um resumo rápido do que saiu recentemente.",
+    "intro": "As atualizações chegam rápido — entre no Discord para ver as novidades e conversar com a comunidade.",
+    "joinButton": "Entrar no Discord",
     "openTooltip": "Ver mudanças recentes",
     "openAria": "Ver registro de mudanças (versão atual v{{version}})"
   },
@@ -79,6 +80,11 @@
       "paletteAria": "Paleta de cores",
       "highContrast": "Alto contraste"
     },
+    "fonts": {
+      "heading": "Fonte",
+      "aria": "Seletor de fonte",
+      "default": "Padrão"
+    },
     "filters": {
       "heading": "Ajustes",
       "blur": "Desfoque",
@@ -130,6 +136,7 @@
       "showBackground": "Mostrar fundo",
       "time12": "12 horas",
       "time24": "24 horas",
+      "textShadow": "Sombra do texto",
       "addLink": "Adicionar novo link",
       "focusModeOn": "Modo concentração",
       "focusModeOff": "Sair do modo concentração",
@@ -147,6 +154,8 @@
       "opacityAria": "Opacidade do widget",
       "blur": "Desfoque",
       "blurAria": "Desfoque do widget",
+      "textShadow": "Sombra do texto",
+      "textShadowAria": "Intensidade da sombra do texto",
       "noCustomization": "Sem opções de personalização",
       "darkModeAria": "Alternar modo escuro",
       "timeFormatAria": "Alternar formato 12/24 h",

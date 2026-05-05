@@ -1,0 +1,10 @@
+{
+  "extDescription": {
+    "message": "Una nueva pestaña inspirada en Studio Ghibli con widgets, temas, clima, pomodoro, notas adhesivas, enlaces rápidos y favoritos.",
+    "description": "Extension description shown in the Chrome Web Store listing."
+  },
+  "actionTitle": {
+    "message": "Ghiblify — Opciones",
+    "description": "Tooltip on the toolbar action icon."
+  }
+}

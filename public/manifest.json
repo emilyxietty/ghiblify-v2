@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Ghiblify",
-  "version": "2.1.0",
-  "description": "A Studio Ghibli–inspired new tab with widgets, themes, weather, pomodoro, sticky notes, quick links, and bookmarks.",
+  "version": "2.2.0",
+  "default_locale": "en",
+  "description": "__MSG_extDescription__",
   "permissions": ["storage", "bookmarks", "search", "favicon", "geolocation"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
   "action": {
-    "default_title": "Ghiblify — Options",
+    "default_title": "__MSG_actionTitle__",
     "default_popup": "options.html",
     "default_icon": {
       "48": "icon48.png",

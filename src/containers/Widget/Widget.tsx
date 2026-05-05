@@ -1,16 +1,15 @@
-import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
-import EditIcon from "@mui/icons-material/Edit";
-import FaceIcon from "@mui/icons-material/Face";
-import OpenWithIcon from "@mui/icons-material/OpenWith";
-import PlaceIcon from "@mui/icons-material/Place";
-import RemoveIcon from "@mui/icons-material/Remove";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, { ReactNode, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { EditIcon, OpenWithIcon } from "../../components/Icons/Icons";
+import { CenterFocusStrongIcon, FaceIcon, PlaceIcon, RemoveIcon, VisibilityOffIcon } from "../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
 } from "../../components/ContextMenu/ContextMenu";
-import EditWidget from "../../components/EditWidget/EditWidget";
+// Lazy — every widget mounts an EditWidget but only the one currently
+// being edited actually renders content. Gating on `isEditingThis`
+// below means the chunk only fetches the first time any widget enters
+// edit mode.
+const EditWidget = lazy(() => import("../../components/EditWidget/EditWidget"));
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
   AvatarSettings,
@@ -301,11 +300,69 @@ export const Widget: React.FC<WidgetProps> = ({
     };
   };
 
+  // Runtime overflow nudge — measures the widget's actual rendered
+  // bounds and computes a corrective offset that keeps it inside the
+  // viewport. Storage position is left alone (the user's intent is
+  // preserved); only the rendered offset adjusts. The offset is
+  // recomputed from the widget's NATURAL position (rect minus the
+  // current offset) every measurement, so it shrinks back to zero
+  // when the viewport expands and the widget no longer overflows —
+  // not just grows when it does. A ref mirrors the state value so
+  // the closure inside ResizeObserver always reads the current
+  // offset without re-creating the observer on every state change.
+  const [overflowOffset, setOverflowOffset] = useState({ x: 0, y: 0 });
+  const overflowOffsetRef = useRef(overflowOffset);
+  overflowOffsetRef.current = overflowOffset;
+
+  useLayoutEffect(() => {
+    const el = widgetRef.current;
+    if (!el) return;
+    const measureAndAdjust = () => {
+      const rect = el.getBoundingClientRect();
+      const cur = overflowOffsetRef.current;
+      // Natural rect = rendered rect with our offset subtracted out.
+      const naturalLeft = rect.left - cur.x;
+      const naturalRight = rect.right - cur.x;
+      const naturalTop = rect.top - cur.y;
+      const naturalBottom = rect.bottom - cur.y;
+      const margin = 8;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let dx = 0;
+      let dy = 0;
+      if (naturalLeft < margin) {
+        dx = margin - naturalLeft;
+      } else if (naturalRight > vw - margin) {
+        dx = vw - margin - naturalRight;
+      }
+      if (naturalTop < margin) {
+        dy = margin - naturalTop;
+      } else if (naturalBottom > vh - margin) {
+        dy = vh - margin - naturalBottom;
+      }
+      // Direct set, not additive — converges in one render and
+      // shrinks back to {0,0} when the widget would naturally fit.
+      if (dx !== cur.x || dy !== cur.y) {
+        setOverflowOffset({ x: dx, y: dy });
+      }
+    };
+    measureAndAdjust();
+    const ro = new ResizeObserver(measureAndAdjust);
+    ro.observe(el);
+    window.addEventListener("resize", measureAndAdjust);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measureAndAdjust);
+    };
+  }, [position.x, position.y]);
+
   const getTransform = () => {
     // Anchor horizontally centered but vertically anchored to the top
     // so changes in child height (collapse/expand) don't shift the
-    // widget's top edge / header position.
-    return "translate(-50%, 0)";
+    // widget's top edge / header position. Overflow-nudge offset is
+    // baked in via calc() — keeps the widget inside the viewport on
+    // small screens without rewriting the user's stored position.
+    return `translate(calc(-50% + ${overflowOffset.x}px), ${overflowOffset.y}px)`;
   };
 
   useEffect(() => {
@@ -649,11 +706,15 @@ export const Widget: React.FC<WidgetProps> = ({
           aria-hidden="true"
         />
       )}
-      <EditWidget
-        showWidgetEdits={isEditingThis}
-        isResizing={isResizing}
-        storageKey={storageKey}
-      />
+      {isEditingThis && !isResizing && (
+        <Suspense fallback={null}>
+          <EditWidget
+            showWidgetEdits={isEditingThis}
+            isResizing={isResizing}
+            storageKey={storageKey}
+          />
+        </Suspense>
+      )}
       {isEditingThis &&
         hasResizeHandle &&
         !(isQuicklinks && !widgets.quicklinks.settings.gridMode) && (
@@ -1035,6 +1096,30 @@ export function buildContextMenuItems(args: {
         })),
       },
     ];
+  }
+
+  // Generic text-shadow cascade — auto-attaches to any widget whose
+  // settings include `textShadow` (currently Time, Date, Greeting).
+  // Adding `textShadow` to a new widget's settings interface gets
+  // this submenu for free, no extra wiring.
+  const widgetSettingsAny = widgets[storageKey].settings as Record<
+    string,
+    unknown
+  >;
+  if (typeof widgetSettingsAny.textShadow === "number") {
+    if (extras.length > 0) extras.push({ type: "separator" });
+    const current = widgetSettingsAny.textShadow as number;
+    extras.push({
+      type: "submenu",
+      label: t("widgets.contextMenu.textShadow"),
+      items: [0, 50, 100, 150, 200].map((v) => ({
+        type: "radio" as const,
+        label: `${v}%`,
+        selected: current === v,
+        onClick: () =>
+          updateWidgetSettings(storageKey, { textShadow: v } as never),
+      })),
+    });
   }
 
   if (mode === "dock") {

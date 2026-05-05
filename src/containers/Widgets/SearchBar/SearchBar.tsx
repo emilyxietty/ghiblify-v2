@@ -1,9 +1,9 @@
-import SearchIcon from "@mui/icons-material/Search";
 import React, { useState } from "react";
 import { Button } from "../../../components/Button/Button";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import { SearchIcon } from "../../../components/Icons/Icons";
 import "./SearchBar.css";
 
 const SearchBar: React.FC = () => {

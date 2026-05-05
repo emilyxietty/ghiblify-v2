@@ -1,10 +1,7 @@
-import CloseIcon from "@mui/icons-material/Close";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import EmailIcon from "@mui/icons-material/Email";
 import React, { useEffect, useRef, useState } from "react";
 import { useT } from "../../i18n/i18n";
 import { Button } from "../Button/Button";
-import { DiscordIcon } from "../DiscordIcon/DiscordIcon";
+import { CloseIcon, ContentCopyIcon, DiscordIcon, EmailIcon } from "../Icons/Icons";
 import "./ReportModal.css";
 
 const CONTACT_EMAIL = "emily.xietty@gmail.com";

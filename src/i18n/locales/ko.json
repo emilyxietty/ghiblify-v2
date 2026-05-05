@@ -15,7 +15,8 @@
   },
   "changelog": {
     "title": "새로운 기능",
-    "intro": "최근 업데이트를 간단히 모았습니다.",
+    "intro": "업데이트가 자주 진행됩니다 — Discord에 참여해 최신 소식을 확인하고 커뮤니티와 함께하세요.",
+    "joinButton": "Discord에 참여하기",
     "openTooltip": "최근 변경 사항 보기",
     "openAria": "변경 로그 보기 (현재 버전 v{{version}})"
   },
@@ -84,6 +85,11 @@
       "paletteAria": "색상 팔레트",
       "highContrast": "고대비"
     },
+    "fonts": {
+      "heading": "글꼴",
+      "aria": "글꼴 선택",
+      "default": "기본"
+    },
     "filters": {
       "heading": "설정",
       "blur": "블러",
@@ -136,6 +142,7 @@
       "showBackground": "배경 표시",
       "time12": "12시간제",
       "time24": "24시간제",
+      "textShadow": "텍스트 그림자",
       "addLink": "새 링크 추가",
       "focusModeOn": "집중 모드",
       "focusModeOff": "집중 모드 종료",
@@ -153,6 +160,8 @@
       "opacityAria": "위젯 불투명도",
       "blur": "블러",
       "blurAria": "위젯 블러",
+      "textShadow": "텍스트 그림자",
+      "textShadowAria": "텍스트 그림자 강도",
       "noCustomization": "사용 가능한 옵션 없음",
       "darkModeAria": "다크 모드 전환",
       "timeFormatAria": "12/24시간 전환",

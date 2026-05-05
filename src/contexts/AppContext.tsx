@@ -98,16 +98,30 @@ export const CURSOR_NAMES = [
 ] as const;
 export type CursorName = (typeof CURSOR_NAMES)[number];
 
+// Bundled cute fonts (see public/assets/fonts/ + @font-face rules in
+// App.css). "default" means the system stack — no font file loaded.
+// Adding a new font: drop a woff2 in /public/assets/fonts/, add its
+// @font-face + html.font-<key> override in App.css, and append the
+// key here. The picker auto-renders.
+export const FONT_NAMES = [
+  "default",
+  "fredoka",
+  "space-mono",
+] as const;
+export type FontName = (typeof FONT_NAMES)[number];
+
 export interface AppearanceSettings {
   theme: ThemeName;
   highContrast: boolean;
   cursor: CursorName;
+  font: FontName;
 }
 
 const DEFAULT_APPEARANCE: AppearanceSettings = {
   theme: "ghibli",
   highContrast: false,
   cursor: "default",
+  font: "default",
 };
 
 export interface BackgroundFilters {
@@ -596,6 +610,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       "palette-dark",
       !LIGHT_MODE_THEMES.has(appearance.theme)
     );
+    // Font class — "default" means the system stack so no class is
+    // applied; otherwise html.font-<key> sets --app-font via App.css.
+    FONT_NAMES.forEach((f) => root.classList.remove(`font-${f}`));
+    if (appearance.font !== "default") {
+      root.classList.add(`font-${appearance.font}`);
+    }
   }, [appearance]);
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);

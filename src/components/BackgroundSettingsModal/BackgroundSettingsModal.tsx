@@ -1,11 +1,8 @@
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import RestoreIcon from "@mui/icons-material/Restore";
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
+import { DeleteOutlineIcon, RestoreIcon } from "../Icons/Icons";
+import { FavoriteBorderIcon, FavoriteIcon, InfoOutlinedIcon } from "../Icons/Icons";
 import {
   readBlacklist,
   readFavorites,

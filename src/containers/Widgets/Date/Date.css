@@ -5,11 +5,13 @@
 }
 
 .date {
-    /* Intentionally constant — Date stays white regardless of theme. */
+    /* Intentionally constant — Date stays white regardless of theme.
+       Shadow alpha scales with --text-shadow-strength (default 1.0,
+       user-configurable via EditWidget). */
     font-weight: 400;
     color: white;
     text-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.32),
-        0 3px 16px rgba(0, 0, 0, 0.26);
+        0 2px 6px rgba(0, 0, 0, calc(0.32 * var(--text-shadow-strength, 1))),
+        0 3px 16px rgba(0, 0, 0, calc(0.26 * var(--text-shadow-strength, 1)));
     user-select: none;
 }

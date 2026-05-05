@@ -13,7 +13,7 @@ const greetingKeyForHour = (hour: number): string => {
 export const Greeting: React.FC = () => {
   const t = useT();
   const { widgets, updateWidgetSettings } = useAppContext();
-  const { fontSize, name } = widgets.greeting.settings;
+  const { fontSize, name, textShadow } = widgets.greeting.settings;
 
   // Re-render on hour boundaries so "Good morning" rolls over to
   // "Good afternoon" without needing a manual refresh.
@@ -60,7 +60,11 @@ export const Greeting: React.FC = () => {
   return (
     <div
       className="greeting-widget widget-header"
-      style={{ fontSize: `${fontSize}px` }}
+      style={{
+        fontSize: `${fontSize}px`,
+        // Drives the calc() multiplier on text-shadow alpha in Greeting.css.
+        ["--text-shadow-strength" as never]: `${(textShadow ?? 100) / 100}`,
+      }}
     >
       <span className="greeting-text">
         {greeting}

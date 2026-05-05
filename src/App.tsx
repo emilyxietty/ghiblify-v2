@@ -1,10 +1,11 @@
-import EditIcon from "@mui/icons-material/Edit";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import OpenWithIcon from "@mui/icons-material/OpenWith";
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
+import { EditIcon, OpenWithIcon } from "./components/Icons/Icons";
+import { HelpOutlineIcon } from "./components/Icons/Icons";
 import "./App.css";
 import { Button } from "./components/Button/Button";
-import WelcomeModal from "./components/WelcomeModal/WelcomeModal";
+// Lazy — fetched only on first guide open. Saves it from the initial
+// newtab paint chunk.
+const WelcomeModal = lazy(() => import("./components/WelcomeModal/WelcomeModal"));
 import { Background } from "./containers/Background/Background";
 import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
 import { DockWidget } from "./containers/RightDock/DockWidget";
@@ -391,7 +392,11 @@ const AppContent: React.FC = () => {
           </Button>
         </div>
       )}
-      <WelcomeModal open={showGuide} onClose={() => setShowGuide(false)} />
+      {showGuide && (
+        <Suspense fallback={null}>
+          <WelcomeModal open={showGuide} onClose={() => setShowGuide(false)} />
+        </Suspense>
+      )}
       <TooltipPortal />
       {/* Cursor whimsy — companion sprite or particle trail beside
           the OS cursor. Reads appearance.cursor; null when the

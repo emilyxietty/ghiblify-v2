@@ -1,37 +1,27 @@
-import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
-import BookmarksIcon from "@mui/icons-material/Bookmarks";
-import BugReportIcon from "@mui/icons-material/BugReport";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import LinkIcon from "@mui/icons-material/Link";
-import LocalCafeIcon from "@mui/icons-material/LocalCafe";
-import RestoreIcon from "@mui/icons-material/Restore";
-import SearchIcon from "@mui/icons-material/Search";
-import StarIcon from "@mui/icons-material/Star";
-import StickyNote2Icon from "@mui/icons-material/StickyNote2";
-import TimerIcon from "@mui/icons-material/Timer";
-import VerticalSplitIcon from "@mui/icons-material/VerticalSplit";
-import WbSunnyIcon from "@mui/icons-material/WbSunny";
-import React, { useEffect, useRef, useState } from "react";
-import { BackgroundSettingsModal } from "../../components/BackgroundSettingsModal/BackgroundSettingsModal";
-import { ChangelogModal } from "../../components/ChangelogModal/ChangelogModal";
-import ReportModal from "../../components/ReportModal/ReportModal";
-import { CHANGELOG } from "../../changelog";
-import SocialsModal from "../../components/SocialsModal/SocialsModal";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+// Lazy — these dialogs only render when the user clicks their trigger,
+// so each becomes its own chunk fetched on first open. They eagerly
+// shipped ~1700 LOC of JSX/logic with the initial bundle before this.
+const BackgroundSettingsModal = lazy(() =>
+  import("../../components/BackgroundSettingsModal/BackgroundSettingsModal").then(
+    (m) => ({ default: m.BackgroundSettingsModal }),
+  ),
+);
+const ChangelogModal = lazy(() =>
+  import("../../components/ChangelogModal/ChangelogModal").then((m) => ({
+    default: m.ChangelogModal,
+  })),
+);
+const ReportModal = lazy(() => import("../../components/ReportModal/ReportModal"));
+const SocialsModal = lazy(() => import("../../components/SocialsModal/SocialsModal"));
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
+import { DeleteOutlineIcon, EditIcon, FormatQuoteIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
+import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
 import {
   codeToIconName,
   iconUrl as weatherIconUrl,
-} from "../Widgets/Weather/Weather";
+} from "../Widgets/Weather/weatherIcons";
 
 import { Button } from "../../components/Button/Button";
 import { Dropdown } from "../../components/Dropdown/Dropdown";
@@ -46,6 +36,8 @@ import { WidgetKey } from "../../config/widgetConfig";
 import {
   BackgroundFilters,
   CURSOR_NAMES,
+  FONT_NAMES,
+  FontName,
   ThemeName,
   useAppContext,
 } from "../../contexts/AppContext";
@@ -57,6 +49,20 @@ import {
   writeFavorites,
 } from "../../storage/backgroundStorage";
 import "./LeftSidebar.css";
+
+// Font preview metadata. The label appears as the swatch text and is
+// rendered IN that font so the picker doubles as a live preview.
+// Keep keys in sync with FONT_NAMES (AppContext) + the @font-face
+// rules in App.css. "Default" is the only label that needs i18n;
+// the others are font brand names so they stay literal.
+const FONT_PREVIEW: Record<FontName, { label: string; family: string }> = {
+  default: { label: "Default", family: "var(--font-system)" },
+  fredoka: { label: "Fredoka", family: "'Fredoka', var(--font-system)" },
+  "space-mono": {
+    label: "Space Mono",
+    family: "'Space Mono', var(--font-system-mono)",
+  },
+};
 
 // Theme keys — labels come from i18n at render time so they translate.
 const THEME_KEYS: ThemeName[] = [
@@ -360,7 +366,11 @@ export const LeftSidebar: React.FC = () => {
         style={{ ["--sidebar-width" as any]: `${SIDEBAR_WIDTH}px` }}
       >
         <div className="sidebar-content">
-          <div className="sidebar-section button-group" role="group">
+          {/* Pinned header — Guide / My Socials / Buy Me a Coffee
+              stay visible at the top of the sidebar even when the
+              sections below scroll on a short viewport. Same pattern
+              as the .sidebar-footer at the bottom. */}
+          <div className="sidebar-section button-group sidebar-header" role="group">
             <Button
               className="sidebar-guide-btn"
               variant="dark"
@@ -378,7 +388,7 @@ export const LeftSidebar: React.FC = () => {
               onClick={() => setShowSocialsModal(true)}
               aria-haspopup="dialog"
             >
-              <FavoriteIcon style={{ fontSize: 14 }} />
+              <PersonAddIcon style={{ fontSize: 14 }} />
               {t("socials.buttonLabel")}
             </Button>
             <Button
@@ -569,6 +579,61 @@ export const LeftSidebar: React.FC = () => {
                     />
                     <span className="contrast-switch" aria-hidden="true" />
                   </label>
+                </div>
+              </div>
+            </details>
+            {/* Font picker — each option is rendered IN that font so the
+                swatch list doubles as a live preview. Sits below the
+                palette as a sibling collapsible inside Appearance. */}
+            <details className="filter-collapsible">
+              <summary className="filter-collapsible-summary">
+                <span>{t("sidebar.fonts.heading")}</span>
+                <span
+                  className="collapsible-preview"
+                  aria-hidden="true"
+                  data-tooltip={
+                    appearance.font === "default"
+                      ? t("sidebar.fonts.default")
+                      : FONT_PREVIEW[appearance.font].label
+                  }
+                  style={{ fontFamily: FONT_PREVIEW[appearance.font].family }}
+                >
+                  Aa
+                </span>
+                <ExpandMoreIcon
+                  className="filter-collapsible-chevron"
+                  fontSize="small"
+                />
+              </summary>
+              <div
+                className="filter-group"
+                role="radiogroup"
+                aria-label={t("sidebar.fonts.aria")}
+              >
+                <div className="font-swatches">
+                  {FONT_NAMES.map((name) => {
+                    const meta = FONT_PREVIEW[name];
+                    const selected = appearance.font === name;
+                    const label =
+                      name === "default"
+                        ? t("sidebar.fonts.default")
+                        : meta.label;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={`font-swatch${
+                          selected ? " is-selected" : ""
+                        }`}
+                        style={{ fontFamily: meta.family }}
+                        onClick={() => updateAppearance({ font: name })}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </details>
@@ -827,80 +892,95 @@ export const LeftSidebar: React.FC = () => {
             </details>
           </section>
 
-          <div
-            className="sidebar-section button-group sidebar-bottom"
-            role="group"
-            aria-label={t("sidebar.externalLinksLabel")}
-          >
-            <Button
-              variant="dark"
-              size="small"
-              onClick={() => setShowReportModal(true)}
-              aria-label={t("report.buttonAria")}
-              aria-haspopup="dialog"
+          {/* Pinned footer — Report/Rate/Language buttons + version
+              chip stay visible when the sidebar's other content
+              overflows on short viewports. The footer's the most
+              important thing to reach (Report a Bug especially), so
+              we never want it scrolled out of sight. */}
+          <div className="sidebar-footer">
+            <div
+              className="sidebar-section button-group sidebar-bottom"
+              role="group"
+              aria-label={t("sidebar.externalLinksLabel")}
             >
-              <BugReportIcon style={{ fontSize: 14 }} />
-              {t("report.buttonLabel")}
-            </Button>
-            <Button
-              variant="dark"
-              size="small"
-              onClick={() => handleSiteClick(CHROME_WEBSTORE_REVIEW_URL)}
-              aria-label={t("sidebar.buttons.rateAria")}
-            >
-              <StarIcon style={{ fontSize: 14 }} />
-              {t("sidebar.buttons.rate")}
-            </Button>
-            <Dropdown
-              className="language-picker"
-              size="small"
-              variant="outline-light"
-              portal
-              direction="up"
-              options={LANGUAGES.map((l) => ({
-                value: l.code,
-                label: l.label,
-              }))}
-              value={getLocale()}
-              onChange={(code) => setLocale(code)}
-            />
-          </div>
+              <Button
+                variant="dark"
+                size="small"
+                onClick={() => setShowReportModal(true)}
+                aria-label={t("report.buttonAria")}
+                aria-haspopup="dialog"
+              >
+                <BugReportIcon style={{ fontSize: 14 }} />
+                {t("report.buttonLabel")}
+              </Button>
+              <Button
+                variant="dark"
+                size="small"
+                onClick={() => handleSiteClick(CHROME_WEBSTORE_REVIEW_URL)}
+                aria-label={t("sidebar.buttons.rateAria")}
+              >
+                <StarIcon style={{ fontSize: 14 }} />
+                {t("sidebar.buttons.rate")}
+              </Button>
+              <Dropdown
+                className="language-picker"
+                size="small"
+                variant="outline-light"
+                portal
+                direction="up"
+                options={LANGUAGES.map((l) => ({
+                  value: l.code,
+                  label: l.label,
+                }))}
+                value={getLocale()}
+                onChange={(code) => setLocale(code)}
+              />
+            </div>
 
-          {/* Version chip — clickable, opens the changelog modal so
-              users can see what shipped recently. Reads the manifest
-              version from CHANGELOG[0] (the most recent entry) so
-              we don't drift between the chip and the JSON. */}
-          <button
-            type="button"
-            className="sidebar-version"
-            onClick={() => setShowChangelog(true)}
-            aria-label={t("changelog.openAria", {
-              version: CHANGELOG[0]?.version ?? "",
-            })}
-            data-tooltip={t("changelog.openTooltip")}
-          >
-            v{CHANGELOG[0]?.version ?? ""}
-          </button>
+            {/* Version chip — clickable, opens the changelog modal which
+                now points users at the Discord for release notes. Pulls
+                the version straight from the manifest at runtime so the
+                chip can never drift from what actually shipped. */}
+            <button
+              type="button"
+              className="sidebar-version"
+              onClick={() => setShowChangelog(true)}
+              aria-label={t("changelog.openAria", {
+                version: chrome.runtime.getManifest().version,
+              })}
+              data-tooltip={t("changelog.openTooltip")}
+            >
+              v{chrome.runtime.getManifest().version}
+            </button>
+          </div>
         </div>
       </aside>
-      {showBackgroundSettings && (
-        <BackgroundSettingsModal
-          showBackgroundSettings={showBackgroundSettings}
-          setShowBackgroundSettings={setShowBackgroundSettings}
-        />
-      )}
-      <ReportModal
-        open={showReportModal}
-        onClose={() => setShowReportModal(false)}
-      />
-      <ChangelogModal
-        open={showChangelog}
-        onClose={() => setShowChangelog(false)}
-      />
-      <SocialsModal
-        open={showSocialsModal}
-        onClose={() => setShowSocialsModal(false)}
-      />
+      <Suspense fallback={null}>
+        {showBackgroundSettings && (
+          <BackgroundSettingsModal
+            showBackgroundSettings={showBackgroundSettings}
+            setShowBackgroundSettings={setShowBackgroundSettings}
+          />
+        )}
+        {showReportModal && (
+          <ReportModal
+            open={showReportModal}
+            onClose={() => setShowReportModal(false)}
+          />
+        )}
+        {showChangelog && (
+          <ChangelogModal
+            open={showChangelog}
+            onClose={() => setShowChangelog(false)}
+          />
+        )}
+        {showSocialsModal && (
+          <SocialsModal
+            open={showSocialsModal}
+            onClose={() => setShowSocialsModal(false)}
+          />
+        )}
+      </Suspense>
     </>
   );
 };

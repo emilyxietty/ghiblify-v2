@@ -15,7 +15,8 @@
   },
   "changelog": {
     "title": "更新内容",
-    "intro": "最近的更新一览。",
+    "intro": "更新发布很快 — 加入 Discord 查看最新动态并与社区交流。",
+    "joinButton": "加入 Discord",
     "openTooltip": "查看最近的更改",
     "openAria": "查看更新日志(当前版本 v{{version}})"
   },
@@ -84,6 +85,11 @@
       "paletteAria": "颜色调色板",
       "highContrast": "高对比度"
     },
+    "fonts": {
+      "heading": "字体",
+      "aria": "字体选择器",
+      "default": "默认"
+    },
     "filters": {
       "heading": "设置",
       "blur": "模糊",
@@ -136,6 +142,7 @@
       "showBackground": "显示背景",
       "time12": "12 小时制",
       "time24": "24 小时制",
+      "textShadow": "文字阴影",
       "addLink": "添加新链接",
       "focusModeOn": "进入专注模式",
       "focusModeOff": "退出专注模式",
@@ -153,6 +160,8 @@
       "opacityAria": "小组件不透明度",
       "blur": "模糊",
       "blurAria": "小组件模糊度",
+      "textShadow": "文字阴影",
+      "textShadowAria": "文字阴影强度",
       "noCustomization": "无可用选项",
       "darkModeAria": "切换深色模式",
       "timeFormatAria": "切换 12/24 小时制",

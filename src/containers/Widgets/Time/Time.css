@@ -7,12 +7,14 @@
 
 .time {
     /* Intentionally constant — Time stays white regardless of theme so
-       it always reads against the photo background. */
+       it always reads against the photo background. Shadow alpha
+       multiplies by --text-shadow-strength (default 1.0); the user
+       can tune it via EditWidget. */
     color: white;
     font-weight: 600;
     text-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.32),
-        0 4px 22px rgba(0, 0, 0, 0.28);
+        0 2px 8px rgba(0, 0, 0, calc(0.32 * var(--text-shadow-strength, 1))),
+        0 4px 22px rgba(0, 0, 0, calc(0.28 * var(--text-shadow-strength, 1)));
     user-select: none;
 }
 
@@ -21,6 +23,6 @@
     font-weight: 600;
     opacity: 1;
     text-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.32),
-        0 4px 18px rgba(0, 0, 0, 0.28);
+        0 2px 8px rgba(0, 0, 0, calc(0.32 * var(--text-shadow-strength, 1))),
+        0 4px 18px rgba(0, 0, 0, calc(0.28 * var(--text-shadow-strength, 1)));
 }

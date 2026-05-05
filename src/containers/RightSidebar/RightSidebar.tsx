@@ -1,7 +1,6 @@
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import FolderIcon from "@mui/icons-material/Folder";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronRightIcon, DeleteOutlineIcon } from "../../components/Icons/Icons";
+import { FolderIcon } from "../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -692,7 +691,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
         {!error && topLevel.length > 0 && !hasResults && (
           <div className="bookmarks-no-results" role="status" aria-live="polite">
             <img
-              src="/assets/avatars/boh.gif"
+              src="/assets/avatars/boh.webp"
               alt=""
               aria-hidden="true"
               className="bookmarks-no-results-avatar"

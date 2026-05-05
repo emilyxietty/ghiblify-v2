@@ -85,59 +85,50 @@
     color: var(--light-muted);
 }
 
-.changelog-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+/* Discord CTA card — the in-app changelog points users at the
+   Discord for live release notes instead of carrying a list in code.
+   Styled to match .report-discord-card so the two sidebar dialogs
+   feel like siblings. */
+.changelog-discord-card {
     display: flex;
-    flex-direction: column;
-    gap: 18px;
-    overflow-y: auto;
-    /* The dialog has its own height cap; the list scrolls when the
-       full release history exceeds that. */
-    min-height: 0;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    text-decoration: none;
+    color: var(--light);
+    cursor: pointer;
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        transform 140ms ease;
+    margin-top: 4px;
 }
 
-.changelog-entry {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.changelog-discord-card:hover,
+.changelog-discord-card:focus-visible {
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border-color: color-mix(in srgb, var(--light) 24%, transparent);
+    outline: none;
+    transform: translateY(-1px);
 }
 
-.changelog-entry-header {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid
-        color-mix(in srgb, var(--light) 12%, transparent);
-}
-
-.changelog-version {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
+.changelog-discord-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--light) 10%, transparent);
     color: var(--light);
 }
 
-.changelog-date {
-    font-size: 12px;
-    color: var(--light-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.changelog-highlights {
-    list-style: disc;
-    padding-left: 20px;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--light);
-}
-
-.changelog-highlights li::marker {
-    color: color-mix(in srgb, var(--light) 50%, transparent);
+.changelog-discord-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
 }

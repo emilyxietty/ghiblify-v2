@@ -4,9 +4,11 @@
 
 .greeting-widget {
     color: #ffffff;
+    /* Shadow alpha scales with --text-shadow-strength (default 1.0,
+       user-configurable via EditWidget). */
     text-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.55),
-        0 0 12px rgba(0, 0, 0, 0.35);
+        0 1px 2px rgba(0, 0, 0, calc(0.55 * var(--text-shadow-strength, 1))),
+        0 0 12px rgba(0, 0, 0, calc(0.35 * var(--text-shadow-strength, 1)));
     font-weight: 500;
     letter-spacing: 0.01em;
     line-height: 1.15;
