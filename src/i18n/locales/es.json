@@ -438,7 +438,8 @@
         "body1Pre": "Mantén ",
         "body1Post": " y arrastra el widget de Hora para reposicionarlo. Los widgets se ajustan a una rejilla.",
         "body2": "Para reorganizar varios widgets, activa el Modo arrastrar desde la barra superior del Modo edición (o haz clic derecho en cualquier widget → Arrastrar widget). Todos los widgets siguen arrastrables hasta que pulses Listo.",
-        "hint": "El cursor se convierte en una mano cuando mantienes D o el Modo arrastrar está activo — esa es tu pista."
+        "hint": "El cursor se convierte en una mano de arrastre mientras mantienes D o Shift, o cuando el modo de arrastre está activo — esa es tu señal.",
+        "body1Sep": " o "
       },
       "rightClick": {
         "title": "Clic derecho para acciones rápidas",
@@ -462,14 +463,12 @@
         "openSidebar": "Abrir o cerrar la barra lateral",
         "openBookmarks": "Abrir o cerrar el panel de marcadores",
         "moveWidget": "Mover un widget",
-        "editWidget": "Editar un solo widget (Shift + clic en el lápiz)",
+        "editWidget": "Editar un widget (mantén D o Shift y haz clic en el lápiz)",
         "escape": "Cerrar barra lateral, popovers, modo edición o esta guía",
         "enter": "Confirmar edición o salir del modo edición",
-        "navigateGuide": "Navegar las diapositivas de la guía"
+        "navigateGuide": "Navegar las diapositivas de la guía",
+        "orSep": "o"
       }
     }
-  },
-  "dragHint": {
-    "shiftFallback": "¿Quieres arrastrar? Pulsa d en su lugar."
   }
 }

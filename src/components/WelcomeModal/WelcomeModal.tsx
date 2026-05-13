@@ -453,6 +453,8 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             <p>
               {t("welcome.slides.drag.body1Pre")}
               <Key>d</Key>
+              {t("welcome.slides.drag.body1Sep")}
+              <Key>shift</Key>
               {t("welcome.slides.drag.body1Post")}
             </p>
             <p>{t("welcome.slides.drag.body2")}</p>
@@ -492,13 +494,15 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             </li>
             <li>
               <span className="welcome-shortcut-keys">
-                <Key>d</Key> + drag
+                <Key>d</Key> {t("welcome.slides.shortcuts.orSep")}{" "}
+                <Key>shift</Key> + drag
               </span>
               <span>{t("welcome.slides.shortcuts.moveWidget")}</span>
             </li>
             <li>
               <span className="welcome-shortcut-keys">
-                <Key>d</Key> +{" "}
+                <Key>d</Key> {t("welcome.slides.shortcuts.orSep")}{" "}
+                <Key>shift</Key> +{" "}
                 <span className="welcome-icon-key" aria-label="edit pencil icon">
                   <EditIcon style={{ fontSize: 14 }} />
                 </span>
@@ -558,7 +562,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         isCorneredMode ? " is-cornered-mode" : ""
       }${isPassthrough ? " is-passthrough" : ""}${
         isRightClickSlide ? " is-right-click-spotlight" : ""
-      }`}
+      }${slideId === "welcome" ? " is-welcome-slide" : ""}`}
     >
       <div
         ref={dialogRef}

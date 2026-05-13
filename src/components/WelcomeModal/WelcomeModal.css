@@ -80,6 +80,23 @@
         -webkit-backdrop-filter 220ms ease;
 }
 
+/* Welcome slide — the very first guide step (title + language picker
+   + intro copy). Brings back the dim/blur on top of the cornered
+   layout so the title moment reads as a landing screen against a
+   darkened photo. Drops z-index below the left sidebar's 99999 so
+   the sidebar paints ABOVE the dim — user can still see the
+   sidebar's chrome / language picker / theme swatches behind the
+   welcome dialog. Specificity includes `.is-cornered-mode` so it
+   beats the rule above that sets cornered backdrops to transparent. */
+.welcome-backdrop.is-cornered-mode.is-welcome-slide {
+    z-index: 99998;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 220ms ease, backdrop-filter 220ms ease,
+        -webkit-backdrop-filter 220ms ease;
+}
+
 @keyframes welcome-backdrop-in {
     from {
         opacity: 0;
@@ -463,8 +480,16 @@
     gap: 4px;
     padding: 10px 6px;
     background: transparent;
-    color: color-mix(in srgb, var(--light) 65%, transparent);
-    border: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
+    /* Use --light directly (not color-mix toward transparent) so the
+       inactive label/icon stays readable on every theme. The 65%
+       version was fine on dark themes (where --light is cream) but
+       washed out into low-contrast on light-card themes (Spring,
+       Peony, Light, Mint, Butter, Sky) where --light is intentionally
+       dark to read against the lighter surface. Border keeps the
+       softer mix so the inactive tile is still visually de-emphasized
+       relative to the active one. */
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: background 140ms ease, border-color 140ms ease,

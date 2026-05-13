@@ -10,6 +10,7 @@ import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./QuickLinks.css";
 
 const normalizeUrl = (raw: string) => {
@@ -108,8 +109,9 @@ export const QuickLinks: React.FC = () => {
       window.removeEventListener("ghiblify:quicklinks:add", onAdd);
   }, [showGrid]);
 
-  const width = quicklinksSettings.width;
-  const height = quicklinksSettings.height;
+  // settings.width/height are reference-px (1920 baseline).
+  const width = useScaledPx(quicklinksSettings.width);
+  const height = useScaledPx(quicklinksSettings.height);
 
   useEffect(() => {
     if (anchorEl) setTimeout(() => urlInputRef.current?.focus(), 0);

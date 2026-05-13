@@ -431,7 +431,8 @@
         "body1Pre": "Maintenez ",
         "body1Post": " et glissez le widget Heure pour le repositionner. Les widgets s'alignent sur la grille.",
         "body2": "Pour des réagencements plus longs, activez le Mode déplacement depuis la barre supérieure du Mode édition (ou clic droit sur un widget → Déplacer). Chaque widget reste déplaçable jusqu'à ce que vous cliquiez sur Terminé.",
-        "hint": "Le curseur devient une main quand D est maintenu ou que le Mode déplacement est actif — c'est votre signal."
+        "hint": "Le curseur devient une main de glissement lorsque vous maintenez D ou Maj, ou que le mode glissement est activé — c'est votre repère.",
+        "body1Sep": " ou "
       },
       "rightClick": {
         "title": "Clic droit pour des actions rapides",
@@ -455,14 +456,12 @@
         "openSidebar": "Ouvrir ou fermer la barre latérale",
         "openBookmarks": "Ouvrir ou fermer le panneau marque-pages",
         "moveWidget": "Déplacer un widget",
-        "editWidget": "Modifier un seul widget (Shift + clic sur le crayon)",
+        "editWidget": "Modifier un widget (maintenez D ou Maj, cliquez sur le crayon)",
         "escape": "Fermer la barre latérale, popovers, mode édition ou ce guide",
         "enter": "Confirmer une édition ou quitter le mode édition",
-        "navigateGuide": "Naviguer dans les diapositives du guide"
+        "navigateGuide": "Naviguer dans les diapositives du guide",
+        "orSep": "ou"
       }
     }
-  },
-  "dragHint": {
-    "shiftFallback": "Pour déplacer, appuyez plutôt sur d."
   }
 }

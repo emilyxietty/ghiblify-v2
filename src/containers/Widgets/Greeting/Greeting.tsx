@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./Greeting.css";
 
 // Time-of-day buckets. Local time, no timezone gymnastics.
@@ -14,6 +15,10 @@ export const Greeting: React.FC = () => {
   const t = useT();
   const { widgets, updateWidgetSettings } = useAppContext();
   const { fontSize, name, textShadow } = widgets.greeting.settings;
+  // settings.fontSize is reference-viewport px (1920 baseline);
+  // useScaledPx converts to current-viewport px on every viewport
+  // resize so the greeting scales proportionally with the screen.
+  const scaledFontSize = useScaledPx(fontSize);
 
   // Re-render on hour boundaries so "Good morning" rolls over to
   // "Good afternoon" without needing a manual refresh.
@@ -61,7 +66,7 @@ export const Greeting: React.FC = () => {
     <div
       className="greeting-widget widget-header"
       style={{
-        fontSize: `${fontSize}px`,
+        fontSize: `${scaledFontSize}px`,
         // Drives the calc() multiplier on text-shadow alpha in Greeting.css.
         ["--text-shadow-strength" as never]: `${(textShadow ?? 100) / 100}`,
       }}

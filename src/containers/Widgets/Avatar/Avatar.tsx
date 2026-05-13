@@ -2,6 +2,7 @@ import React from "react";
 import { AVATAR_OPTIONS } from "../../../config/avatarConfig";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { ArrowBackIosNewIcon, ArrowForwardIosIcon } from "../../../components/Icons/Icons";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./Avatar.css";
 
 interface AvatarProps {
@@ -14,7 +15,10 @@ export const Avatar: React.FC<AvatarProps> = () => {
   // forking the component. Cycle arrows write to whichever surface
   // they're on.
   const { settings, updateSettings } = useWidgetSettings("avatar");
-  const { selectedAvatar: avatar, size: avatarSize } = settings;
+  const { selectedAvatar: avatar, size: avatarSizeRef } = settings;
+  // settings.size is reference-px (1920 baseline); scale to current-
+  // viewport px so the avatar stays proportional to the screen.
+  const avatarSize = useScaledPx(avatarSizeRef);
 
   const currentIndex = AVATAR_OPTIONS.findIndex((a) => a.value === avatar);
   const avatarData =

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./Notes.css";
 
 // Cute sticky-note widget. The user types whatever they want into the
@@ -21,6 +22,10 @@ export const Notes: React.FC = () => {
   // user's typed text stays a single shared note: editing in the
   // dock updates the canvas note and vice versa.
   const { settings } = useWidgetSettings("notes");
+  // settings.width/height are reference-px (1920 baseline); scale to
+  // current-viewport px so the note stays proportional.
+  const scaledWidth = useScaledPx(settings.width);
+  const scaledHeight = useScaledPx(settings.height);
   const [draft, setDraft] = useState(settings.content);
   const draftRef = useRef(draft);
   draftRef.current = draft;
@@ -95,7 +100,7 @@ export const Notes: React.FC = () => {
       className={`notes-widget widget-header${
         settings.showBorder === false ? " no-border" : ""
       }`}
-      style={{ width: settings.width, height: settings.height }}
+      style={{ width: scaledWidth, height: scaledHeight }}
     >
       <textarea
         id="notes-textarea"

@@ -240,9 +240,17 @@
 }
 
 .todo-checkbox {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
+    /* `box-sizing: border-box` makes width:22 the OUTER size including
+       the 2px border, leaving 18×18 inside. Without it, the default
+       content-box plus browser-default button padding (~1px 6px in
+       Chrome) was eating into the inner content area and squashing
+       the check glyph. `padding: 0` belt-and-suspenders against any
+       UA stylesheet leftovers. */
+    box-sizing: border-box;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    padding: 0;
     background: transparent;
     border: 2px solid color-mix(in srgb, var(--todo-text) 50%, transparent);
     border-radius: var(--radius-sm);
@@ -251,9 +259,11 @@
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 12px;
     transition: background 160ms ease, border-color 160ms ease, transform 140ms ease;
 }
+
+/* The check inside is now a stroke-based inline SVG with width/
+   height attributes set in the JSX directly; no CSS sizing needed. */
 
 .todo-checkbox:hover {
     border-color: var(--todo-accent);

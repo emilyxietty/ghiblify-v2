@@ -278,5 +278,19 @@ export const useBackground = () => {
     };
   }, [backgroundSelection, online]);
 
+  // Persist the most recent background URL to localStorage. The
+  // inline script in `newtab.html` reads this on the NEXT new-tab
+  // load and paints it on <body> before React mounts, so users see
+  // their previous wallpaper instantly. On the very first load ever
+  // (no cache), the script falls back to chihiro043.jpg.
+  useEffect(() => {
+    if (!currentBackground) return;
+    try {
+      localStorage.setItem("ghiblify:lastBg", currentBackground);
+    } catch {
+      /* ignore — quota exceeded / private context */
+    }
+  }, [currentBackground]);
+
   return { currentBackground, filmTitle, loading };
 };

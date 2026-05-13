@@ -450,9 +450,10 @@
       "drag": {
         "title": "Move widgets around",
         "body1Pre": "Hold ",
+        "body1Sep": " or ",
         "body1Post": " and click-drag the Time widget above to reposition it. Widgets snap to grid lines (left edge, center, right edge) so they stay tidy.",
         "body2": "For longer rearranging, toggle Drag Mode from Edit Mode's top bar (or right-click any widget → Drag widget). Every widget stays draggable until you click Done.",
-        "hint": "The cursor turns into a grab hand while D is held or Drag Mode is on — that's your cue."
+        "hint": "The cursor turns into a grab hand while D or Shift is held or Drag Mode is on — that's your cue."
       },
       "rightClick": {
         "title": "Right-click for quick actions",
@@ -476,14 +477,12 @@
         "openSidebar": "Open or close the sidebar",
         "openBookmarks": "Open or close the bookmarks panel",
         "moveWidget": "Move a widget around",
-        "editWidget": "Edit a single widget (hold Shift, click the pencil)",
+        "editWidget": "Edit a single widget (hold D or Shift, click the pencil)",
         "escape": "Close the sidebar, popovers, edit mode, or this guide",
         "enter": "Confirm an edit, or exit edit mode",
-        "navigateGuide": "Navigate slides in this guide"
+        "navigateGuide": "Navigate slides in this guide",
+        "orSep": "or"
       }
     }
-  },
-  "dragHint": {
-    "shiftFallback": "Trying to drag? Press d instead."
   }
 }

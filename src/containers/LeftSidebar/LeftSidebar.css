@@ -101,91 +101,72 @@
     }
 }
 
+/* Three-row flex layout: header (top buttons, fixed) → scroll-area
+   (middle sections, scrolls) → footer (bottom buttons + version,
+   fixed). The outer container itself doesn't scroll; the inner
+   `.sidebar-scroll` does.
+   Horizontal AND vertical padding lives entirely on the CHILDREN
+   (not here) so the scroll region can have internal padding-block
+   for pulse-glow breathing room without forcing the parent to
+   carry that padding too. */
 .sidebar-content {
-    /* Top/bottom padding is intentionally 0 — the sticky header and
-       footer bake their own 32px spacing into their padding-top /
-       padding-bottom so they can sit FLUSH against the sidebar's
-       edges. A non-zero vertical padding here would create a strip
-       below/above the sticky bands that they couldn't reach (sticky
-       containing block is the parent's content-box, which excludes
-       padding). */
-    padding: 0 24px;
+    padding: 0;
     color: var(--light);
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    overflow-y: auto;
-    /* min-height was 100vh; that defeated sticky-footer behavior on
-       short viewports because the content always exceeded the
-       viewport even when it logically fit. Use full height of the
-       parent <aside> instead — content scrolls inside, footer stays
-       pinned via the sticky rule below. */
     height: 100%;
+    overflow: hidden;
     box-sizing: border-box;
 }
 
-/* Pinned header — Guide + My Socials + Buy Me a Coffee stay visible
-   at the top of the sidebar even when the sections below scroll.
-   Mirrors .sidebar-footer's mechanic, but pinned to top with the
-   fade gradient flipped. The negative top margin and matching
-   padding eat into .sidebar-content's top padding so there's no
-   visible gap above the sticky band. */
+/* Top button group — fixed at the top, doesn't scroll. Owns its
+   own horizontal padding (24px both sides) and a 32px top padding
+   to give the band a comfortable margin from the sidebar chrome.
+   The bottom 16px keeps a gap to the scroll content below. */
 .sidebar-header {
-    position: sticky;
-    top: 0;
-    /* Horizontal negative margins escape .sidebar-content's side
-       padding so the band runs edge-to-edge; matching positive
-       padding keeps the inner buttons in their original rhythm.
-       Vertical 32px now lives entirely inside the band's padding-top
-       (sidebar-content has no vertical padding). */
-    margin: 0 -24px;
-    padding: 32px 24px 16px;
-    /* Solid sidebar-bg up top (under the buttons) + a soft fade in
-       the bottom 16px so the band blends into the scrolling content
-       instead of showing a hard horizontal seam. */
-    background: linear-gradient(
-        to bottom,
-        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) 0,
-        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) calc(100% - 16px),
-        transparent 100%
-    );
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 2;
+    flex-shrink: 0;
+    padding: 32px 24px 16px 24px;
 }
 
-/* Pinned footer — Report a Bug + Rate + Language picker + version
-   chip stay visible at the bottom of the sidebar even when the
-   sections above overflow. `position: sticky` keeps the wrapper at
-   the bottom of the .sidebar-content scroll context; the
-   semi-opaque background + blur obscures content scrolling beneath
-   so the footer reads as a pinned tray. */
-.sidebar-footer {
-    position: sticky;
-    bottom: 0;
-    /* Horizontal negative margins escape .sidebar-content's side
-       padding so the band sits flush against the sidebar's left/right
-       edges. Matching positive padding keeps the inner button row +
-       version chip aligned to the original content rhythm. */
-    margin: auto -24px 0;
-    padding: 16px 24px 32px;
-    /* Flex column — needed so the .sidebar-version chip's
-       `align-self: center` actually does something. Without this the
-       chip would default to stretching the full width / left-aligning. */
+/* Scrolling middle — owns the overflow. Extends to the sidebar's
+   right edge so the browser-rendered scrollbar sits at the very
+   right. `padding-right: 24px` keeps section content indented to
+   match the header / footer; the scrollbar overlays the rightmost
+   ~15 px of that padding, leaving ~9 px breathing room between
+   content and the bar.
+   `padding-block` here is the GLOW-CLIP FIX: `.widget-section`,
+   `.theme-swatches`, etc. animate a ~22 px box-shadow glow during
+   the welcome tour. Without internal padding, that glow would clip
+   at this element's overflow boundary. 24 px of padding-block
+   gives the glow room to extend before clipping. Same logic for
+   padding-left, so a glow on the left edge of a section isn't
+   cut off either.
+   `min-height: 0` is required for a flex child with
+   `overflow-y: auto` to actually scroll — without it, the child
+   claims its intrinsic content height and pushes the footer off
+   the bottom of the sidebar. `scrollbar-gutter: stable` reserves
+   the scrollbar lane even when content doesn't overflow so the
+   section indent doesn't visibly shift when widgets toggle. */
+.sidebar-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding: 24px 24px 24px 24px;
     display: flex;
     flex-direction: column;
-    /* Soft fade at the top edge (where the band meets scrolling
-       content), then solid sidebar-bg under the buttons + version
-       chip. Mirrors the .sidebar-header fade in reverse. */
-    background: linear-gradient(
-        to top,
-        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) 0,
-        var(--sidebar-bg, rgba(31, 38, 32, 0.86)) calc(100% - 16px),
-        transparent 100%
-    );
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 2;
+    gap: 24px;
+    box-sizing: border-box;
+}
+
+/* Bottom button group + version chip — fixed at the bottom, doesn't
+   scroll. Flex column so the version chip's `align-self: center`
+   works. Owns its horizontal padding to match the header. */
+.sidebar-footer {
+    flex-shrink: 0;
+    padding: 16px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-section {
@@ -194,9 +175,8 @@
     gap: 12px;
 }
 
-/* Bottom button-group inside the pinned footer. The push-to-bottom
-   `margin-top: auto` is now on `.sidebar-footer` (the sticky wrapper);
-   here we just keep the divider line + wrap behavior. */
+/* Bottom button-group — divider line + wrap behavior. Sits inside
+   the `.sidebar-footer` flex column. */
 .sidebar-bottom {
     padding-top: 16px;
     border-top: 1px solid color-mix(in srgb, var(--light) 12%, transparent);
@@ -1045,33 +1025,62 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Scrollbars
+   Scrollbars — cute, narrow, pill-shaped thumb that floats inside its
+   track with a little breathing room on each side. The `border:
+   transparent` + `background-clip: padding-box` trick paints the
+   theme-tinted color only on the padding box, so the visible thumb
+   is narrower than the track width — looks like a free-floating
+   pill rather than a flush bar.
    --------------------------------------------------------------------------- */
 
-.left-sidebar::-webkit-scrollbar,
-.sidebar-content::-webkit-scrollbar {
-    width: 6px;
+.sidebar-scroll,
+.left-sidebar,
+.sidebar-content {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 28%, transparent)
+        transparent;
 }
 
+.sidebar-scroll::-webkit-scrollbar,
+.left-sidebar::-webkit-scrollbar,
+.sidebar-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track,
 .left-sidebar::-webkit-scrollbar-track,
 .sidebar-content::-webkit-scrollbar-track {
     background: transparent;
+    /* Tuck the thumb away from the very top + bottom edges so it
+       reads as a contained pill rather than running right to the
+       chrome of the sidebar. */
+    margin: 4px 0;
 }
 
+.sidebar-scroll::-webkit-scrollbar-thumb,
 .left-sidebar::-webkit-scrollbar-thumb,
 .sidebar-content::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--light) 22%, transparent);
-    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--light) 24%, transparent);
+    background-clip: padding-box;
+    border: 3px solid transparent; /* paints the breathing room */
+    border-radius: 999px; /* full pill */
+    min-height: 32px; /* so a long scroll never collapses to a dot */
+    transition: background-color 160ms ease;
 }
 
+.sidebar-scroll::-webkit-scrollbar-thumb:hover,
 .left-sidebar::-webkit-scrollbar-thumb:hover,
 .sidebar-content::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--yellow) 60%, transparent);
+    background: color-mix(in srgb, var(--light) 48%, transparent);
+    background-clip: padding-box;
 }
 
-.left-sidebar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(253, 246, 233, 0.2) transparent;
+.sidebar-scroll::-webkit-scrollbar-thumb:active,
+.left-sidebar::-webkit-scrollbar-thumb:active,
+.sidebar-content::-webkit-scrollbar-thumb:active {
+    background: color-mix(in srgb, var(--light) 62%, transparent);
+    background-clip: padding-box;
 }
 
 /* Font picker — vertical list of buttons. Each option's label is

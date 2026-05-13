@@ -9,11 +9,13 @@
     align-items: center;
     justify-content: center;
     /* Intentionally constant — Info stays white regardless of theme so
-       it always reads against the photo background, matching Time/Date. */
+       it always reads against the photo background, matching Time/Date.
+       Shadow alpha scales with --text-shadow-strength (default 1.0,
+       user-configurable via EditWidget slider + right-click submenu). */
     color: white;
     text-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.55),
-        0 2px 6px rgba(0, 0, 0, 0.5);
+        0 1px 3px rgba(0, 0, 0, calc(0.55 * var(--text-shadow-strength, 1))),
+        0 2px 6px rgba(0, 0, 0, calc(0.5 * var(--text-shadow-strength, 1)));
     border-radius: var(--radius-md);
     transition: background-color 0.3s ease;
     width: min(80vw, 700px);

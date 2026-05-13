@@ -258,8 +258,13 @@ export const PlaceIcon = makeIcon(
   "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5",
 );
 
+// PlayCircle (24x24 viewBox). Original path was extracted from
+// MUI's PlayCircleFilledWhite which uses a 48x48 viewBox; rendered
+// inside our 0 0 24 24 viewport it drew at 2x size and clipped its
+// right/bottom edges. Standard PlayCircle path is sized for the
+// same viewBox the rest of these icons use.
 export const PlayCircleFilledWhiteIcon = makeIcon(
-  "M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm-4 29V15l12 9-12 9z",
+  "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.5 16.5v-9l7 4.5z",
 );
 
 export const RadioButtonCheckedIcon = makeIcon(

@@ -443,7 +443,8 @@
         "body1Pre": "按住 ",
         "body1Post": " 并拖动上方的时间小组件以重新定位。小组件会对齐到网格线。",
         "body2": "需要长时间整理时，从编辑模式顶部栏开启拖动模式（或右键任意小组件 → 拖动小组件）。所有小组件都可拖动，直到点击完成。",
-        "hint": "按住 D 或开启拖动模式时光标会变成抓手 — 那就是信号。"
+        "hint": "按住 D 或 Shift,或开启拖动模式时,光标会变成抓手 — 这就是提示。",
+        "body1Sep": " 或 "
       },
       "rightClick": {
         "title": "右键单击进行快速操作",
@@ -467,14 +468,12 @@
         "openSidebar": "打开或关闭侧边栏",
         "openBookmarks": "打开或关闭书签面板",
         "moveWidget": "移动小组件",
-        "editWidget": "编辑单个小组件（按住 Shift 并点击铅笔）",
+        "editWidget": "编辑单个小组件（按住 D 或 Shift，点击铅笔图标）",
         "escape": "关闭侧边栏、弹出框、编辑模式或本指南",
         "enter": "确认编辑或退出编辑模式",
-        "navigateGuide": "在本指南中翻页"
+        "navigateGuide": "在本指南中翻页",
+        "orSep": "或"
       }
     }
-  },
-  "dragHint": {
-    "shiftFallback": "想拖动？按 d 键。"
   }
 }

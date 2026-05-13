@@ -5,7 +5,7 @@ import { CloseIcon, ContentCopyIcon, DiscordIcon, EmailIcon } from "../Icons/Ico
 import "./ReportModal.css";
 
 const CONTACT_EMAIL = "emily.xietty@gmail.com";
-const DISCORD_INVITE = "https://discord.gg/rvwmFgKW";
+const DISCORD_INVITE = "https://discord.gg/8re4UaZ2fX";
 
 interface ReportModalProps {
   open: boolean;

@@ -11,7 +11,7 @@ import { useT } from "../../i18n/i18n";
 import { CloseIcon, DiscordIcon } from "../Icons/Icons";
 import "./ChangelogModal.css";
 
-const DISCORD_INVITE = "https://discord.gg/rvwmFgKW";
+const DISCORD_INVITE = "https://discord.gg/8re4UaZ2fX";
 
 interface ChangelogModalProps {
   open: boolean;

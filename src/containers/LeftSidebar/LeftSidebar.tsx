@@ -401,6 +401,12 @@ export const LeftSidebar: React.FC = () => {
             </Button>
           </div>
 
+          {/* Scrolling middle — sections between the top button band and
+              the bottom button band scroll independently. The header
+              and footer divs sit outside this wrapper as flex
+              siblings so they stay fixed at top/bottom of the
+              sidebar regardless of how much content the user has. */}
+          <div className="sidebar-scroll">
           <section
             className="sidebar-section"
             aria-labelledby="widgets-heading"
@@ -891,12 +897,11 @@ export const LeftSidebar: React.FC = () => {
               </div>
             </details>
           </section>
+          </div>
 
-          {/* Pinned footer — Report/Rate/Language buttons + version
-              chip stay visible when the sidebar's other content
-              overflows on short viewports. The footer's the most
-              important thing to reach (Report a Bug especially), so
-              we never want it scrolled out of sight. */}
+          {/* Bottom button group — sits as a flex sibling of the
+              scrolling middle so it stays fixed at the sidebar
+              bottom regardless of scroll position. */}
           <div className="sidebar-footer">
             <div
               className="sidebar-section button-group sidebar-bottom"

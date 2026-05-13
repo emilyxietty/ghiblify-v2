@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
 import { getLocale, useT } from "../../../i18n/i18n";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./Time.css";
 
 // Map our internal locale codes to BCP 47 tags Intl understands.
@@ -59,14 +60,19 @@ export const Time: React.FC = () => {
     "--text-shadow-strength": `${(timeSettings.textShadow ?? 100) / 100}`,
   } as React.CSSProperties;
 
+  // settings.fontSize is reference-viewport px (designed for 1920);
+  // useScaledPx converts to current-viewport px and re-renders on
+  // window resize so the clock stays proportional to the screen.
+  const scaledFontSize = useScaledPx(timeSettings.fontSize);
+
   return (
     <div className="time-container" style={shadowStyle}>
-      <div className="time" style={{ fontSize: `${timeSettings.fontSize}px` }}>
+      <div className="time" style={{ fontSize: `${scaledFontSize}px` }}>
         {timeDigits}
         {period && (
           <span
             className="time-period"
-            style={{ fontSize: `${timeSettings.fontSize * 0.2}px` }}
+            style={{ fontSize: `${scaledFontSize * 0.2}px` }}
           >
             {period}
           </span>

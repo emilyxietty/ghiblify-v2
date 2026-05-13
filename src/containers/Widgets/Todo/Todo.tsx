@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import { useScaledPx } from "../../../utils/viewportScale";
 import { EditIcon } from "../../../components/Icons/Icons";
-import { CheckIcon, ClearIcon, DragIndicatorIcon } from "../../../components/Icons/Icons";
+import { ClearIcon, DragIndicatorIcon } from "../../../components/Icons/Icons";
 import {
   clearLegacyTodos,
   readLegacyTodos,
@@ -108,8 +109,10 @@ export const Todo: React.FC = () => {
   const [enteringIds, setEnteringIds] = useState<Set<string>>(new Set());
   const { widgets } = useAppContext();
   const todoSettings = widgets.todo.settings;
-  const width = todoSettings.width;
-  const height = todoSettings.height;
+  // settings.width/height are reference-px (1920 baseline); scale to
+  // current-viewport px so the widget stays proportional to screen.
+  const width = useScaledPx(todoSettings.width);
+  const height = useScaledPx(todoSettings.height);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Flush any pending debounced todo write when the tab hides or
@@ -233,11 +236,24 @@ export const Todo: React.FC = () => {
     if (e.key === "Enter") addTodo();
   };
 
+  // Leaving edit mode with empty text means the user erased the
+  // todo's content — there's no clickable surface left to re-enter
+  // edit mode (the .todo-text span has no content), so the item
+  // would be stranded. Treat empty-on-leave as "I want this gone"
+  // and auto-delete instead.
+  const finishEdit = (id: string) => {
+    const t = todos.find((x) => x.id === id);
+    if (t && t.text.trim() === "") {
+      deleteTodo(id);
+    }
+    setEditingId(null);
+  };
+
   const handleEditKeyPress = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    _id: string
+    id: string
   ) => {
-    if (e.key === "Enter" || e.key === "Escape") setEditingId(null);
+    if (e.key === "Enter" || e.key === "Escape") finishEdit(id);
   };
 
   // Drag-and-drop reordering. Refs mirror the React state so the
@@ -429,7 +445,28 @@ export const Todo: React.FC = () => {
                       : t("todo.checkboxTooltipNotDone")
                   }
                 >
-                  {todo.checked && <CheckIcon style={{ fontSize: "14px" }} />}
+                  {todo.checked && (
+                    /* Inline thick-stroke check — Material's filled
+                       CheckIcon (used elsewhere) has lots of viewBox
+                       padding and reads as a thin glyph in this small
+                       box. A stroke-rendered polyline with rounded
+                       caps fills the box and gives a clearly-visible
+                       checkmark. currentColor inherits the button's
+                       active text color. */
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="3,12 9,18.5 21,5.5" />
+                    </svg>
+                  )}
                 </button>
                 {editingId === todo.id ? (
                   <TextInput
@@ -439,7 +476,7 @@ export const Todo: React.FC = () => {
                     value={todo.text}
                     onChange={(e) => updateTodoText(todo.id, e.target.value)}
                     onKeyDown={(e) => handleEditKeyPress(e, todo.id)}
-                    onBlur={() => setEditingId(null)}
+                    onBlur={() => finishEdit(todo.id)}
                     autoFocus
                   />
                 ) : (

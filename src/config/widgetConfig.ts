@@ -39,6 +39,7 @@ export interface GreetingSettings {
 export interface InfoSettings {
   fontSize: number;
   infoFields: InfoFields;
+  textShadow: number;
 }
 export interface TodoSettings {
   width: number;
@@ -246,6 +247,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
         movieLength: true,
         quote: true,
       },
+      textShadow: 100,
     },
     fontSize: { min: 10, max: 50, step: 5 },
     customControls: { infoFields: true },

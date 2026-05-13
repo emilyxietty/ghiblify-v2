@@ -33,6 +33,23 @@ import {
 } from "../storage/hybridStorage";
 
 const STORAGE_KEY = "ghiblify_widgets";
+const SCHEMA_VERSION_KEY = "ghiblify_widgets_schema_version";
+
+// Per-widget, the fields stored as REFERENCE-VIEWPORT pixels (i.e.,
+// "px as if at 1920px viewport width"). Used by the v2 migration
+// to normalize a user's existing pixel values away from their
+// current viewport into the canonical reference frame.
+const REFERENCE_PX_FIELDS: Partial<Record<WidgetKey, readonly string[]>> = {
+  time: ["fontSize"],
+  date: ["fontSize"],
+  greeting: ["fontSize"],
+  info: ["fontSize"],
+  todo: ["width", "height"],
+  quicklinks: ["width", "height"],
+  searchbar: ["width", "height"],
+  notes: ["width", "height"],
+  avatar: ["size"],
+};
 
 export const THEME_NAMES = [
   "ghibli",
@@ -497,6 +514,36 @@ const loadInitialWidgets = (): WidgetsState => {
   // modern set (legacy is treated as a seed for first-run only).
   const blob = readPersisted<Record<string, any> | null>(STORAGE_KEY, null);
   if (blob) {
+    // Schema-v2 migration: stored size fields used to be raw px;
+    // now they're "px at a 1920 reference viewport". A user whose
+    // widgets were sized at e.g. 1280px wide needs their values
+    // multiplied by 1920/1280 so that when the widget code later
+    // scales back (storedRef * currentVw / 1920), the on-screen
+    // size is identical to before the migration.
+    //
+    // Safe to run synchronously here because `window.innerWidth` is
+    // available at module-load time inside the new-tab page.
+    const schemaVersion = readPersisted<number>(SCHEMA_VERSION_KEY, 1);
+    if (schemaVersion < 2 && typeof window !== "undefined") {
+      const referenceWidth = 1920;
+      const currentWidth = window.innerWidth || referenceWidth;
+      const scale = referenceWidth / currentWidth;
+      for (const key of WIDGET_KEYS) {
+        const stored = blob[key];
+        if (!stored?.settings) continue;
+        const fields = REFERENCE_PX_FIELDS[key];
+        if (!fields) continue;
+        for (const field of fields) {
+          const v = stored.settings[field];
+          if (typeof v === "number" && isFinite(v)) {
+            stored.settings[field] = v * scale;
+          }
+        }
+      }
+      writePersisted(SCHEMA_VERSION_KEY, 2);
+      writePersisted(STORAGE_KEY, blob);
+    }
+
     for (const key of WIDGET_KEYS) {
       const entry = defaults[key];
       const stored = blob[key];
@@ -522,6 +569,12 @@ const loadInitialWidgets = (): WidgetsState => {
       persistWidgets(defaults);
     }
     return defaults;
+  } else {
+    // Fresh install (no stored blob yet) — defaults are already
+    // authored at the 1920 reference baseline, so mark the schema
+    // as migrated so the migration block above never runs for new
+    // users.
+    writePersisted(SCHEMA_VERSION_KEY, 2);
   }
 
   // No modern blob — migrate from legacy (no-op if no legacy keys exist)

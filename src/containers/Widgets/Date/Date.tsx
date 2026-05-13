@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
 import { getLocale, useT } from "../../../i18n/i18n";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./Date.css";
 
 // Map our internal locale codes to BCP 47 tags Intl understands.
@@ -37,11 +38,15 @@ export const DateDisplay: React.FC = () => {
     day: "numeric",
   });
 
+  // settings.fontSize is reference-viewport px (1920 baseline);
+  // useScaledPx converts to current-viewport px.
+  const scaledFontSize = useScaledPx(dateSettings.fontSize);
+
   return (
     <div
       className="date-container"
       style={{
-        fontSize: `${dateSettings.fontSize}px`,
+        fontSize: `${scaledFontSize}px`,
         // Drives the calc() multiplier on text-shadow alpha in Date.css.
         ["--text-shadow-strength" as never]: `${(dateSettings.textShadow ?? 100) / 100}`,
       }}

@@ -4,6 +4,7 @@ import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import { SearchIcon } from "../../../components/Icons/Icons";
+import { useScaledPx } from "../../../utils/viewportScale";
 import "./SearchBar.css";
 
 const SearchBar: React.FC = () => {
@@ -11,8 +12,9 @@ const SearchBar: React.FC = () => {
   const { widgets } = useAppContext();
   const searchbarSettings = widgets.searchbar.settings;
   const [query, setQuery] = useState("");
-  const width = searchbarSettings.width;
-  const height = searchbarSettings.height;
+  // settings.width/height are reference-px (1920 baseline).
+  const width = useScaledPx(searchbarSettings.width);
+  const height = useScaledPx(searchbarSettings.height);
 
   const submit = () => {
     const q = query.trim();

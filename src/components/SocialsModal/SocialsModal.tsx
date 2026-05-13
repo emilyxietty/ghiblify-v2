@@ -42,7 +42,7 @@ const SOCIALS: SocialLink[] = [
   },
   {
     key: "discord",
-    href: "https://discord.gg/rvwmFgKW",
+    href: "https://discord.gg/8re4UaZ2fX",
     icon: <DiscordIcon />,
     label: "Discord",
     handle: "Join the community",

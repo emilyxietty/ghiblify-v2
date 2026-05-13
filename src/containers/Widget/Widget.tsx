@@ -22,6 +22,7 @@ import {
   WidgetKey,
 } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
+import { toReferencePx, toScreenPx } from "../../utils/viewportScale";
 import { useT } from "../../i18n/i18n";
 import "./Widget.css";
 
@@ -160,24 +161,30 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging(isResizing);
   }, [isResizing, setIsDragging]);
 
-  // Held-to-drag affordance — press and hold 'd' to make widgets
-  // draggable, release 'd' to stop. Replaces the old Shift-held
-  // behavior, which had two problems: (1) Shift is also a modifier
-  // for OS shortcuts like Cmd+Shift+4 (macOS screenshot), which
-  // intercepts the keyup so the outline got stuck on; (2) Shift is
-  // commonly held while typing capitals or selecting text. 'd' is
-  // a plain key with no OS-level claim, so the held-state stays
-  // reliable.
+  // Held-to-drag affordance — press and hold 'd' OR Shift to make
+  // widgets draggable, release either to stop. Shift was the
+  // original behavior; users coming from earlier versions tried it
+  // out of muscle memory, so it's back as an alternative to 'd'.
+  // 'd' stays the recommended key because Shift has two known
+  // gotchas: (1) Cmd+Shift+4 (macOS screenshot) can swallow the
+  // keyup → outline gets stuck on; (2) Shift held during typing
+  // capitals could trigger the affordance in non-input contexts.
+  // Both are mitigated below — see mousemove + blur + visibility
+  // handlers.
   //
   // Skipped when an <input>, <textarea>, <select>, or contentEditable
-  // is focused so typing 'd' in todos / notes / search doesn't
+  // is focused so typing in todos / notes / search doesn't
   // accidentally enable drag.
-  //
-  // Belt-and-suspenders: blur and visibilitychange clear the class
-  // unconditionally so a window-focus loss can't leave it stuck.
   useEffect(() => {
-    const set = (on: boolean) => {
-      document.body.classList.toggle("show-widget-outline", on);
+    // Track both keys independently — outline stays on while EITHER
+    // is held. Refs (not state) so the listeners read the latest
+    // values without re-binding on every change.
+    const held = { d: false, shift: false };
+    const apply = () => {
+      document.body.classList.toggle(
+        "show-widget-outline",
+        held.d || held.shift,
+      );
     };
     const isTypingTarget = (t: EventTarget | null) => {
       const el = t as HTMLElement | null;
@@ -190,34 +197,54 @@ export const Widget: React.FC<WidgetProps> = ({
       );
     };
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key !== "d" && e.key !== "D") return;
-      // Plain 'd' only — combos (Cmd+D bookmark, etc.) shouldn't
-      // trigger drag.
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (isTypingTarget(e.target)) return;
-      // Don't preventDefault — 'd' doesn't have any default browser
-      // action we'd be blocking, and preventDefault breaks repeats.
-      set(true);
+      if (e.key === "d" || e.key === "D") {
+        // Plain 'd' only — combos (Cmd+D bookmark, etc.) shouldn't
+        // trigger drag.
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        held.d = true;
+        apply();
+      } else if (e.key === "Shift") {
+        held.shift = true;
+        apply();
+      }
     }
     function handleKeyUp(e: KeyboardEvent) {
-      if (e.key !== "d" && e.key !== "D") return;
-      set(false);
+      if (e.key === "d" || e.key === "D") {
+        held.d = false;
+        apply();
+      } else if (e.key === "Shift") {
+        held.shift = false;
+        apply();
+      }
     }
-    function handleBlur() {
-      set(false);
+    // Cmd+Shift+4 on macOS swallows the Shift keyup. The next
+    // mousemove that arrives with no shift-modifier pressed clears
+    // the stranded "shift held" state. Cheap, no observable cost.
+    function handleMouseMove(e: MouseEvent) {
+      if (held.shift && !e.shiftKey) {
+        held.shift = false;
+        apply();
+      }
     }
-    function handleVisibility() {
-      set(false);
+    // Window-focus loss / tab switch clear unconditionally so neither
+    // key can stay stuck.
+    function clearAll() {
+      held.d = false;
+      held.shift = false;
+      apply();
     }
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("blur", clearAll);
+    document.addEventListener("visibilitychange", clearAll);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("blur", clearAll);
+      document.removeEventListener("visibilitychange", clearAll);
     };
   }, []);
 
@@ -389,30 +416,52 @@ export const Widget: React.FC<WidgetProps> = ({
 
       // Resize logic — translate the bound that's enabled into a settings patch.
       if (isResizing && storageKey) {
-        const snap = (start: number, delta: number, b: { min: number; max: number; step: number }) => {
+        // Snap operates in screen-px (start / delta / bounds all in
+        // current-viewport pixels) so the drag feel stays uniform
+        // across viewports. We convert the widget config's
+        // reference-px bounds to screen-px here, snap, then convert
+        // the result back to reference-px before persisting.
+        const screenBound = (b: { min: number; max: number; step: number }) => ({
+          min: toScreenPx(b.min),
+          max: toScreenPx(b.max),
+          // Step in screen-px is the reference step scaled — but we
+          // ALSO want the visible step to feel reasonable. Floor at
+          // 1 px so very small viewports don't get a 0-step snap.
+          step: Math.max(1, toScreenPx(b.step)),
+        });
+        const snap = (
+          start: number,
+          delta: number,
+          b: { min: number; max: number; step: number },
+        ) => {
+          const sb = screenBound(b);
           const stepsMoved = Math.round(delta / 20);
-          const target = start + stepsMoved * b.step;
-          const snapped = Math.round(target / b.step) * b.step;
-          return Math.max(b.min, Math.min(b.max, snapped));
+          const target = start + stepsMoved * sb.step;
+          const snapped = Math.round(target / sb.step) * sb.step;
+          return Math.max(sb.min, Math.min(sb.max, snapped));
         };
 
         if (widgetConfig.size) {
-          const newSize = snap(resizeStartSize, e.clientY - resizeStartY, widgetConfig.size);
-          updateWidgetSettings(storageKey, { size: newSize } as never);
+          const newScreen = snap(resizeStartSize, e.clientY - resizeStartY, widgetConfig.size);
+          updateWidgetSettings(storageKey, { size: toReferencePx(newScreen) } as never);
         } else if (widgetConfig.width || widgetConfig.height) {
           const patch: Record<string, number> = {};
           if (widgetConfig.width) {
-            patch.width = snap(
-              resizeStartWidth,
-              e.clientX - resizeStartX,
-              widgetConfig.width
+            patch.width = toReferencePx(
+              snap(
+                resizeStartWidth,
+                e.clientX - resizeStartX,
+                widgetConfig.width,
+              ),
             );
           }
           if (widgetConfig.height) {
-            patch.height = snap(
-              resizeStartHeight,
-              e.clientY - resizeStartY,
-              widgetConfig.height
+            patch.height = toReferencePx(
+              snap(
+                resizeStartHeight,
+                e.clientY - resizeStartY,
+                widgetConfig.height,
+              ),
             );
           }
           // squareLock — width and height stay tied. Take the larger
@@ -429,8 +478,8 @@ export const Widget: React.FC<WidgetProps> = ({
           }
           updateWidgetSettings(storageKey, patch as never);
         } else if (widgetConfig.fontSize) {
-          const newSize = snap(resizeStartSize, e.clientY - resizeStartY, widgetConfig.fontSize);
-          updateWidgetSettings(storageKey, { fontSize: newSize } as never);
+          const newScreen = snap(resizeStartSize, e.clientY - resizeStartY, widgetConfig.fontSize);
+          updateWidgetSettings(storageKey, { fontSize: toReferencePx(newScreen) } as never);
         }
       } else if (isMouseDown && widgetRef.current) {
         if (!hasMovedWhileMouseDown) {
@@ -568,17 +617,13 @@ export const Widget: React.FC<WidgetProps> = ({
     //   2. Drag Mode is on (sticky mode toggled from sidebar /
     //      right-click).
     if (e.button !== 0) return;
-    const dHeld = document.body.classList.contains("show-widget-outline");
-    if (!dHeld && !dragMode) {
-      // Shift+click is the OLD drag affordance; users coming from
-      // earlier versions might still try it. Surface a transient
-      // hint nudging them toward 'd' without actually performing a
-      // drag. App.tsx renders the callout.
-      if (e.shiftKey) {
-        window.dispatchEvent(new CustomEvent("ghiblify:shift-drag-hint"));
-      }
-      return;
-    }
+    // `show-widget-outline` body class is added when EITHER `d` or
+    // Shift is held (see the held-to-drag effect higher up). Both
+    // keys are valid drag activators.
+    const dragKeyHeld = document.body.classList.contains(
+      "show-widget-outline",
+    );
+    if (!dragKeyHeld && !dragMode) return;
     if (isResizing) return;
 
     // Don't hijack mousedowns that originated on the resize handle or
@@ -613,15 +658,20 @@ export const Widget: React.FC<WidgetProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
+    // Storage is reference-px; the drag handler does math in
+    // screen-px (so the drag feel stays consistent across viewports —
+    // 20 px of mouse movement is always one "step" regardless of
+    // current viewport width). Convert stored → screen at drag-start;
+    // we'll convert screen → reference at write time inside mousemove.
     if (widgetConfig.fontSize) {
-      setResizeStartSize(Number(widgetSettings.fontSize) || 0);
+      setResizeStartSize(toScreenPx(Number(widgetSettings.fontSize) || 0));
     } else if (widgetConfig.size) {
-      setResizeStartSize(Number(widgetSettings.size) || 0);
+      setResizeStartSize(toScreenPx(Number(widgetSettings.size) || 0));
     } else {
       if (widgetConfig.width)
-        setResizeStartWidth(Number(widgetSettings.width) || 0);
+        setResizeStartWidth(toScreenPx(Number(widgetSettings.width) || 0));
       if (widgetConfig.height)
-        setResizeStartHeight(Number(widgetSettings.height) || 0);
+        setResizeStartHeight(toScreenPx(Number(widgetSettings.height) || 0));
     }
 
     setIsResizing(true);

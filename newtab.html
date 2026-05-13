@@ -11,7 +11,9 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #000;
+            background-color: #1f2620;
+            background-size: cover;
+            background-position: center;
         }
 
         #root {
@@ -22,6 +24,29 @@
 </head>
 
 <body>
+    <!--
+      Pre-mount paint — runs before React. On the VERY FIRST LOAD EVER
+      (no localStorage cache yet) the body paints `chihiro043.jpg`,
+      which is the chosen splash image for fresh installs. On every
+      subsequent load the body paints the previously-displayed
+      wallpaper from `ghiblify:lastBg` (written by `useBackground`),
+      so users see yesterday's photo instantly instead of waiting
+      for React to mount and pick a fresh image. Bare try/catch
+      because Chrome's strict-mode iframes / private contexts can
+      throw on localStorage access.
+    -->
+    <script>
+      (function () {
+        var splash = "/assets/backgrounds/chihiro043.jpg";
+        var url = splash;
+        try {
+          var last = localStorage.getItem("ghiblify:lastBg");
+          if (last) url = last;
+        } catch (e) { /* ignored */ }
+        document.body.style.backgroundImage =
+          "url('" + url.replace(/'/g, "\\'") + "')";
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
 </body>
