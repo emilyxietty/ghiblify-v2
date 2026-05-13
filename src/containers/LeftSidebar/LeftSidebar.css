@@ -383,6 +383,67 @@
     opacity: 0.7;
 }
 
+/* Heading-with-trailing-button row. Used by the WIDGETS section so a
+   small settings cog can sit on the right of the heading without
+   knocking the underline accent off (the accent is on the h4
+   ::after, which stays anchored under the heading text since the h4
+   itself only grows to its text width by default — `flex: 1` here
+   keeps that). */
+.widgets-heading-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.widgets-heading-row h4 {
+    /* Keep the underline accent anchored under the heading text only,
+       not stretched across the row, by letting the h4 hug its
+       content. flex sibling button doesn't grow either. */
+    flex: 0 0 auto;
+}
+
+/* Tiny ghost cog. Same circular hit target / hover treatment as
+   `.filter-help` (the question-mark next to toggle labels) so it
+   reads as the same family of inline-affordance. Sits flush right
+   in `.widgets-heading-row`, lifted slightly so it aligns with the
+   heading's cap height instead of its descender line. */
+.widgets-settings-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-top: -2px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 65%, transparent);
+    border: none;
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition:
+        background 140ms ease,
+        color 140ms ease,
+        transform 220ms ease;
+}
+
+.widgets-settings-btn:hover {
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    transform: rotate(35deg);
+}
+
+.widgets-settings-btn:active {
+    transform: rotate(35deg) scale(0.94);
+}
+
+.widgets-settings-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    color: var(--light);
+}
+
 /* ---------------------------------------------------------------------------
    Top button row
    --------------------------------------------------------------------------- */

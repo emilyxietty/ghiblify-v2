@@ -115,43 +115,8 @@
     line-height: 1.4;
 }
 
-/* The settings icon sitting next to the WIDGETS heading. Tiny ghost
-   button — same affordance as the LeftSidebar's `.filter-help`
-   question-mark next to other toggle labels. */
-.widgets-heading-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.widgets-heading-row h4 {
-    flex: 1;
-}
-
-.widgets-settings-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: color-mix(in srgb, var(--light) 65%, transparent);
-    border: none;
-    cursor: pointer;
-    transition: background 140ms ease, color 140ms ease, transform 140ms ease;
-}
-
-.widgets-settings-btn:hover {
-    color: var(--light);
-    background: color-mix(in srgb, var(--light) 10%, transparent);
-    transform: rotate(20deg);
-}
-
-.widgets-settings-btn:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-    color: var(--light);
-}
+/* Note: `.widgets-heading-row` and `.widgets-settings-btn` live in
+   LeftSidebar.css, not here. The sidebar header renders before the
+   modal is ever opened, and this CSS only loads on first open
+   (lazy-imported modal). Keeping the trigger button's styles in the
+   sidebar stylesheet ensures it's styled from initial paint. */

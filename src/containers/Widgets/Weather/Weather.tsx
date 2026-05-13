@@ -164,7 +164,7 @@ const Weather: React.FC = () => {
     <div
       className={`weather-widget widget-header${
         settings.showCard ? " weather-card-on" : ""
-      }`}
+      }${settings.iconsOnly ? " weather-icons-only" : ""}`}
       data-weather-mood={mood}
       style={{
         ["--weather-cell-opacity" as any]:

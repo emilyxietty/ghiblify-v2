@@ -994,18 +994,20 @@ export function buildContextMenuItems(args: {
             { type: "separator" as const },
           ] as ContextMenuItem[])
         : []),
-      {
-        type: "radio",
-        label: t("widgets.edit.weatherUnitC"),
-        selected: s.unit === "C",
-        onClick: () => updateWidgetSettings("weather", { unit: "C" }),
-      },
-      {
-        type: "radio",
-        label: t("widgets.edit.weatherUnitF"),
-        selected: s.unit === "F",
-        onClick: () => updateWidgetSettings("weather", { unit: "F" }),
-      },
+      // Unit submenu — mirrors the EditWidget dropdown so both
+       // surfaces expose Celsius / Fahrenheit as direct radio picks.
+       // Was two top-level radios; collapsing into a single cascade
+       // entry keeps the root menu tidier next to Icon style.
+       {
+         type: "submenu",
+         label: t("widgets.edit.weatherUnitLabel"),
+         items: (["C", "F"] as const).map((v) => ({
+           type: "radio" as const,
+           label: t(`widgets.edit.weatherUnit${v}`),
+           selected: s.unit === v,
+           onClick: () => updateWidgetSettings("weather", { unit: v }),
+         })),
+       },
       {
         type: "submenu",
         label: t("widgets.edit.weatherSectionsLabel"),
@@ -1030,6 +1032,26 @@ export function buildContextMenuItems(args: {
         checked: !!s.showCard,
         onClick: () =>
           updateWidgetSettings("weather", { showCard: !s.showCard }),
+      },
+      {
+        type: "checkbox",
+        label: t("widgets.edit.weatherIconsOnly"),
+        checked: !!s.iconsOnly,
+        onClick: () =>
+          updateWidgetSettings("weather", { iconsOnly: !s.iconsOnly }),
+      },
+      // Icon style submenu — mirrors the EditWidget Dropdown so both
+      // surfaces expose the same Animated / Still pair as direct
+      // radio picks (rather than a click-to-flip toggle).
+      {
+        type: "submenu",
+        label: t("widgets.edit.weatherIconStyleLabel"),
+        items: (["animated", "still"] as const).map((v) => ({
+          type: "radio" as const,
+          label: t(`widgets.edit.weatherIconStyle.${v}`),
+          selected: s.iconStyle === v,
+          onClick: () => updateWidgetSettings("weather", { iconStyle: v }),
+        })),
       },
     ];
   } else if (storageKey === "notes") {
@@ -1168,6 +1190,62 @@ export function buildContextMenuItems(args: {
         selected: current === v,
         onClick: () =>
           updateWidgetSettings(storageKey, { textShadow: v } as never),
+      })),
+    });
+  }
+
+  // Generic opacity / blur cascades — mirror the textShadow pattern.
+  // Auto-attaches to any widget whose settings include numeric
+  // `opacity` / `blur` fields (Todo, QuickLinks, SearchBar, Weather,
+  // Pomodoro [opacity only]). Gated by theme to match EditWidget's
+  // slider, which swaps the same way:
+  //   - Non-Frost themes: Opacity is the meaningful surface knob
+  //     (alpha of the tinted background). Blur is irrelevant — the
+  //     widget isn't a glass pane.
+  //   - Frost: Blur is the meaningful knob (glass haze intensity).
+  //     Opacity is locked by the Frost surface alpha cap.
+  // Showing only the relevant one keeps the menu honest about what
+  // moving the slider would actually do on the current theme.
+  const OPACITY_BLUR_PRESETS = [0, 25, 50, 75, 100];
+  // Weather-specific gate: the opacity knob only tints the hourly /
+  // daily forecast cell backgrounds. If the user has both strips off
+  // (only "Now" showing), opacity is a no-op — same gate EditWidget
+  // applies to its slider — so we skip the cascade entirely.
+  const weatherOpacityIsNoOp =
+    storageKey === "weather" &&
+    !((widgets.weather.settings as WeatherSettings).sections.hourly) &&
+    !((widgets.weather.settings as WeatherSettings).sections.daily);
+  if (
+    typeof widgetSettingsAny.opacity === "number" &&
+    !isFrost &&
+    !weatherOpacityIsNoOp
+  ) {
+    if (extras.length > 0) extras.push({ type: "separator" });
+    const current = widgetSettingsAny.opacity as number;
+    extras.push({
+      type: "submenu",
+      label: t("widgets.contextMenu.opacity"),
+      items: OPACITY_BLUR_PRESETS.map((v) => ({
+        type: "radio" as const,
+        label: `${v}%`,
+        selected: current === v,
+        onClick: () =>
+          updateWidgetSettings(storageKey, { opacity: v } as never),
+      })),
+    });
+  }
+  if (typeof widgetSettingsAny.blur === "number" && isFrost) {
+    if (extras.length > 0) extras.push({ type: "separator" });
+    const current = widgetSettingsAny.blur as number;
+    extras.push({
+      type: "submenu",
+      label: t("widgets.contextMenu.blur"),
+      items: OPACITY_BLUR_PRESETS.map((v) => ({
+        type: "radio" as const,
+        label: `${v}%`,
+        selected: current === v,
+        onClick: () =>
+          updateWidgetSettings(storageKey, { blur: v } as never),
       })),
     });
   }

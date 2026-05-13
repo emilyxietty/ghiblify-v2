@@ -143,6 +143,8 @@
       "time12": "12時間制",
       "time24": "24時間制",
       "textShadow": "テキストの影",
+      "opacity": "不透明度",
+      "blur": "ぼかし",
       "addLink": "新しいリンクを追加",
       "focusModeOn": "集中モードに入る",
       "focusModeOff": "集中モードを終了",
@@ -181,6 +183,7 @@
       "notesShowBorderAria": "メモの枠を表示",
       "notesHideBorderAria": "メモの枠を非表示",
       "weatherUnitAria": "摂氏/華氏を切替",
+      "weatherUnitLabel": "単位",
       "weatherSections": {
         "now": "現在",
         "hourly": "1時間ごと",
@@ -191,6 +194,7 @@
         "animated": "アニメ",
         "still": "静止"
       },
+      "weatherIconStyleLabel": "アイコンスタイル",
       "weatherIconStyleAria": {
         "animated": "アイコンが動く — クリックで静止に切替",
         "still": "アイコンは静止 — クリックでアニメに切替"
@@ -200,6 +204,9 @@
       "weatherShowCardLabel": "カード背景を表示",
       "weatherShowCardAria": "天気の後ろにグラデーションカードを表示",
       "weatherHideCardAria": "カード背景を非表示",
+      "weatherIconsOnly": "アイコンのみ",
+      "weatherIconsOnlyOnAria": "アイコンのみ表示中 — クリックでテキストを表示",
+      "weatherIconsOnlyOffAria": "テキストを非表示にしてアイコンのみ表示",
       "pomodoroSizeLabel": "サイズ",
       "pomodoroSizeSmall": "小",
       "pomodoroSizeMedium": "中",

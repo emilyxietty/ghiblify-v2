@@ -432,3 +432,35 @@
         animation: none;
     }
 }
+
+/* ---------------------------------------------------------------------------
+   Icons-only mode
+   ---------------------------------------------------------------------------
+   When `WeatherSettings.iconsOnly` is on, the widget root gets a
+   `.weather-icons-only` class. Every text element (temperature,
+   condition, feels-like, hour / weekday labels, hi/lo temps) is
+   visually hidden — the icons themselves stay. Hidden via
+   `display: none` rather than `visibility: hidden` so the strip
+   cells collapse around their icons (no gaps where text used to be).
+   --------------------------------------------------------------------------- */
+.weather-widget.weather-icons-only .weather-current-text,
+.weather-widget.weather-icons-only .weather-strip-label,
+.weather-widget.weather-icons-only .weather-strip-temp,
+.weather-widget.weather-icons-only .weather-strip-low {
+    display: none;
+}
+
+/* Re-center the "Now" icon: with the text block gone, the flex
+   layout would leave the icon hugging the left edge of the row. Pop
+   it to centered + drop the original 14px gap so the icon sits
+   alone visually balanced. */
+.weather-widget.weather-icons-only .weather-current {
+    justify-content: center;
+    gap: 0;
+}
+
+/* The forecast strip cells switch to icon-only mode: tighter gap,
+   smaller min height since we lost the two text rows. */
+.weather-widget.weather-icons-only .weather-strip-cell {
+    gap: 0;
+}

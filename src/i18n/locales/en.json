@@ -147,6 +147,8 @@
       "time12": "12-hour",
       "time24": "24-hour",
       "textShadow": "Text shadow",
+      "opacity": "Opacity",
+      "blur": "Blur",
       "addLink": "Add new link",
       "focusModeOn": "Enter focus mode",
       "focusModeOff": "Exit focus mode",
@@ -185,6 +187,7 @@
       "notesShowBorderAria": "Show the cardborder around the note",
       "notesHideBorderAria": "Hide the cardborder around the note",
       "weatherUnitAria": "Toggle Celsius / Fahrenheit",
+      "weatherUnitLabel": "Unit",
       "weatherUnitC": "°C",
       "weatherUnitF": "°F",
       "weatherSections": {
@@ -197,6 +200,7 @@
         "animated": "Animated",
         "still": "Still"
       },
+      "weatherIconStyleLabel": "Icon style",
       "weatherIconStyleAria": {
         "animated": "Icons animate — click to switch to still",
         "still": "Icons are still — click to switch to animated"
@@ -206,6 +210,9 @@
       "weatherShowCardLabel": "Show card background",
       "weatherShowCardAria": "Show a soft gradient card behind the weather",
       "weatherHideCardAria": "Remove the card background",
+      "weatherIconsOnly": "Icons only",
+      "weatherIconsOnlyOnAria": "Showing icons only — click to bring text back",
+      "weatherIconsOnlyOffAria": "Hide text and show icons only",
       "pomodoroSizeLabel": "Size",
       "pomodoroSizeSmall": "S",
       "pomodoroSizeMedium": "M",

@@ -117,6 +117,13 @@ export interface WeatherSettings {
    *  transparent-on-photo treatment. Default false so existing
    *  users see no change. */
   showCard: boolean;
+  /** When true, the widget renders only weather icons — no
+   *  temperature, condition, feels-like, hourly/daily labels or
+   *  temps. The "Now" icon stays large and centered; forecast
+   *  strips collapse to icon rows. Default false so existing
+   *  users see no change. Toggled from EditWidget and from the
+   *  right-click context menu. */
+  iconsOnly: boolean;
 }
 // Bookmarks is a right-side sliding panel, not a positioned widget. It's in
 // WIDGET_KEYS so its visibility lives in the same state as everything else
@@ -193,6 +200,7 @@ export interface CustomControls {
   weatherSections?: boolean;
   weatherIconStyle?: boolean;
   weatherCard?: boolean;
+  weatherIconsOnly?: boolean;
   notesShowBorder?: boolean;
   pomodoroSize?: boolean;
 }
@@ -322,6 +330,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       blur: 10,
       iconStyle: "animated",
       showCard: false,
+      iconsOnly: false,
     },
     // No width/height ResizeBound — widget auto-sizes to content.
     customControls: {
@@ -329,6 +338,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       weatherSections: true,
       weatherIconStyle: true,
       weatherCard: true,
+      weatherIconsOnly: true,
     },
   },
   notes: {

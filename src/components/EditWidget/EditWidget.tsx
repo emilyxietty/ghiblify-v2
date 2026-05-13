@@ -14,6 +14,7 @@ import {
 } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
+import { Dropdown } from "../Dropdown/Dropdown";
 import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
 import "./EditWidget.css";
 
@@ -53,18 +54,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const toggleQuicklinksGrid = () => {
     const cur = (widgets.quicklinks.settings as QuicklinksSettings).gridMode;
     updateWidgetSettings("quicklinks", { gridMode: !cur });
-  };
-
-  const toggleWeatherIconStyle = () => {
-    const cur = (widgets.weather.settings as WeatherSettings).iconStyle;
-    updateWidgetSettings("weather", {
-      iconStyle: cur === "animated" ? "still" : "animated",
-    });
-  };
-
-  const toggleWeatherUnit = () => {
-    const cur = (widgets.weather.settings as WeatherSettings).unit;
-    updateWidgetSettings("weather", { unit: cur === "C" ? "F" : "C" });
   };
 
   const handleWeatherSectionsChange = (selected: string[]) => {
@@ -276,44 +265,68 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           );
         })()}
         {controls?.weatherUnit && (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleWeatherUnit();
-            }}
-            title={t("widgets.edit.weatherUnitAria")}
-            variant="dark"
-            size="small"
-            className="btn-text-toggle"
-            icon={
-              weatherSettings.unit === "C"
-                ? t("widgets.edit.weatherUnitF")
-                : t("widgets.edit.weatherUnitC")
-            }
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            {/* Direct two-option select, parity with the icon-style
+                Dropdown — the previous click-flip Button forced users
+                to remember which way the label pointed (current vs.
+                opposite). */}
+            <Dropdown
+              size="small"
+              variant="outline-light"
+              portal
+              options={(["C", "F"] as const).map((v) => ({
+                value: v,
+                label: t(`widgets.edit.weatherUnit${v}`),
+              }))}
+              value={weatherSettings.unit}
+              onChange={(v) =>
+                updateWidgetSettings("weather", {
+                  unit: v as "C" | "F",
+                })
+              }
+            />
+          </div>
         )}
         {controls?.weatherIconStyle && (
+          <div onClick={(e) => e.stopPropagation()}>
+            {/* Pulls the same two options as the right-click cascader so
+                the surfaces stay symmetric — picking from either
+                writes through updateWidgetSettings the same way. */}
+            <Dropdown
+              size="small"
+              variant="outline-light"
+              portal
+              options={(["animated", "still"] as const).map((v) => ({
+                value: v,
+                label: t(`widgets.edit.weatherIconStyle.${v}`),
+              }))}
+              value={weatherSettings.iconStyle}
+              onChange={(v) =>
+                updateWidgetSettings("weather", {
+                  iconStyle: v as "animated" | "still",
+                })
+              }
+            />
+          </div>
+        )}
+        {controls?.weatherIconsOnly && (
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              toggleWeatherIconStyle();
+              const cur = !!weatherSettings.iconsOnly;
+              updateWidgetSettings("weather", { iconsOnly: !cur });
             }}
-            title={t(
-              `widgets.edit.weatherIconStyleAria.${weatherSettings.iconStyle}`
-            )}
-            // Variant reflects CURRENT state (light = animated is on);
-            // label shows the OPPOSITE — i.e. what clicking will
-            // switch to. The previous "label shows current" pattern
-            // read as flipped because clicking the "Animated" button
-            // would switch the icons to still.
-            variant={weatherSettings.iconStyle === "animated" ? "light" : "dark"}
+            title={
+              weatherSettings.iconsOnly
+                ? t("widgets.edit.weatherIconsOnlyOnAria")
+                : t("widgets.edit.weatherIconsOnlyOffAria")
+            }
+            // Same "variant reflects current state" pattern as
+            // weatherCard above — light = on, dark = off.
+            variant={weatherSettings.iconsOnly ? "light" : "dark"}
             size="small"
             className="btn-text-toggle"
-            icon={t(
-              `widgets.edit.weatherIconStyle.${
-                weatherSettings.iconStyle === "animated" ? "still" : "animated"
-              }`
-            )}
+            icon={t("widgets.edit.weatherIconsOnly")}
           />
         )}
         {controls?.weatherCard && (

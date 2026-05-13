@@ -143,6 +143,8 @@
       "time12": "12 小时制",
       "time24": "24 小时制",
       "textShadow": "文字阴影",
+      "opacity": "不透明度",
+      "blur": "模糊",
       "addLink": "添加新链接",
       "focusModeOn": "进入专注模式",
       "focusModeOff": "退出专注模式",
@@ -181,6 +183,7 @@
       "notesShowBorderAria": "显示便签边框",
       "notesHideBorderAria": "隐藏便签边框",
       "weatherUnitAria": "切换摄氏/华氏",
+      "weatherUnitLabel": "单位",
       "weatherSections": {
         "now": "现在",
         "hourly": "每小时",
@@ -191,6 +194,7 @@
         "animated": "动画",
         "still": "静态"
       },
+      "weatherIconStyleLabel": "图标样式",
       "weatherIconStyleAria": {
         "animated": "图标动画 — 点击切换为静态",
         "still": "图标静态 — 点击切换为动画"
@@ -200,6 +204,9 @@
       "weatherShowCardLabel": "显示卡片背景",
       "weatherShowCardAria": "在天气后方显示柔和渐变卡片",
       "weatherHideCardAria": "移除卡片背景",
+      "weatherIconsOnly": "仅图标",
+      "weatherIconsOnlyOnAria": "正在仅显示图标 — 点击恢复文字",
+      "weatherIconsOnlyOffAria": "隐藏文字并仅显示图标",
       "pomodoroSizeLabel": "尺寸",
       "pomodoroSizeSmall": "小",
       "pomodoroSizeMedium": "中",
