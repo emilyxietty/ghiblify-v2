@@ -115,9 +115,6 @@ body {
     height: 56px;
     border-radius: 14px;
     background: var(--light);
-    /* box-shadow:
-        0 8px 22px rgba(58, 47, 61, 0.16),
-        0 0 0 4px rgba(255, 255, 255, 0.5); */
 }
 
 .hero-text {
