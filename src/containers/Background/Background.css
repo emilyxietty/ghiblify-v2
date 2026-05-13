@@ -40,6 +40,13 @@
 }
 
 .background-loading {
+    /* Transparent — `newtab.html`'s inline pre-mount script paints
+       the previous wallpaper (or the chihiro043 splash on first
+       load ever) on <body> before React mounts. While useBackground
+       picks the real image asynchronously, we let that pre-paint
+       show through. The old `background-color: #000` here was
+       covering the splash with black until React's loading flag
+       flipped to false. */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -47,7 +54,7 @@
     height: 100vh;
     font-size: 18px;
     color: white;
-    background-color: #000;
+    background-color: transparent;
 }
 
 .background-error {

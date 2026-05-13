@@ -357,6 +357,14 @@
     "discordTitle": "Discord에 참여하기",
     "discordSub": "여기에서 버그 신고"
   },
+  "widgetSettings": {
+    "openAria": "위젯 설정 열기",
+    "openTooltip": "위젯 설정",
+    "modalTitle": "위젯 설정",
+    "modalIntro": "화면에 따라 위젯이 동작하는 방식을 선택하세요.",
+    "proportionalScaling": "화면 크기에 맞춰 조정",
+    "proportionalScalingSub": "위젯이 뷰포트 너비에 비례해 크기가 조정됩니다."
+  },
   "background": {
     "modal": {
       "title": "배경 설정",
@@ -475,5 +483,23 @@
         "orSep": "또는"
       }
     }
+  },
+  "options": {
+    "subtitle": "스튜디오 지브리에서 영감을 받은 새 탭",
+    "preferences": "환경설정",
+    "language": "언어",
+    "palette": "팔레트",
+    "aboutTitle": "소개",
+    "aboutBody": "스튜디오 지브리에서 영감을 받은 새 탭 페이지입니다. 이 이미지들은 스튜디오 지브리에서 비상업적 사용을 위해 무료로 제공됩니다. 이 정성스러운 작업을 즐겨주시고, 공식 굿즈나 미디어 구매로 스튜디오를 응원해 주세요.",
+    "supportTitle": "지원 및 피드백",
+    "rateLabel": "평가하기",
+    "rateSub": "Chrome 웹 스토어에서 리뷰 남기기",
+    "coffeeLabel": "커피 한 잔 사주기",
+    "coffeeSub": "향후 업데이트 지원",
+    "discordSub": "커뮤니티와 소통 + 버그 신고",
+    "emailLabel": "이메일 보내기",
+    "footerCredit": "정성껏 만들었습니다",
+    "viewSource": "GitHub에서 소스 보기",
+    "privacy": "개인정보 처리방침"
   }
 }

@@ -1,0 +1,421 @@
+/* Default vars (was :root in App.css) */
+:root {
+    /* Text — same across themes (themes can override if they want) */
+    --light: rgba(240, 227, 196, 0.95);
+    --light-muted: rgba(240, 227, 196, 0.6);
+
+    /* Drop-shadow color used by Time/Date over the photo background.
+       Dark by default (white text + dark shadow). Light themes override
+       to a near-white shadow so dark text gets a luminous halo. */
+    --text-shadow-color: rgba(0, 0, 0, 0.6);
+
+    /* Disabled */
+    --disabled-dark: rgba(70, 75, 65, 0.55);
+    --disabled-light: rgba(190, 180, 155, 0.55);
+
+    /* Sidebar surfaces */
+    --sidebar-bg: rgba(31, 38, 32, 0.86);
+    --sidebar-card: rgba(20, 26, 22, 0.55);
+
+    /* Focus ring — soft pink, palette-agnostic. Reads as "active"
+       on every backdrop without competing with the warm palette
+       accents (which use --yellow). Light/dark/frost themes
+       override below for contrast reasons. */
+    --focus-ring: rgba(245, 130, 165, 0.9);
+
+    /* High-contrast overridable params */
+    --focus-ring-width: 2px;
+    --widget-border-alpha: 0;
+
+    /* Border-radius scale. Use these instead of ad-hoc px values so
+       the corner softness reads as a coherent system across widgets,
+       inputs, popovers, and modals.
+         xs (4px)   — micro: scrollbar thumbs, tiny chips
+         sm (6px)   — small detail: kbd, tooltip, base button
+         md (8px)   — inputs, link tiles, small image surfaces
+         lg (12px)  — widget shells, popovers, dropdown menus
+         xl (16px)  — modals, large container surfaces
+         pill (999px) — pill buttons, segments, nav arrows */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-pill: 999px;
+
+    /* Backdrop blur for widget surfaces (Todo input, SearchBar, QuickLinks
+       tiles, Weather forecast cells). The Frost theme overrides this with
+       a much heavier value to get a frosted-glass effect. */
+    --surface-blur: 6px;
+    /* Saturation multiplier baked into the backdrop-filter. Defaults to
+       1 (no change). Frost bumps this to make the colors behind every
+       glass surface pop more vividly, the same way macOS Liquid Glass
+       does. */
+    --surface-saturate: 1;
+    /* Hard upper bound on the alpha of widget surfaces. Defaults to 1
+       (= no cap, opacity slider drives surface fully). Frost lowers
+       this so surfaces stay translucent enough for the photo + blur
+       to read through, regardless of where the user puts the slider. */
+    --surface-alpha-cap: 1;
+
+    /* Surface RGB triple for widget cards / modals / tooltips —
+       anything that paints `rgba(<this>, alpha)` as its background.
+       Defaults to the active palette's --dark-rgb so widgets pick
+       up the palette tint on most themes.
+       The Frost theme remaps --dark-rgb to white (because Frost is
+       a "dark glass" palette where the photo behind shows through
+       every widget), which would render every card white-on-white.
+       Frost overrides --surface-rgb to a fixed dark slate further
+       down. Modals, tooltips, and per-widget cards use this token
+       instead of --dark-rgb directly so Frost works without per-
+       site overrides. */
+    --surface-rgb: var(--dark-rgb, 31, 38, 32);
+
+    /* Z-index tiers. Use these instead of ad-hoc values so layers
+       compose predictably. Existing in-stacking-context values
+       (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
+       fine as raw numbers — these tokens cover the cross-component
+       layers that previously used arms-race values like 10M / 20T. */
+    --z-edit-overlay: 10000;          /* dim covering sidebars + widgets in edit mode */
+    --z-edit-overlay-content: 10001;  /* widget content that must poke above the dim */
+    --z-portal: 100100;               /* body-portaled context menus + dropdowns (above modals at 100002) */
+    --z-resize-handle: 100200;        /* always-on-top corner grip */
+    --z-tutorial-pulse: 100201;       /* tutorial-only pulse above the handle */
+    --z-tooltip: 100300;              /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) — highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
+
+    /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
+       pills, callouts — anything that's NOT a widget surface and
+       needs to read consistently against any photo or palette.
+       These are deliberately theme-INDEPENDENT (no theme overrides
+       them). The existing `--dark` / `--light` are intentionally
+       remapped per theme (e.g. Frost makes `--dark` white because
+       the widget glass layer adds darkness over it), which broke
+       any chrome consumer expecting `--dark` to actually be dark.
+       Migrate new chrome to these tokens — no Frost override
+       needed.
+         --ui-chrome-bg        — solid-feeling dark surface
+         --ui-chrome-bg-hover  — slightly lighter on hover
+         --ui-chrome-fg        — readable text
+         --ui-chrome-border    — subtle 1px outline */
+    --ui-chrome-bg: rgba(20, 26, 32, 0.78);
+    --ui-chrome-bg-hover: rgba(20, 26, 32, 0.9);
+    --ui-chrome-fg: rgba(255, 255, 255, 0.96);
+    --ui-chrome-border: rgba(255, 255, 255, 0.18);
+}
+
+.theme-ghibli {
+    --dark: #1f2620;
+    --dark-rgb: 31, 38, 32;
+    --dark-muted: rgba(31, 38, 32, 0.7);
+    --cream: #f0e3c4;
+    --cream-rgb: 240, 227, 196;
+    --red: #d54a3e;
+    --red-dark: #9c2e25;
+    --blue: #3a7ba8;
+    --blue-muted: rgba(58, 123, 168, 0.6);
+    --yellow: #e9b330;
+    --green: #5e8a4f;
+    --rose: #d68d8a;
+    --purple-dark: #5a4374;
+}
+
+.theme-spirited {
+    --dark: #fce0db;
+    --dark-rgb: 252, 224, 219;
+    --dark-muted: rgba(252, 224, 219, 0.7);
+    --cream: #fdf2ee;
+    --cream-rgb: 253, 242, 238;
+    --red: #e85d8a;
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds —
+       on this LIGHT theme they need to be LIGHT so dark text reads. */
+    --red-dark: #f5c4d2;
+    --blue: #7aa3b8;
+    --blue-muted: rgba(122, 163, 184, 0.6);
+    --yellow: #e8a888;
+    --green: #6ab075;
+    --rose: #f08aaa;
+    --purple-dark: #e8d4dc;
+    /* Inverted text — deep plum on the light pink/green surfaces. */
+    --light: rgba(74, 38, 50, 0.95);
+    --light-muted: rgba(74, 38, 50, 0.6);
+    --text-shadow-color: rgba(253, 242, 238, 0.85);
+    --sidebar-bg: linear-gradient(
+        160deg,
+        rgba(250, 184, 200, 0.92) 0%,
+        rgba(204, 232, 184, 0.92) 100%
+    );
+    --sidebar-card: rgba(255, 255, 255, 0.45);
+    --focus-ring: rgba(232, 93, 138, 0.95);
+    --disabled-light: rgba(110, 60, 80, 0.5);
+}
+
+.theme-howls {
+    --dark: #2a3a5c;
+    --dark-rgb: 42, 58, 92;
+    --dark-muted: rgba(42, 58, 92, 0.7);
+    --cream: #ecedf0;
+    --cream-rgb: 236, 237, 240;
+    /* Silver accents — desaturated so they read as Sophie's hair
+       rather than chrome. */
+    --red: #d4d6dc;
+    --red-dark: #8a8d97;
+    --blue: #8aa4c8;
+    --blue-muted: rgba(138, 164, 200, 0.6);
+    --yellow: #c8c4b0;
+    --green: #88b0a4;
+    --rose: #c0c4ce;
+    --purple-dark: #4a5478;
+    --sidebar-bg: rgba(36, 48, 76, 0.92);
+    --sidebar-card: rgba(22, 30, 50, 0.6);
+    --focus-ring: rgba(196, 200, 212, 0.95);
+}
+
+.theme-totoro {
+    --dark: #1a3018;
+    --dark-rgb: 26, 48, 24;
+    --dark-muted: rgba(26, 48, 24, 0.7);
+    --cream: #ede0c4;
+    --cream-rgb: 237, 224, 196;
+    --red: #c0653f;
+    --red-dark: #7c3d27;
+    --blue: #88b0ce;
+    --blue-muted: rgba(136, 176, 206, 0.6);
+    --yellow: #f0d050;
+    --green: #5b9c45;
+    --rose: #c89089;
+    --purple-dark: #4f3d6a;
+    --sidebar-bg: rgba(20, 50, 24, 0.88);
+    --sidebar-card: rgba(12, 32, 14, 0.6);
+    --focus-ring: rgba(245, 130, 165, 0.9);
+}
+
+.theme-ponyo {
+    --dark: #0a2a52;
+    --dark-rgb: 10, 42, 82;
+    --dark-muted: rgba(10, 42, 82, 0.7);
+    --cream: #f8eaf0;
+    --cream-rgb: 248, 234, 240;
+    --red: #ff6a8e;
+    --red-dark: #c4365e;
+    --blue: #3a8cd4;
+    --blue-muted: rgba(58, 140, 212, 0.6);
+    --yellow: #f8d878;
+    --green: #5fb8c4;
+    --rose: #ffa8c0;
+    --purple-dark: #2a4a8a;
+    --sidebar-bg: rgba(8, 38, 76, 0.92);
+    --sidebar-card: rgba(4, 22, 48, 0.6);
+    --focus-ring: rgba(255, 130, 165, 0.95);
+}
+
+.theme-sky {
+    --dark: #14406e;
+    --dark-rgb: 20, 64, 110;
+    --dark-muted: rgba(20, 64, 110, 0.7);
+    --cream: #e8f4ff;
+    --cream-rgb: 232, 244, 255;
+    --red: #ff6f7c;
+    --red-dark: #c0444f;
+    --blue: #00b8e6;
+    --blue-muted: rgba(0, 184, 230, 0.6);
+    --yellow: #ffd54a;
+    --green: #6ee0b8;
+    --rose: #ff9bb8;
+    --purple-dark: #5a4a8a;
+    --sidebar-bg: rgba(20, 70, 130, 0.9);
+    --sidebar-card: rgba(8, 38, 80, 0.6);
+    --focus-ring: rgba(245, 130, 165, 0.95);
+}
+
+.theme-butter {
+    --dark: #efe2c4;
+    --dark-rgb: 239, 226, 196;
+    --dark-muted: rgba(239, 226, 196, 0.7);
+    --cream: #fbf6e8;
+    --cream-rgb: 251, 246, 232;
+    --red: #c87555;
+    --red-dark: #984a30;
+    --blue: #6b9bb8;
+    --blue-muted: rgba(107, 155, 184, 0.6);
+    --yellow: #d8a838;
+    --green: #88a868;
+    --rose: #d89c98;
+    --purple-dark: #88789c;
+    --light: rgba(50, 40, 28, 0.95);
+    --light-muted: rgba(50, 40, 28, 0.6);
+    --text-shadow-color: rgba(251, 246, 232, 0.85);
+    --sidebar-bg: rgba(245, 232, 200, 0.92);
+    --sidebar-card: rgba(252, 245, 224, 0.55);
+    --focus-ring: rgba(200, 117, 85, 0.95);
+    --disabled-light: rgba(110, 90, 60, 0.45);
+}
+
+.theme-mint {
+    --dark: #c8e8d0;
+    --dark-rgb: 200, 232, 208;
+    --dark-muted: rgba(200, 232, 208, 0.7);
+    --cream: #f0faf2;
+    --cream-rgb: 240, 250, 242;
+    --red: #e87878;
+    --red-dark: #b04848;
+    --blue: #6fb8c8;
+    --blue-muted: rgba(111, 184, 200, 0.6);
+    --yellow: #e8c050;
+    --green: #58b878;
+    --rose: #f0a0a8;
+    --purple-dark: #9078c0;
+    --light: rgba(28, 60, 40, 0.95);
+    --light-muted: rgba(28, 60, 40, 0.6);
+    --text-shadow-color: rgba(240, 250, 242, 0.85);
+    --sidebar-bg: rgba(208, 236, 218, 0.92);
+    --sidebar-card: rgba(232, 248, 236, 0.55);
+    --focus-ring: rgba(88, 184, 120, 0.95);
+    --disabled-light: rgba(60, 110, 80, 0.45);
+}
+
+.theme-spring {
+    --dark: #f4d2dc;
+    --dark-rgb: 244, 210, 220;
+    --dark-muted: rgba(244, 210, 220, 0.7);
+    --cream: #fff0f6;
+    --cream-rgb: 255, 240, 246;
+    /* Pink and green are co-stars — both bumped to a punchier pastel
+       saturation so neither washes out. */
+    --red: #f55a92;
+    --red-dark: #c22c6e;
+    --blue: #98c4d8;
+    --blue-muted: rgba(152, 196, 216, 0.6);
+    --yellow: #f5cf60;
+    --green: #6cd070;
+    --rose: #ff85ad;
+    --purple-dark: #a884c0;
+    /* Inverted text — dark plum on the light pink/green surfaces */
+    --light: rgba(70, 32, 52, 0.95);
+    --light-muted: rgba(70, 32, 52, 0.6);
+    --text-shadow-color: rgba(255, 240, 246, 0.85);
+    /* Sidebar gradient: pink → mint, with both stops more saturated so
+       the dual-tone reads clearly at a glance. */
+    --sidebar-bg: linear-gradient(
+        160deg,
+        rgba(245, 195, 215, 0.94) 0%,
+        rgba(195, 235, 200, 0.94) 100%
+    );
+    --sidebar-card: rgba(255, 248, 252, 0.55);
+    --focus-ring: rgba(245, 90, 146, 0.95);
+    --disabled-light: rgba(120, 60, 90, 0.5);
+}
+
+.theme-peony {
+    --dark: #d8d4ec;
+    --dark-rgb: 216, 212, 236;
+    --dark-muted: rgba(216, 212, 236, 0.7);
+    --cream: #fff0fa;
+    --cream-rgb: 255, 240, 250;
+    /* Pink and blue are co-stars at matched pastel saturation. */
+    --red: #ff8aae;
+    --red-dark: #c45478;
+    --blue: #88b8e8;
+    --blue-muted: rgba(136, 184, 232, 0.6);
+    --yellow: #f5d878;
+    --green: #88c8a8;
+    --rose: #ffb8d4;
+    --purple-dark: #b89cd8;
+    /* Inverted text — dark on light surfaces */
+    --light: rgba(60, 36, 70, 0.95);
+    --light-muted: rgba(60, 36, 70, 0.6);
+    --text-shadow-color: rgba(255, 240, 250, 0.85);
+    /* Sidebar gradient: blue → pink so both colors live in chrome itself */
+    --sidebar-bg: linear-gradient(
+        160deg,
+        rgba(184, 216, 240, 0.94) 0%,
+        rgba(248, 200, 224, 0.94) 100%
+    );
+    --sidebar-card: rgba(255, 248, 252, 0.55);
+    --focus-ring: rgba(255, 138, 174, 0.95);
+    --disabled-light: rgba(110, 70, 100, 0.5);
+}
+
+.theme-light {
+    --dark: #ececec;
+    --dark-rgb: 236, 236, 236;
+    --dark-muted: rgba(236, 236, 236, 0.7);
+    --cream: #fafafa;
+    --cream-rgb: 250, 250, 250;
+    --red: #555555;
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds — on
+       this LIGHT theme they need to be LIGHT so the dark text reads. */
+    --red-dark: #d8c8c8;
+    --blue: #444444;
+    --blue-muted: rgba(68, 68, 68, 0.6);
+    --yellow: #777777;
+    --green: #5a5a5a;
+    --rose: #888888;
+    --purple-dark: #d8d4dc;
+    /* Inverted text — dark on light surfaces */
+    --light: rgba(24, 24, 24, 0.95);
+    --light-muted: rgba(24, 24, 24, 0.6);
+    --text-shadow-color: rgba(250, 250, 250, 0.85);
+    --sidebar-bg: rgba(232, 232, 232, 0.94);
+    --sidebar-card: rgba(248, 248, 248, 0.6);
+    --focus-ring: rgba(60, 60, 60, 0.95);
+    --disabled-light: rgba(120, 120, 120, 0.5);
+}
+
+.theme-dark {
+    --dark: #1a1a1a;
+    --dark-rgb: 26, 26, 26;
+    --dark-muted: rgba(26, 26, 26, 0.7);
+    --cream: #2a2a2a;
+    --cream-rgb: 42, 42, 42;
+    --red: #c8c8c8;
+    --red-dark: #3a3030;
+    --blue: #b8b8b8;
+    --blue-muted: rgba(184, 184, 184, 0.6);
+    --yellow: #e0e0e0;
+    --green: #a8a8a8;
+    --rose: #c0c0c0;
+    --purple-dark: #38343c;
+    --light: rgba(248, 248, 248, 0.96);
+    --light-muted: rgba(248, 248, 248, 0.65);
+    --text-shadow-color: rgba(0, 0, 0, 0.7);
+    --sidebar-bg: rgba(20, 20, 20, 0.94);
+    --sidebar-card: rgba(36, 36, 36, 0.6);
+    --focus-ring: rgba(220, 220, 220, 0.95);
+    --disabled-light: rgba(120, 120, 120, 0.55);
+}
+
+.theme-frost {
+    --dark: #ffffff;
+    --dark-rgb: 255, 255, 255;
+    --dark-muted: rgba(255, 255, 255, 0.7);
+    --cream: #ffffff;
+    --cream-rgb: 255, 255, 255;
+    --red: #c8a8b8;
+    --red-dark: #8c5e7a;
+    --blue: #a8c4d8;
+    --blue-muted: rgba(168, 196, 216, 0.6);
+    --yellow: #d8c898;
+    --green: #a8c8b0;
+    --rose: #d8b8c4;
+    --purple-dark: #c8c0d8;
+    /* White text — the Frost glass keeps the Ghibli photo visible
+       behind every surface, so light text + a soft dark halo reads
+       cleanest regardless of which film is showing. */
+    --light: rgba(255, 255, 255, 0.96);
+    --light-muted: rgba(255, 255, 255, 0.7);
+    --text-shadow-color: rgba(0, 0, 0, 0.55);
+    --sidebar-bg: rgba(10, 14, 20, 0.62);
+    --sidebar-card: rgba(255, 255, 255, 0.08);
+    --focus-ring: rgba(120, 150, 180, 0.85);
+    --disabled-light: rgba(80, 100, 120, 0.5);
+    /* The three knobs that define the glass aesthetic. */
+    --surface-blur: 30px;
+    --surface-saturate: 1.7;
+    --surface-alpha-cap: 0.22;
+    /* Pin the surface tint to a fixed dark slate so widget cards,
+       modals, tooltips, dock chrome, etc. all read as Frost's dark
+       glass automatically — no per-component .theme-frost override
+       needed. (Without this, cards using `rgba(var(--surface-rgb),…)`
+       would inherit the white --dark-rgb above and disappear.) */
+    --surface-rgb: 10, 14, 20;
+}

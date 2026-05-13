@@ -345,6 +345,14 @@
     "discordTitle": "Rejoignez le Discord",
     "discordSub": "signaler un bug ici"
   },
+  "widgetSettings": {
+    "openAria": "Ouvrir les paramètres des widgets",
+    "openTooltip": "Paramètres des widgets",
+    "modalTitle": "Paramètres des widgets",
+    "modalIntro": "Choisissez comment les widgets se comportent sur vos écrans.",
+    "proportionalScaling": "Adapter à la taille de l'écran",
+    "proportionalScalingSub": "Les widgets s'ajustent proportionnellement à la largeur de votre fenêtre."
+  },
   "background": {
     "modal": {
       "title": "Paramètres d'arrière-plan",
@@ -463,5 +471,23 @@
         "orSep": "ou"
       }
     }
+  },
+  "options": {
+    "subtitle": "Un nouvel onglet inspiré du Studio Ghibli",
+    "preferences": "Préférences",
+    "language": "Langue",
+    "palette": "Palette",
+    "aboutTitle": "À propos",
+    "aboutBody": "Un nouvel onglet inspiré du Studio Ghibli. Ces images sont généreusement fournies gratuitement pour un usage non commercial par Studio Ghibli. Profitez de ce travail passionné, et pensez à soutenir le studio en achetant des produits ou médias officiels.",
+    "supportTitle": "Support et commentaires",
+    "rateLabel": "Noter",
+    "rateSub": "Laisser un avis sur le Chrome Web Store",
+    "coffeeLabel": "Offrir un café",
+    "coffeeSub": "Soutenir les futures mises à jour",
+    "discordSub": "Discuter avec la communauté + signaler des bugs",
+    "emailLabel": "M'envoyer un email",
+    "footerCredit": "Fait avec soin",
+    "viewSource": "Voir le code sur GitHub",
+    "privacy": "Politique de confidentialité"
   }
 }

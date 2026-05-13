@@ -31,6 +31,7 @@ import {
   subscribe as subscribePersisted,
   write as writePersisted,
 } from "../storage/hybridStorage";
+import { setProportionalScaling } from "../utils/viewportScale";
 
 const STORAGE_KEY = "ghiblify_widgets";
 const SCHEMA_VERSION_KEY = "ghiblify_widgets_schema_version";
@@ -132,6 +133,14 @@ export interface AppearanceSettings {
   highContrast: boolean;
   cursor: CursorName;
   font: FontName;
+  /** When true (default), widget size settings (width / height /
+   *  fontSize / size) are interpreted as "px at a 1920px-wide
+   *  reference viewport" and scaled to the current viewport on
+   *  render — so a widget looks proportionally the same on a 27"
+   *  monitor and a 13" laptop. When false, the stored pixel
+   *  numbers are used as-is. Toggled from the LeftSidebar's
+   *  "Widget Settings" modal. Default ON preserves prior behavior. */
+  proportionalScaling: boolean;
 }
 
 const DEFAULT_APPEARANCE: AppearanceSettings = {
@@ -139,6 +148,7 @@ const DEFAULT_APPEARANCE: AppearanceSettings = {
   highContrast: false,
   cursor: "default",
   font: "default",
+  proportionalScaling: true,
 };
 
 export interface BackgroundFilters {
@@ -669,6 +679,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     if (appearance.font !== "default") {
       root.classList.add(`font-${appearance.font}`);
     }
+    // Mirror the proportional-scaling toggle into viewportScale's
+    // module-level flag. `setProportionalScaling` notifies its own
+    // subscribers (via `useScaledPx`), so all widgets re-render
+    // through the right toScreenPx branch the moment the user
+    // toggles this in the modal.
+    setProportionalScaling(appearance.proportionalScaling !== false);
   }, [appearance]);
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);

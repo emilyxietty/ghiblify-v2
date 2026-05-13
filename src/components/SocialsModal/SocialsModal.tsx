@@ -1,53 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { useT } from "../../i18n/i18n";
-import { CloseIcon, DiscordIcon, GitHubIcon, InstagramIcon, LinkedInIcon, TikTokIcon } from "../Icons/Icons";
+import { CloseIcon } from "../Icons/Icons";
+import { SOCIALS } from "../../config/socials";
 import "./SocialsModal.css";
-
-interface SocialLink {
-  key: string;
-  href: string;
-  icon: React.ReactElement;
-  label: string;
-  handle: string;
-}
-
-const SOCIALS: SocialLink[] = [
-  {
-    key: "github",
-    href: "https://github.com/emilyxietty",
-    icon: <GitHubIcon />,
-    label: "GitHub",
-    handle: "@emilyxietty",
-  },
-  {
-    key: "instagram",
-    href: "https://instagram.com/emily.xietty",
-    icon: <InstagramIcon />,
-    label: "Instagram",
-    handle: "@emily.xietty",
-  },
-  {
-    key: "tiktok",
-    href: "https://tiktok.com/@pianokaisen",
-    icon: <TikTokIcon />,
-    label: "TikTok",
-    handle: "@pianokaisen",
-  },
-  {
-    key: "linkedin",
-    href: "https://www.linkedin.com/in/emilyxietty/",
-    icon: <LinkedInIcon />,
-    label: "LinkedIn",
-    handle: "emilyxietty",
-  },
-  {
-    key: "discord",
-    href: "https://discord.gg/8re4UaZ2fX",
-    icon: <DiscordIcon />,
-    label: "Discord",
-    handle: "Join the community",
-  },
-];
 
 interface SocialsModalProps {
   open: boolean;
@@ -110,7 +65,7 @@ export const SocialsModal: React.FC<SocialsModalProps> = ({ open, onClose }) => 
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span className="socials-icon">{s.icon}</span>
+                <span className="socials-icon"><s.Icon /></span>
                 <span className="socials-meta">
                   <span className="socials-label">{s.label}</span>
                   <span className="socials-handle">{s.handle}</span>

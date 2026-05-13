@@ -350,6 +350,14 @@
     "discordTitle": "Entre no Discord",
     "discordSub": "relate um bug aqui"
   },
+  "widgetSettings": {
+    "openAria": "Abrir configurações dos widgets",
+    "openTooltip": "Configurações dos widgets",
+    "modalTitle": "Configurações dos widgets",
+    "modalIntro": "Escolha como os widgets se comportam em suas telas.",
+    "proportionalScaling": "Redimensionar com a tela",
+    "proportionalScalingSub": "Os widgets escalam proporcionalmente à largura da sua janela."
+  },
   "background": {
     "modal": {
       "title": "Configurações de plano de fundo",
@@ -468,5 +476,23 @@
         "orSep": "ou"
       }
     }
+  },
+  "options": {
+    "subtitle": "Uma nova guia inspirada no Studio Ghibli",
+    "preferences": "Preferências",
+    "language": "Idioma",
+    "palette": "Paleta",
+    "aboutTitle": "Sobre",
+    "aboutBody": "Uma nova guia inspirada no Studio Ghibli. Essas imagens são generosamente fornecidas para uso não comercial pelo Studio Ghibli. Aproveite este trabalho feito com carinho e considere apoiar o estúdio comprando produtos ou mídias oficiais.",
+    "supportTitle": "Suporte e feedback",
+    "rateLabel": "Avaliar",
+    "rateSub": "Deixe uma avaliação na Chrome Web Store",
+    "coffeeLabel": "Pague-me um café",
+    "coffeeSub": "Ajude a financiar atualizações futuras",
+    "discordSub": "Converse com a comunidade + relate bugs",
+    "emailLabel": "Mande-me um e-mail",
+    "footerCredit": "Feito com carinho",
+    "viewSource": "Ver código no GitHub",
+    "privacy": "Política de privacidade"
   }
 }

@@ -28,6 +28,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         newtab: resolve(__dirname, "newtab.html"),
+        // Toolbar popup — separate React app at options.html.
+        // Shares modules (Icons, React) with newtab via Rollup's
+        // chunk splitting, so the dist stays lean.
+        options: resolve(__dirname, "options.html"),
       },
       output: {
         entryFileNames: "[name].js",

@@ -352,6 +352,14 @@
     "discordTitle": "Únete a Discord",
     "discordSub": "reporta un error aquí"
   },
+  "widgetSettings": {
+    "openAria": "Abrir configuración de widgets",
+    "openTooltip": "Configuración de widgets",
+    "modalTitle": "Configuración de widgets",
+    "modalIntro": "Elige cómo se comportan los widgets en tus pantallas.",
+    "proportionalScaling": "Ajustar al tamaño de pantalla",
+    "proportionalScalingSub": "Los widgets se escalan proporcionalmente al ancho de tu ventana."
+  },
   "background": {
     "modal": {
       "title": "Ajustes de fondo",
@@ -470,5 +478,23 @@
         "orSep": "o"
       }
     }
+  },
+  "options": {
+    "subtitle": "Una nueva pestaña inspirada en Studio Ghibli",
+    "preferences": "Preferencias",
+    "language": "Idioma",
+    "palette": "Paleta",
+    "aboutTitle": "Acerca de",
+    "aboutBody": "Una nueva pestaña inspirada en Studio Ghibli. Estas imágenes son cedidas gratuitamente para uso no comercial por Studio Ghibli. Disfruta este trabajo hecho con cariño y considera apoyar al estudio comprando mercancía oficial o medios.",
+    "supportTitle": "Soporte y comentarios",
+    "rateLabel": "Valórame",
+    "rateSub": "Deja una reseña en la Chrome Web Store",
+    "coffeeLabel": "Invítame un café",
+    "coffeeSub": "Ayuda a impulsar futuras actualizaciones",
+    "discordSub": "Charla con la comunidad + reporta bugs",
+    "emailLabel": "Envíame un correo",
+    "footerCredit": "Hecho con cariño",
+    "viewSource": "Ver código en GitHub",
+    "privacy": "Política de privacidad"
   }
 }

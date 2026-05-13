@@ -357,6 +357,14 @@
     "discordTitle": "加入 Discord",
     "discordSub": "在此报告问题"
   },
+  "widgetSettings": {
+    "openAria": "打开小组件设置",
+    "openTooltip": "小组件设置",
+    "modalTitle": "小组件设置",
+    "modalIntro": "选择小组件在不同屏幕上的行为方式。",
+    "proportionalScaling": "随屏幕大小缩放",
+    "proportionalScalingSub": "小组件会按视口宽度的比例缩放。"
+  },
   "background": {
     "modal": {
       "title": "背景设置",
@@ -475,5 +483,23 @@
         "orSep": "或"
       }
     }
+  },
+  "options": {
+    "subtitle": "灵感源自吉卜力工作室的新标签页",
+    "preferences": "偏好设置",
+    "language": "语言",
+    "palette": "调色板",
+    "aboutTitle": "关于",
+    "aboutBody": "灵感源自吉卜力工作室的新标签页。这些图片由吉卜力工作室慷慨提供给非商业用途使用。请享受这份用心制作的作品，并考虑购买官方周边或媒体来支持工作室。",
+    "supportTitle": "支持与反馈",
+    "rateLabel": "评分",
+    "rateSub": "在 Chrome 应用商店留下评论",
+    "coffeeLabel": "请我喝咖啡",
+    "coffeeSub": "支持未来更新",
+    "discordSub": "与社区交流 + 报告问题",
+    "emailLabel": "给我发邮件",
+    "footerCredit": "用心制作",
+    "viewSource": "在 GitHub 上查看源代码",
+    "privacy": "隐私政策"
   }
 }

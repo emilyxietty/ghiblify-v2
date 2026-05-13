@@ -1,0 +1,157 @@
+/* Widget Settings modal — mirrors the ReportModal visual language
+   (backdrop, dialog surface, close button) so the family of small
+   settings dialogs reads consistently. The toggle row reuses the
+   `.contrast-toggle` / `.contrast-switch` pattern from LeftSidebar
+   so the switch visual is identical to the High-contrast toggle
+   already in the sidebar. */
+
+.widget-settings-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: widget-settings-backdrop-in 200ms ease both;
+}
+
+@keyframes widget-settings-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.widget-settings-dialog {
+    position: relative;
+    width: min(440px, 100%);
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: 28px 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    animation: widget-settings-dialog-in 240ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+    outline: none;
+}
+
+@keyframes widget-settings-dialog-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.widget-settings-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--light-muted);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.widget-settings-close:hover,
+.widget-settings-close:focus-visible {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+    outline: none;
+}
+
+.widget-settings-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.widget-settings-intro {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    opacity: 0.85;
+}
+
+.widget-settings-row {
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+/* Two-line label/sub on the left, switch on the right. The shared
+   `.contrast-toggle` rule from LeftSidebar.css gives us the flex +
+   space-between layout for free. */
+.widget-settings-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.widget-settings-row-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--light);
+}
+
+.widget-settings-row-sub {
+    font-size: 12px;
+    color: var(--light-muted);
+    line-height: 1.4;
+}
+
+/* The settings icon sitting next to the WIDGETS heading. Tiny ghost
+   button — same affordance as the LeftSidebar's `.filter-help`
+   question-mark next to other toggle labels. */
+.widgets-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.widgets-heading-row h4 {
+    flex: 1;
+}
+
+.widgets-settings-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 65%, transparent);
+    border: none;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.widgets-settings-btn:hover {
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    transform: rotate(20deg);
+}
+
+.widgets-settings-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    color: var(--light);
+}

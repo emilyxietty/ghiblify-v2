@@ -357,6 +357,14 @@
     "discordTitle": "Discordに参加",
     "discordSub": "ここでバグを報告"
   },
+  "widgetSettings": {
+    "openAria": "ウィジェット設定を開く",
+    "openTooltip": "ウィジェット設定",
+    "modalTitle": "ウィジェット設定",
+    "modalIntro": "画面サイズに応じたウィジェットの動作を選択できます。",
+    "proportionalScaling": "画面サイズに合わせて調整",
+    "proportionalScalingSub": "ウィジェットがビューポートの幅に比例して拡大縮小します。"
+  },
   "background": {
     "modal": {
       "title": "背景設定",
@@ -475,5 +483,23 @@
         "orSep": "または"
       }
     }
+  },
+  "options": {
+    "subtitle": "スタジオジブリにインスパイアされた新しいタブ",
+    "preferences": "環境設定",
+    "language": "言語",
+    "palette": "パレット",
+    "aboutTitle": "概要",
+    "aboutBody": "スタジオジブリにインスパイアされた新しいタブページです。これらの画像はスタジオジブリから非営利利用に限り無料で提供されています。この愛情を込めた作品をお楽しみいただき、公式グッズや作品の購入でスタジオをサポートいただけると幸いです。",
+    "supportTitle": "サポートとフィードバック",
+    "rateLabel": "評価する",
+    "rateSub": "Chromeウェブストアでレビューを残す",
+    "coffeeLabel": "コーヒーをおごる",
+    "coffeeSub": "今後の更新を応援",
+    "discordSub": "コミュニティと交流 + バグ報告",
+    "emailLabel": "メールを送る",
+    "footerCredit": "心を込めて作成",
+    "viewSource": "GitHubでソースを見る",
+    "privacy": "プライバシーポリシー"
   }
 }

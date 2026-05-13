@@ -87,12 +87,18 @@
        (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
        fine as raw numbers — these tokens cover the cross-component
        layers that previously used arms-race values like 10M / 20T. */
-    --z-edit-overlay: 10000;          /* dim covering sidebars + widgets in edit mode */
-    --z-edit-overlay-content: 10001;  /* widget content that must poke above the dim */
-    --z-portal: 100100;               /* body-portaled context menus + dropdowns (above modals at 100002) */
-    --z-resize-handle: 100200;        /* always-on-top corner grip */
-    --z-tutorial-pulse: 100201;       /* tutorial-only pulse above the handle */
-    --z-tooltip: 100300;              /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) — highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
+    --z-edit-overlay: 10000;
+    /* dim covering sidebars + widgets in edit mode */
+    --z-edit-overlay-content: 10001;
+    /* widget content that must poke above the dim */
+    --z-portal: 100100;
+    /* body-portaled context menus + dropdowns (above modals at 100002) */
+    --z-resize-handle: 100200;
+    /* always-on-top corner grip */
+    --z-tutorial-pulse: 100201;
+    /* tutorial-only pulse above the handle */
+    --z-tooltip: 100300;
+    /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) — highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
 
     /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
        pills, callouts — anything that's NOT a widget surface and
@@ -160,11 +166,9 @@
     --light: rgba(74, 38, 50, 0.95);
     --light-muted: rgba(74, 38, 50, 0.6);
     --text-shadow-color: rgba(253, 242, 238, 0.85);
-    --sidebar-bg: linear-gradient(
-        160deg,
-        rgba(250, 184, 200, 0.92) 0%,
-        rgba(204, 232, 184, 0.92) 100%
-    );
+    --sidebar-bg: linear-gradient(160deg,
+            rgba(250, 184, 200, 0.92) 0%,
+            rgba(204, 232, 184, 0.92) 100%);
     --sidebar-card: rgba(255, 255, 255, 0.45);
     --focus-ring: rgba(232, 93, 138, 0.95);
     --disabled-light: rgba(110, 60, 80, 0.5);
@@ -356,11 +360,9 @@
     --text-shadow-color: rgba(255, 240, 246, 0.85);
     /* Sidebar gradient: pink → mint, with both stops more saturated so
        the dual-tone reads clearly at a glance. */
-    --sidebar-bg: linear-gradient(
-        160deg,
-        rgba(245, 195, 215, 0.94) 0%,
-        rgba(195, 235, 200, 0.94) 100%
-    );
+    --sidebar-bg: linear-gradient(160deg,
+            rgba(245, 195, 215, 0.94) 0%,
+            rgba(195, 235, 200, 0.94) 100%);
     --sidebar-card: rgba(255, 248, 252, 0.55);
     --focus-ring: rgba(245, 90, 146, 0.95);
     --disabled-light: rgba(120, 60, 90, 0.5);
@@ -418,17 +420,11 @@
 }
 
 .palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2,
-.palette-dark
-    .pomodoro-widget.break-mode
-    .pomodoro-switch-header
-    h2.active-mode {
+.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
     color: #ffffff;
 }
 
-.palette-dark
-    .pomodoro-widget.break-mode
-    .pomodoro-switch-header
-    h2.active-mode {
+.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
     background: rgba(255, 255, 255, 0.16);
 }
 
@@ -456,11 +452,9 @@
     --light-muted: rgba(60, 36, 70, 0.6);
     --text-shadow-color: rgba(255, 240, 250, 0.85);
     /* Sidebar gradient: blue → pink so both colors live in chrome itself */
-    --sidebar-bg: linear-gradient(
-        160deg,
-        rgba(184, 216, 240, 0.94) 0%,
-        rgba(248, 200, 224, 0.94) 100%
-    );
+    --sidebar-bg: linear-gradient(160deg,
+            rgba(184, 216, 240, 0.94) 0%,
+            rgba(248, 200, 224, 0.94) 100%);
     --sidebar-card: rgba(255, 248, 252, 0.55);
     --focus-ring: rgba(255, 138, 174, 0.95);
     --disabled-light: rgba(110, 70, 100, 0.5);
@@ -545,9 +539,9 @@
    any frosted background.
    --------------------------------------------------------------------------- */
 .theme-frost {
-    --dark: #ffffff;
+    --dark: #000000;
     --dark-rgb: 255, 255, 255;
-    --dark-muted: rgba(255, 255, 255, 0.7);
+    --dark-muted: rgba(0, 0, 0, 0.7);
     --cream: #ffffff;
     --cream-rgb: 255, 255, 255;
     --red: #c8a8b8;
@@ -601,10 +595,8 @@
        the shell as --widget-blur by Widget.tsx) drives the blur:
        0px at 0%, 30px at 100%, default 10% ≈ 3px. */
     background: rgba(10, 14, 20, 0.4);
-    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
-        saturate(1.7);
-    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
-        saturate(1.7);
+    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7);
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7);
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.18),
@@ -633,10 +625,8 @@
 .theme-frost .widget[data-widget-key="quicklinks"] .ql-grid-link,
 .theme-frost .widget[data-widget-key="quicklinks"] .quicklinksSettings-item {
     background: rgba(10, 14, 20, 0.4) !important;
-    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
-        saturate(1.7) !important;
-    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px))
-        saturate(1.7) !important;
+    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7) !important;
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.18),
@@ -755,11 +745,9 @@
 
 .theme-frost .pomodoro-widget {
     background:
-        radial-gradient(
-            ellipse at top left,
+        radial-gradient(ellipse at top left,
             rgba(255, 255, 255, 0.08) 0%,
-            transparent 60%
-        ),
+            transparent 60%),
         rgba(10, 14, 20, 0.7) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
@@ -776,12 +764,10 @@
        blue), multiplied by the user's opacity setting via calc().
        background-image cleared so no fixed-alpha gradient layer
        persists at low opacity. */
-    background-color: rgba(
-        15,
-        30,
-        50,
-        calc(0.7 * var(--pomodoro-opacity, 1))
-    ) !important;
+    background-color: rgba(15,
+            30,
+            50,
+            calc(0.7 * var(--pomodoro-opacity, 1))) !important;
     background-image: none !important;
     color: #ffffff !important;
     border-color: rgba(155, 200, 219, 0.5) !important;
@@ -795,17 +781,11 @@
 }
 
 .theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2,
-.theme-frost
-    .pomodoro-widget.break-mode
-    .pomodoro-switch-header
-    h2.active-mode {
+.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
     color: #ffffff !important;
 }
 
-.theme-frost
-    .pomodoro-widget.break-mode
-    .pomodoro-switch-header
-    h2.active-mode {
+.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
     background: rgba(155, 200, 219, 0.25) !important;
 }
 
@@ -1015,6 +995,7 @@ body {
     font-style: normal;
     font-display: swap;
 }
+
 /* Digital / monospace */
 @font-face {
     font-family: 'Space Mono';
@@ -1038,8 +1019,13 @@ body {
     --app-font: var(--font-system);
 }
 
-html.font-fredoka { --app-font: 'Fredoka', var(--font-system); }
-html.font-space-mono { --app-font: 'Space Mono', var(--font-system-mono); }
+html.font-fredoka {
+    --app-font: 'Fredoka', var(--font-system);
+}
+
+html.font-space-mono {
+    --app-font: 'Space Mono', var(--font-system-mono);
+}
 
 body {
     margin: 0;
@@ -1088,14 +1074,17 @@ body {
         opacity: 0;
         transform: translateX(-50%) translateY(-12px);
     }
+
     8% {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
+
     85% {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
+
     100% {
         opacity: 0;
         transform: translateX(-50%) translateY(-8px);
@@ -1228,6 +1217,7 @@ body.show-widget-outline::after {
         opacity: 0;
         transform: translateX(-50%) translateY(-12px);
     }
+
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);

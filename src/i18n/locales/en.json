@@ -366,6 +366,14 @@
     "discordTitle": "Join the Discord",
     "discordSub": "report a bug here"
   },
+  "widgetSettings": {
+    "openAria": "Open widget settings",
+    "openTooltip": "Widget settings",
+    "modalTitle": "Widget Settings",
+    "modalIntro": "Choose how widgets behave across your screens.",
+    "proportionalScaling": "Resize with screen size",
+    "proportionalScalingSub": "Widgets scale proportionally to your viewport width."
+  },
   "background": {
     "modal": {
       "title": "Background Settings",
@@ -484,5 +492,23 @@
         "orSep": "or"
       }
     }
+  },
+  "options": {
+    "subtitle": "A Studio Ghibli-inspired new tab",
+    "preferences": "Preferences",
+    "language": "Language",
+    "palette": "Palette",
+    "aboutTitle": "About",
+    "aboutBody": "A Studio Ghibli-inspired new tab page. These images are generously provided for free for non-commercial use by Studio Ghibli. Please enjoy this labor of love, and consider supporting the studio by purchasing official merchandise or media.",
+    "supportTitle": "Support & feedback",
+    "rateLabel": "Rate me",
+    "rateSub": "Leave a review on the Chrome Web Store",
+    "coffeeLabel": "Buy me a Coffee",
+    "coffeeSub": "Help fuel future updates",
+    "discordSub": "Chat with the community + report bugs",
+    "emailLabel": "Email me",
+    "footerCredit": "Made with care",
+    "viewSource": "View source on GitHub",
+    "privacy": "Privacy policy"
   }
 }

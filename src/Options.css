@@ -1,0 +1,523 @@
+/* Theme variables come from src/styles/themePalettes.css (extracted
+   from App.css) — Options.css references them directly via `var(...)`
+   instead of aliasing through bespoke `--ink` / `--paper` / etc.
+   tokens. Whichever `html.theme-<name>` class is currently applied
+   (Options.tsx writes it from storage) cascades those vars. */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    /* `height: 100%` here lets body/root compute % heights against
+       the viewport. We don't constrain body's height itself — see
+       below — only its minimum. */
+    height: 100%;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    /* Fill the popup's height — Chrome's popup window sizes to the
+       contents otherwise, leaving a short panel with the gradient
+       background not extending past the cards.
+       Use `min-height: 100%`, NOT `height: 100%`: the latter caps
+       body at viewport height, so when content (cards + swatch grid
+       + actions) is taller, #options-root spills past the body and
+       the body's gradient bg stops at the viewport line. min-height
+       lets body grow with content so the bg paints the full page. */
+    min-height: 100%;
+    /* Responsive sizing:
+       - In the toolbar popup, Chrome lacks an intrinsic width so we
+         supply a `min-width` to keep it readable, and a `max-width`
+         so the popup doesn't flow as wide as the user's monitor when
+         opened standalone (right-click toolbar → "Open in a new
+         tab"). `width: 100%` makes the body fill whatever window
+         Chrome decides to give it within those bounds.
+       - In a regular tab, the body stretches to the cap and centers
+         via `.page { margin: 0 auto }`. */
+    width: 100%;
+    min-width: 600px;
+    max-width: 720px;
+    margin: 0 auto;
+    color: var(--light);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+        "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Carries the height chain from body → page. Without an explicit
+   min-height on the root, `.page { min-height: 100% }` would
+   resolve against an auto-height parent and collapse — so the page
+   wouldn't stretch to fill the popup, and the body bg would stop
+   short. Flex column so .page can use `flex: 1` and the root grows
+   with its content (otherwise content taller than viewport spills
+   past the root and the bg cuts off). */
+#options-root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    width: 100%;
+}
+
+.page {
+    /* max-width: 680px; */
+    margin: 0 auto;
+    padding: 26px 20px 22px;
+    /* `flex: 1` over `min-height: 100%` — root is now a flex column,
+       so flex grow makes the page fill remaining root height
+       cleanly (and continues to grow with content past the viewport
+       cap). */
+    flex: 1 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Narrow viewports — pop-up width or a phone-sized window. Tighten
+   the padding so cards aren't squeezed and the hero icon doesn't
+   dominate. */
+@media (max-width: 400px) {
+    .page {
+        padding: 20px 14px 18px;
+    }
+
+    .card {
+        padding: 14px 16px;
+    }
+
+    .hero-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .hero-title {
+        font-size: 21px;
+    }
+}
+
+.hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+
+.hero-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: var(--light);
+    /* box-shadow:
+        0 8px 22px rgba(58, 47, 61, 0.16),
+        0 0 0 4px rgba(255, 255, 255, 0.5); */
+}
+
+.hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.hero-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--light);
+}
+
+.hero-subtitle {
+    font-size: 11.5px;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+/* Preferences row — label on the left, control (Dropdown) on the
+   right. Sits inside `.card` like the other sections. */
+.prefs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.prefs-row+.prefs-row {
+    border-top: 1px solid color-mix(in srgb, var(--light) 6%, transparent);
+    margin-top: 6px;
+    padding-top: 12px;
+}
+
+.prefs-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--light-muted);
+}
+
+.prefs-dropdown {
+    min-width: 160px;
+}
+
+/* Variant of .prefs-row used by the palette picker — the swatch
+   grid takes the full row width and the label sits above it, vs.
+   the language dropdown which fits on the same line. */
+.prefs-row-stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+/* Theme-aware Dropdown overrides — the Dropdown component's
+   `.dropdown-outline-light` variant hardcodes `color: white` and
+   `border-color: rgba(255,255,255,*)`, which looked fine on dark
+   themes (--light is cream-ish) but stranded the text as white on
+   white when the active palette was a light theme (Spring, Peony,
+   Light, etc., where --light is dark). Anchor all the toggle +
+   menu colors to the active palette's vars so contrast holds on
+   every theme. */
+/* Match the LeftSidebar's .language-picker pill — solid --dark
+   surface, --light text, cream-tinted border, and a lift + yellow
+   glow on hover. Same shape as `.btn-dark` (which sits next to the
+   sidebar's language picker), so the Options popup reads as the
+   same control language. Frost gets the dark-slate treatment for
+   free via the `html.theme-frost { --dark: rgb(10,14,20) }`
+   override further down in this file. */
+.prefs-dropdown.dropdown-outline-light .dropdown-toggle {
+    background: var(--dark);
+    color: var(--light);
+    border-color: color-mix(in srgb, var(--light) 24%, transparent);
+    transition: background 160ms ease, border-color 160ms ease,
+        transform 160ms ease, box-shadow 160ms ease;
+}
+
+.prefs-dropdown.dropdown-outline-light .dropdown-toggle:hover:not(:disabled) {
+    background: var(--dark-muted);
+    border-color: color-mix(in srgb, var(--light) 40%, transparent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
+        0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+}
+
+.prefs-dropdown.dropdown-outline-light .dropdown-toggle:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* `portal` is set on the prefs dropdowns, so the open menu mounts on
+   document.body — *outside* the `.prefs-dropdown` wrapper. A
+   descendant selector won't match. The Dropdown component does
+   forward its `className` to the menu element itself
+   (Dropdown.tsx:137: `className="dropdown-menu ${className}"`),
+   so we target the menu's own class with a compound selector. */
+.dropdown-menu.prefs-dropdown {
+    background: var(--dark);
+    border-color: color-mix(in srgb, var(--light) 24%, transparent);
+    color: var(--light);
+}
+
+.dropdown-menu.prefs-dropdown .dropdown-option {
+    color: var(--light);
+}
+
+.dropdown-menu.prefs-dropdown .dropdown-option:hover {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+}
+
+.dropdown-menu.prefs-dropdown .dropdown-option.selected {
+    background: color-mix(in srgb, var(--yellow) 18%, transparent);
+    color: var(--light);
+}
+
+/* Theme swatch grid — same visual language as the LeftSidebar's
+   palette picker. Each swatch is a circle filled with a conic
+   gradient that previews the palette's --dark surface + accent
+   colors so picking a theme reads at a glance. The selected
+   palette shows a focus-ring halo. Tooltip lives on each swatch
+   via native `title` so it works without TooltipPortal. */
+.theme-swatches {
+    /* auto-fill with a max swatch size keeps each circle small and
+       lets the row wrap naturally as the popup width changes (vs.
+       fixed columns which would stretch each swatch on wide
+       popups). */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(0, 22px));
+    gap: 8px;
+    margin-top: 4px;
+    justify-content: start;
+}
+
+.theme-swatch {
+    width: 22px;
+    height: 22px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--light) 25%, transparent);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    transition:
+        transform 140ms ease,
+        border-color 140ms ease,
+        box-shadow 140ms ease;
+    box-sizing: border-box;
+    /* Each swatch carries its own theme-<name> class which locally
+       rebinds --dark / --red / --yellow / --blue. The dominant half
+       is the palette's surface color (--dark); the other half
+       cycles three accents so palettes with similar --dark still
+       look distinct. */
+    background:
+        conic-gradient(from 0deg,
+            var(--dark) 0deg 180deg,
+            var(--red) 180deg 240deg,
+            var(--yellow) 240deg 300deg,
+            var(--blue) 300deg 360deg);
+}
+
+.theme-swatch:hover {
+    transform: scale(1.12);
+    border-color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+.theme-swatch:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+}
+
+.theme-swatch.is-selected {
+    border-color: var(--light);
+    box-shadow:
+        0 0 0 2px var(--focus-ring),
+        0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Frost is a "dark glass" palette with --dark white (the surface is
+   the photo blurred behind). Override its swatch's dominant half to
+   black so it still reads as dark at a glance. */
+.theme-swatch.theme-frost {
+    background:
+        conic-gradient(from 0deg,
+            #0a0e14 0deg 180deg,
+            var(--red) 180deg 240deg,
+            var(--yellow) 240deg 300deg,
+            var(--blue) 300deg 360deg);
+}
+
+/* Frost popup override — App.css sets `--dark: #ffffff` for frost
+   because in the newtab the body shows the Ghibli photo behind a
+   transparent glass surface. The Options popup doesn't have a photo
+   behind it, so a white --dark + white --light collapses to white-
+   on-white. Locally rebind --dark to the dark slate that frost
+   already uses for its widget/sidebar tint (`--surface-rgb: 10, 14,
+   20`) so every `var(--dark)` reference in this stylesheet — body
+   bg, card bg, dropdown menu — picks up the dark slate instead.
+   Individual `.theme-swatch.theme-<name>` buttons further down still
+   override --dark themselves, so the swatch grid keeps its per-
+   theme colors. */
+html.theme-frost {
+    --dark: rgb(10, 14, 20);
+    --dark-rgb: 10, 14, 20;
+}
+
+.card {
+    background: color-mix(in srgb, var(--cream) 10%, var(--dark));
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow:
+        0 1px 2px rgba(58, 47, 61, 0.04),
+        0 8px 24px rgba(58, 47, 61, 0.04);
+}
+
+/* Mirrors the LeftSidebar `.left-sidebar h4` heading style — same
+   uppercase + tracked-out type and a soft yellow underline accent
+   so the Options popup feels like a continuation of the sidebar's
+   visual language rather than its own thing. */
+.card h2 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+
+.card h2::after {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 2px;
+    margin-top: 6px;
+    background: var(--yellow);
+    border-radius: var(--radius-xs);
+    opacity: 0.7;
+}
+
+.card p {
+    margin: 0 0 12px;
+    color: var(--light-muted);
+}
+
+.card p:last-child {
+    margin-bottom: 0;
+}
+
+.card em {
+    font-style: italic;
+    color: var(--light);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    background: color-mix(in srgb, var(--cream) 10%, var(--dark));
+    color: var(--light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: transform 0.14s ease, box-shadow 0.14s ease,
+        border-color 0.14s ease, background 0.14s ease;
+}
+
+.action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18),
+        0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+    border-color: color-mix(in srgb, var(--light) 32%, transparent);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+}
+
+.action-icon {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--light);
+    opacity: 0.85;
+    flex: 0 0 22px;
+}
+
+.action-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.action-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+}
+
+.action-label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.action-sub {
+    font-size: 12px;
+    font-weight: 400;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+.action.primary {
+    background: var(--rose);
+    border-color: var(--red);
+    color: #fff8f1;
+    box-shadow: 0 6px 16px rgba(154, 84, 77, 0.25);
+}
+
+.action.primary:hover {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff8f1;
+    box-shadow: 0 10px 22px rgba(154, 84, 77, 0.32);
+}
+
+.action.primary .action-icon,
+.action.primary .action-sub {
+    color: rgba(255, 248, 241, 0.9);
+}
+
+.socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.social {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    background: color-mix(in srgb, var(--cream) 10%, var(--dark));
+    color: var(--light-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.14s ease, border-color 0.14s ease,
+        background 0.14s ease, transform 0.14s ease;
+}
+
+.social:hover {
+    color: var(--red);
+    border-color: var(--rose);
+    background: color-mix(in srgb, var(--red) 14%, transparent);
+    transform: translateY(-1px);
+}
+
+.social svg {
+    width: 15px;
+    height: 15px;
+}
+
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 11.5px;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+    letter-spacing: 0.04em;
+}
+
+.footer a {
+    color: var(--red);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(154, 84, 77, 0.4);
+    transition: border-color 0.14s ease;
+}
+
+.footer a:hover {
+    border-bottom-color: var(--red);
+}
+
+/* Body background — solid surface color from the active palette.
+   `--dark` is the per-theme `body` color in every themePalettes.css
+   entry, so the popup picks up the right shade automatically.
+   Frost's --dark white is locally remapped to a dark slate via the
+   `html.theme-frost` override further up, so this still reads as
+   dark glass for Frost. */
+body {
+    background: var(--dark);
+}

@@ -14,10 +14,13 @@ const ChangelogModal = lazy(() =>
 );
 const ReportModal = lazy(() => import("../../components/ReportModal/ReportModal"));
 const SocialsModal = lazy(() => import("../../components/SocialsModal/SocialsModal"));
+const WidgetSettingsModal = lazy(() =>
+  import("../../components/WidgetSettingsModal/WidgetSettingsModal"),
+);
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
 import { DeleteOutlineIcon, EditIcon, FormatQuoteIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
-import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
+import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
 import {
   codeToIconName,
   iconUrl as weatherIconUrl,
@@ -211,6 +214,7 @@ export const LeftSidebar: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSocialsModal, setShowSocialsModal] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showWidgetSettings, setShowWidgetSettings] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
   // Force the palette collapsible open while the welcome guide is
   // spotlighting the "palette" step so swatches are visible without
@@ -411,7 +415,18 @@ export const LeftSidebar: React.FC = () => {
             className="sidebar-section"
             aria-labelledby="widgets-heading"
           >
-            <h4 id="widgets-heading">{t("sidebar.headings.widgets")}</h4>
+            <div className="widgets-heading-row">
+              <h4 id="widgets-heading">{t("sidebar.headings.widgets")}</h4>
+              <button
+                type="button"
+                className="widgets-settings-btn"
+                aria-label={t("widgetSettings.openAria")}
+                data-tooltip={t("widgetSettings.openTooltip")}
+                onClick={() => setShowWidgetSettings(true)}
+              >
+                <SettingsIcon style={{ fontSize: 16 }} />
+              </button>
+            </div>
             <div
               className="widget-section"
               role="group"
@@ -983,6 +998,12 @@ export const LeftSidebar: React.FC = () => {
           <SocialsModal
             open={showSocialsModal}
             onClose={() => setShowSocialsModal(false)}
+          />
+        )}
+        {showWidgetSettings && (
+          <WidgetSettingsModal
+            open={showWidgetSettings}
+            onClose={() => setShowWidgetSettings(false)}
           />
         )}
       </Suspense>
