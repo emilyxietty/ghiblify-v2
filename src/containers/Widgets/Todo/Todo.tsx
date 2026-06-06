@@ -24,7 +24,12 @@ interface TodoItem {
 // Keep aligned with the leave animation duration in Todo.css. The
 // item stays mounted for this long after the user clicks delete so
 // the slide-out animation can complete before React unmounts it.
-const REMOVE_ANIM_MS = 240;
+const REMOVE_ANIM_MS = 340;
+
+// Keep aligned with `todo-item-complete` in Todo.css. The .completing
+// class is added on a unchecked→checked toggle and stripped after
+// this many ms so the bouncy pop plays once per completion.
+const COMPLETE_ANIM_MS = 480;
 
 // Storage key. Renamed from the bare "todo_data" used during dev to
 // the namespaced "ghiblify_todo" so every persisted entry the app
@@ -107,6 +112,10 @@ export const Todo: React.FC = () => {
   // animation, otherwise every page load would cascade-in the entire
   // saved list.
   const [enteringIds, setEnteringIds] = useState<Set<string>>(new Set());
+  // Items that just transitioned unchecked→checked. Drives the
+  // bouncy "task completed" pop on the row; stripped after
+  // COMPLETE_ANIM_MS so subsequent re-renders don't re-trigger it.
+  const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
   const { widgets } = useAppContext();
   const todoSettings = widgets.todo.settings;
   // settings.width/height are reference-px (1920 baseline); scale to
@@ -194,6 +203,11 @@ export const Todo: React.FC = () => {
   };
 
   const toggleTodo = (id: string) => {
+    // Detect unchecked→checked so we can trigger the celebrate-pop
+    // animation only on completion (not on un-checking, which sends
+    // the row back up into the active list).
+    const before = todos.find((t) => t.id === id);
+    const becomingChecked = !!before && !before.checked;
     setTodos((prev) => {
       const next = prev.map((t) =>
         t.id === id ? { ...t, checked: !t.checked } : t
@@ -201,6 +215,21 @@ export const Todo: React.FC = () => {
       persistTodos(next);
       return next;
     });
+    if (becomingChecked) {
+      setCompletingIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+      window.setTimeout(() => {
+        setCompletingIds((prev) => {
+          if (!prev.has(id)) return prev;
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }, COMPLETE_ANIM_MS);
+    }
   };
 
   const deleteTodo = (id: string) => {
@@ -413,6 +442,7 @@ export const Todo: React.FC = () => {
                   : "",
                 removingIds.has(todo.id) ? "removing" : "",
                 enteringIds.has(todo.id) ? "entering" : "",
+                completingIds.has(todo.id) ? "completing" : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -455,8 +485,8 @@ export const Todo: React.FC = () => {
                        active text color. */
                     <svg
                       viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
+                      width="14"
+                      height="14"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="4"

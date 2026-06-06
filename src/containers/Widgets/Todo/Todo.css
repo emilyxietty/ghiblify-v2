@@ -152,12 +152,17 @@
     flex: 1 1 auto;
     min-height: 0;
     list-style: none;
-    /* No right padding — the scrollbar (when present) takes its 6px
-       directly from the content area at the right edge. Top padding
-       leaves room for the first item's hover lift. */
-    padding: 2px 0 28px 0;
+    /* Right padding pushes the row of items inboard so the scrollbar
+       sits in the gutter to their right rather than overlaying their
+       right edge. `scrollbar-gutter: stable` keeps that gutter
+       reserved even when the list isn't overflowing, so toggling
+       between short/long lists doesn't reflow the row widths. Top
+       padding leaves room for the first item's hover lift; bottom
+       padding keeps the last item clear of the scroll thumb. */
+    padding: 2px 10px 28px 0;
     margin: 0;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -469,18 +474,78 @@
     }
 }
 
-/* Leave animation — slides right and fades. The item stays mounted
-   for REMOVE_ANIM_MS in Todo.tsx so this can finish before unmount.
-   pointer-events: none prevents stray clicks during the exit. */
+/* Leave animation — a tiny "poof": pop slightly bigger, then shrink,
+   fade, drift up, and tilt off. Feels celebratory without being
+   over-the-top. The item stays mounted for REMOVE_ANIM_MS in Todo.tsx
+   so this can finish before unmount; keep that constant in sync with
+   the 340ms duration here. pointer-events: none prevents stray clicks
+   during the exit. */
 .todo-item.removing {
-    animation: todo-item-leave 240ms ease forwards;
+    animation: todo-item-leave 340ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     pointer-events: none;
+    transform-origin: center;
 }
 
 @keyframes todo-item-leave {
-    to {
+    0% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    25% {
+        opacity: 1;
+        transform: scale(1.06) rotate(-2deg);
+    }
+    100% {
         opacity: 0;
-        transform: translateX(28px);
+        transform: scale(0.5) translateY(-10px) rotate(4deg);
+    }
+}
+
+/* Complete animation — fires once when an item transitions from
+   unchecked to checked (Todo.tsx tracks `completingIds` and applies
+   the .completing class for ~480ms). A gentle vertical pop on the
+   row content + a bouncy scale-in on the newly-drawn checkmark
+   inside, so finishing a task feels rewarding. */
+.todo-item.completing .todo-item-content {
+    animation: todo-item-complete 480ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes todo-item-complete {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+    35% {
+        transform: translateY(-3px) scale(1.025);
+    }
+    65% {
+        transform: translateY(0) scale(0.985);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Checkmark bounce-in — the inline SVG is conditionally rendered
+   when `todo.checked` is true, so it mounts at the moment the user
+   completes the task and the animation plays exactly once per
+   toggle-on. Re-checking after un-checking remounts and re-runs. */
+.todo-checkbox svg {
+    animation: todo-check-pop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-origin: center;
+}
+
+@keyframes todo-check-pop {
+    0% {
+        transform: scale(0) rotate(-12deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.25) rotate(4deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
     }
 }
 
