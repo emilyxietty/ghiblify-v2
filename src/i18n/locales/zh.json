@@ -78,7 +78,9 @@
       "favoriteBackground": "收藏背景",
       "favoriteBackgroundAria": "添加到收藏",
       "unfavoriteBackground": "取消收藏",
-      "unfavoriteBackgroundAria": "从收藏中移除"
+      "unfavoriteBackgroundAria": "从收藏中移除",
+      "refreshBackground": "刷新背景",
+      "refreshBackgroundAria": "从所选来源中挑选新背景"
     },
     "appearance": {
       "palette": "调色板",
@@ -142,6 +144,7 @@
       "showBackground": "显示背景",
       "time12": "12 小时制",
       "time24": "24 小时制",
+      "timeAnalog": "指针时钟",
       "textShadow": "文字阴影",
       "opacity": "不透明度",
       "blur": "模糊",
@@ -166,7 +169,10 @@
       "textShadowAria": "文字阴影强度",
       "noCustomization": "无可用选项",
       "darkModeAria": "切换深色模式",
-      "timeFormatAria": "切换 12/24 小时制",
+      "timeFormatAria": "选择时钟格式",
+      "timeFormat12": "12 小时",
+      "timeFormat24": "24 小时",
+      "timeFormatAnalog": "指针",
       "gridShow": "网格显示",
       "gridShowList": "列表显示",
       "resizeTitle": "拖动以调整大小",

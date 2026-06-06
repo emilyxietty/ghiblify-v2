@@ -26,6 +26,10 @@ export interface TimeSettings {
    *  the historical shadow exactly as-is; 0 removes it; 200 doubles
    *  the alpha for legibility on very busy/light backgrounds. */
   textShadow: number;
+  /** When true, render a round analog dial (hour/minute/second hands)
+   *  instead of the digital readout. is24Hour is ignored in analog
+   *  mode — the dial always shows 12 numerals. */
+  analog: boolean;
 }
 export interface DateSettings {
   fontSize: number;
@@ -227,7 +231,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   time: {
     name: "Time",
     position: { x: 50, y: 24.77064220183486 },
-    settings: { fontSize: 200, is24Hour: false, textShadow: 100 },
+    settings: { fontSize: 200, is24Hour: false, textShadow: 100, analog: false },
     fontSize: { min: 20, max: 250, step: 20 },
     customControls: { timeFormat: true },
   },

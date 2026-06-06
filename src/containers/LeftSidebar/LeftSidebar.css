@@ -736,6 +736,25 @@
 .filter-collapsible[open] .filter-group {
     border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     border-top: none;
+    /* Soft slide-fade-down when the section expands. Plays once per
+       open (the [open] attribute is the trigger). The native <details>
+       element has no transitionable close path, so the collapse is
+       still instantaneous — keep that asymmetry in mind if the
+       animation changes. Matches the chevron's 200ms rotate so the
+       header and body land together. */
+    animation: sidebar-collapsible-open 220ms cubic-bezier(0.32, 0.72, 0.32, 1);
+    transform-origin: top center;
+}
+
+@keyframes sidebar-collapsible-open {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scaleY(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
 }
 
 /* Action row beneath the Filters card — Select Backgrounds takes the
@@ -751,7 +770,8 @@
 }
 
 .background-actions-delete,
-.background-actions-fav {
+.background-actions-fav,
+.background-actions-refresh {
     flex: 0 0 auto;
     aspect-ratio: 1 / 1;
     padding: 0 !important;

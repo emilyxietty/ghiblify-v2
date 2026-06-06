@@ -46,9 +46,15 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const settings = widgets[storageKey].settings as Record<string, unknown>;
   const controls = widgetConfig.customControls;
 
-  const toggleTimeFormat = () => {
-    const cur = (widgets.time.settings as TimeSettings).is24Hour;
-    updateWidgetSettings("time", { is24Hour: !cur });
+  const setTimeFormat = (fmt: "12h" | "24h" | "analog") => {
+    if (fmt === "analog") {
+      updateWidgetSettings("time", { analog: true });
+    } else {
+      updateWidgetSettings("time", {
+        analog: false,
+        is24Hour: fmt === "24h",
+      });
+    }
   };
 
   const toggleQuicklinksGrid = () => {
@@ -156,7 +162,14 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     );
   }
 
-  const timeIs24Hour = (widgets.time.settings as TimeSettings).is24Hour;
+  const timeSettings = widgets.time.settings as TimeSettings;
+  const timeIs24Hour = timeSettings.is24Hour;
+  const timeIsAnalog = !!timeSettings.analog;
+  const currentTimeFormat: "12h" | "24h" | "analog" = timeIsAnalog
+    ? "analog"
+    : timeIs24Hour
+      ? "24h"
+      : "12h";
   const quicklinksGrid = (widgets.quicklinks.settings as QuicklinksSettings).gridMode;
   const infoFields = (widgets.info.settings as InfoSettings).infoFields;
   const avatarSettings = widgets.avatar.settings as AvatarSettings;
@@ -165,18 +178,36 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   return (
     <div className="widget-overlay">
       <div className="widget-controls-container">
-        {controls?.timeFormat && (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleTimeFormat();
-            }}
-            title={t("widgets.edit.timeFormatAria")}
-            variant="dark"
-            size="small"
-            icon={timeIs24Hour ? "12h" : "24h"}
-          />
-        )}
+        {controls?.timeFormat && (() => {
+          const FORMATS: Array<{ key: "12h" | "24h" | "analog"; label: string }> = [
+            { key: "12h", label: t("widgets.edit.timeFormat12") },
+            { key: "24h", label: t("widgets.edit.timeFormat24") },
+            { key: "analog", label: t("widgets.edit.timeFormatAnalog") },
+          ];
+          return (
+            <div
+              className="widget-pomodoro-size"
+              role="radiogroup"
+              aria-label={t("widgets.edit.timeFormatAria")}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {FORMATS.map((f) => (
+                <Button
+                  key={f.key}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTimeFormat(f.key);
+                  }}
+                  variant={currentTimeFormat === f.key ? "light" : "dark"}
+                  size="small"
+                  className="btn-text-toggle"
+                  icon={f.label}
+                  aria-pressed={currentTimeFormat === f.key}
+                />
+              ))}
+            </div>
+          );
+        })()}
         {controls?.gridMode && (
           <Button
             onClick={(e) => {

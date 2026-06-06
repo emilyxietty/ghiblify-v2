@@ -78,7 +78,9 @@
       "favoriteBackground": "Favorite background",
       "favoriteBackgroundAria": "Add the current background to favorites",
       "unfavoriteBackground": "Unfavorite background",
-      "unfavoriteBackgroundAria": "Remove the current background from favorites"
+      "unfavoriteBackgroundAria": "Remove the current background from favorites",
+      "refreshBackground": "Refresh background",
+      "refreshBackgroundAria": "Pick a new background from the selected sources"
     },
     "appearance": {
       "palette": "Palette",
@@ -146,6 +148,7 @@
       "showBackground": "Show background",
       "time12": "12-hour",
       "time24": "24-hour",
+      "timeAnalog": "Analog",
       "textShadow": "Text shadow",
       "opacity": "Opacity",
       "blur": "Blur",
@@ -170,7 +173,10 @@
       "textShadowAria": "Text shadow strength",
       "noCustomization": "No customization available",
       "darkModeAria": "Toggle dark mode",
-      "timeFormatAria": "Toggle 12/24 hour format",
+      "timeFormatAria": "Choose clock format",
+      "timeFormat12": "12h",
+      "timeFormat24": "24h",
+      "timeFormatAnalog": "Analog",
       "gridShow": "Show as grid",
       "gridShowList": "Show as list",
       "resizeTitle": "Drag to resize",

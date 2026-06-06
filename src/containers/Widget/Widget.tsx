@@ -915,18 +915,27 @@ export function buildContextMenuItems(args: {
 
   if (storageKey === "time") {
     const s = widgets.time.settings as TimeSettings;
+    const isAnalog = !!s.analog;
     extras = [
       {
         type: "radio",
         label: t("widgets.contextMenu.time12"),
-        selected: !s.is24Hour,
-        onClick: () => updateWidgetSettings("time", { is24Hour: false }),
+        selected: !isAnalog && !s.is24Hour,
+        onClick: () =>
+          updateWidgetSettings("time", { analog: false, is24Hour: false }),
       },
       {
         type: "radio",
         label: t("widgets.contextMenu.time24"),
-        selected: !!s.is24Hour,
-        onClick: () => updateWidgetSettings("time", { is24Hour: true }),
+        selected: !isAnalog && !!s.is24Hour,
+        onClick: () =>
+          updateWidgetSettings("time", { analog: false, is24Hour: true }),
+      },
+      {
+        type: "radio",
+        label: t("widgets.contextMenu.timeAnalog"),
+        selected: isAnalog,
+        onClick: () => updateWidgetSettings("time", { analog: true }),
       },
     ];
   } else if (storageKey === "quicklinks") {

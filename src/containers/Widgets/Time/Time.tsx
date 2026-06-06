@@ -65,6 +65,75 @@ export const Time: React.FC = () => {
   // window resize so the clock stays proportional to the screen.
   const scaledFontSize = useScaledPx(timeSettings.fontSize);
 
+  if (timeSettings.analog) {
+    // Dial diameter tracks the same fontSize knob digital uses, so
+    // the single slider in EditWidget sizes both modes consistently.
+    const diameter = scaledFontSize * 1.6;
+    const h = currentTime.getHours() % 12;
+    const m = currentTime.getMinutes();
+    const s = currentTime.getSeconds();
+    // 30° per hour, 6° per minute — plus a continuous offset so the
+    // hour and minute hands creep smoothly between ticks instead of
+    // snapping. No second hand by design (calmer Ghibli vibe).
+    const hourAngle = h * 30 + m * 0.5;
+    const minuteAngle = m * 6 + s * 0.1;
+    return (
+      <div className="time-container" style={shadowStyle}>
+        <svg
+          className="time-analog"
+          width={diameter}
+          height={diameter}
+          viewBox="0 0 100 100"
+          aria-label={timeDigits}
+          role="img"
+        >
+          {/* Frosted face — fully transparent fill; the wrapper's
+              backdrop-filter blurs the wallpaper behind it. */}
+          <circle cx="50" cy="50" r="48" className="time-analog-face" />
+          {/* Twelve numeral dots — chunky cardinal dots at 12/3/6/9
+              and smaller ones in between, like little soot sprite eyes. */}
+          {Array.from({ length: 12 }).map((_, i) => {
+            const angle = (i * 30 * Math.PI) / 180;
+            const cx = 50 + Math.sin(angle) * 36;
+            const cy = 50 - Math.cos(angle) * 36;
+            const isCardinal = i % 3 === 0;
+            return (
+              <circle
+                key={i}
+                cx={cx}
+                cy={cy}
+                r={isCardinal ? 2.4 : 1.4}
+                className={`time-analog-tick${
+                  isCardinal ? " time-analog-tick-cardinal" : ""
+                }`}
+              />
+            );
+          })}
+          <line
+            x1="50"
+            y1="56"
+            x2="50"
+            y2="26"
+            className="time-analog-hand time-analog-hand-hour"
+            transform={`rotate(${hourAngle} 50 50)`}
+          />
+          <line
+            x1="50"
+            y1="56"
+            x2="50"
+            y2="14"
+            className="time-analog-hand time-analog-hand-minute"
+            transform={`rotate(${minuteAngle} 50 50)`}
+          />
+          {/* Center pin: outer blush + inner ink dot, like a little
+              flower button. */}
+          <circle cx="50" cy="50" r="3.4" className="time-analog-pin-outer" />
+          <circle cx="50" cy="50" r="1.6" className="time-analog-pin" />
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div className="time-container" style={shadowStyle}>
       <div className="time" style={{ fontSize: `${scaledFontSize}px` }}>

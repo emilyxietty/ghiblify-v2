@@ -73,7 +73,9 @@
       "favoriteBackground": "Marcar como favorito",
       "favoriteBackgroundAria": "Añadir el fondo actual a favoritos",
       "unfavoriteBackground": "Quitar de favoritos",
-      "unfavoriteBackgroundAria": "Quitar el fondo actual de favoritos"
+      "unfavoriteBackgroundAria": "Quitar el fondo actual de favoritos",
+      "refreshBackground": "Actualizar fondo",
+      "refreshBackgroundAria": "Elegir un nuevo fondo de las fuentes seleccionadas"
     },
     "appearance": {
       "palette": "Paleta",
@@ -136,6 +138,7 @@
       "showBackground": "Mostrar fondo",
       "time12": "12 horas",
       "time24": "24 horas",
+      "timeAnalog": "Analógico",
       "textShadow": "Sombra del texto",
       "opacity": "Opacidad",
       "blur": "Desenfoque",
@@ -160,7 +163,10 @@
       "textShadowAria": "Intensidad de la sombra del texto",
       "noCustomization": "Sin opciones de personalización",
       "darkModeAria": "Alternar modo oscuro",
-      "timeFormatAria": "Alternar formato 12/24 h",
+      "timeFormatAria": "Elegir formato de reloj",
+      "timeFormat12": "12h",
+      "timeFormat24": "24h",
+      "timeFormatAnalog": "Analógico",
       "gridShow": "Ver como cuadrícula",
       "gridShowList": "Ver como lista",
       "resizeTitle": "Arrastra para redimensionar",

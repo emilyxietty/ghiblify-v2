@@ -71,7 +71,9 @@
       "favoriteBackground": "Mettre en favori",
       "favoriteBackgroundAria": "Ajouter aux favoris",
       "unfavoriteBackground": "Retirer des favoris",
-      "unfavoriteBackgroundAria": "Retirer des favoris"
+      "unfavoriteBackgroundAria": "Retirer des favoris",
+      "refreshBackground": "Actualiser l'arrière-plan",
+      "refreshBackgroundAria": "Choisir un nouvel arrière-plan parmi les sources sélectionnées"
     },
     "appearance": {
       "paletteAria": "Palette de couleurs",
@@ -131,6 +133,7 @@
       "showBackground": "Afficher l'arrière-plan",
       "time12": "12 heures",
       "time24": "24 heures",
+      "timeAnalog": "Analogique",
       "textShadow": "Ombre du texte",
       "opacity": "Opacité",
       "blur": "Flou",
@@ -155,7 +158,10 @@
       "textShadowAria": "Intensité de l'ombre du texte",
       "noCustomization": "Aucune personnalisation disponible",
       "darkModeAria": "Activer/désactiver le mode sombre",
-      "timeFormatAria": "Basculer 12/24 h",
+      "timeFormatAria": "Choisir le format d'horloge",
+      "timeFormat12": "12h",
+      "timeFormat24": "24h",
+      "timeFormatAnalog": "Analogique",
       "gridShow": "Afficher en grille",
       "gridShowList": "Afficher en liste",
       "resizeTitle": "Glisser pour redimensionner",

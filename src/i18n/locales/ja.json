@@ -78,7 +78,9 @@
       "favoriteBackground": "お気に入りに追加",
       "favoriteBackgroundAria": "現在の背景をお気に入りに追加",
       "unfavoriteBackground": "お気に入りから削除",
-      "unfavoriteBackgroundAria": "現在の背景をお気に入りから削除"
+      "unfavoriteBackgroundAria": "現在の背景をお気に入りから削除",
+      "refreshBackground": "背景を更新",
+      "refreshBackgroundAria": "選択中のソースから新しい背景を選ぶ"
     },
     "appearance": {
       "palette": "パレット",
@@ -142,6 +144,7 @@
       "showBackground": "背景を表示",
       "time12": "12時間制",
       "time24": "24時間制",
+      "timeAnalog": "アナログ",
       "textShadow": "テキストの影",
       "opacity": "不透明度",
       "blur": "ぼかし",
@@ -166,7 +169,10 @@
       "textShadowAria": "テキストの影の強さ",
       "noCustomization": "カスタマイズはありません",
       "darkModeAria": "ダークモード切替",
-      "timeFormatAria": "12/24時間制を切替",
+      "timeFormatAria": "時計の表示形式を選択",
+      "timeFormat12": "12時間",
+      "timeFormat24": "24時間",
+      "timeFormatAnalog": "アナログ",
       "gridShow": "グリッド表示",
       "gridShowList": "リスト表示",
       "resizeTitle": "ドラッグでサイズ変更",

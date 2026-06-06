@@ -26,3 +26,80 @@
         0 2px 8px rgba(0, 0, 0, calc(0.32 * var(--text-shadow-strength, 1))),
         0 4px 18px rgba(0, 0, 0, calc(0.28 * var(--text-shadow-strength, 1)));
 }
+
+/* Frosted-glass analog clock. The widget shell handles the backdrop
+   blur + circular clip; this rule just owns the SVG layout. Shadows
+   live on the painted elements below so the slider clearly modulates
+   contrast against the frosted disc (a shadow on the SVG root was
+   getting visually muted by the backdrop blur). */
+.time-analog {
+    display: block;
+    user-select: none;
+}
+
+/* Single source of truth for the hand/tick/pin shadows — each rule
+   below references this via filter: drop-shadow(...). Alpha scales
+   with --text-shadow-strength so the EditWidget slider keeps working
+   in analog mode the same way it does in digital mode. */
+.time-analog circle,
+.time-analog line {
+    filter: drop-shadow(
+        0 1.5px 3px rgba(0, 0, 0, calc(0.55 * var(--text-shadow-strength, 1)))
+    );
+}
+
+/* The .widget shell is `position: fixed`, which makes it the backdrop
+   root for its descendants — backdrop-filter on a child can only blur
+   pixels INSIDE the widget (i.e. nothing). The shell itself IS its own
+   backdrop root and CAN blur the viewport, though, so we hoist the
+   frost onto the shell (scoped via :has(.time-analog) so only the
+   analog mode gets the treatment). Same pattern Frost uses on Todo /
+   SearchBar / Weather widgets — see the comment in App.css. */
+.widget[data-widget-key="time"]:has(.time-analog) {
+    border-radius: 50%;
+    backdrop-filter: blur(6px) saturate(110%);
+    -webkit-backdrop-filter: blur(6px) saturate(110%);
+}
+
+/* Strip the standard widget padding in analog mode so the dial fills
+   the shell exactly — otherwise the circular backdrop-filter area
+   extends past the SVG edge. */
+.widget[data-widget-key="time"]:has(.time-analog) .widget-content {
+    padding: 0;
+}
+
+.time-analog-face {
+    /* Pure frosted glass — fully transparent, no stroke. The circular
+       backdrop-filter on the widget shell defines the edge on its own. */
+    fill: transparent;
+    stroke: none;
+}
+
+.time-analog-tick {
+    fill: rgba(255, 255, 255, 0.7);
+}
+
+.time-analog-tick-cardinal {
+    fill: #ffffff;
+}
+
+.time-analog-hand {
+    stroke: #ffffff;
+    stroke-linecap: round;
+}
+
+.time-analog-hand-hour {
+    stroke-width: 2.6;
+}
+
+.time-analog-hand-minute {
+    stroke-width: 1.8;
+}
+
+.time-analog-pin-outer {
+    fill: rgba(255, 255, 255, 0.3);
+}
+
+.time-analog-pin {
+    fill: #ffffff;
+}

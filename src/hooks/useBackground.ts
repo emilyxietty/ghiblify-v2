@@ -265,6 +265,10 @@ export const useBackground = () => {
       "ghiblify:blacklist:cleared",
       reload as EventListener,
     );
+    window.addEventListener(
+      "ghiblify:background:refresh",
+      reload as EventListener,
+    );
 
     return () => {
       window.removeEventListener(
@@ -273,6 +277,10 @@ export const useBackground = () => {
       );
       window.removeEventListener(
         "ghiblify:blacklist:cleared",
+        reload as EventListener,
+      );
+      window.removeEventListener(
+        "ghiblify:background:refresh",
         reload as EventListener,
       );
     };

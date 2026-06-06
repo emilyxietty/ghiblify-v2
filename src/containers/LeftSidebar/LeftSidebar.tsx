@@ -19,7 +19,7 @@ const WidgetSettingsModal = lazy(() =>
 );
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
-import { DeleteOutlineIcon, EditIcon, FormatQuoteIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
+import { DeleteOutlineIcon, EditIcon, FormatQuoteIcon, RefreshIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
 import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
 import {
   codeToIconName,
@@ -740,6 +740,20 @@ export const LeftSidebar: React.FC = () => {
                 className="background-actions-select"
               >
                 {t("sidebar.buttons.selectBackgrounds")}
+              </Button>
+              <Button
+                variant="dark"
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent("ghiblify:background:refresh"),
+                  )
+                }
+                aria-label={t("sidebar.buttons.refreshBackgroundAria")}
+                data-tooltip={t("sidebar.buttons.refreshBackground")}
+                disabled={!currentBackground}
+                className="background-actions-refresh"
+              >
+                <RefreshIcon style={{ fontSize: 16 }} />
               </Button>
               <Button
                 variant="dark"

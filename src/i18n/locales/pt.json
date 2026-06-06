@@ -73,7 +73,9 @@
       "favoriteBackground": "Favoritar plano de fundo",
       "favoriteBackgroundAria": "Adicionar plano de fundo aos favoritos",
       "unfavoriteBackground": "Remover dos favoritos",
-      "unfavoriteBackgroundAria": "Remover plano de fundo dos favoritos"
+      "unfavoriteBackgroundAria": "Remover plano de fundo dos favoritos",
+      "refreshBackground": "Atualizar plano de fundo",
+      "refreshBackgroundAria": "Escolher um novo plano de fundo das fontes selecionadas"
     },
     "appearance": {
       "palette": "Paleta",
@@ -136,6 +138,7 @@
       "showBackground": "Mostrar fundo",
       "time12": "12 horas",
       "time24": "24 horas",
+      "timeAnalog": "Analógico",
       "textShadow": "Sombra do texto",
       "opacity": "Opacidade",
       "blur": "Desfoque",
@@ -160,7 +163,10 @@
       "textShadowAria": "Intensidade da sombra do texto",
       "noCustomization": "Sem opções de personalização",
       "darkModeAria": "Alternar modo escuro",
-      "timeFormatAria": "Alternar formato 12/24 h",
+      "timeFormatAria": "Escolher formato do relógio",
+      "timeFormat12": "12h",
+      "timeFormat24": "24h",
+      "timeFormatAnalog": "Analógico",
       "gridShow": "Ver em grade",
       "gridShowList": "Ver em lista",
       "resizeTitle": "Arraste para redimensionar",
