@@ -54,7 +54,7 @@
       "heart": "ハート",
       "leaf": "葉っぱ",
       "strawberry": "いちご",
-      "rainbow": "虹"
+      "shikigami": "紙の鳥"
     },
     "buttons": {
       "githubRepo": "GitHubリポジトリ",
@@ -154,7 +154,19 @@
       "selectAvatar": "アバターを選ぶ",
       "pomodoroSizeLarge": "大",
       "pomodoroSizeSmall": "小",
-      "pomodoroSizeMedium": "中"
+      "pomodoroSizeMedium": "中",
+      "timeFormat": "時計の形式",
+      "weatherLocation": "場所",
+      "weatherUseMyLocation": "現在地を使う",
+      "weatherChooseCity": "都市を選ぶ…",
+      "weatherRefresh": "今すぐ更新",
+      "highlight": "ハイライト",
+      "highlightOff": "なし",
+      "quicklinksView": "表示",
+      "weatherDetail": "表示量",
+      "weatherStyle": "スタイル",
+      "highlightCustom": "カラーピッカー…",
+      "typeIn": "読み込み時にタイプ表示"
     },
     "edit": {
       "ariaEdit": "{{key}}ウィジェットを編集",
@@ -190,33 +202,51 @@
       "notesHideBorderAria": "メモの枠を非表示",
       "weatherUnitAria": "摂氏/華氏を切替",
       "weatherUnitLabel": "単位",
-      "weatherSections": {
-        "now": "現在",
-        "hourly": "1時間ごと",
-        "daily": "1週間"
-      },
-      "weatherSectionsLabel": "セクション",
-      "weatherIconStyle": {
-        "animated": "アニメ",
-        "still": "静止"
-      },
-      "weatherIconStyleLabel": "アイコンスタイル",
-      "weatherIconStyleAria": {
-        "animated": "アイコンが動く — クリックで静止に切替",
-        "still": "アイコンは静止 — クリックでアニメに切替"
-      },
-      "weatherShowCard": "カード",
-      "weatherHideCard": "カード",
-      "weatherShowCardLabel": "カード背景を表示",
-      "weatherShowCardAria": "天気の後ろにグラデーションカードを表示",
-      "weatherHideCardAria": "カード背景を非表示",
-      "weatherIconsOnly": "アイコンのみ",
-      "weatherIconsOnlyOnAria": "アイコンのみ表示中 — クリックでテキストを表示",
-      "weatherIconsOnlyOffAria": "テキストを非表示にしてアイコンのみ表示",
       "pomodoroSizeLabel": "サイズ",
       "pomodoroSizeSmall": "小",
       "pomodoroSizeMedium": "中",
-      "pomodoroSizeLarge": "大"
+      "pomodoroSizeLarge": "大",
+      "pomodoroSoundLabel": "サウンド",
+      "pomodoroSoundAria": "終了音を選択",
+      "pomodoroVolume": "音量",
+      "pomodoroVolumeAria": "終了音の音量",
+      "pomodoroSound": {
+        "musicbox": "オルゴール",
+        "sootsprite": "まっくろくろすけ",
+        "catbus": "ネコバス",
+        "windchime": "風鈴",
+        "kodama": "コダマ",
+        "none": "なし"
+      },
+      "weatherLocationAria": "天気の場所を設定",
+      "weatherLocationAuto": "自動",
+      "weatherLocationUseMine": "現在地",
+      "weatherLocationRefresh": "更新",
+      "weatherLocationPlaceholder": "都市を検索…",
+      "weatherLocationSearching": "検索中…",
+      "weatherLocationNoResults": "都市が見つかりません",
+      "weatherLocationError": "検索に失敗しました。再試行してください。",
+      "highlightLabel": "ハイライト",
+      "highlightAria": "ハイライトの色を選ぶ",
+      "highlightNone": "ハイライトなし",
+      "highlightRecent": "最近使用",
+      "highlightPresets": "プリセット",
+      "highlightCustomAria": "カスタム色を選ぶ",
+      "highlightHexAria": "16進カラー",
+      "highlightTextColor": "文字色",
+      "highlightTextAuto": "自動",
+      "weatherDetail": {
+        "icon": "アイコンのみ",
+        "now": "現在",
+        "hourly": "1時間ごと",
+        "full": "詳細予報"
+      },
+      "weatherStylePlain": "シンプル",
+      "weatherStyleCard": "カード",
+      "weatherAnimatedIcons": "アイコンを動かす",
+      "weatherAnimatedOn": "オン",
+      "weatherAnimatedOff": "オフ",
+      "panelDragHint": "ドラッグで移動"
     }
   },
   "greeting": {
@@ -244,7 +274,13 @@
     "placeholder": "ウェブを検索...",
     "ariaLabelInput": "ウェブを検索",
     "ariaLabelButton": "検索",
-    "tooltipButton": "検索"
+    "tooltipButton": "検索",
+    "clearAria": "検索をクリア",
+    "voiceAria": "音声で検索",
+    "voiceTooltip": "音声で検索",
+    "imageAria": "画像で検索",
+    "imageTooltip": "画像で検索",
+    "removeHistoryAria": "「{{query}}」を最近の検索から削除"
   },
   "quicklinks": {
     "trigger": "リンク",
@@ -262,7 +298,16 @@
     "doneDeleteTooltip": "削除を終了",
     "labelPlaceholder": "ラベル(任意)",
     "labelSrOnly": "ラベル(任意)",
-    "emptyMessage": "クイックリンクはまだありません。上から追加してください。"
+    "emptyMessage": "クイックリンクはまだありません。上から追加してください。",
+    "addTile": "追加",
+    "addTitle": "リンクを追加",
+    "editTitle": "リンクを編集",
+    "urlLabel": "アドレス",
+    "labelOptional": "名前（任意）",
+    "previewEmpty": "新しいリンク",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "addButton": "追加"
   },
   "pomodoro": {
     "modeFocus": "ポモドーロ",
@@ -295,7 +340,9 @@
     "errorLoad": "ブックマークの読み込みに失敗しました: {{message}}",
     "delete": "ブックマークを削除",
     "noResultsTitle": "ブックマークが見つかりません",
-    "noResultsSub": "「{{query}}」に一致する項目はありません。"
+    "noResultsSub": "「{{query}}」に一致する項目はありません。",
+    "permissionPrompt": "ここにブックマークを表示するには、Chrome のブックマークを読み取る権限が必要です。",
+    "permissionGrant": "ブックマークへのアクセスを許可"
   },
   "notes": {
     "placeholder": "メモを書く…",
@@ -348,7 +395,10 @@
       "4": "木",
       "5": "金",
       "6": "土"
-    }
+    },
+    "enableLocation": "位置情報を許可",
+    "retry": "再試行",
+    "today": "今日"
   },
   "socials": {
     "buttonLabel": "SNS",
@@ -495,7 +545,8 @@
         "navigateGuide": "ガイドのスライド移動",
         "orSep": "または"
       }
-    }
+    },
+    "exitButton": "ガイドを終了"
   },
   "options": {
     "subtitle": "スタジオジブリにインスパイアされた新しいタブ",
@@ -514,5 +565,70 @@
     "footerCredit": "心を込めて作成",
     "viewSource": "GitHubでソースを見る",
     "privacy": "プライバシーポリシー"
+  },
+  "settings": {
+    "title": "設定",
+    "buttonLabel": "設定",
+    "buttonAria": "設定を開く",
+    "permissionsTitle": "権限",
+    "permissionsSub": "Ghiblify は最初は何も要求しません。使うものだけを有効にしてください。取り消しは即時反映されます。",
+    "permissionGeolocation": "位置情報",
+    "permissionGeolocationSub": "天気が現在地を取得できるようにします。オフにすると位置情報 API は一切呼び出されません（都市を手動で選んでください）。",
+    "permissionBookmarks": "ブックマーク",
+    "permissionBookmarksSub": "パネルが Chrome のブックマークを読み取り、整理できるようにします。",
+    "storageTitle": "保存データ",
+    "storageSub": "{{count}} 件 · 合計 {{size}}。行を展開すると中身を確認できます。",
+    "storageEmpty": "まだ何も保存されていません。",
+    "deleteKey": "削除",
+    "deleteKeyAria": "{{key}} を削除",
+    "resetTitle": "すべてリセット",
+    "resetSub": "保存された設定（ウィジェット、背景、名前、ToDo など）をすべて削除してページを再読み込みします。",
+    "resetButton": "すべてリセット",
+    "resetConfirm": "この操作は元に戻せません。",
+    "resetConfirmYes": "はい、リセット",
+    "resetConfirmCancel": "キャンセル",
+    "section": {
+      "widgets": "ウィジェット設定",
+      "appearance": "外観設定",
+      "background": "背景設定",
+      "cursor": "カーソル設定"
+    },
+    "widgetsTitle": "ウィジェット",
+    "appearanceTitle": "外観",
+    "backgroundTitle": "背景",
+    "cursorTitle": "カーソル",
+    "cursorSub": "カーソルを標準のシステムポインタに戻します。設定は「外観」と一緒に保存されます。",
+    "dockBackgrounds": "ドックのカード背景",
+    "dockBackgroundsSub": "右側にドックしたウィジェットの背後にガラス風カードを表示します。",
+    "highContrastSub": "ページ全体の文字コントラストを強くします。",
+    "parallaxSub": "カーソルに合わせて背景がゆっくり動きます。",
+    "resetWidgets": "すべてのウィジェットをリセット",
+    "resetDock": "ドックをリセット",
+    "resetAppearance": "外観をリセット",
+    "resetBackground": "背景設定をリセット",
+    "resetCursor": "カーソルをリセット",
+    "storageGroup": {
+      "widgets": "ウィジェット",
+      "background": "背景",
+      "appearance": "外観",
+      "other": "その他"
+    },
+    "deleteKeyConfirm": "「{{key}}」を削除しますか？含まれるデータは元に戻せません。",
+    "resetWidgetsConfirm": "すべてのウィジェットを初期の位置・サイズ・設定に戻しますか？クイックリンクと名前は保持されます。",
+    "resetDockConfirm": "右側のドックを初期レイアウトに戻しますか？",
+    "resetAppearanceConfirm": "テーマ・フォント・コントラストを初期設定に戻しますか？",
+    "resetBackgroundConfirm": "背景フィルターとパララックスを初期設定に戻しますか？",
+    "resetCursorConfirm": "カーソルを標準のシステムポインタに戻しますか？",
+    "storedDataLabel": "保存データ",
+    "otherSub": "インストール用フラグと、上のどのセクションにも属さないデータ。",
+    "permissionMicrophone": "マイク",
+    "permissionMicrophoneSub": "検索バーの音声検索に使います。マイクを使っている間だけ有効です。",
+    "corners": "角の丸み",
+    "cornersSub": "ウィジェット・メニュー・ダイアログの角の丸さ。",
+    "cornerStyle": {
+      "square": "直角",
+      "rounded": "標準",
+      "pill": "丸め"
+    }
   }
 }

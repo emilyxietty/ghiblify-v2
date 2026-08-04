@@ -346,6 +346,41 @@
     border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
 
+/* Permission prompt — shown instead of the tree when the optional
+   `bookmarks` grant is missing. The panel can be switched on without
+   the permission, so this is the in-place way to hand it over. */
+.bookmarks-permission {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 16px;
+    text-align: center;
+}
+
+.bookmarks-permission-text {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--light) 70%, transparent);
+}
+
+.bookmarks-permission-btn {
+    padding: 7px 16px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 28%, transparent);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.bookmarks-permission-btn:hover {
+    background: color-mix(in srgb, var(--light) 22%, transparent);
+}
+
 /* ---------------------------------------------------------------------------
    Scrollbar
    --------------------------------------------------------------------------- */

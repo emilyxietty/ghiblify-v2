@@ -54,7 +54,7 @@
       "heart": "하트",
       "leaf": "나뭇잎",
       "strawberry": "딸기",
-      "rainbow": "무지개"
+      "shikigami": "종이 새"
     },
     "buttons": {
       "githubRepo": "Github 저장소",
@@ -154,7 +154,19 @@
       "selectAvatar": "아바타 선택",
       "pomodoroSizeLarge": "크게",
       "pomodoroSizeSmall": "작게",
-      "pomodoroSizeMedium": "보통"
+      "pomodoroSizeMedium": "보통",
+      "timeFormat": "시계 형식",
+      "weatherLocation": "위치",
+      "weatherUseMyLocation": "내 위치 사용",
+      "weatherChooseCity": "도시 선택…",
+      "weatherRefresh": "지금 새로고침",
+      "highlight": "강조",
+      "highlightOff": "없음",
+      "quicklinksView": "보기",
+      "weatherDetail": "표시 범위",
+      "weatherStyle": "스타일",
+      "highlightCustom": "색상 선택기…",
+      "typeIn": "불러올 때 타이핑"
     },
     "edit": {
       "ariaEdit": "{{key}} 위젯 편집",
@@ -190,33 +202,51 @@
       "notesHideBorderAria": "노트 테두리 숨기기",
       "weatherUnitAria": "섭씨/화씨 전환",
       "weatherUnitLabel": "단위",
-      "weatherSections": {
-        "now": "현재",
-        "hourly": "시간별",
-        "daily": "일별"
-      },
-      "weatherSectionsLabel": "섹션",
-      "weatherIconStyle": {
-        "animated": "애니메이션",
-        "still": "정지"
-      },
-      "weatherIconStyleLabel": "아이콘 스타일",
-      "weatherIconStyleAria": {
-        "animated": "애니메이션 아이콘 — 클릭하여 정지로 전환",
-        "still": "정지 아이콘 — 클릭하여 애니메이션으로 전환"
-      },
-      "weatherShowCard": "카드",
-      "weatherHideCard": "카드",
-      "weatherShowCardLabel": "카드 배경 표시",
-      "weatherShowCardAria": "날씨 뒤에 부드러운 그라데이션 카드 표시",
-      "weatherHideCardAria": "카드 배경 숨기기",
-      "weatherIconsOnly": "아이콘만",
-      "weatherIconsOnlyOnAria": "아이콘만 표시 중 — 클릭하여 텍스트 다시 보기",
-      "weatherIconsOnlyOffAria": "텍스트를 숨기고 아이콘만 표시",
       "pomodoroSizeLabel": "크기",
       "pomodoroSizeSmall": "S",
       "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "L"
+      "pomodoroSizeLarge": "L",
+      "pomodoroSoundLabel": "사운드",
+      "pomodoroSoundAria": "완료 소리 선택",
+      "pomodoroVolume": "음량",
+      "pomodoroVolumeAria": "완료 소리 음량",
+      "pomodoroSound": {
+        "musicbox": "오르골",
+        "sootsprite": "검댕이",
+        "catbus": "고양이버스",
+        "windchime": "풍경",
+        "kodama": "코다마",
+        "none": "없음"
+      },
+      "weatherLocationAria": "날씨 위치 설정",
+      "weatherLocationAuto": "자동",
+      "weatherLocationUseMine": "내 위치",
+      "weatherLocationRefresh": "새로고침",
+      "weatherLocationPlaceholder": "도시 검색…",
+      "weatherLocationSearching": "검색 중…",
+      "weatherLocationNoResults": "도시를 찾을 수 없습니다",
+      "weatherLocationError": "검색에 실패했습니다. 다시 시도하세요.",
+      "highlightLabel": "강조",
+      "highlightAria": "강조 색상 선택",
+      "highlightNone": "강조 없음",
+      "highlightRecent": "최근 사용",
+      "highlightPresets": "프리셋",
+      "highlightCustomAria": "사용자 지정 색상 선택",
+      "highlightHexAria": "16진수 색상",
+      "highlightTextColor": "글자 색",
+      "highlightTextAuto": "자동",
+      "weatherDetail": {
+        "icon": "아이콘만",
+        "now": "현재",
+        "hourly": "시간별",
+        "full": "전체 예보"
+      },
+      "weatherStylePlain": "기본",
+      "weatherStyleCard": "카드",
+      "weatherAnimatedIcons": "애니메이션 아이콘",
+      "weatherAnimatedOn": "켜기",
+      "weatherAnimatedOff": "끄기",
+      "panelDragHint": "드래그하여 이동"
     }
   },
   "greeting": {
@@ -244,7 +274,13 @@
     "placeholder": "웹 검색...",
     "ariaLabelInput": "웹 검색",
     "ariaLabelButton": "검색",
-    "tooltipButton": "검색"
+    "tooltipButton": "검색",
+    "clearAria": "검색어 지우기",
+    "voiceAria": "음성으로 검색",
+    "voiceTooltip": "음성으로 검색",
+    "imageAria": "이미지로 검색",
+    "imageTooltip": "이미지로 검색",
+    "removeHistoryAria": "최근 검색에서 “{{query}}” 삭제"
   },
   "quicklinks": {
     "trigger": "링크",
@@ -262,7 +298,16 @@
     "doneDeleteTooltip": "완료",
     "labelPlaceholder": "라벨 (선택)",
     "labelSrOnly": "라벨 (선택)",
-    "emptyMessage": "빠른 링크가 없습니다. 위에 추가해 보세요."
+    "emptyMessage": "빠른 링크가 없습니다. 위에 추가해 보세요.",
+    "addTile": "추가",
+    "addTitle": "링크 추가",
+    "editTitle": "링크 편집",
+    "urlLabel": "주소",
+    "labelOptional": "이름 (선택)",
+    "previewEmpty": "새 링크",
+    "cancel": "취소",
+    "save": "저장",
+    "addButton": "추가"
   },
   "pomodoro": {
     "modeFocus": "뽀모도로",
@@ -295,7 +340,9 @@
     "errorLoad": "북마크 로드 실패: {{message}}",
     "delete": "북마크 삭제",
     "noResultsTitle": "결과 없음",
-    "noResultsSub": "「{{query}}」와 일치하는 항목이 없습니다."
+    "noResultsSub": "「{{query}}」와 일치하는 항목이 없습니다.",
+    "permissionPrompt": "북마크를 표시하려면 Chrome 북마크 읽기 권한이 필요합니다.",
+    "permissionGrant": "북마크 접근 허용"
   },
   "notes": {
     "placeholder": "메모 작성…",
@@ -348,7 +395,10 @@
       "4": "목",
       "5": "금",
       "6": "토"
-    }
+    },
+    "enableLocation": "위치 권한 허용",
+    "retry": "다시 시도",
+    "today": "오늘"
   },
   "socials": {
     "buttonLabel": "내 SNS",
@@ -495,7 +545,8 @@
         "navigateGuide": "가이드 슬라이드 탐색",
         "orSep": "또는"
       }
-    }
+    },
+    "exitButton": "가이드 종료"
   },
   "options": {
     "subtitle": "스튜디오 지브리에서 영감을 받은 새 탭",
@@ -514,5 +565,70 @@
     "footerCredit": "정성껏 만들었습니다",
     "viewSource": "GitHub에서 소스 보기",
     "privacy": "개인정보 처리방침"
+  },
+  "settings": {
+    "title": "설정",
+    "buttonLabel": "설정",
+    "buttonAria": "설정 열기",
+    "permissionsTitle": "권한",
+    "permissionsSub": "Ghiblify는 처음에 아무것도 요구하지 않습니다. 사용하는 것만 켜세요. 취소는 즉시 적용됩니다.",
+    "permissionGeolocation": "위치",
+    "permissionGeolocationSub": "날씨가 현재 위치를 확인할 수 있게 합니다. 끄면 위치 API를 전혀 호출하지 않습니다 — 도시를 직접 선택하세요.",
+    "permissionBookmarks": "북마크",
+    "permissionBookmarksSub": "패널이 Chrome 북마크를 읽고 정리할 수 있게 합니다.",
+    "storageTitle": "저장된 데이터",
+    "storageSub": "{{count}}개 항목 · 총 {{size}}. 행을 펼치면 내용을 볼 수 있습니다.",
+    "storageEmpty": "아직 저장된 데이터가 없습니다.",
+    "deleteKey": "삭제",
+    "deleteKeyAria": "{{key}} 삭제",
+    "resetTitle": "전체 초기화",
+    "resetSub": "저장된 모든 설정(위젯, 배경, 이름, 할 일 등)을 삭제하고 페이지를 다시 불러옵니다.",
+    "resetButton": "전체 초기화",
+    "resetConfirm": "되돌릴 수 없습니다.",
+    "resetConfirmYes": "네, 초기화",
+    "resetConfirmCancel": "취소",
+    "section": {
+      "widgets": "위젯 설정",
+      "appearance": "모양 설정",
+      "background": "배경 설정",
+      "cursor": "커서 설정"
+    },
+    "widgetsTitle": "위젯",
+    "appearanceTitle": "모양",
+    "backgroundTitle": "배경",
+    "cursorTitle": "커서",
+    "cursorSub": "커서를 기본 시스템 포인터로 되돌립니다. 설정은 모양과 함께 저장됩니다.",
+    "dockBackgrounds": "독 카드 배경",
+    "dockBackgroundsSub": "오른쪽에 도킹된 위젯 뒤에 유리 카드를 표시합니다.",
+    "highContrastSub": "페이지 전체의 텍스트 대비를 높입니다.",
+    "parallaxSub": "커서에 따라 배경이 부드럽게 움직입니다.",
+    "resetWidgets": "모든 위젯 초기화",
+    "resetDock": "독 초기화",
+    "resetAppearance": "모양 초기화",
+    "resetBackground": "배경 설정 초기화",
+    "resetCursor": "커서 초기화",
+    "storageGroup": {
+      "widgets": "위젯",
+      "background": "배경",
+      "appearance": "모양",
+      "other": "기타"
+    },
+    "deleteKeyConfirm": "저장소에서 “{{key}}”을(를) 삭제할까요? 저장된 내용은 복구할 수 없습니다.",
+    "resetWidgetsConfirm": "모든 위젯을 기본 위치·크기·설정으로 되돌릴까요? 퀵링크와 이름은 유지됩니다.",
+    "resetDockConfirm": "오른쪽 독을 기본 레이아웃으로 되돌릴까요?",
+    "resetAppearanceConfirm": "테마·글꼴·대비를 기본값으로 되돌릴까요?",
+    "resetBackgroundConfirm": "배경 필터와 패럴랙스를 기본값으로 되돌릴까요?",
+    "resetCursorConfirm": "커서를 기본 시스템 포인터로 되돌릴까요?",
+    "storedDataLabel": "저장된 데이터",
+    "otherSub": "설치 플래그와 위 섹션에 속하지 않는 데이터입니다.",
+    "permissionMicrophone": "마이크",
+    "permissionMicrophoneSub": "검색창의 음성 검색에 사용됩니다. 마이크를 사용하는 동안에만 작동합니다.",
+    "corners": "모서리",
+    "cornersSub": "위젯·메뉴·대화상자의 둥글기입니다.",
+    "cornerStyle": {
+      "square": "각지게",
+      "rounded": "기본",
+      "pill": "둥글게"
+    }
   }
 }

@@ -7,6 +7,71 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
+## 2.4.0 — 2026-08-03
+
+Large settings + widget pass. Highlights:
+
+**Permissions**
+- `bookmarks` and `audioCapture` (voice search) moved to
+  `optional_permissions` — a fresh install now asks for neither.
+  `geolocation` stays required: Chrome refuses to make it optional
+  (it's on the documented not-optional list), so the user-facing
+  switch for it is an app setting (`weather.useDeviceLocation`) that
+  gates whether the API is ever called.
+- Permission switches are `<button role="switch">`, not checkboxes in
+  a `<label>` — a label-forwarded click doesn't carry the user
+  gesture `permissions.request()` requires, so the old toggles
+  silently refused to move.
+
+**Settings modal** (new; gear in the sidebar footer, plus a hover-only
+gear on each sidebar section heading that opens it scoped)
+- Per-area toggles and resets: widgets, appearance, background, cursor.
+- Raw localStorage inspector grouped by area — key, size, expandable
+  value, per-key delete. Every delete, including reset-everything,
+  goes through a confirmation dialog.
+
+**Corners** — one `--radius-unit` drives the whole `--radius-*` scale;
+Square / Rounded / Soft picker in the sidebar's Appearance section.
+Padding scales with it (`--pad-scale`), controls take `--radius-control`,
+Quick Links tiles and sidebar toggles become circles at Soft, and
+concentric `--radius-nested-*` keeps nested surfaces from pinching.
+
+**Weather** — rebuilt. `sections` + `iconsOnly` replaced by one
+`detail` scale (Icon / Now / Hourly / Full), which removed the
+min-one-selected rule, the disabled-checkbox state and the half-dock
+special case. Style is one group (Plain / Card + animated icons).
+Daily is now rows with temperature range bars (Apple/Google pattern)
+instead of a second copy of the hourly strip. Manual city picker
+(Open-Meteo geocoding) in a modal, plus refresh-now.
+
+**Search bar** — Google-style pill: live suggestions, local search
+history with per-entry delete, voice search (Web Speech), Google Lens
+image search, clear + go buttons. Submitting still routes through
+`chrome.search.query`, so the user's default engine is respected.
+
+**Widgets**
+- Pomodoro: 5 synthesised completion chimes + volume, both in the
+  right-click menu as cascades.
+- Text highlight for Time / Date / Greeting / Info — colour, opacity,
+  ink choice, 5 recent colours, shared picker across right-click and
+  edit panel.
+- Type-in: text reveals a character at a time on load, then stays.
+- Quick Links: add/edit in a modal, permanent add tile, favicon
+  fallback chain (exact URL → www variant → origin → remote lookup),
+  stronger URL normalisation.
+
+**Edit mode** — the overlay is now a side panel beside the widget:
+labelled rows, draggable by its title, click-to-front stacking.
+
+**Context menus** — grouped cascades throughout, hover previews that
+demo a setting live on the widget before you pick it, a 320ms close
+delay plus hover bridge so cascades stop vanishing mid-reach.
+
+**Misc** — guide gains a bottom-centre "Exit guide" button; rainbow
+cursor retired for a shikigami paper-bird trail; z-index layers
+consolidated (portalled menus set theirs inline so component surfaces
+can't outrank them).
+
 ## 2.3.0 — 2026-05-10
 
 - Imgur backgrounds moved to GitHub Pages

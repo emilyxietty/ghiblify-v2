@@ -54,7 +54,7 @@
       "heart": "爱心",
       "leaf": "叶子",
       "strawberry": "草莓",
-      "rainbow": "彩虹"
+      "shikigami": "纸鸟"
     },
     "buttons": {
       "githubRepo": "Github 仓库",
@@ -154,7 +154,19 @@
       "selectAvatar": "选择头像",
       "pomodoroSizeLarge": "大",
       "pomodoroSizeSmall": "小",
-      "pomodoroSizeMedium": "中"
+      "pomodoroSizeMedium": "中",
+      "timeFormat": "时钟格式",
+      "weatherLocation": "位置",
+      "weatherUseMyLocation": "使用我的位置",
+      "weatherChooseCity": "选择城市…",
+      "weatherRefresh": "立即刷新",
+      "highlight": "高亮",
+      "highlightOff": "无",
+      "quicklinksView": "视图",
+      "weatherDetail": "显示内容",
+      "weatherStyle": "样式",
+      "highlightCustom": "颜色选择器…",
+      "typeIn": "加载时打字显示"
     },
     "edit": {
       "ariaEdit": "编辑 {{key}} 小组件",
@@ -190,33 +202,51 @@
       "notesHideBorderAria": "隐藏便签边框",
       "weatherUnitAria": "切换摄氏/华氏",
       "weatherUnitLabel": "单位",
-      "weatherSections": {
-        "now": "现在",
-        "hourly": "每小时",
-        "daily": "每日"
-      },
-      "weatherSectionsLabel": "板块",
-      "weatherIconStyle": {
-        "animated": "动画",
-        "still": "静态"
-      },
-      "weatherIconStyleLabel": "图标样式",
-      "weatherIconStyleAria": {
-        "animated": "图标动画 — 点击切换为静态",
-        "still": "图标静态 — 点击切换为动画"
-      },
-      "weatherShowCard": "卡片",
-      "weatherHideCard": "卡片",
-      "weatherShowCardLabel": "显示卡片背景",
-      "weatherShowCardAria": "在天气后方显示柔和渐变卡片",
-      "weatherHideCardAria": "移除卡片背景",
-      "weatherIconsOnly": "仅图标",
-      "weatherIconsOnlyOnAria": "正在仅显示图标 — 点击恢复文字",
-      "weatherIconsOnlyOffAria": "隐藏文字并仅显示图标",
       "pomodoroSizeLabel": "尺寸",
       "pomodoroSizeSmall": "小",
       "pomodoroSizeMedium": "中",
-      "pomodoroSizeLarge": "大"
+      "pomodoroSizeLarge": "大",
+      "pomodoroSoundLabel": "声音",
+      "pomodoroSoundAria": "选择完成提示音",
+      "pomodoroVolume": "音量",
+      "pomodoroVolumeAria": "完成提示音音量",
+      "pomodoroSound": {
+        "musicbox": "八音盒",
+        "sootsprite": "煤灰精灵",
+        "catbus": "龙猫巴士",
+        "windchime": "风铃",
+        "kodama": "木灵",
+        "none": "无"
+      },
+      "weatherLocationAria": "设置天气位置",
+      "weatherLocationAuto": "自动",
+      "weatherLocationUseMine": "我的位置",
+      "weatherLocationRefresh": "刷新",
+      "weatherLocationPlaceholder": "搜索城市…",
+      "weatherLocationSearching": "搜索中…",
+      "weatherLocationNoResults": "未找到城市",
+      "weatherLocationError": "搜索失败，请重试。",
+      "highlightLabel": "高亮",
+      "highlightAria": "选择高亮颜色",
+      "highlightNone": "无高亮",
+      "highlightRecent": "最近使用",
+      "highlightPresets": "预设",
+      "highlightCustomAria": "选择自定义颜色",
+      "highlightHexAria": "十六进制颜色",
+      "highlightTextColor": "文字颜色",
+      "highlightTextAuto": "自动",
+      "weatherDetail": {
+        "icon": "仅图标",
+        "now": "当前",
+        "hourly": "逐小时",
+        "full": "完整预报"
+      },
+      "weatherStylePlain": "简洁",
+      "weatherStyleCard": "卡片",
+      "weatherAnimatedIcons": "动画图标",
+      "weatherAnimatedOn": "开",
+      "weatherAnimatedOff": "关",
+      "panelDragHint": "拖动以移动"
     }
   },
   "greeting": {
@@ -244,7 +274,13 @@
     "placeholder": "搜索网页...",
     "ariaLabelInput": "搜索网页",
     "ariaLabelButton": "搜索",
-    "tooltipButton": "搜索"
+    "tooltipButton": "搜索",
+    "clearAria": "清除搜索",
+    "voiceAria": "语音搜索",
+    "voiceTooltip": "语音搜索",
+    "imageAria": "以图搜索",
+    "imageTooltip": "以图搜索",
+    "removeHistoryAria": "从最近搜索中移除“{{query}}”"
   },
   "quicklinks": {
     "trigger": "链接",
@@ -262,7 +298,16 @@
     "doneDeleteTooltip": "完成删除",
     "labelPlaceholder": "标签（可选）",
     "labelSrOnly": "标签（可选）",
-    "emptyMessage": "暂无快速链接，请在上方添加。"
+    "emptyMessage": "暂无快速链接，请在上方添加。",
+    "addTile": "添加",
+    "addTitle": "添加链接",
+    "editTitle": "编辑链接",
+    "urlLabel": "网址",
+    "labelOptional": "名称（可选）",
+    "previewEmpty": "新链接",
+    "cancel": "取消",
+    "save": "保存",
+    "addButton": "添加"
   },
   "pomodoro": {
     "modeFocus": "番茄钟",
@@ -295,7 +340,9 @@
     "errorLoad": "加载书签失败：{{message}}",
     "delete": "删除书签",
     "noResultsTitle": "未找到书签",
-    "noResultsSub": "没有匹配「{{query}}」的结果。"
+    "noResultsSub": "没有匹配「{{query}}」的结果。",
+    "permissionPrompt": "Ghiblify 需要读取 Chrome 书签的权限才能在此显示。",
+    "permissionGrant": "允许访问书签"
   },
   "notes": {
     "placeholder": "记点什么…",
@@ -348,7 +395,10 @@
       "4": "四",
       "5": "五",
       "6": "六"
-    }
+    },
+    "enableLocation": "启用位置",
+    "retry": "重试",
+    "today": "今天"
   },
   "socials": {
     "buttonLabel": "我的社交",
@@ -495,7 +545,8 @@
         "navigateGuide": "在本指南中翻页",
         "orSep": "或"
       }
-    }
+    },
+    "exitButton": "退出指南"
   },
   "options": {
     "subtitle": "灵感源自吉卜力工作室的新标签页",
@@ -514,5 +565,70 @@
     "footerCredit": "用心制作",
     "viewSource": "在 GitHub 上查看源代码",
     "privacy": "隐私政策"
+  },
+  "settings": {
+    "title": "设置",
+    "buttonLabel": "设置",
+    "buttonAria": "打开设置",
+    "permissionsTitle": "权限",
+    "permissionsSub": "Ghiblify 默认不请求任何权限。只开启你需要的，撤销后立即生效。",
+    "permissionGeolocation": "位置",
+    "permissionGeolocationSub": "让天气小组件获取你的位置。关闭后完全不会调用定位接口——请手动选择城市。",
+    "permissionBookmarks": "书签",
+    "permissionBookmarksSub": "让书签面板读取并整理你的 Chrome 书签。",
+    "storageTitle": "已存储数据",
+    "storageSub": "{{count}} 个键 · 共 {{size}}。展开某行可查看内容。",
+    "storageEmpty": "尚未存储任何内容。",
+    "deleteKey": "删除",
+    "deleteKeyAria": "删除 {{key}}",
+    "resetTitle": "重置全部",
+    "resetSub": "删除所有已保存的设置——小组件、背景、名称、待办等——并重新加载页面。",
+    "resetButton": "重置全部",
+    "resetConfirm": "此操作无法撤销。",
+    "resetConfirmYes": "是，重置",
+    "resetConfirmCancel": "取消",
+    "section": {
+      "widgets": "小组件设置",
+      "appearance": "外观设置",
+      "background": "背景设置",
+      "cursor": "光标设置"
+    },
+    "widgetsTitle": "小组件",
+    "appearanceTitle": "外观",
+    "backgroundTitle": "背景",
+    "cursorTitle": "光标",
+    "cursorSub": "将光标恢复为系统默认指针。其设置与“外观”一起存储。",
+    "dockBackgrounds": "侧栏卡片背景",
+    "dockBackgroundsSub": "在右侧停靠的小组件后面显示玻璃卡片。",
+    "highContrastSub": "提高整个页面的文字对比度。",
+    "parallaxSub": "背景会随光标轻微移动。",
+    "resetWidgets": "重置所有小组件",
+    "resetDock": "重置侧栏布局",
+    "resetAppearance": "重置外观",
+    "resetBackground": "重置背景设置",
+    "resetCursor": "重置光标",
+    "storageGroup": {
+      "widgets": "小组件",
+      "background": "背景",
+      "appearance": "外观",
+      "other": "其他"
+    },
+    "deleteKeyConfirm": "要从存储中删除“{{key}}”吗？其中的数据将无法恢复。",
+    "resetWidgetsConfirm": "将所有小组件恢复为默认位置、大小和设置？快捷链接和名字会保留。",
+    "resetDockConfirm": "将右侧侧栏恢复为默认布局？",
+    "resetAppearanceConfirm": "将主题、字体和对比度恢复为默认值？",
+    "resetBackgroundConfirm": "将背景滤镜和视差恢复为默认值？",
+    "resetCursorConfirm": "将光标恢复为系统默认指针？",
+    "storedDataLabel": "已存储数据",
+    "otherSub": "安装标记，以及不属于上述任何部分的数据。",
+    "permissionMicrophone": "麦克风",
+    "permissionMicrophoneSub": "用于搜索栏的语音搜索，仅在使用麦克风期间生效。",
+    "corners": "圆角",
+    "cornersSub": "小组件、菜单和对话框的圆角程度。",
+    "cornerStyle": {
+      "square": "直角",
+      "rounded": "标准",
+      "pill": "更圆"
+    }
   }
 }

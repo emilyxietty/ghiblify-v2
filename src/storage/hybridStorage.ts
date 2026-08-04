@@ -292,3 +292,65 @@ export const runOneTimeSetup = async (
     /* ignore */
   }
 };
+
+/**
+ * Wipe every trace of the extension's state.
+ *
+ * Both layers have to go, and in that order matters less than
+ * completeness: clearing only localStorage would leave chrome.storage
+ * as the surviving source of truth, and the next read would faithfully
+ * restore everything the user just asked to delete.
+ *
+ * The one-time-setup flag goes with it, so the next load re-runs setup
+ * on what is now a genuinely fresh install.
+ */
+export const clearAll = async (): Promise<void> => {
+  const clearArea = (area: Area) =>
+    new Promise<void>((resolve) => {
+      try {
+        chromeNs.storage[area].clear(() => resolve());
+      } catch {
+        resolve();
+      }
+    });
+  if (hasChromeStorage) {
+    await Promise.all([clearArea("sync"), clearArea("local")]);
+  }
+  try {
+    localStorage.clear();
+  } catch {
+    /* ignore */
+  }
+};
+
+/** Every localStorage key currently set, with its serialized size. */
+export interface StoredEntry {
+  key: string;
+  value: string;
+  bytes: number;
+  /** True when the key is mirrored into chrome.storage — deleting it
+   *  needs `remove()` rather than a bare localStorage.removeItem. */
+  hybrid: boolean;
+}
+
+export const listStoredEntries = (): StoredEntry[] => {
+  const out: StoredEntry[] = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key == null) continue;
+      const value = localStorage.getItem(key) ?? "";
+      out.push({
+        key,
+        value,
+        // UTF-16 code units are close enough for a size hint and avoid
+        // allocating a TextEncoder per key on every render.
+        bytes: (key.length + value.length) * 2,
+        hybrid: Object.prototype.hasOwnProperty.call(HYBRID_KEYS, key),
+      });
+    }
+  } catch {
+    /* private mode / disabled storage — nothing to show */
+  }
+  return out.sort((a, b) => b.bytes - a.bytes);
+};

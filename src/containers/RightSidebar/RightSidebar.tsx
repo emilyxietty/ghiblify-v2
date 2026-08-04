@@ -7,6 +7,7 @@ import {
 } from "../../components/ContextMenu/ContextMenu";
 import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
+import { useOptionalPermission } from "../../utils/chromePermissions";
 import "./RightSidebar.css";
 
 interface BookmarkNode {
@@ -30,7 +31,15 @@ const useChromeBookmarks = (active: boolean) => {
   const [error, setError] = useState<BookmarksError | null>(null);
 
   useEffect(() => {
-    if (!active) return;
+    // Going inactive (the grant was revoked) has to drop the tree, not
+    // just stop listening: the panel would otherwise keep rendering the
+    // bookmarks fetched a moment ago and the revoke would look like it
+    // did nothing.
+    if (!active) {
+      setTree(null);
+      setError(null);
+      return;
+    }
     const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
     if (!chromeNs) {
       setError({ key: "bookmarks.errorNoChrome" });
@@ -541,7 +550,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const sidebarRef = useRef<HTMLElement | null>(null);
-  const { tree, error } = useChromeBookmarks(visible);
+  // `bookmarks` is an optional permission — the panel can be enabled
+  // without it, so ask for the tree only once the grant is in hand and
+  // otherwise show the prompt below. `granted === null` means "still
+  // checking", which renders as loading rather than as a prompt flash.
+  const { granted: bookmarksGranted, request: requestBookmarks } =
+    useOptionalPermission("bookmarks");
+  const { tree, error } = useChromeBookmarks(visible && !!bookmarksGranted);
   const dragApi = useBookmarkDragState();
   const errorMessage = error
     ? "message" in error
@@ -651,20 +666,37 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
           <h4>{t("bookmarks.heading")}</h4>
         </header>
 
-        <input
-          id="bookmarks-search"
-          type="search"
-          className="bookmarks-search"
-          placeholder={t("bookmarks.searchPlaceholder")}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          aria-label={t("bookmarks.searchAria")}
-        />
+        {bookmarksGranted === false ? (
+          <div className="bookmarks-permission">
+            <p className="bookmarks-permission-text">
+              {t("bookmarks.permissionPrompt")}
+            </p>
+            <button
+              type="button"
+              className="bookmarks-permission-btn"
+              onClick={() => void requestBookmarks()}
+            >
+              {t("bookmarks.permissionGrant")}
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              id="bookmarks-search"
+              type="search"
+              className="bookmarks-search"
+              placeholder={t("bookmarks.searchPlaceholder")}
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              aria-label={t("bookmarks.searchAria")}
+            />
 
-        {errorMessage && <p className="bookmarks-error">{errorMessage}</p>}
+            {errorMessage && <p className="bookmarks-error">{errorMessage}</p>}
 
-        {!error && tree === null && (
-          <p className="bookmarks-empty">{t("bookmarks.loading")}</p>
+            {!error && tree === null && (
+              <p className="bookmarks-empty">{t("bookmarks.loading")}</p>
+            )}
+          </>
         )}
 
         {!error && tree !== null && topLevel.length === 0 && (

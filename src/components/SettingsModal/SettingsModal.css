@@ -1,0 +1,500 @@
+/* App Settings modal — permissions, a raw localStorage inspector, and
+   the reset. Shares the visual language of ReportModal /
+   WidgetSettingsModal (backdrop, dialog surface, close button); the
+   dialog is taller and scrolls internally because the storage list is
+   open-ended. */
+
+.settings-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: settings-backdrop-in 200ms ease both;
+}
+
+@keyframes settings-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.settings-dialog {
+    position: relative;
+    width: min(540px, 100%);
+    max-height: min(720px, 88vh);
+    overflow-y: auto;
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: calc(28px * var(--pad-scale, 1)) calc(28px * var(--pad-scale, 1))
+        calc(22px * var(--pad-scale, 1));
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-sizing: border-box;
+    animation: settings-dialog-in 240ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+    outline: none;
+    scrollbar-width: thin;
+}
+
+@keyframes settings-dialog-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.settings-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--light-muted);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.settings-close:hover,
+.settings-close:focus-visible {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+    outline: none;
+}
+
+.settings-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-section-title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--light) 60%, transparent);
+}
+
+.settings-section-sub {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--light-muted);
+}
+
+/* --- Permission rows ---------------------------------------------------- */
+
+.settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.settings-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.settings-row-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.settings-row-sub {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--light-muted);
+}
+
+.settings-toggle-row input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.settings-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--light) 22%, transparent);
+    border-radius: var(--radius-pill, 999px);
+    transition: background 160ms ease;
+}
+
+.settings-switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--light);
+    transition: transform 160ms ease;
+}
+
+.settings-toggle-row input:checked + .settings-switch {
+    background: var(--green);
+}
+
+.settings-toggle-row input:checked + .settings-switch::after {
+    transform: translateX(16px);
+}
+
+/* --- Storage inspector -------------------------------------------------- */
+
+.settings-storage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 2px;
+    scrollbar-width: thin;
+}
+
+.settings-storage-item {
+    border-radius: var(--radius-md, 8px);
+    background: color-mix(in srgb, var(--light) 5%, transparent);
+}
+
+.settings-storage-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px 4px 2px;
+}
+
+.settings-storage-toggle {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--light);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.settings-storage-chevron {
+    flex-shrink: 0;
+    transition: transform 160ms ease;
+    color: var(--light-muted);
+}
+
+.settings-storage-chevron.is-open {
+    transform: rotate(180deg);
+}
+
+.settings-storage-key {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.settings-storage-size {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--light-muted);
+}
+
+.settings-storage-delete {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    color: var(--light-muted);
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.settings-storage-delete:hover {
+    color: var(--red);
+    background: color-mix(in srgb, var(--red) 14%, transparent);
+}
+
+.settings-storage-value {
+    margin: 0;
+    padding: 8px 10px 10px;
+    max-height: 180px;
+    overflow: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: color-mix(in srgb, var(--light) 75%, transparent);
+    scrollbar-width: thin;
+}
+
+.settings-empty {
+    margin: 0;
+    padding: 12px;
+    text-align: center;
+    font-size: 12.5px;
+    font-style: italic;
+    color: var(--light-muted);
+}
+
+/* --- Reset -------------------------------------------------------------- */
+
+.settings-danger .settings-section-title {
+    color: color-mix(in srgb, var(--red) 80%, var(--light));
+}
+
+.settings-btn {
+    align-self: flex-start;
+    padding: 7px 14px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.settings-btn:hover {
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+}
+
+.settings-btn-danger {
+    color: color-mix(in srgb, var(--red) 85%, var(--light));
+    background: color-mix(in srgb, var(--red) 12%, transparent);
+    border-color: color-mix(in srgb, var(--red) 40%, transparent);
+}
+
+.settings-btn-danger:hover {
+    background: color-mix(in srgb, var(--red) 22%, transparent);
+}
+
+.settings-confirm-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.settings-confirm-text {
+    font-size: 12.5px;
+    color: var(--light);
+}
+
+/* Row of destructive actions inside a section. */
+.settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.settings-storage-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-storage-group + .settings-storage-group {
+    margin-top: 10px;
+}
+
+.settings-storage-group-title {
+    margin: 0;
+    padding-left: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--light) 45%, transparent);
+}
+
+/* --- Confirmation dialog ------------------------------------------------
+   Sits above the settings dialog with its own scrim. Deliberately not an
+   inline "are you sure?" row: a second click landing where the first one
+   did shouldn't be able to confirm a delete. */
+
+.settings-confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100004;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    animation: settings-backdrop-in 140ms ease both;
+}
+
+.settings-confirm-dialog {
+    width: min(380px, 100%);
+    padding: 22px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.98);
+    color: var(--light);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    outline: none;
+    animation: settings-dialog-in 180ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+.settings-confirm-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.settings-confirm-message {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--light-muted);
+    word-break: break-word;
+}
+
+.settings-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.settings-confirm-actions .settings-btn {
+    align-self: auto;
+}
+
+/* Stored-data block inside a section — visually subordinate to the
+   toggles above it, so a section reads as "here's the setting, and
+   here's the data behind it". */
+.settings-storage {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--light) 4%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.settings-storage-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.settings-storage-head-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+.settings-storage-head-meta {
+    font-size: 11px;
+    color: var(--light-muted);
+}
+
+/* Segmented control — three mutually-exclusive choices in the space a
+   switch would take. */
+.settings-segmented {
+    display: flex;
+    flex-shrink: 0;
+    padding: 2px;
+    gap: 2px;
+    border-radius: var(--radius-pill, 999px);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+}
+
+.settings-segment {
+    padding: 5px 11px;
+    font-family: inherit;
+    font-size: 11.5px;
+    color: var(--light-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.settings-segment:hover {
+    color: var(--light);
+}
+
+.settings-segment.is-active {
+    color: var(--dark, #1f2620);
+    background: var(--light);
+}
+
+/* The permission rows are buttons rather than labels (see
+   PermissionRow), so the switch needs its own on-state class — there's
+   no :checked input to key off. */
+button.settings-toggle-row {
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.settings-switch.is-on {
+    background: var(--green);
+}
+
+.settings-switch.is-on::after {
+    transform: translateX(16px);
+}

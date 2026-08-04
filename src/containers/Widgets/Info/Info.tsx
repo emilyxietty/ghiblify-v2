@@ -38,14 +38,35 @@ export const Info: React.FC<InfoProps> = ({
         ["--text-shadow-strength" as never]: `${(textShadow ?? 100) / 100}`,
       }}
     >
+      {/* Each field's text is wrapped in an inline <span> so the
+          optional highlight can hug the words (and each wrapped line
+          of them) instead of painting the full-width row box. Flex
+          children are blockified, so the inline box has to be a level
+          deeper than the row itself. */}
       {infoFields.japaneseTitle && titlejp && (
-        <div className="info-item">{titlejp}</div>
+        <div className="info-item">
+          <span className="info-item-text">{titlejp}</span>
+        </div>
       )}
-      {infoFields.title && title && <div className="info-item">{title}</div>}
-      {infoFields.quote && quote && <div className="info-item">{quote}</div>}
-      {infoFields.year && year && <div className="info-item">{year}</div>}
+      {infoFields.title && title && (
+        <div className="info-item">
+          <span className="info-item-text">{title}</span>
+        </div>
+      )}
+      {infoFields.quote && quote && (
+        <div className="info-item">
+          <span className="info-item-text">{quote}</span>
+        </div>
+      )}
+      {infoFields.year && year && (
+        <div className="info-item">
+          <span className="info-item-text">{year}</span>
+        </div>
+      )}
       {infoFields.movieLength && screentime && (
-        <div className="info-item">{screentime}</div>
+        <div className="info-item">
+          <span className="info-item-text">{screentime}</span>
+        </div>
       )}
     </div>
   );

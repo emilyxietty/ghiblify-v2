@@ -30,18 +30,50 @@
     /* Border-radius scale. Use these instead of ad-hoc px values so
        the corner softness reads as a coherent system across widgets,
        inputs, popovers, and modals.
-         xs (4px)   — micro: scrollbar thumbs, tiny chips
-         sm (6px)   — small detail: kbd, tooltip, base button
-         md (8px)   — inputs, link tiles, small image surfaces
-         lg (12px)  — widget shells, popovers, dropdown menus
-         xl (16px)  — modals, large container surfaces
-         pill (999px) — pill buttons, segments, nav arrows */
-    --radius-xs: 4px;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
+         xs — micro: scrollbar thumbs, tiny chips
+         sm — small detail: kbd, tooltip, base button
+         md — inputs, link tiles, small image surfaces
+         lg — widget shells, popovers, dropdown menus
+         xl — modals, large container surfaces
+         pill — pill buttons, segments, nav arrows
+
+       Every step derives from --radius-unit, so the whole system moves
+       together when the user picks a corner style (Settings →
+       Appearance). At the default unit of 4px the scale evaluates to
+       the values it has always had: 4 / 6 / 8 / 12 / 16. */
+    --radius-unit: 4px;
+    --radius-xs: calc(var(--radius-unit) * 1);
+    --radius-sm: calc(var(--radius-unit) * 1.5);
+    --radius-md: calc(var(--radius-unit) * 2);
+    --radius-lg: calc(var(--radius-unit) * 3);
+    --radius-xl: calc(var(--radius-unit) * 4);
     --radius-pill: 999px;
+
+    /* Concentric corners. A surface sitting flush inside another, with
+       `--nest-inset` of padding between them, needs its own radius to
+       be the outer one MINUS that inset — otherwise the two curves run
+       at different rates and the gap between them visibly pinches at
+       the corners. Containers set --nest-inset; children use these.
+       Floored at 0 so a tight inset can't produce a negative radius. */
+    /* Interactive controls — inputs, add-buttons, pills. One step
+       rounder than a surface, so at "Soft" a 38px-tall input reads as a
+       capsule while a card stays a card. */
+    --radius-control: var(--radius-lg);
+
+    /* Padding multiplier. Rounder corners need more breathing room:
+       the curve eats into the corner, so text that sat comfortably at
+       12px starts crowding the edge at a 24px radius. Surfaces that
+       opt in multiply their padding by this. */
+    --pad-scale: 1;
+
+    /* Corner rounding for the text-highlight bar. Expressed in em so it
+       tracks the font size — the same px radius that reads as "rounded"
+       on 16px Info text is invisible behind a 200px clock. */
+    --text-highlight-radius: 0.16em;
+
+    --nest-inset: 0px;
+    --radius-nested-lg: max(0px, calc(var(--radius-lg) - var(--nest-inset)));
+    --radius-nested-md: max(0px, calc(var(--radius-md) - var(--nest-inset)));
 
     /* Backdrop blur for widget surfaces (Todo input, SearchBar, QuickLinks
        tiles, Weather forecast cells). The Frost theme overrides this with
@@ -78,6 +110,10 @@
        layers that previously used arms-race values like 10M / 20T. */
     --z-edit-overlay: 10000;          /* dim covering sidebars + widgets in edit mode */
     --z-edit-overlay-content: 10001;  /* widget content that must poke above the dim */
+    --z-edit-panel-base: 90000;
+    /* widget edit panels — they stack among themselves (see the counter
+       in EditWidget.tsx) but stay under every floating layer, so a menu
+       opened FROM a panel always paints above it */
     --z-portal: 100100;               /* body-portaled context menus + dropdowns (above modals at 100002) */
     --z-resize-handle: 100200;        /* always-on-top corner grip */
     --z-tutorial-pulse: 100201;       /* tutorial-only pulse above the handle */

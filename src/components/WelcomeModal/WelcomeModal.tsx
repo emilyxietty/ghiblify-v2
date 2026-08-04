@@ -629,7 +629,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
           ) : (
             <button
               type="button"
-              className="welcome-nav-btn"
+              // Pulses until the first advance — on the opening slide
+              // there's nothing else asking to be clicked, and people
+              // were sitting on it waiting for something to happen.
+              className={`welcome-nav-btn${index === 0 ? " is-pulsing" : ""}`}
               onClick={() => go(index + 1)}
               aria-label={t("welcome.nextAria")}
             >
@@ -639,6 +642,19 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         </div>
       </div>
     </div>
+    {/* Pinned to the bottom of the page rather than tucked in the
+        dialog's corner: the guide sits in the bottom-right, and a way
+        out that lives inside the thing you want to leave is easy to
+        miss. Sibling of the backdrop so passthrough's
+        pointer-events: none can't cascade into it. */}
+    <button
+      type="button"
+      className="welcome-exit-btn"
+      onClick={onClose}
+    >
+      <CloseIcon style={{ fontSize: 13 }} />
+      {t("welcome.exitButton")}
+    </button>
     {/* Rendered as a sibling (not a child) of the welcome-backdrop so
         that pointer-events: none on the backdrop during passthrough
         slides doesn't cascade into the picker and make it un-clickable. */}

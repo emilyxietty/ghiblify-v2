@@ -1,6 +1,6 @@
 import React, { ReactNode, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { EditIcon, OpenWithIcon } from "../../components/Icons/Icons";
-import { CenterFocusStrongIcon, FaceIcon, PlaceIcon, RemoveIcon, VisibilityOffIcon } from "../../components/Icons/Icons";
+import { AccessTimeFilledIcon, CenterFocusStrongIcon, FaceIcon, FormatColorFillIcon, MusicNoteIcon, MyLocationIcon, PhotoSizeSelectSmallIcon, PlaceIcon, RefreshIcon, RemoveIcon, VisibilityOffIcon, VolumeUpIcon } from "../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -10,7 +10,18 @@ import {
 // below means the chunk only fetches the first time any widget enters
 // edit mode.
 const EditWidget = lazy(() => import("../../components/EditWidget/EditWidget"));
+// Lazy for the same reason: only the widget being styled ever needs it.
+const ColorPickerPopover = lazy(() =>
+  import("../../components/ColorPicker/ColorPicker").then((m) => ({
+    default: m.ColorPickerPopover,
+  }))
+);
+import { AddIcon, BlurOnIcon, KeyboardIcon, ListIcon, OpacityIcon, PaletteIcon, TextFieldsIcon, ThermostatIcon, ViewModuleIcon, VisibilityIcon } from "../../components/Icons/Icons";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
+import {
+  WEATHER_DETAILS,
+  resolveWeatherDetail,
+} from "../../config/widgetConfig";
 import {
   AvatarSettings,
   getWidgetConfig,
@@ -22,6 +33,25 @@ import {
   WidgetKey,
 } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
+import { isManualPlace } from "../../utils/geocoding";
+import { clearWeatherLocation } from "../../hooks/useWeather";
+import {
+  HIGHLIGHT_OPACITY_PRESETS,
+  HIGHLIGHT_PRESETS,
+  isHighlightTextColor,
+  normalizeHex,
+  pushRecentColor,
+  readRecentColors,
+  resolveForeground,
+  withAlpha,
+} from "../../utils/textHighlight";
+import {
+  POMODORO_SOUND_KEYS,
+  isPomodoroSoundKey,
+  playPomodoroChime,
+  primePomodoroAudio,
+  type PomodoroSoundKey,
+} from "../../utils/pomodoroChime";
 import { toReferencePx, toScreenPx } from "../../utils/viewportScale";
 import { useT } from "../../i18n/i18n";
 import "./Widget.css";
@@ -83,6 +113,8 @@ export const Widget: React.FC<WidgetProps> = ({
     dragMode,
     setDragMode,
     appearance,
+    widgetsCommitted,
+    previewWidgetSettings,
   } = useAppContext();
   const t = useT();
   // The widget is "in edit mode" if either the global edit toggle is on,
@@ -90,8 +122,23 @@ export const Widget: React.FC<WidgetProps> = ({
   const isEditingThis = showWidgetEdits || editingWidgetKey === storageKey;
   const widgetConfig = getWidgetConfig(storageKey);
   const widgetSettings = widgets[storageKey].settings as Record<string, unknown>;
+  // The saved values, without any hover preview — what the picker and
+  // the context menu should reflect.
+  const committedSettings = widgetsCommitted[storageKey].settings as Record<
+    string,
+    unknown
+  >;
 
   const [position, setPosition] = useState(() => widgets[storageKey].position);
+
+  useLayoutEffect(() => {
+    if (widgetSettings.typeIn !== true) return;
+    const text = widgetRef.current?.textContent?.trim() ?? "";
+    if (text.length) setTypeSteps(Math.min(60, Math.max(6, text.length)));
+    // Only when the toggle flips: the effect deliberately doesn't watch
+    // the text, so a ticking clock doesn't retype itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [widgetSettings.typeIn, storageKey]);
 
   // Track context position changes (e.g. from a reset) so the local
   // drag-state doesn't get stuck on a stale value.
@@ -103,6 +150,18 @@ export const Widget: React.FC<WidgetProps> = ({
   // null = closed. ContextMenu handles its own outside-click / Escape /
   // scroll dismissal.
   const [contextMenuPos, setContextMenuPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  // Character count for the type-in reveal. Measured from the rendered
+  // text rather than guessed: `steps()` has to match the number of
+  // characters or the reveal lands mid-glyph and reads as a wipe
+  // instead of typing. Measured once — re-measuring as the clock ticks
+  // would restart the animation every second.
+  const [typeSteps, setTypeSteps] = useState(24);
+
+  // Where to float the highlight picker, opened from the context menu.
+  const [highlightPickerAt, setHighlightPickerAt] = useState<{
     x: number;
     y: number;
   } | null>(null);
@@ -703,6 +762,20 @@ export const Widget: React.FC<WidgetProps> = ({
     "blur" in widgetSettings
       ? Math.max(0, Math.min(1, Number(widgetSettings.blur) / 100))
       : undefined;
+  // Text highlight — a hex string turns it on, null/absent leaves it
+  // off. The shell only publishes the vars; which text nodes actually
+  // get painted is a per-widget selector list in Widget.css.
+  // `widgetSettings` already carries any hover preview — AppContext
+  // merges it into the render view, so nothing extra is needed here.
+  const highlight =
+    typeof widgetSettings.highlightColor === "string"
+      ? normalizeHex(widgetSettings.highlightColor)
+      : null;
+  const highlightAlpha =
+    typeof widgetSettings.highlightOpacity === "number"
+      ? widgetSettings.highlightOpacity
+      : 100;
+  const typeIn = widgetSettings.typeIn === true;
 
   return (
     <div
@@ -711,7 +784,9 @@ export const Widget: React.FC<WidgetProps> = ({
         isEditingThis ? "edit-mode" : ""
       } ${isResizing ? "resizing" : ""} ${
         isFadingOut ? "fade-out" : ""
-      } draggable widget-align-${alignment}`}
+      } draggable widget-align-${alignment}${
+        highlight ? " has-text-highlight" : ""
+      }${typeIn ? " has-type-in" : ""}`}
       data-widget-key={storageKey}
       style={{
         left: `${position.x}vw`,
@@ -722,6 +797,23 @@ export const Widget: React.FC<WidgetProps> = ({
           : {}),
         ...(blurFraction !== undefined
           ? { ["--widget-blur" as any]: blurFraction }
+          : {}),
+        ...(typeIn
+          ? {
+              ["--type-in-steps" as any]: typeSteps,
+              ["--type-in-duration" as any]: `${typeSteps * 0.055}s`,
+            }
+          : {}),
+        ...(highlight
+          ? {
+              ["--text-highlight" as any]: withAlpha(highlight, highlightAlpha),
+              ["--text-highlight-fg" as any]: resolveForeground(
+                highlight,
+                isHighlightTextColor(widgetSettings.highlightTextColor)
+                  ? widgetSettings.highlightTextColor
+                  : "auto"
+              ),
+            }
           : {}),
       }}
       onMouseDown={handleWidgetMouseDown}
@@ -762,6 +854,7 @@ export const Widget: React.FC<WidgetProps> = ({
             showWidgetEdits={isEditingThis}
             isResizing={isResizing}
             storageKey={storageKey}
+            anchorEl={widgetRef.current}
           />
         </Suspense>
       )}
@@ -818,7 +911,7 @@ export const Widget: React.FC<WidgetProps> = ({
           onClose={() => setContextMenuPos(null)}
           items={buildContextMenuItems({
             storageKey,
-            widgets,
+            widgets: widgetsCommitted,
             t,
             setEditingWidgetKey,
             toggleWidgetVisibility,
@@ -828,8 +921,49 @@ export const Widget: React.FC<WidgetProps> = ({
             setWidgetShowBackground,
             setDragMode,
             isFrost: appearance.theme === "frost",
+            preview: (patch) => previewWidgetSettings(storageKey, patch),
+            openHighlightPicker: () =>
+              setHighlightPickerAt(contextMenuPos ?? { x: 80, y: 80 }),
           })}
         />
+      )}
+      {highlightPickerAt && (
+        <Suspense fallback={null}>
+          <ColorPickerPopover
+            anchor={highlightPickerAt}
+            color={
+              typeof committedSettings.highlightColor === "string"
+                ? normalizeHex(committedSettings.highlightColor)
+                : null
+            }
+            textColor={
+              isHighlightTextColor(committedSettings.highlightTextColor)
+                ? committedSettings.highlightTextColor
+                : "auto"
+            }
+            opacity={
+              typeof committedSettings.highlightOpacity === "number"
+                ? committedSettings.highlightOpacity
+                : 100
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                highlightColor: next,
+              } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                highlightTextColor: next,
+              } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                highlightOpacity: next,
+              } as never)
+            }
+            onClose={() => setHighlightPickerAt(null)}
+          />
+        </Suspense>
       )}
     </div>
   );
@@ -870,6 +1004,12 @@ export function buildContextMenuItems(args: {
   setDragMode: (b: boolean) => void;
   isFrost: boolean;
   mode?: "canvas" | "dock";
+  /** Demo a settings patch while a row is hovered; null clears it.
+   *  Rows whose effect isn't visible on the widget (multi-selects,
+   *  sounds) deliberately don't use this. */
+  preview?: (patch: Record<string, unknown> | null) => void;
+  /** Open the highlight colour picker at the menu's position. */
+  openHighlightPicker?: () => void;
 }): ContextMenuItem[] {
   const {
     storageKey,
@@ -884,7 +1024,13 @@ export function buildContextMenuItems(args: {
     setDragMode,
     isFrost,
     mode = "canvas",
+    preview,
+    openHighlightPicker,
   } = args;
+
+  /** Hover handler for a radio row that demos `patch`. */
+  const demo = (patch: Record<string, unknown>) => (active: boolean) =>
+    preview?.(active ? patch : null);
 
   const widgetName = t(`widgets.names.${storageKey}`);
   const universal: ContextMenuItem[] =
@@ -918,24 +1064,34 @@ export function buildContextMenuItems(args: {
     const isAnalog = !!s.analog;
     extras = [
       {
-        type: "radio",
-        label: t("widgets.contextMenu.time12"),
-        selected: !isAnalog && !s.is24Hour,
-        onClick: () =>
-          updateWidgetSettings("time", { analog: false, is24Hour: false }),
-      },
-      {
-        type: "radio",
-        label: t("widgets.contextMenu.time24"),
-        selected: !isAnalog && !!s.is24Hour,
-        onClick: () =>
-          updateWidgetSettings("time", { analog: false, is24Hour: true }),
-      },
-      {
-        type: "radio",
-        label: t("widgets.contextMenu.timeAnalog"),
-        selected: isAnalog,
-        onClick: () => updateWidgetSettings("time", { analog: true }),
+        type: "submenu",
+        label: t("widgets.contextMenu.timeFormat"),
+        icon: <AccessTimeFilledIcon style={{ fontSize: 14 }} />,
+        items: [
+          {
+            type: "radio",
+            label: t("widgets.contextMenu.time12"),
+            selected: !isAnalog && !s.is24Hour,
+            onHover: demo({ analog: false, is24Hour: false }),
+            onClick: () =>
+              updateWidgetSettings("time", { analog: false, is24Hour: false }),
+          },
+          {
+            type: "radio",
+            label: t("widgets.contextMenu.time24"),
+            selected: !isAnalog && !!s.is24Hour,
+            onHover: demo({ analog: false, is24Hour: true }),
+            onClick: () =>
+              updateWidgetSettings("time", { analog: false, is24Hour: true }),
+          },
+          {
+            type: "radio",
+            label: t("widgets.contextMenu.timeAnalog"),
+            selected: isAnalog,
+            onHover: demo({ analog: true }),
+            onClick: () => updateWidgetSettings("time", { analog: true }),
+          },
+        ],
       },
     ];
   } else if (storageKey === "quicklinks") {
@@ -944,37 +1100,50 @@ export function buildContextMenuItems(args: {
       {
         type: "action",
         label: t("widgets.contextMenu.addLink"),
+        icon: <AddIcon style={{ fontSize: 14 }} />,
         onClick: () =>
           window.dispatchEvent(new CustomEvent("ghiblify:quicklinks:add")),
       },
       { type: "separator" },
       {
-        type: "radio",
-        label: t("widgets.edit.gridShow"),
-        selected: !!s.gridMode,
-        onClick: () => updateWidgetSettings("quicklinks", { gridMode: true }),
-      },
-      {
-        type: "radio",
-        label: t("widgets.edit.gridShowList"),
-        selected: !s.gridMode,
-        onClick: () =>
-          updateWidgetSettings("quicklinks", { gridMode: false }),
+        type: "submenu",
+        label: t("widgets.contextMenu.quicklinksView"),
+        icon: s.gridMode ? (
+          <ViewModuleIcon style={{ fontSize: 14 }} />
+        ) : (
+          <ListIcon style={{ fontSize: 14 }} />
+        ),
+        items: [
+          {
+            type: "radio",
+            label: t("widgets.edit.gridShow"),
+            selected: !!s.gridMode,
+            onHover: demo({ gridMode: true }),
+            onClick: () =>
+              updateWidgetSettings("quicklinks", { gridMode: true }),
+          },
+          {
+            type: "radio",
+            label: t("widgets.edit.gridShowList"),
+            selected: !s.gridMode,
+            onHover: demo({ gridMode: false }),
+            onClick: () =>
+              updateWidgetSettings("quicklinks", { gridMode: false }),
+          },
+        ],
       },
     ];
   } else if (storageKey === "weather") {
     const s = widgets.weather.settings as WeatherSettings;
-    // Half-width dock cells aren't wide enough for the hourly /
-    // daily forecast strips, so hide those toggles entirely there
-    // — only "Now" stays selectable. The Weather component also
-    // forces those sections off at render time as a safety net.
+    const detail = resolveWeatherDetail(s);
+    // Half-width dock cells aren't wide enough for the forecast strips,
+    // so the scale stops at "now" there — matching what the widget
+    // actually renders on that surface.
     const isHalfDock =
       mode === "dock" && widgets.weather.dockWidth === "half";
-    const sectionKeys = isHalfDock
-      ? (["now"] as const)
-      : (["now", "hourly", "daily"] as const);
-    const onlyOneOn =
-      sectionKeys.filter((k) => s.sections[k]).length <= 1;
+    const detailOptions = isHalfDock
+      ? (["icon", "now"] as const)
+      : WEATHER_DETAILS;
 
     // Read the resolved location from the weather cache so the user
     // can see what geolocation reported. The label is set by
@@ -992,75 +1161,132 @@ export function buildContextMenuItems(args: {
       /* ignore — no label shown */
     }
 
+    const manual = isManualPlace(s.manualPlace) ? s.manualPlace : null;
+
+    // Four cascades — Location / Detail / Units / Style. Every root row
+    // is the same kind of thing (a group you open), and each cascade
+    // answers exactly one question.
     extras = [
-      ...(locationLabel
-        ? ([
-            {
-              type: "info" as const,
-              label: locationLabel,
-              icon: <PlaceIcon style={{ fontSize: 14 }} />,
+      // The resolved place *is* the row — it used to be a dead info
+      // line with a separate "Location" cascade underneath, which read
+      // as a disabled item sitting above the thing that actually works.
+      {
+        type: "submenu",
+        label: locationLabel ?? t("widgets.contextMenu.weatherLocation"),
+        icon: <MyLocationIcon style={{ fontSize: 14 }} />,
+        items: [
+          {
+            type: "radio",
+            label: t("widgets.contextMenu.weatherUseMyLocation"),
+            selected: !manual,
+            onClick: () => {
+              updateWidgetSettings("weather", {
+                manualPlace: null,
+                useDeviceLocation: true,
+              });
+              // The manual city's coords live under the same cache key
+              // the device position uses, so they have to go too.
+              clearWeatherLocation();
+              window.dispatchEvent(new CustomEvent("ghiblify:weather:refresh"));
             },
-            { type: "separator" as const },
-          ] as ContextMenuItem[])
-        : []),
-      // Unit submenu — mirrors the EditWidget dropdown so both
-       // surfaces expose Celsius / Fahrenheit as direct radio picks.
-       // Was two top-level radios; collapsing into a single cascade
-       // entry keeps the root menu tidier next to Icon style.
-       {
-         type: "submenu",
-         label: t("widgets.edit.weatherUnitLabel"),
-         items: (["C", "F"] as const).map((v) => ({
-           type: "radio" as const,
-           label: t(`widgets.edit.weatherUnit${v}`),
-           selected: s.unit === v,
-           onClick: () => updateWidgetSettings("weather", { unit: v }),
-         })),
-       },
-      {
-        type: "submenu",
-        label: t("widgets.edit.weatherSectionsLabel"),
-        items: sectionKeys.map((k) => ({
-          type: "checkbox" as const,
-          label: t(`widgets.edit.weatherSections.${k}`),
-          checked: !!s.sections[k],
-          // Keep the min-one-selected rule from EditWidget — disable
-          // the lone enabled option so it can't be turned off.
-          disabled: onlyOneOn && !!s.sections[k],
-          onClick: () => {
-            const next = { ...s.sections, [k]: !s.sections[k] };
-            const remaining = sectionKeys.filter((sk) => next[sk]).length;
-            if (remaining === 0) return;
-            updateWidgetSettings("weather", { sections: next });
           },
-        })),
+          ...(manual
+            ? ([
+                {
+                  type: "radio" as const,
+                  label: manual.name,
+                  selected: true,
+                  onClick: () => {
+                    /* already active — picking it again is a no-op */
+                  },
+                },
+              ] as ContextMenuItem[])
+            : []),
+          { type: "separator" },
+          {
+            type: "action",
+            label: t("widgets.contextMenu.weatherChooseCity"),
+            icon: <PlaceIcon style={{ fontSize: 14 }} />,
+            onClick: () =>
+              window.dispatchEvent(
+                new CustomEvent("ghiblify:weather:choose-city")
+              ),
+          },
+          {
+            type: "action",
+            label: t("widgets.contextMenu.weatherRefresh"),
+            icon: <RefreshIcon style={{ fontSize: 14 }} />,
+            onClick: () =>
+              window.dispatchEvent(new CustomEvent("ghiblify:weather:refresh")),
+          },
+        ],
       },
-      {
-        type: "checkbox",
-        label: t("widgets.edit.weatherShowCardLabel"),
-        checked: !!s.showCard,
-        onClick: () =>
-          updateWidgetSettings("weather", { showCard: !s.showCard }),
-      },
-      {
-        type: "checkbox",
-        label: t("widgets.edit.weatherIconsOnly"),
-        checked: !!s.iconsOnly,
-        onClick: () =>
-          updateWidgetSettings("weather", { iconsOnly: !s.iconsOnly }),
-      },
-      // Icon style submenu — mirrors the EditWidget Dropdown so both
-      // surfaces expose the same Animated / Still pair as direct
-      // radio picks (rather than a click-to-flip toggle).
+      // One scale instead of three checkboxes plus an icons-only
+      // toggle: each step is a superset of the last, so there's no
+      // invalid combination to guard against.
       {
         type: "submenu",
-        label: t("widgets.edit.weatherIconStyleLabel"),
-        items: (["animated", "still"] as const).map((v) => ({
+        label: t("widgets.contextMenu.weatherDetail"),
+        icon: <VisibilityIcon style={{ fontSize: 14 }} />,
+        items: detailOptions.map((v) => ({
           type: "radio" as const,
-          label: t(`widgets.edit.weatherIconStyle.${v}`),
-          selected: s.iconStyle === v,
-          onClick: () => updateWidgetSettings("weather", { iconStyle: v }),
+          label: t(`widgets.edit.weatherDetail.${v}`),
+          selected: detail === v,
+          onHover: demo({ detail: v }),
+          onClick: () => updateWidgetSettings("weather", { detail: v }),
         })),
+      },
+      {
+        type: "submenu",
+        label: t("widgets.edit.weatherUnitLabel"),
+        icon: <ThermostatIcon style={{ fontSize: 14 }} />,
+        items: (["C", "F"] as const).map((v) => ({
+          type: "radio" as const,
+          label: t(`widgets.edit.weatherUnit${v}`),
+          selected: s.unit === v,
+          // Unit changes need a refetch, so the preview only swaps the
+          // suffix — close enough to answer "which one am I on?".
+          onHover: demo({ unit: v }),
+          onClick: () => updateWidgetSettings("weather", { unit: v }),
+        })),
+      },
+      // Surface treatment and motion. Motion stays its own checkbox
+      // rather than being folded into the surface presets — wanting
+      // still icons is usually an accessibility call, and it shouldn't
+      // cost you the card.
+      {
+        type: "submenu",
+        label: t("widgets.contextMenu.weatherStyle"),
+        icon: <PaletteIcon style={{ fontSize: 14 }} />,
+        items: [
+          {
+            type: "radio",
+            label: t("widgets.edit.weatherStylePlain"),
+            selected: !s.showCard,
+            onHover: demo({ showCard: false }),
+            onClick: () => updateWidgetSettings("weather", { showCard: false }),
+          },
+          {
+            type: "radio",
+            label: t("widgets.edit.weatherStyleCard"),
+            selected: !!s.showCard,
+            onHover: demo({ showCard: true }),
+            onClick: () => updateWidgetSettings("weather", { showCard: true }),
+          },
+          { type: "separator" },
+          {
+            type: "checkbox",
+            label: t("widgets.edit.weatherAnimatedIcons"),
+            checked: (s.iconStyle ?? "animated") === "animated",
+            onClick: () =>
+              updateWidgetSettings("weather", {
+                iconStyle:
+                  (s.iconStyle ?? "animated") === "animated"
+                    ? "still"
+                    : "animated",
+              }),
+          },
+        ],
       },
     ];
   } else if (storageKey === "notes") {
@@ -1086,6 +1312,9 @@ export function buildContextMenuItems(args: {
           type: "radio" as const,
           label: opt.label,
           selected: s.selectedAvatar === opt.value,
+          // Names alone ("Boh", "Heen") don't tell you who you're
+          // picking — hovering swaps the avatar in place so you see it.
+          onHover: demo({ selectedAvatar: opt.value }),
           onClick: () =>
             updateWidgetSettings("avatar", { selectedAvatar: opt.value }),
         })),
@@ -1108,6 +1337,8 @@ export function buildContextMenuItems(args: {
     }
     const pSettings = widgets.pomodoro.settings as {
       size?: "small" | "medium" | "large" | "compact" | "regular";
+      sound?: PomodoroSoundKey;
+      soundVolume?: number;
     };
     // Anything that isn't a known current size (small/medium/large)
     // collapses to "medium" — covers legacy "compact" / "regular"
@@ -1118,6 +1349,22 @@ export function buildContextMenuItems(args: {
       rawSize === "small" || rawSize === "medium" || rawSize === "large"
         ? rawSize
         : "medium";
+    // Chime settings, validated the same way Pomodoro validates them —
+    // stored settings can predate the feature (undefined) or name a
+    // sound key that no longer exists.
+    const currentSound: PomodoroSoundKey = isPomodoroSoundKey(pSettings.sound)
+      ? pSettings.sound
+      : "musicbox";
+    const currentVolume =
+      typeof pSettings.soundVolume === "number" ? pSettings.soundVolume : 70;
+    // The EditWidget slider is continuous but a cascade has to be
+    // discrete, so the radio highlights the preset the stored volume is
+    // closest to (the 70 default lands on 75). Picking one snaps to the
+    // exact preset value.
+    const VOLUME_PRESETS = [0, 25, 50, 75, 100];
+    const nearestVolume = VOLUME_PRESETS.reduce((best, v) =>
+      Math.abs(v - currentVolume) < Math.abs(best - currentVolume) ? v : best
+    );
     extras = [
       {
         type: "action",
@@ -1131,27 +1378,65 @@ export function buildContextMenuItems(args: {
           ),
       },
       { type: "separator" },
+      // Size / Sound / Volume all cascade rather than sitting flat, so
+      // the root menu stays one screenful next to the generic
+      // opacity/blur entries appended below.
       {
-        type: "radio",
-        label: t("widgets.contextMenu.pomodoroSizeSmall"),
-        selected: currentSize === "small",
-        onClick: () =>
-          updateWidgetSettings("pomodoro", { size: "small" } as never),
+        type: "submenu",
+        label: t("widgets.edit.pomodoroSizeLabel"),
+        icon: <PhotoSizeSelectSmallIcon style={{ fontSize: 14 }} />,
+        items: (["small", "medium", "large"] as const).map((v) => ({
+          type: "radio" as const,
+          label: t(
+            `widgets.contextMenu.pomodoroSize${
+              v.charAt(0).toUpperCase() + v.slice(1)
+            }`
+          ),
+          selected: currentSize === v,
+          onHover: demo({ size: v }),
+          onClick: () => updateWidgetSettings("pomodoro", { size: v }),
+        })),
       },
+      // Picking a sound previews it, same as the EditWidget dropdown.
+      // The click is a real user gesture, so it doubles as the audio
+      // unlock — otherwise the context is still suspended when the
+      // timer ends half an hour later and the chime is silent.
       {
-        type: "radio",
-        label: t("widgets.contextMenu.pomodoroSizeMedium"),
-        selected: currentSize === "medium",
-        onClick: () =>
-          updateWidgetSettings("pomodoro", { size: "medium" } as never),
+        type: "submenu",
+        label: t("widgets.edit.pomodoroSoundLabel"),
+        icon: <MusicNoteIcon style={{ fontSize: 14 }} />,
+        items: POMODORO_SOUND_KEYS.map((v) => ({
+          type: "radio" as const,
+          label: t(`widgets.edit.pomodoroSound.${v}`),
+          selected: currentSound === v,
+          onClick: () => {
+            updateWidgetSettings("pomodoro", { sound: v });
+            primePomodoroAudio();
+            playPomodoroChime(v, currentVolume);
+          },
+        })),
       },
-      {
-        type: "radio",
-        label: t("widgets.contextMenu.pomodoroSizeLarge"),
-        selected: currentSize === "large",
-        onClick: () =>
-          updateWidgetSettings("pomodoro", { size: "large" } as never),
-      },
+      // Volume is meaningless with no chime to play — hidden on "none",
+      // matching the EditWidget slider's own gate.
+      ...(currentSound === "none"
+        ? []
+        : [
+            {
+              type: "submenu" as const,
+              label: t("widgets.edit.pomodoroVolume"),
+              icon: <VolumeUpIcon style={{ fontSize: 14 }} />,
+              items: VOLUME_PRESETS.map((v) => ({
+                type: "radio" as const,
+                label: `${v}%`,
+                selected: nearestVolume === v,
+                onClick: () => {
+                  updateWidgetSettings("pomodoro", { soundVolume: v });
+                  primePomodoroAudio();
+                  playPomodoroChime(currentSound, v);
+                },
+              })),
+            },
+          ]),
     ];
   } else if (storageKey === "info") {
     const s = widgets.info.settings as InfoSettings;
@@ -1161,6 +1446,7 @@ export function buildContextMenuItems(args: {
       {
         type: "submenu",
         label: t("widgets.edit.infoFieldsLabel"),
+        icon: <ListIcon style={{ fontSize: 14 }} />,
         items: INFO_FIELD_KEYS.map((k) => ({
           type: "checkbox" as const,
           label: t(`widgets.edit.infoFields.${k}`),
@@ -1187,16 +1473,110 @@ export function buildContextMenuItems(args: {
     string,
     unknown
   >;
+  // Text highlight — auto-attaches to any widget whose settings carry
+  // `highlightColor`. The cascade covers the common case (a suggested
+  // colour, an alpha for it) without leaving the menu; the picker row
+  // opens the full swatch/wheel/hex panel for everything else.
+  if ("highlightColor" in widgetSettingsAny) {
+    const current =
+      typeof widgetSettingsAny.highlightColor === "string"
+        ? normalizeHex(widgetSettingsAny.highlightColor)
+        : null;
+    const highlightOpacity =
+      typeof widgetSettingsAny.highlightOpacity === "number"
+        ? widgetSettingsAny.highlightOpacity
+        : 100;
+    const recents = readRecentColors();
+    const swatches = [
+      ...recents,
+      ...HIGHLIGHT_PRESETS.filter((p) => !recents.includes(p)),
+    ].slice(0, 8);
+    if (extras.length > 0) extras.push({ type: "separator" });
+    extras.push({
+      type: "submenu",
+      label: t("widgets.contextMenu.highlight"),
+      icon: <FormatColorFillIcon style={{ fontSize: 14 }} />,
+      items: [
+        {
+          type: "radio",
+          label: t("widgets.contextMenu.highlightOff"),
+          selected: !current,
+          onHover: demo({ highlightColor: null }),
+          onClick: () =>
+            updateWidgetSettings(storageKey, {
+              highlightColor: null,
+            } as never),
+        },
+        { type: "separator" },
+        // Each colour opens onto its own alpha levels, so a pick is one
+        // gesture: the row you land on sets colour and opacity
+        // together. A shared opacity submenu meant choosing twice, and
+        // the alpha you'd get was invisible while picking the colour.
+        ...swatches.map((hex) => ({
+          type: "submenu" as const,
+          label: hex.toUpperCase(),
+          icon: (
+            <span
+              className="ctx-menu-swatch"
+              style={{ background: withAlpha(hex, highlightOpacity) }}
+              aria-hidden="true"
+            />
+          ),
+          items: HIGHLIGHT_OPACITY_PRESETS.map((v) => ({
+            type: "radio" as const,
+            label: `${v}%`,
+            // The chip shows this exact colour+alpha, so the row is a
+            // preview of the bar it produces.
+            swatch: withAlpha(hex, v),
+            selected: current === hex && highlightOpacity === v,
+            onHover: demo({ highlightColor: hex, highlightOpacity: v }),
+            onClick: () => {
+              pushRecentColor(hex);
+              updateWidgetSettings(storageKey, {
+                highlightColor: hex,
+                highlightOpacity: v,
+              } as never);
+            },
+          })),
+        })),
+        { type: "separator" },
+        {
+          type: "action",
+          label: t("widgets.contextMenu.highlightCustom"),
+          icon: <FormatColorFillIcon style={{ fontSize: 14 }} />,
+          onClick: () => openHighlightPicker?.(),
+        },
+      ],
+    });
+  }
+
+  // Type-in — auto-attaches wherever the setting exists, same rule as
+  // the highlight above.
+  if ("typeIn" in widgetSettingsAny) {
+    extras.push({
+      type: "checkbox",
+      label: t("widgets.contextMenu.typeIn"),
+      icon: <KeyboardIcon style={{ fontSize: 14 }} />,
+      checked: widgetSettingsAny.typeIn === true,
+      onClick: () =>
+        updateWidgetSettings(storageKey, {
+          typeIn: widgetSettingsAny.typeIn !== true,
+        } as never),
+    });
+  }
+
   if (typeof widgetSettingsAny.textShadow === "number") {
     if (extras.length > 0) extras.push({ type: "separator" });
     const current = widgetSettingsAny.textShadow as number;
     extras.push({
       type: "submenu",
       label: t("widgets.contextMenu.textShadow"),
+      icon: <TextFieldsIcon style={{ fontSize: 14 }} />,
       items: [0, 50, 100, 150, 200].map((v) => ({
         type: "radio" as const,
         label: `${v}%`,
         selected: current === v,
+        onHover: demo({ textShadow: v }),
         onClick: () =>
           updateWidgetSettings(storageKey, { textShadow: v } as never),
       })),
@@ -1220,10 +1600,15 @@ export function buildContextMenuItems(args: {
   // daily forecast cell backgrounds. If the user has both strips off
   // (only "Now" showing), opacity is a no-op — same gate EditWidget
   // applies to its slider — so we skip the cascade entirely.
+  // Weather's opacity only tints the forecast cells, which don't exist
+  // below the "hourly" detail level — so the cascade would be a no-op.
+  const weatherDetail = resolveWeatherDetail(
+    widgets.weather.settings as WeatherSettings
+  );
   const weatherOpacityIsNoOp =
     storageKey === "weather" &&
-    !((widgets.weather.settings as WeatherSettings).sections.hourly) &&
-    !((widgets.weather.settings as WeatherSettings).sections.daily);
+    weatherDetail !== "hourly" &&
+    weatherDetail !== "full";
   if (
     typeof widgetSettingsAny.opacity === "number" &&
     !isFrost &&
@@ -1234,10 +1619,12 @@ export function buildContextMenuItems(args: {
     extras.push({
       type: "submenu",
       label: t("widgets.contextMenu.opacity"),
+      icon: <OpacityIcon style={{ fontSize: 14 }} />,
       items: OPACITY_BLUR_PRESETS.map((v) => ({
         type: "radio" as const,
         label: `${v}%`,
         selected: current === v,
+        onHover: demo({ opacity: v }),
         onClick: () =>
           updateWidgetSettings(storageKey, { opacity: v } as never),
       })),
@@ -1249,10 +1636,12 @@ export function buildContextMenuItems(args: {
     extras.push({
       type: "submenu",
       label: t("widgets.contextMenu.blur"),
+      icon: <BlurOnIcon style={{ fontSize: 14 }} />,
       items: OPACITY_BLUR_PRESETS.map((v) => ({
         type: "radio" as const,
         label: `${v}%`,
         selected: current === v,
+        onHover: demo({ blur: v }),
         onClick: () =>
           updateWidgetSettings(storageKey, { blur: v } as never),
       })),

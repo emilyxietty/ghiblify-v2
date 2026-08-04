@@ -174,3 +174,12 @@
 .dropdown-menu::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.3);
 }
+
+/* Portalled menus escape to <body>, so they compete with the floating
+   layers rather than with their own parent's children. The in-flow
+   z-index of 1000 left them behind the widget edit panels (which stack
+   from 100001 upward); this puts them in the same band as the other
+   portalled menus. */
+.dropdown-menu.dropdown-menu-portal {
+    z-index: var(--z-portal);
+}

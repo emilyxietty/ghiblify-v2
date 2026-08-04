@@ -33,6 +33,15 @@ export type ContextMenuItem =
       label: string;
       selected: boolean;
       onClick: () => void;
+      /** Optional colour chip rendered before the label — used by the
+       *  highlight picker, where the colour *is* the option and a hex
+       *  string alone tells the user nothing. */
+      swatch?: string;
+      /** Fired with true on pointer-enter and false on leave, so a
+       *  caller can show a live preview of what picking this row would
+       *  do. Also fired with false when the menu unmounts, so a preview
+       *  can't outlive the menu that started it. */
+      onHover?: (active: boolean) => void;
     }
   | {
       type: "checkbox";
@@ -40,6 +49,10 @@ export type ContextMenuItem =
       checked: boolean;
       onClick: () => void;
       disabled?: boolean;
+      /** Leading icon, in the same slot every other row uses. Giving a
+       *  checkbox an icon moves its tick to the trailing edge, so the
+       *  icon column stays aligned down the whole menu. */
+      icon?: React.ReactNode;
     }
   | {
       type: "submenu";
@@ -47,6 +60,10 @@ export type ContextMenuItem =
       items: ContextMenuItem[];
       icon?: React.ReactNode;
     };
+
+/** Grace period before a hovered-away cascade closes. Long enough to
+ *  cross the gap to the submenu, short enough not to feel sticky. */
+const SUBMENU_CLOSE_DELAY_MS = 320;
 
 interface ContextMenuProps {
   position: { x: number; y: number };
@@ -149,6 +166,31 @@ const Items: React.FC<{
   onClose: () => void;
 }> = ({ items, onClose }) => {
   const [openSubIdx, setOpenSubIdx] = useState<number | null>(null);
+  // Closing a cascade instantly on mouseleave makes it nearly
+  // unusable: the pointer has to cross a few pixels of dead space to
+  // reach the submenu, and any diagonal path across a neighbouring row
+  // slams it shut. A short grace period on leave — cancelled the moment
+  // the pointer lands back on the row or inside the submenu — is what
+  // native menus do.
+  const closeTimer = useRef<number | null>(null);
+  const cancelClose = () => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const openSub = (idx: number) => {
+    cancelClose();
+    setOpenSubIdx(idx);
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => {
+      setOpenSubIdx(null);
+      closeTimer.current = null;
+    }, SUBMENU_CLOSE_DELAY_MS);
+  };
+  useEffect(() => cancelClose, []);
 
   return (
     <>
@@ -162,8 +204,8 @@ const Items: React.FC<{
               key={idx}
               item={item}
               isOpen={openSubIdx === idx}
-              onEnter={() => setOpenSubIdx(idx)}
-              onLeave={() => setOpenSubIdx(null)}
+              onEnter={() => openSub(idx)}
+              onLeave={scheduleClose}
               onClose={onClose}
             />
           );
@@ -204,6 +246,7 @@ const Items: React.FC<{
         // radio | checkbox
         const isSelected =
           item.type === "radio" ? item.selected : item.checked;
+        const onHover = item.type === "radio" ? item.onHover : undefined;
         const disabled = item.type === "checkbox" && item.disabled;
         return (
           <button
@@ -215,8 +258,11 @@ const Items: React.FC<{
             className={`ctx-menu-row${isSelected ? " is-selected" : ""}${
               disabled ? " is-disabled" : ""
             }`}
+            onMouseEnter={onHover ? () => onHover(true) : undefined}
+            onMouseLeave={onHover ? () => onHover(false) : undefined}
             onClick={() => {
               if (disabled) return;
+              onHover?.(false);
               item.onClick();
               // Radios close the menu (single-pick UX); checkboxes
               // stay open so the user can flip several without
@@ -225,19 +271,45 @@ const Items: React.FC<{
             }}
           >
             <span className="ctx-menu-icon" aria-hidden="true">
-              {isSelected &&
-                (item.type === "radio" ? (
+              {/* A checkbox with its own icon shows it here and moves
+                  the tick to the trailing edge; everything else marks
+                  selection in this slot. */}
+              {item.type === "checkbox" && item.icon ? (
+                item.icon
+              ) : isSelected ? (
+                item.type === "radio" ? (
                   <RadioButtonCheckedIcon style={{ fontSize: 12 }} />
                 ) : (
                   <CheckIcon style={{ fontSize: 14 }} />
-                ))}
+                )
+              ) : null}
             </span>
+            {item.type === "radio" && item.swatch && (
+              <span
+                className="ctx-menu-swatch"
+                style={{ background: item.swatch }}
+                aria-hidden="true"
+              />
+            )}
             <span className="ctx-menu-label">{item.label}</span>
+            {item.type === "checkbox" && item.icon && isSelected && (
+              <CheckIcon className="ctx-menu-trailing-check" aria-hidden="true" />
+            )}
           </button>
         );
       })}
     </>
   );
+};
+
+/** Walk the tree and tell every hover-reporting row the pointer is
+ *  gone. Called on unmount: a menu dismissed mid-hover would otherwise
+ *  strand whatever preview its last hovered row switched on. */
+const clearHoverPreviews = (items: ContextMenuItem[]): void => {
+  for (const item of items) {
+    if (item.type === "radio") item.onHover?.(false);
+    else if (item.type === "submenu") clearHoverPreviews(item.items);
+  }
 };
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -246,6 +318,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onClose,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  useEffect(() => () => clearHoverPreviews(itemsRef.current), []);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {

@@ -1,13 +1,18 @@
-import React from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useDockSurface } from "../../../contexts/DockSurfaceContext";
-import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import {
-  useWeather,
-  WeatherDaily,
-  WeatherHourly,
-} from "../../../hooks/useWeather";
+  resolveWeatherDetail,
+  sectionsForDetail,
+} from "../../../config/widgetConfig";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
+import { useWeather, WeatherDaily } from "../../../hooks/useWeather";
 import { useT } from "../../../i18n/i18n";
+import { isManualPlace } from "../../../utils/geocoding";
+// Lazy — the picker is a dialog most sessions never open.
+const WeatherLocationModal = lazy(
+  () => import("../../../components/WeatherLocationModal/WeatherLocationModal")
+);
 import "./Weather.css";
 
 // Map a WMO weather code → a Meteocons SVG filename (without extension).
@@ -51,7 +56,8 @@ const formatHour = (iso: string, is24Hour: boolean) => {
 
 const Weather: React.FC = () => {
   const t = useT();
-  const { widgets, dockShowBackgrounds } = useAppContext();
+  const { widgets, dockShowBackgrounds, updateWidgetSettings } =
+    useAppContext();
   const { settings: rawSettings } = useWidgetSettings("weather");
   const inDock = useDockSurface();
   const isHalfInDock =
@@ -60,80 +66,229 @@ const Weather: React.FC = () => {
   // Stored settings are never mutated here — these only affect the
   // current render so the canvas / full-width instance keeps its
   // own state untouched.
-  //   - Half-width dock: forecast strips would wrap, so hide them.
+  //   - Half-width dock: forecast strips would wrap, so the detail
+  //     level is capped at "now" (an icon-only user keeps their icon).
   //   - Dock + global "Show backgrounds" on: force showCard so the
   //     card surface joins the rest of the dock chrome.
+  const storedDetail = resolveWeatherDetail(rawSettings);
+  const detail =
+    isHalfInDock && storedDetail !== "icon" ? "now" : storedDetail;
   const settings = {
     ...rawSettings,
-    ...(isHalfInDock
-      ? {
-          sections: {
-            ...rawSettings.sections,
-            hourly: false,
-            daily: false,
-          },
-        }
-      : {}),
     ...(inDock && dockShowBackgrounds ? { showCard: true } : {}),
   };
-  const { data, loading, error } = useWeather(settings.unit);
+  const manualPlace = isManualPlace(settings.manualPlace)
+    ? settings.manualPlace
+    : null;
+  const useDeviceLocation = settings.useDeviceLocation !== false;
+  const { data, loading, error, refresh } = useWeather(
+    settings.unit,
+    manualPlace,
+    useDeviceLocation
+  );
+
+  // "Refresh weather" in the right-click menu can't reach this hook
+  // directly (Widget.tsx renders the menu, not the widget body), so it
+  // dispatches an event the same way the Pomodoro focus toggle does.
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener("ghiblify:weather:refresh", handler);
+    return () =>
+      window.removeEventListener("ghiblify:weather:refresh", handler);
+  }, [refresh]);
+
+  // "Choose a city" opens the modal. Only the canvas instance listens —
+  // the dock renders a second Weather, and both answering would stack
+  // two identical dialogs.
+  const [locationOpen, setLocationOpen] = useState(false);
+  useEffect(() => {
+    if (inDock) return;
+    const handler = () => setLocationOpen(true);
+    window.addEventListener("ghiblify:weather:choose-city", handler);
+    return () =>
+      window.removeEventListener("ghiblify:weather:choose-city", handler);
+  }, [inDock]);
 
   const unitSuffix = `°${settings.unit}`;
   // Borrow the Time widget's 12/24-hour preference so the hourly
   // forecast labels match the user's clock format (no separate setting).
   const is24Hour = !!widgets.time.settings.is24Hour;
   const iconStyle = settings.iconStyle ?? "animated";
-  const sections = settings.sections ?? {
-    now: true,
-    hourly: false,
-    daily: false,
-  };
+  const sections = sectionsForDetail(detail);
+  const iconsOnly = detail === "icon";
 
-  const renderHourly = (rows: WeatherHourly[]) => (
+  // Both forecast strips are the same three-row cell — label, icon,
+  // temperature — so they share one renderer instead of two near-copies.
+  // A row without a `code` renders the placeholder icon, which is what
+  // lets the loading state reuse this shape rather than duplicate it.
+  interface StripRow {
+    key: string;
+    label: React.ReactNode;
+    code?: number;
+    value: React.ReactNode;
+  }
+
+  const strip = (rows: StripRow[], skeleton = false) => (
     <div className="weather-strip">
-      {rows.map((h) => (
-        <div className="weather-strip-cell" key={h.time}>
-          <span className="weather-strip-label">{formatHour(h.time, is24Hour)}</span>
-          <WeatherIcon
-            code={h.weatherCode}
-            isDay={true}
-            style={iconStyle}
-            className="weather-strip-icon"
-          />
-          <span className="weather-strip-temp">
-            {h.temperature}
-            {unitSuffix}
-          </span>
+      {rows.map((row) => (
+        <div
+          className={`weather-strip-cell${skeleton ? " weather-skeleton" : ""}`}
+          key={row.key}
+        >
+          <span className="weather-strip-label">{row.label}</span>
+          {row.code === undefined ? (
+            <span className="weather-strip-icon weather-icon-placeholder">
+              <span className="weather-spinner" aria-hidden="true" />
+            </span>
+          ) : (
+            <WeatherIcon
+              code={row.code}
+              isDay
+              style={iconStyle}
+              className="weather-strip-icon"
+            />
+          )}
+          <span className="weather-strip-temp">{row.value}</span>
         </div>
       ))}
     </div>
   );
 
-  const renderDaily = (rows: WeatherDaily[]) => (
-    <div className="weather-strip">
-      {rows.map((d) => {
-        const dow = new Date(d.time).getDay();
-        return (
-          <div className="weather-strip-cell" key={d.time}>
-            <span className="weather-strip-label">
-              {t(`weather.weekday.${dow}`)}
+  const skeletonRows = (prefix: string): StripRow[] =>
+    Array.from({ length: 5 }, (_, i) => ({
+      key: `${prefix}-${i}`,
+      label: (
+        <span className="weather-skeleton-line weather-skeleton-cell-label" />
+      ),
+      value: (
+        <span className="weather-skeleton-line weather-skeleton-cell-temp" />
+      ),
+    }));
+
+  /**
+   * Daily forecast, as rows with a temperature range bar.
+   *
+   * Both Apple's Weather and Google's forecast card render days this
+   * way rather than as another strip of columns: a week of columns
+   * identical to the hourly strip makes the two read as the same
+   * information, and it gives you no sense of how the days compare.
+   * A bar per day, scaled against the week's own min and max, makes
+   * "Thursday is the cold one" visible without reading a single number.
+   */
+  const dailyRows = (rows: WeatherDaily[]) => {
+    const min = Math.min(...rows.map((d) => d.low));
+    const max = Math.max(...rows.map((d) => d.high));
+    // Guard the degenerate case: a flat week would divide by zero.
+    const span = max - min || 1;
+    return (
+      <div className="weather-days">
+        {rows.map((d, i) => (
+          <div className="weather-day-row" key={d.time}>
+            <span className="weather-day-label">
+              {i === 0
+                ? t("weather.today")
+                : t(`weather.weekday.${new Date(d.time).getDay()}`)}
             </span>
             <WeatherIcon
               code={d.weatherCode}
-              isDay={true}
+              isDay
               style={iconStyle}
-              className="weather-strip-icon"
+              className="weather-day-icon"
             />
-            <span className="weather-strip-temp">
+            <span className="weather-day-temp weather-day-low">
+              {d.low}
+              {unitSuffix}
+            </span>
+            <span className="weather-range" aria-hidden="true">
+              <span
+                className="weather-range-fill"
+                style={{
+                  left: `${((d.low - min) / span) * 100}%`,
+                  right: `${((max - d.high) / span) * 100}%`,
+                }}
+              />
+              {/* Today also carries a dot for the temperature right
+                  now — the one day where "where in the range are we?"
+                  has an answer. */}
+              {i === 0 && data && (
+                <span
+                  className="weather-range-now"
+                  style={{
+                    left: `${
+                      ((Math.min(Math.max(data.current.temperature, min), max) -
+                        min) /
+                        span) *
+                      100
+                    }%`,
+                  }}
+                />
+              )}
+            </span>
+            <span className="weather-day-temp weather-day-high">
               {d.high}
-              <span className="weather-strip-low">
-                /{d.low}
-                {unitSuffix}
-              </span>
+              {unitSuffix}
             </span>
           </div>
-        );
-      })}
+        ))}
+      </div>
+    );
+  };
+
+  /** Current conditions. Every detail level shows this block; "icon
+   *  only" is the same markup with the text hidden by CSS. */
+  const conditions = (
+    <div className="weather-current">
+      {data ? (
+        <WeatherIcon
+          code={data.current.weatherCode}
+          isDay={data.current.isDay}
+          style={iconStyle}
+          className="weather-icon"
+        />
+      ) : (
+        <span className="weather-icon weather-icon-placeholder">
+          <span className="weather-spinner" aria-hidden="true" />
+        </span>
+      )}
+      <div className="weather-current-text">
+        {data ? (
+          <>
+            <div className="weather-temp">
+              {data.current.temperature}
+              {unitSuffix}
+            </div>
+            <div className="weather-condition">
+              {t(`weather.wmo.${data.current.weatherCode}`)}
+            </div>
+            <div className="weather-feels">
+              {t("weather.feelsLike", {
+                temp: `${data.current.apparent}${unitSuffix}`,
+              })}
+              {/* Today's range next to the current reading — the first
+                  thing both Apple and Google put under the condition,
+                  and it answers "is it going to get colder?" without
+                  opening the daily list. */}
+              {data.daily[0] && (
+                <span className="weather-today-range">
+                  {t("weather.hi", {
+                    temp: `${data.daily[0].high}${unitSuffix}`,
+                  })}
+                  {" · "}
+                  {t("weather.lo", {
+                    temp: `${data.daily[0].low}${unitSuffix}`,
+                  })}
+                </span>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="weather-skeleton-line weather-skeleton-temp" />
+            <div className="weather-skeleton-line weather-skeleton-condition" />
+            <div className="weather-skeleton-line weather-skeleton-feels" />
+          </>
+        )}
+      </div>
     </div>
   );
 
@@ -160,115 +315,124 @@ const Weather: React.FC = () => {
       ? moodFor(data.current.weatherCode, data.current.isDay)
       : undefined;
 
-  return (
-    <div
-      className={`weather-widget widget-header${
-        settings.showCard ? " weather-card-on" : ""
-      }${settings.iconsOnly ? " weather-icons-only" : ""}`}
-      data-weather-mood={mood}
-      style={{
-        ["--weather-cell-opacity" as any]:
-          ((settings.opacity ?? 35) / 100).toString(),
-      }}
-    >
-      {loading && (
-        <div className="weather-loading" role="status" aria-live="polite">
-          {sections.now && (
-            <div className="weather-current weather-skeleton">
-              <span className="weather-icon weather-icon-placeholder">
-                <span className="weather-spinner" aria-hidden="true" />
-              </span>
-              <div className="weather-current-text">
-                <div className="weather-skeleton-line weather-skeleton-temp" />
-                <div className="weather-skeleton-line weather-skeleton-condition" />
-                <div className="weather-skeleton-line weather-skeleton-feels" />
+  // One body per state, chosen once — rather than four sibling blocks
+  // each re-testing `!loading && error && …` and each opening its own
+  // wrapper.
+  let body: React.ReactNode;
+  if (loading) {
+    body = (
+      <div className="weather-loading" role="status" aria-live="polite">
+        {conditions}
+        {sections.hourly && strip(skeletonRows("h"), true)}
+        {/* The daily placeholder mirrors the row layout, not the strip:
+            a skeleton in one shape that resolves into another reads as
+            the widget jumping. */}
+        {sections.daily && (
+          <div className="weather-days">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div className="weather-day-row weather-skeleton" key={i}>
+                <span className="weather-skeleton-line weather-skeleton-cell-label" />
+                <span className="weather-day-icon weather-icon-placeholder">
+                  <span className="weather-spinner" aria-hidden="true" />
+                </span>
+                <span className="weather-skeleton-line weather-skeleton-cell-temp" />
+                <span className="weather-range" />
+                <span className="weather-skeleton-line weather-skeleton-cell-temp" />
               </div>
-            </div>
-          )}
-          {sections.hourly && (
-            <div className="weather-strip">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div className="weather-strip-cell weather-skeleton" key={i}>
-                  <span className="weather-skeleton-line weather-skeleton-cell-label" />
-                  <span className="weather-strip-icon weather-icon-placeholder">
-                    <span className="weather-spinner" aria-hidden="true" />
-                  </span>
-                  <span className="weather-skeleton-line weather-skeleton-cell-temp" />
-                </div>
-              ))}
-            </div>
-          )}
-          {sections.daily && (
-            <div className="weather-strip">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div className="weather-strip-cell weather-skeleton" key={i}>
-                  <span className="weather-skeleton-line weather-skeleton-cell-label" />
-                  <span className="weather-strip-icon weather-icon-placeholder">
-                    <span className="weather-spinner" aria-hidden="true" />
-                  </span>
-                  <span className="weather-skeleton-line weather-skeleton-cell-temp" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {!loading && error && error === "offline" && (
-        <div className="weather-current weather-na">
-          <img
-            src={chrome.runtime.getURL("assets/weather/Loading.gif")}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            className="weather-icon weather-offline-icon"
-          />
-          <div className="weather-current-text">
-            <div className="weather-temp">{t("weather.unavailable")}</div>
+            ))}
           </div>
+        )}
+      </div>
+    );
+  } else if (error === "offline") {
+    body = (
+      <div className="weather-current weather-na">
+        <img
+          src={chrome.runtime.getURL("assets/weather/Loading.gif")}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className="weather-icon weather-offline-icon"
+        />
+        <div className="weather-current-text">
+          <div className="weather-temp">{t("weather.unavailable")}</div>
         </div>
-      )}
-      {!loading && error && error !== "offline" && (
-        <div className="weather-empty weather-error">
+      </div>
+    );
+  } else if (error) {
+    // Both permission errors are recoverable in place — device location
+    // is an app setting (Chrome won't let `geolocation` be optional), so
+    // the button just switches it back on and refetches.
+    const isPermission =
+      error === "permission-denied" || error === "permission-unavailable";
+    body = (
+      <div className="weather-empty weather-error">
+        <span>
           {error === "permission-denied"
             ? t("weather.permissionDenied")
             : error === "permission-unavailable"
               ? t("weather.permissionUnavailable")
               : t("weather.fetchError")}
-        </div>
-      )}
-      {!loading && !error && data && (
-        <>
-          {sections.now && (
-            <div className="weather-current">
-              <WeatherIcon
-                code={data.current.weatherCode}
-                isDay={data.current.isDay}
-                style={iconStyle}
-                className="weather-icon"
-              />
-              <div className="weather-current-text">
-                <div className="weather-temp">
-                  {data.current.temperature}
+        </span>
+        <button
+          type="button"
+          className="weather-error-action"
+          onClick={() => {
+            if (isPermission) {
+              updateWidgetSettings("weather", { useDeviceLocation: true });
+            }
+            refresh();
+          }}
+        >
+          {isPermission ? t("weather.enableLocation") : t("weather.retry")}
+        </button>
+      </div>
+    );
+  } else if (data) {
+    body = (
+      <>
+        {conditions}
+        {sections.hourly &&
+          strip(
+            data.hourly.map((h, i) => ({
+              key: h.time,
+              // The leading cell is the current hour, so it reads as
+              // "Now" rather than repeating the clock.
+              label: i === 0 ? t("weather.now") : formatHour(h.time, is24Hour),
+              code: h.weatherCode,
+              value: (
+                <>
+                  {h.temperature}
                   {unitSuffix}
-                </div>
-                <div className="weather-condition">
-                  {t(`weather.wmo.${data.current.weatherCode}`)}
-                </div>
-                <div className="weather-feels">
-                  {t("weather.feelsLike", {
-                    temp: `${data.current.apparent}${unitSuffix}`,
-                  })}
-                </div>
-              </div>
-            </div>
+                </>
+              ),
+            }))
           )}
-          {sections.hourly &&
-            data.hourly.length > 0 &&
-            renderHourly(data.hourly)}
-          {sections.daily &&
-            data.daily.length > 0 &&
-            renderDaily(data.daily)}
-        </>
+        {sections.daily && data.daily.length > 0 && dailyRows(data.daily)}
+      </>
+    );
+  }
+
+  return (
+    <div
+      className={`weather-widget widget-header${
+        settings.showCard ? " weather-card-on" : ""
+      }${iconsOnly ? " weather-icons-only" : ""}`}
+      data-weather-mood={mood}
+      style={{
+        ["--weather-cell-opacity" as any]: (
+          (settings.opacity ?? 35) / 100
+        ).toString(),
+      }}
+    >
+      {body}
+      {locationOpen && (
+        <Suspense fallback={null}>
+          <WeatherLocationModal
+            open={locationOpen}
+            onClose={() => setLocationOpen(false)}
+          />
+        </Suspense>
       )}
     </div>
   );

@@ -27,6 +27,11 @@
        reaches the same rounded corners as the widget outline — no
        photo bleeds through at the corners. */
     border-radius: var(--radius-lg);
+    /* Forecast cells sit flush inside this padding, so they take the
+       card's radius minus that inset (see --radius-nested-* in
+       App.css). Without it the two curves run at different rates and
+       the gap between cell and card pinches at the corners. */
+    --nest-inset: 16px;
     box-sizing: border-box;
     border: 1px solid rgba(255, 255, 255, 0.32);
     box-shadow:
@@ -265,9 +270,9 @@
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 8px 10px;
+    padding: calc(8px * var(--pad-scale, 1)) calc(10px * var(--pad-scale, 1));
     min-width: 52px;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-nested-lg, var(--radius-md));
     /* Theme-tinted button surface. The active palette's --dark-rgb
        supplies the color; --weather-cell-opacity (set inline from the
        widget settings) controls the alpha. Border + text use --light
@@ -317,6 +322,30 @@
     text-align: center;
     font-size: 12.5px;
     padding: 8px 4px;
+}
+
+/* Error state stacks its message over a recovery button — geolocation
+   is an optional permission, so "denied" is a state the user can act on
+   from right here instead of hunting through chrome://extensions. */
+.weather-error {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.weather-error-action {
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    color: inherit;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.weather-error-action:hover {
+    background: color-mix(in srgb, currentColor 22%, transparent);
 }
 
 /* Loading state — a skeleton mirroring the real widget's layout
@@ -434,6 +463,125 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Daily forecast — rows, not columns
+   ---------------------------------------------------------------------------
+   A row per day with a range bar, following Apple's Weather and
+   Google's forecast card. Rendering days as another horizontal strip
+   made them read as more hours; the bar, scaled against the week's own
+   min/max, shows how the days compare at a glance. */
+
+.weather-days {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 4px;
+    padding: calc(6px * var(--pad-scale, 1)) calc(10px * var(--pad-scale, 1));
+    border-radius: var(--radius-nested-lg, var(--radius-md));
+    /* One surface for the whole list rather than a card per row: the
+       rows are a single table of days, and seven separate cards would
+       fight the column alignment that makes them readable. Same
+       theme-tinted treatment as the hourly cells, driven by the same
+       --weather-cell-opacity the widget's opacity slider sets. */
+    background: rgba(
+        var(--dark-rgb),
+        min(var(--weather-cell-opacity, 0.35), var(--surface-alpha-cap, 1))
+    );
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* --light is the palette's on-dark ink, so it's guaranteed to contrast
+   with the --dark-rgb tint behind it across all 14 palettes — the same
+   pairing .weather-strip-cell uses. The halo the rest of the widget
+   carries isn't needed on a surface, so it's dropped here. */
+.weather-days,
+.weather-days * {
+    color: var(--light);
+    text-shadow: none;
+}
+
+.weather-day-row {
+    display: grid;
+    /* day | icon | low | range | high — fixed columns so the numbers
+       line up vertically down the list, which is the whole point of
+       rows over columns. */
+    grid-template-columns: 2.6em 1.6em 2.4em 1fr 2.4em;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    font-size: 0.82em;
+}
+
+.weather-day-label {
+    font-weight: 500;
+    opacity: 0.95;
+}
+
+.weather-day-icon {
+    width: 1.6em;
+    height: 1.6em;
+    justify-self: center;
+}
+
+.weather-day-temp {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.weather-day-low {
+    opacity: 0.7;
+}
+
+.weather-range {
+    position: relative;
+    height: 4px;
+    border-radius: var(--radius-pill, 999px);
+    background: rgba(255, 255, 255, 0.22);
+    overflow: visible;
+}
+
+/* Cool-to-warm gradient across the day's own span, so a warm day reads
+   warm without needing the numbers. */
+.weather-range-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: var(--radius-pill, 999px);
+    background: linear-gradient(
+        90deg,
+        rgba(120, 190, 240, 0.95),
+        rgba(250, 214, 130, 0.95),
+        rgba(246, 150, 110, 0.95)
+    );
+}
+
+/* Where the temperature sits right now, on today's row only. */
+.weather-range-now {
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    margin-left: -3px;
+    border-radius: 50%;
+    background: #ffffff;
+    transform: translateY(-50%);
+    box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.35);
+}
+
+/* Today's high / low, sitting under the current conditions. */
+.weather-today-range {
+    display: block;
+    margin-top: 2px;
+    opacity: 0.9;
+}
+
+/* ---------------------------------------------------------------------------
    Icons-only mode
    ---------------------------------------------------------------------------
    When `WeatherSettings.iconsOnly` is on, the widget root gets a
@@ -446,8 +594,32 @@
 .weather-widget.weather-icons-only .weather-current-text,
 .weather-widget.weather-icons-only .weather-strip-label,
 .weather-widget.weather-icons-only .weather-strip-temp,
-.weather-widget.weather-icons-only .weather-strip-low {
+.weather-widget.weather-icons-only .weather-strip-low,
+.weather-widget.weather-icons-only .weather-day-label,
+.weather-widget.weather-icons-only .weather-day-temp,
+.weather-widget.weather-icons-only .weather-range {
     display: none;
+}
+
+/* With the labels and bars gone, the daily list collapses to a row of
+   icons — the same shape the hourly strip takes in this mode. The
+   surface goes with them: a wide empty panel behind a few icons reads
+   as a bug. */
+.weather-widget.weather-icons-only .weather-days {
+    flex-direction: row;
+    justify-content: center;
+    gap: 6px;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.weather-widget.weather-icons-only .weather-day-row {
+    display: flex;
+    padding: 0;
 }
 
 /* Re-center the "Now" icon: with the text block gone, the flex

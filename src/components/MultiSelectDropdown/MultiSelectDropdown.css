@@ -149,3 +149,11 @@
 .multi-select-menu::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+/* Portalled variant: JS supplies fixed coordinates, so the in-flow
+   anchoring must not fight it. */
+.multi-select-menu.is-portalled {
+    top: auto;
+    right: auto;
+    z-index: var(--z-portal);
+}

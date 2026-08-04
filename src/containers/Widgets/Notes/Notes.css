@@ -12,7 +12,7 @@
     box-sizing: border-box;
     /* Generous padding so the textarea text sits well INSIDE the
        painted border and doesn't crowd the decorative edge. */
-    padding: 48px 44px;
+    padding: calc(48px * var(--pad-scale, 1)) calc(44px * var(--pad-scale, 1));
     /* Off-white cream fill sits behind the border SVG so the area
        around (and inside) the rectangle reads as paper. */
     background-color: #fbf3df;
@@ -25,8 +25,10 @@
     background-position: center;
     /* Rounded corners on the cream backing so the card reads as a
        soft-cornered piece of paper rather than a hard rectangle.
-       The SVG's painted corners sit on top of this. */
-    border-radius: 16px;
+       The SVG's painted corners sit on top of this. Follows the corner
+       setting like every other surface — 16px was the old fixed value,
+       which --radius-xl matches exactly at the Rounded default. */
+    border-radius: var(--radius-xl);
     overflow: hidden;
 }
 
@@ -35,7 +37,7 @@
    so the note still reads as paper. */
 .notes-widget.no-border {
     background-image: none;
-    padding: 18px 18px;
+    padding: calc(18px * var(--pad-scale, 1));
 }
 
 .notes-textarea {

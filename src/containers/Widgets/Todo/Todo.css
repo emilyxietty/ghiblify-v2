@@ -109,7 +109,7 @@
     );
     color: var(--todo-text);
     border: 1px solid var(--todo-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-control, var(--radius-md));
     font-size: 18px;
     font-weight: 600;
     line-height: 1;

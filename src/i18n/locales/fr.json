@@ -48,7 +48,7 @@
       "heart": "Cœur",
       "leaf": "Feuille",
       "strawberry": "Fraise",
-      "rainbow": "Arc-en-ciel"
+      "shikigami": "Oiseaux de papier"
     },
     "buttons": {
       "githubRepo": "Dépôt Github",
@@ -143,7 +143,19 @@
       "selectAvatar": "Choisir un avatar",
       "pomodoroSizeLarge": "Grand",
       "pomodoroSizeSmall": "Petit",
-      "pomodoroSizeMedium": "Moyen"
+      "pomodoroSizeMedium": "Moyen",
+      "timeFormat": "Format de l'horloge",
+      "weatherLocation": "Localisation",
+      "weatherUseMyLocation": "Utiliser ma position",
+      "weatherChooseCity": "Choisir une ville…",
+      "weatherRefresh": "Actualiser",
+      "highlight": "Surlignage",
+      "highlightOff": "Aucun",
+      "quicklinksView": "Affichage",
+      "weatherDetail": "Détail",
+      "weatherStyle": "Style",
+      "highlightCustom": "Sélecteur de couleur…",
+      "typeIn": "Écrire au chargement"
     },
     "edit": {
       "ariaEdit": "Modifier le widget {{key}}",
@@ -179,32 +191,51 @@
       "notesHideBorderAria": "Masquer la bordure de la note",
       "weatherUnitAria": "Basculer Celsius / Fahrenheit",
       "weatherUnitLabel": "Unité",
-      "weatherSections": {
-        "now": "Maintenant",
-        "hourly": "Par heure",
-        "daily": "Quotidien"
-      },
-      "weatherIconStyle": {
-        "animated": "Animé",
-        "still": "Fixe"
-      },
-      "weatherIconStyleLabel": "Style des icônes",
-      "weatherIconStyleAria": {
-        "animated": "Icônes animées — cliquer pour passer en fixe",
-        "still": "Icônes fixes — cliquer pour passer en animé"
-      },
-      "weatherShowCard": "Carte",
-      "weatherHideCard": "Carte",
-      "weatherShowCardLabel": "Afficher l'arrière-plan en carte",
-      "weatherShowCardAria": "Afficher un dégradé doux derrière la météo",
-      "weatherHideCardAria": "Retirer l'arrière-plan en carte",
-      "weatherIconsOnly": "Icônes seulement",
-      "weatherIconsOnlyOnAria": "Icônes seules affichées — cliquer pour réafficher le texte",
-      "weatherIconsOnlyOffAria": "Masquer le texte et n'afficher que les icônes",
       "pomodoroSizeLabel": "Taille",
       "pomodoroSizeSmall": "S",
       "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "L"
+      "pomodoroSizeLarge": "L",
+      "pomodoroSoundLabel": "Son",
+      "pomodoroSoundAria": "Choisir le son de fin",
+      "pomodoroVolume": "Volume",
+      "pomodoroVolumeAria": "Volume du son de fin",
+      "pomodoroSound": {
+        "musicbox": "Boîte à musique",
+        "sootsprite": "Noiraude",
+        "catbus": "Chatbus",
+        "windchime": "Carillon",
+        "kodama": "Kodama",
+        "none": "Aucun"
+      },
+      "weatherLocationAria": "Définir la localisation météo",
+      "weatherLocationAuto": "Auto",
+      "weatherLocationUseMine": "Ma position",
+      "weatherLocationRefresh": "Actualiser",
+      "weatherLocationPlaceholder": "Rechercher une ville…",
+      "weatherLocationSearching": "Recherche…",
+      "weatherLocationNoResults": "Aucune ville trouvée",
+      "weatherLocationError": "Échec de la recherche. Réessayez.",
+      "highlightLabel": "Surlignage",
+      "highlightAria": "Choisir une couleur de surlignage",
+      "highlightNone": "Aucun surlignage",
+      "highlightRecent": "Récents",
+      "highlightPresets": "Préréglages",
+      "highlightCustomAria": "Choisir une couleur personnalisée",
+      "highlightHexAria": "Couleur hexadécimale",
+      "highlightTextColor": "Couleur du texte",
+      "highlightTextAuto": "Auto",
+      "weatherDetail": {
+        "icon": "Icône seule",
+        "now": "Maintenant",
+        "hourly": "Par heure",
+        "full": "Prévisions complètes"
+      },
+      "weatherStylePlain": "Simple",
+      "weatherStyleCard": "Carte",
+      "weatherAnimatedIcons": "Icônes animées",
+      "weatherAnimatedOn": "Oui",
+      "weatherAnimatedOff": "Non",
+      "panelDragHint": "Glisser pour déplacer"
     }
   },
   "greeting": {
@@ -232,7 +263,13 @@
     "placeholder": "Rechercher sur le web...",
     "ariaLabelInput": "Rechercher sur le web",
     "ariaLabelButton": "Rechercher",
-    "tooltipButton": "Rechercher"
+    "tooltipButton": "Rechercher",
+    "clearAria": "Effacer la recherche",
+    "voiceAria": "Recherche vocale",
+    "voiceTooltip": "Recherche vocale",
+    "imageAria": "Recherche par image",
+    "imageTooltip": "Recherche par image",
+    "removeHistoryAria": "Retirer « {{query}} » des recherches récentes"
   },
   "quicklinks": {
     "trigger": "Liens",
@@ -251,7 +288,16 @@
     "labelPlaceholder": "Étiquette (facultatif)",
     "labelSrOnly": "Étiquette (facultatif)",
     "urlPlaceholder": "https://exemple.com",
-    "emptyMessage": "Aucun lien rapide. Ajoutez-en un ci-dessus."
+    "emptyMessage": "Aucun lien rapide. Ajoutez-en un ci-dessus.",
+    "addTile": "Ajouter",
+    "addTitle": "Ajouter un lien",
+    "editTitle": "Modifier le lien",
+    "urlLabel": "Adresse",
+    "labelOptional": "Nom (facultatif)",
+    "previewEmpty": "Nouveau lien",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "addButton": "Ajouter"
   },
   "pomodoro": {
     "modeBreak": "Pause",
@@ -282,7 +328,9 @@
     "errorLoad": "Échec du chargement des marque-pages : {{message}}",
     "delete": "Supprimer le marque-page",
     "noResultsTitle": "Aucun résultat",
-    "noResultsSub": "Rien ne correspond à « {{query}} »."
+    "noResultsSub": "Rien ne correspond à « {{query}} ».",
+    "permissionPrompt": "Ghiblify a besoin d'une autorisation pour lire vos favoris Chrome avant de les afficher ici.",
+    "permissionGrant": "Autoriser l'accès aux favoris"
   },
   "notes": {
     "placeholder": "Notez quelque chose…",
@@ -336,7 +384,10 @@
       "4": "Jeu",
       "5": "Ven",
       "6": "Sam"
-    }
+    },
+    "enableLocation": "Activer la localisation",
+    "retry": "Réessayer",
+    "today": "Aujourd'hui"
   },
   "socials": {
     "buttonLabel": "Mes réseaux",
@@ -483,7 +534,8 @@
         "navigateGuide": "Naviguer dans les diapositives du guide",
         "orSep": "ou"
       }
-    }
+    },
+    "exitButton": "Quitter le guide"
   },
   "options": {
     "subtitle": "Un nouvel onglet inspiré du Studio Ghibli",
@@ -502,5 +554,70 @@
     "footerCredit": "Fait avec soin",
     "viewSource": "Voir le code sur GitHub",
     "privacy": "Politique de confidentialité"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "buttonLabel": "Paramètres",
+    "buttonAria": "Ouvrir les paramètres",
+    "permissionsTitle": "Autorisations",
+    "permissionsSub": "Ghiblify ne demande rien au départ. N'activez que ce que vous utilisez ; la révocation est immédiate.",
+    "permissionGeolocation": "Localisation",
+    "permissionGeolocationSub": "Permet à la météo de vous localiser. Désactivé, l'API de localisation n'est jamais appelée — choisissez une ville à la main.",
+    "permissionBookmarks": "Favoris",
+    "permissionBookmarksSub": "Permet au panneau de lire et d'organiser vos favoris Chrome.",
+    "storageTitle": "Données enregistrées",
+    "storageSub": "{{count}} clés · {{size}} au total. Dépliez une ligne pour voir son contenu.",
+    "storageEmpty": "Rien n'est encore enregistré.",
+    "deleteKey": "Supprimer",
+    "deleteKeyAria": "Supprimer {{key}}",
+    "resetTitle": "Tout réinitialiser",
+    "resetSub": "Supprime tous les réglages enregistrés — widgets, fonds, noms, tâches — et recharge la page.",
+    "resetButton": "Tout réinitialiser",
+    "resetConfirm": "Cette action est irréversible.",
+    "resetConfirmYes": "Oui, réinitialiser",
+    "resetConfirmCancel": "Annuler",
+    "section": {
+      "widgets": "Réglages des widgets",
+      "appearance": "Réglages d'apparence",
+      "background": "Réglages du fond",
+      "cursor": "Réglages du curseur"
+    },
+    "widgetsTitle": "Widgets",
+    "appearanceTitle": "Apparence",
+    "backgroundTitle": "Fond",
+    "cursorTitle": "Curseur",
+    "cursorSub": "Rétablit le pointeur système par défaut. Son réglage est enregistré avec Apparence.",
+    "dockBackgrounds": "Fonds de carte du dock",
+    "dockBackgroundsSub": "Affiche une carte en verre derrière les widgets ancrés à droite.",
+    "highContrastSub": "Contraste du texte renforcé sur toute la page.",
+    "parallaxSub": "Le fond suit doucement votre curseur.",
+    "resetWidgets": "Réinitialiser les widgets",
+    "resetDock": "Réinitialiser le dock",
+    "resetAppearance": "Réinitialiser l'apparence",
+    "resetBackground": "Réinitialiser les réglages du fond",
+    "resetCursor": "Réinitialiser le curseur",
+    "storageGroup": {
+      "widgets": "Widgets",
+      "background": "Fond",
+      "appearance": "Apparence",
+      "other": "Autres"
+    },
+    "deleteKeyConfirm": "Supprimer « {{key}} » du stockage ? Son contenu sera définitivement perdu.",
+    "resetWidgetsConfirm": "Remettre tous les widgets à leur position, taille et réglages par défaut ? Vos liens et votre prénom sont conservés.",
+    "resetDockConfirm": "Remettre le dock de droite à sa disposition par défaut ?",
+    "resetAppearanceConfirm": "Remettre le thème, la police et le contraste par défaut ?",
+    "resetBackgroundConfirm": "Remettre les filtres du fond et le parallaxe par défaut ?",
+    "resetCursorConfirm": "Remettre le curseur système par défaut ?",
+    "storedDataLabel": "Données enregistrées",
+    "otherSub": "Indicateurs d'installation et tout ce qui n'appartient à aucune section ci-dessus.",
+    "permissionMicrophone": "Microphone",
+    "permissionMicrophoneSub": "Active la recherche vocale de la barre de recherche. Uniquement pendant la session du micro.",
+    "corners": "Coins",
+    "cornersSub": "Arrondi des widgets, menus et fenêtres.",
+    "cornerStyle": {
+      "square": "Droits",
+      "rounded": "Arrondis",
+      "pill": "Doux"
+    }
   }
 }

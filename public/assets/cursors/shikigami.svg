@@ -1,0 +1,21 @@
+<!-- Shikigami — the paper birds Zeniba sends after Haku in Spirited
+     Away. Flat *cut-paper* dolls, not folded origami: a round head, one
+     straight band crossing behind as the wings, and two tapering points
+     below for body and tail.
+
+     Drawn as a single flat silhouette with no strokes. Outlining each
+     sub-path drew seams where the wing band crosses the body, which at
+     trail size (~18px) read as creases in a shape that is supposed to
+     be one flat cutout. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <g fill="#fdfcf8">
+    <!-- wings: one straight strip, lower-left to upper-right -->
+    <path d="M1.0 17.1 L19.3 2.6 L21.2 5.1 L2.9 19.6 Z"/>
+    <!-- long tail, sweeping down and to the right -->
+    <path d="M10.0 10.0 C13.7 12.0 15.5 16.4 15.0 22.2 C12.3 17.9 9.9 14.3 9.1 11.2 Z"/>
+    <!-- shorter body point, dropping down and slightly left -->
+    <path d="M8.6 10.2 C9.9 12.9 10.0 15.8 9.4 18.9 C8.0 15.8 7.3 13.0 7.6 10.6 Z"/>
+    <!-- head -->
+    <circle cx="8.6" cy="7.9" r="2.9"/>
+  </g>
+</svg>

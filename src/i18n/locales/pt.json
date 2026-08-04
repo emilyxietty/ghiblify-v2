@@ -49,7 +49,7 @@
       "heart": "Coração",
       "leaf": "Folha",
       "strawberry": "Morango",
-      "rainbow": "Arco-íris"
+      "shikigami": "Aves de papel"
     },
     "buttons": {
       "githubRepo": "Repositório no Github",
@@ -148,7 +148,19 @@
       "selectAvatar": "Escolher avatar",
       "pomodoroSizeLarge": "Grande",
       "pomodoroSizeSmall": "Pequeno",
-      "pomodoroSizeMedium": "Médio"
+      "pomodoroSizeMedium": "Médio",
+      "timeFormat": "Formato do relógio",
+      "weatherLocation": "Localização",
+      "weatherUseMyLocation": "Usar minha localização",
+      "weatherChooseCity": "Escolher uma cidade…",
+      "weatherRefresh": "Atualizar agora",
+      "highlight": "Destaque",
+      "highlightOff": "Nenhum",
+      "quicklinksView": "Exibição",
+      "weatherDetail": "Detalhe",
+      "weatherStyle": "Estilo",
+      "highlightCustom": "Seletor de cor…",
+      "typeIn": "Digitar ao carregar"
     },
     "edit": {
       "ariaEdit": "Editar widget {{key}}",
@@ -184,33 +196,51 @@
       "notesHideBorderAria": "Ocultar a borda do bilhete",
       "weatherUnitAria": "Alternar Celsius / Fahrenheit",
       "weatherUnitLabel": "Unidade",
-      "weatherSections": {
-        "now": "Agora",
-        "hourly": "Por hora",
-        "daily": "Diário"
-      },
-      "weatherSectionsLabel": "Seções",
-      "weatherIconStyle": {
-        "animated": "Animado",
-        "still": "Estático"
-      },
-      "weatherIconStyleLabel": "Estilo dos ícones",
-      "weatherIconStyleAria": {
-        "animated": "Ícones animados — clique para estático",
-        "still": "Ícones estáticos — clique para animado"
-      },
-      "weatherShowCard": "Cartão",
-      "weatherHideCard": "Cartão",
-      "weatherShowCardLabel": "Mostrar fundo em cartão",
-      "weatherShowCardAria": "Mostrar um fundo em gradiente atrás do clima",
-      "weatherHideCardAria": "Remover o fundo em cartão",
-      "weatherIconsOnly": "Apenas ícones",
-      "weatherIconsOnlyOnAria": "Mostrando apenas ícones — clique para mostrar o texto",
-      "weatherIconsOnlyOffAria": "Ocultar texto e mostrar apenas ícones",
       "pomodoroSizeLabel": "Tamanho",
       "pomodoroSizeSmall": "P",
       "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "G"
+      "pomodoroSizeLarge": "G",
+      "pomodoroSoundLabel": "Som",
+      "pomodoroSoundAria": "Escolher som de conclusão",
+      "pomodoroVolume": "Volume",
+      "pomodoroVolumeAria": "Volume do som de conclusão",
+      "pomodoroSound": {
+        "musicbox": "Caixa de música",
+        "sootsprite": "Duende da fuligem",
+        "catbus": "Gato-ônibus",
+        "windchime": "Sino de vento",
+        "kodama": "Kodama",
+        "none": "Nenhum"
+      },
+      "weatherLocationAria": "Definir a localização do clima",
+      "weatherLocationAuto": "Automática",
+      "weatherLocationUseMine": "Minha localização",
+      "weatherLocationRefresh": "Atualizar",
+      "weatherLocationPlaceholder": "Buscar uma cidade…",
+      "weatherLocationSearching": "Buscando…",
+      "weatherLocationNoResults": "Nenhuma cidade encontrada",
+      "weatherLocationError": "Falha na busca. Tente novamente.",
+      "highlightLabel": "Destaque",
+      "highlightAria": "Escolher uma cor de destaque",
+      "highlightNone": "Sem destaque",
+      "highlightRecent": "Recentes",
+      "highlightPresets": "Predefinições",
+      "highlightCustomAria": "Escolher uma cor personalizada",
+      "highlightHexAria": "Cor hexadecimal",
+      "highlightTextColor": "Cor do texto",
+      "highlightTextAuto": "Auto",
+      "weatherDetail": {
+        "icon": "Só ícone",
+        "now": "Agora",
+        "hourly": "Por hora",
+        "full": "Previsão completa"
+      },
+      "weatherStylePlain": "Simples",
+      "weatherStyleCard": "Cartão",
+      "weatherAnimatedIcons": "Ícones animados",
+      "weatherAnimatedOn": "Sim",
+      "weatherAnimatedOff": "Não",
+      "panelDragHint": "Arraste para mover"
     }
   },
   "greeting": {
@@ -238,7 +268,13 @@
     "placeholder": "Buscar na web...",
     "ariaLabelInput": "Buscar na web",
     "ariaLabelButton": "Buscar",
-    "tooltipButton": "Buscar"
+    "tooltipButton": "Buscar",
+    "clearAria": "Limpar busca",
+    "voiceAria": "Pesquisar por voz",
+    "voiceTooltip": "Pesquisar por voz",
+    "imageAria": "Pesquisar por imagem",
+    "imageTooltip": "Pesquisar por imagem",
+    "removeHistoryAria": "Remover “{{query}}” das buscas recentes"
   },
   "quicklinks": {
     "ariaDialog": "Links rápidos",
@@ -256,7 +292,16 @@
     "labelPlaceholder": "Rótulo (opcional)",
     "labelSrOnly": "Rótulo (opcional)",
     "urlPlaceholder": "https://exemplo.com",
-    "emptyMessage": "Sem links rápidos. Adicione um acima."
+    "emptyMessage": "Sem links rápidos. Adicione um acima.",
+    "addTile": "Adicionar",
+    "addTitle": "Adicionar um link",
+    "editTitle": "Editar link",
+    "urlLabel": "Endereço",
+    "labelOptional": "Nome (opcional)",
+    "previewEmpty": "Novo link",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "addButton": "Adicionar"
   },
   "pomodoro": {
     "modeBreak": "Pausa",
@@ -288,7 +333,9 @@
     "errorLoad": "Falha ao carregar favoritos: {{message}}",
     "delete": "Excluir favorito",
     "noResultsTitle": "Nenhum resultado",
-    "noResultsSub": "Nada corresponde a \"{{query}}\"."
+    "noResultsSub": "Nada corresponde a \"{{query}}\".",
+    "permissionPrompt": "O Ghiblify precisa de permissão para ler seus favoritos do Chrome antes de exibi-los aqui.",
+    "permissionGrant": "Permitir acesso aos favoritos"
   },
   "notes": {
     "placeholder": "Anote algo…",
@@ -341,7 +388,10 @@
       "4": "Qui",
       "5": "Sex",
       "6": "Sáb"
-    }
+    },
+    "enableLocation": "Ativar localização",
+    "retry": "Tentar novamente",
+    "today": "Hoje"
   },
   "socials": {
     "buttonLabel": "Minhas redes",
@@ -488,7 +538,8 @@
         "navigateGuide": "Navegar pelos slides deste guia",
         "orSep": "ou"
       }
-    }
+    },
+    "exitButton": "Sair do guia"
   },
   "options": {
     "subtitle": "Uma nova guia inspirada no Studio Ghibli",
@@ -507,5 +558,70 @@
     "footerCredit": "Feito com carinho",
     "viewSource": "Ver código no GitHub",
     "privacy": "Política de privacidade"
+  },
+  "settings": {
+    "title": "Configurações",
+    "buttonLabel": "Configurações",
+    "buttonAria": "Abrir configurações",
+    "permissionsTitle": "Permissões",
+    "permissionsSub": "O Ghiblify não pede nada de início. Ative apenas o que usar; revogar tem efeito imediato.",
+    "permissionGeolocation": "Localização",
+    "permissionGeolocationSub": "Permite que o clima detecte onde você está. Desligado, a API de localização nunca é chamada — escolha uma cidade manualmente.",
+    "permissionBookmarks": "Favoritos",
+    "permissionBookmarksSub": "Permite que o painel leia e organize seus favoritos do Chrome.",
+    "storageTitle": "Dados salvos",
+    "storageSub": "{{count}} chaves · {{size}} no total. Expanda uma linha para ver o conteúdo.",
+    "storageEmpty": "Nada foi salvo ainda.",
+    "deleteKey": "Excluir",
+    "deleteKeyAria": "Excluir {{key}}",
+    "resetTitle": "Redefinir tudo",
+    "resetSub": "Apaga todas as configurações salvas — widgets, fundos, nomes, tarefas — e recarrega a página.",
+    "resetButton": "Redefinir tudo",
+    "resetConfirm": "Isso não pode ser desfeito.",
+    "resetConfirmYes": "Sim, redefinir",
+    "resetConfirmCancel": "Cancelar",
+    "section": {
+      "widgets": "Configurações de widgets",
+      "appearance": "Configurações de aparência",
+      "background": "Configurações de fundo",
+      "cursor": "Configurações do cursor"
+    },
+    "widgetsTitle": "Widgets",
+    "appearanceTitle": "Aparência",
+    "backgroundTitle": "Fundo",
+    "cursorTitle": "Cursor",
+    "cursorSub": "Volta o cursor ao ponteiro padrão do sistema. Sua configuração é salva junto com Aparência.",
+    "dockBackgrounds": "Fundos de cartão do dock",
+    "dockBackgroundsSub": "Mostra um cartão de vidro atrás dos widgets fixados à direita.",
+    "highContrastSub": "Contraste de texto mais forte em toda a página.",
+    "parallaxSub": "O fundo se move suavemente com o cursor.",
+    "resetWidgets": "Redefinir todos os widgets",
+    "resetDock": "Redefinir o dock",
+    "resetAppearance": "Redefinir aparência",
+    "resetBackground": "Redefinir configurações de fundo",
+    "resetCursor": "Redefinir cursor",
+    "storageGroup": {
+      "widgets": "Widgets",
+      "background": "Fundo",
+      "appearance": "Aparência",
+      "other": "Outros"
+    },
+    "deleteKeyConfirm": "Excluir “{{key}}” do armazenamento? O que estiver nele será perdido.",
+    "resetWidgetsConfirm": "Voltar todos os widgets à posição, tamanho e configurações padrão? Seus links e seu nome são mantidos.",
+    "resetDockConfirm": "Voltar o dock da direita ao layout padrão?",
+    "resetAppearanceConfirm": "Voltar tema, fonte e contraste aos padrões?",
+    "resetBackgroundConfirm": "Voltar os filtros de fundo e o parallax aos padrões?",
+    "resetCursorConfirm": "Voltar o cursor ao ponteiro padrão do sistema?",
+    "storedDataLabel": "Dados salvos",
+    "otherSub": "Sinalizadores de instalação e tudo que não pertence a uma seção acima.",
+    "permissionMicrophone": "Microfone",
+    "permissionMicrophoneSub": "Permite a busca por voz na barra de pesquisa. Ativo apenas durante a sessão do microfone.",
+    "corners": "Cantos",
+    "cornersSub": "O quanto widgets, menus e diálogos são arredondados.",
+    "cornerStyle": {
+      "square": "Retos",
+      "rounded": "Arredondados",
+      "pill": "Suaves"
+    }
   }
 }

@@ -4,6 +4,12 @@ import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import { CloseIcon } from "../../../components/Icons/Icons";
 import { CenterFocusStrongIcon, PauseCircleIcon, PlayCircleFilledWhiteIcon, ReplayCircleFilledIcon } from "../../../components/Icons/Icons";
+import {
+  playPomodoroChime,
+  primePomodoroAudio,
+  isPomodoroSoundKey,
+  type PomodoroSoundKey,
+} from "../../../utils/pomodoroChime";
 import "./Pomodoro.css";
 
 const DEFAULT_POMODORO_MINUTES = 25;
@@ -178,6 +184,35 @@ const Pomodoro: React.FC = () => {
   const [isBreak, setIsBreak] = useState(initial.current.isBreak);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // --- Completion chime ---------------------------------------------
+  // Settings are mirrored into a ref because the countdown effect below
+  // closes over its deps ([isLeader, isRunning, isBreak, tabId]) and
+  // would otherwise fire with whatever sound was configured when the
+  // interval was created, not when it finished.
+  const chimeSettingsRef = useRef<{
+    sound: PomodoroSoundKey;
+    volume: number;
+  }>({ sound: "musicbox", volume: 70 });
+  // Guards against a double chime. The 0-crossing is detected inside a
+  // setState updater, and React invokes updaters twice under StrictMode
+  // in development — so the flag makes the call idempotent per run and
+  // startTimer/resetTimer re-arm it.
+  const chimeArmedRef = useRef(true);
+
+  /** Fire the completion chime once, off the render path.
+   *
+   *  Called from inside a state updater, so the actual playback is
+   *  deferred to a microtask: scheduling Web Audio work during render
+   *  is a side effect in a place React expects purity. */
+  const fireChime = () => {
+    if (!chimeArmedRef.current) return;
+    chimeArmedRef.current = false;
+    queueMicrotask(() => {
+      const { sound, volume } = chimeSettingsRef.current;
+      playPomodoroChime(sound, volume);
+    });
+  };
+
   const [pomodoroOriginalSecondsState, setPomodoroOriginalSecondsState] =
     useState<number>(initial.current.pomodoroOriginal);
   const [breakOriginalSecondsState, setBreakOriginalSecondsState] =
@@ -281,6 +316,12 @@ const Pomodoro: React.FC = () => {
   };
 
   const startTimer = () => {
+    // Open the audio context while this click is still on the stack.
+    // Chrome requires user activation to start audio, and the chime is
+    // 25 minutes away — far outside the activation window — so the
+    // context has to be unsuspended here rather than at playback.
+    primePomodoroAudio();
+    chimeArmedRef.current = true;
     claimLeader();
     writePomodoro(
       isBreak
@@ -301,6 +342,10 @@ const Pomodoro: React.FC = () => {
             if (prev > 0) return prev - 1;
             clearInterval(intervalRef.current!);
             intervalRef.current = null;
+            // Only the leader tab runs this interval, so the chime
+            // sounds once no matter how many new tabs are open —
+            // followers just mirror the countdown via `storage`.
+            fireChime();
             setIsRunning(false);
             setIsBreak(false);
             setPomodoroSecondsLeft(DEFAULT_POMODORO_MINUTES * 60);
@@ -315,6 +360,7 @@ const Pomodoro: React.FC = () => {
             if (prev > 0) return prev - 1;
             clearInterval(intervalRef.current!);
             intervalRef.current = null;
+            fireChime();
             setIsRunning(false);
             setIsBreak(true);
             setBreakSecondsLeft(DEFAULT_BREAK_MINUTES * 60);
@@ -354,6 +400,7 @@ const Pomodoro: React.FC = () => {
 
   const resetTimer = () => {
     claimLeader();
+    chimeArmedRef.current = true;
     setIsRunning(false);
     if (isBreak) {
       const v = DEFAULT_BREAK_MINUTES * 60;
@@ -475,7 +522,18 @@ const Pomodoro: React.FC = () => {
   // get normalised to the new names so existing users don't see a
   // jarring layout shift on first open after the rename.
   const { widgets } = useAppContext();
-  const { size, opacity } = widgets.pomodoro.settings;
+  const { size, opacity, sound, soundVolume } = widgets.pomodoro.settings;
+
+  // Keep the countdown effect's view of the chime settings current —
+  // see chimeSettingsRef above. Validated on the way in because stored
+  // settings can predate this feature (undefined) or carry a sound key
+  // that no longer exists.
+  useEffect(() => {
+    chimeSettingsRef.current = {
+      sound: isPomodoroSoundKey(sound) ? sound : "musicbox",
+      volume: typeof soundVolume === "number" ? soundVolume : 70,
+    };
+  }, [sound, soundVolume]);
   // Cast through string so legacy stored values from before the rename
   // ("compact" / "regular") still match — the type system sees only the
   // new union, but storage may carry the old labels.

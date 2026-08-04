@@ -14,11 +14,13 @@ const ChangelogModal = lazy(() =>
 );
 const ReportModal = lazy(() => import("../../components/ReportModal/ReportModal"));
 const SocialsModal = lazy(() => import("../../components/SocialsModal/SocialsModal"));
-const WidgetSettingsModal = lazy(() =>
-  import("../../components/WidgetSettingsModal/WidgetSettingsModal"),
+const SettingsModal = lazy(() =>
+  import("../../components/SettingsModal/SettingsModal"),
 );
+import type { SettingsSection } from "../../components/SettingsModal/SettingsModal";
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
+import { isManualPlace } from "../../utils/geocoding";
 import { DeleteOutlineIcon, EditIcon, FormatQuoteIcon, RefreshIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
 import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
 import {
@@ -38,9 +40,12 @@ import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import { WidgetKey } from "../../config/widgetConfig";
 import {
   BackgroundFilters,
+  CORNER_STYLES,
+  CornerStyle,
   CURSOR_NAMES,
   FONT_NAMES,
   FontName,
+  normalizeCursor,
   ThemeName,
   useAppContext,
 } from "../../contexts/AppContext";
@@ -178,7 +183,13 @@ export const LeftSidebar: React.FC = () => {
   // already cached, so calling it from the sidebar doesn't trigger a
   // second API request.
   const weatherSettings = widgets.weather.settings as WeatherSettings;
-  const { data: weatherData } = useWeather(weatherSettings.unit);
+  const { data: weatherData } = useWeather(
+    weatherSettings.unit,
+    isManualPlace(weatherSettings.manualPlace)
+      ? weatherSettings.manualPlace
+      : null,
+    weatherSettings.useDeviceLocation !== false
+  );
   const liveWeatherIcon = weatherData ? (
     <img
       src={weatherIconUrl(
@@ -214,7 +225,10 @@ export const LeftSidebar: React.FC = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSocialsModal, setShowSocialsModal] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
-  const [showWidgetSettings, setShowWidgetSettings] = useState(false);
+  // Which slice the settings dialog opens on. null = closed; "all" is
+  // the footer button, the rest come from each section's heading cog.
+  const [settingsSection, setSettingsSection] =
+    useState<SettingsSection | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
   // Force the palette collapsible open while the welcome guide is
   // spotlighting the "palette" step so swatches are visible without
@@ -415,14 +429,14 @@ export const LeftSidebar: React.FC = () => {
             className="sidebar-section"
             aria-labelledby="widgets-heading"
           >
-            <div className="widgets-heading-row">
+            <div className="section-heading-row">
               <h4 id="widgets-heading">{t("sidebar.headings.widgets")}</h4>
               <button
                 type="button"
                 className="widgets-settings-btn"
-                aria-label={t("widgetSettings.openAria")}
-                data-tooltip={t("widgetSettings.openTooltip")}
-                onClick={() => setShowWidgetSettings(true)}
+                aria-label={t("settings.section.widgets")}
+                data-tooltip={t("settings.section.widgets")}
+                onClick={() => setSettingsSection("widgets")}
               >
                 <SettingsIcon style={{ fontSize: 16 }} />
               </button>
@@ -542,7 +556,18 @@ export const LeftSidebar: React.FC = () => {
             className="sidebar-section"
             aria-labelledby="appearance-heading"
           >
-            <h4 id="appearance-heading">{t("sidebar.headings.appearance")}</h4>
+            <div className="section-heading-row">
+              <h4 id="appearance-heading">{t("sidebar.headings.appearance")}</h4>
+              <button
+                type="button"
+                className="widgets-settings-btn"
+                aria-label={t("settings.section.appearance")}
+                data-tooltip={t("settings.section.appearance")}
+                onClick={() => setSettingsSection("appearance")}
+              >
+                <SettingsIcon style={{ fontSize: 16 }} />
+              </button>
+            </div>
             <details className="filter-collapsible" ref={paletteDetailsRef}>
               <summary className="filter-collapsible-summary">
                 <span>{t("sidebar.filters.heading")}</span>
@@ -606,6 +631,11 @@ export const LeftSidebar: React.FC = () => {
             {/* Font picker — each option is rendered IN that font so the
                 swatch list doubles as a live preview. Sits below the
                 palette as a sibling collapsible inside Appearance. */}
+            {/* Font and Corners are full-width collapsibles like the
+                palette and cursor pickers above them. The select-popup
+                version squeezed both onto one row, which left each
+                trigger too narrow to show anything but an icon and made
+                the row read as denser than the sections around it. */}
             <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
                 <span>{t("sidebar.fonts.heading")}</span>
@@ -658,13 +688,72 @@ export const LeftSidebar: React.FC = () => {
                 </div>
               </div>
             </details>
+
+            <details className="filter-collapsible">
+              <summary className="filter-collapsible-summary">
+                <span>{t("settings.corners")}</span>
+                {/* Preview reuses the swatch chip, so it always draws
+                    the same shape as the option it stands for. */}
+                <span
+                  className={`collapsible-preview corner-swatch-${
+                    appearance.corners ?? "rounded"
+                  }`}
+                  data-tooltip={t(
+                    `settings.cornerStyle.${appearance.corners ?? "rounded"}`
+                  )}
+                >
+                  <span className="corner-swatch-chip" aria-hidden="true" />
+                </span>
+                <ExpandMoreIcon
+                  className="filter-collapsible-chevron"
+                  fontSize="small"
+                />
+              </summary>
+              <div
+                className="filter-group"
+                role="radiogroup"
+                aria-label={t("settings.corners")}
+              >
+                <div className="corner-swatches">
+                  {CORNER_STYLES.map((name) => {
+                    const active = (appearance.corners ?? "rounded") === name;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        className={`corner-swatch corner-swatch-${name}${
+                          active ? " is-active" : ""
+                        }`}
+                        onClick={() => updateAppearance({ corners: name })}
+                      >
+                        <span className="corner-swatch-chip" aria-hidden="true" />
+                        {t(`settings.cornerStyle.${name}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
           </section>
 
           <section
             className="sidebar-section"
             aria-labelledby="background-heading"
           >
-            <h4 id="background-heading">{t("sidebar.headings.background")}</h4>
+            <div className="section-heading-row">
+              <h4 id="background-heading">{t("sidebar.headings.background")}</h4>
+              <button
+                type="button"
+                className="widgets-settings-btn"
+                aria-label={t("settings.section.background")}
+                data-tooltip={t("settings.section.background")}
+                onClick={() => setSettingsSection("background")}
+              >
+                <SettingsIcon style={{ fontSize: 16 }} />
+              </button>
+            </div>
             <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
                 <span>{t("sidebar.filters.heading")}</span>
@@ -794,12 +883,23 @@ export const LeftSidebar: React.FC = () => {
           </section>
 
           <section className="sidebar-section" aria-labelledby="cursor-heading">
-            <h4 id="cursor-heading">{t("sidebar.headings.cursor")}</h4>
+            <div className="section-heading-row">
+              <h4 id="cursor-heading">{t("sidebar.headings.cursor")}</h4>
+              <button
+                type="button"
+                className="widgets-settings-btn"
+                aria-label={t("settings.section.cursor")}
+                data-tooltip={t("settings.section.cursor")}
+                onClick={() => setSettingsSection("cursor")}
+              >
+                <SettingsIcon style={{ fontSize: 16 }} />
+              </button>
+            </div>
             <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
                 <span>{t("sidebar.filters.heading")}</span>
                 {(() => {
-                  const cur = appearance.cursor ?? "default";
+                  const cur = normalizeCursor(appearance.cursor);
                   const label = t(`sidebar.cursor.${cur}`);
                   if (cur === "default") {
                     return (
@@ -822,22 +922,6 @@ export const LeftSidebar: React.FC = () => {
                             strokeLinejoin="round"
                           />
                         </svg>
-                      </span>
-                    );
-                  }
-                  if (cur === "rainbow") {
-                    // No SVG asset for rainbow — render the same
-                    // gradient pill the picker swatch uses so the
-                    // collapsed summary mirrors the chosen state.
-                    return (
-                      <span
-                        className="collapsible-preview"
-                        data-tooltip={label}
-                      >
-                        <span
-                          className="preview-cursor-rainbow"
-                          aria-hidden="true"
-                        />
                       </span>
                     );
                   }
@@ -868,7 +952,7 @@ export const LeftSidebar: React.FC = () => {
                   aria-label={t("sidebar.headings.cursor")}
                 >
                   {CURSOR_NAMES.map((name) => {
-                const active = (appearance.cursor ?? "default") === name;
+                const active = normalizeCursor(appearance.cursor) === name;
                 const label = t(`sidebar.cursor.${name}`);
                 return (
                   <button
@@ -897,20 +981,6 @@ export const LeftSidebar: React.FC = () => {
                           strokeLinejoin="round"
                         />
                       </svg>
-                    ) : name === "rainbow" ? (
-                      // Rainbow has no SVG asset — render a tiny
-                      // gradient swatch so the picker tile previews
-                      // what the trail will look like.
-                      // NOTE: classname is intentionally distinct
-                      // from the button's `cursor-swatch-rainbow`
-                      // (added by the template above) — a shared
-                      // class made the gradient-pill rule (width
-                      // 70%, height 24%) match the button itself
-                      // and shrink it to an unclickable strip.
-                      <span
-                        className="cursor-swatch-rainbow-pill"
-                        aria-hidden="true"
-                      />
                     ) : (
                       <img
                         src={`/assets/cursors/${name}.svg`}
@@ -955,6 +1025,19 @@ export const LeftSidebar: React.FC = () => {
               >
                 <StarIcon style={{ fontSize: 14 }} />
                 {t("sidebar.buttons.rate")}
+              </Button>
+              {/* Permissions, the storage inspector and the master
+                  reset — everything that acts on saved data rather
+                  than on a single widget. */}
+              <Button
+                variant="dark"
+                size="small"
+                onClick={() => setSettingsSection("all")}
+                aria-label={t("settings.buttonAria")}
+                aria-haspopup="dialog"
+                data-tooltip={t("settings.title")}
+              >
+                <SettingsIcon style={{ fontSize: 14 }} />
               </Button>
               <Dropdown
                 className="language-picker"
@@ -1014,10 +1097,11 @@ export const LeftSidebar: React.FC = () => {
             onClose={() => setShowSocialsModal(false)}
           />
         )}
-        {showWidgetSettings && (
-          <WidgetSettingsModal
-            open={showWidgetSettings}
-            onClose={() => setShowWidgetSettings(false)}
+        {settingsSection && (
+          <SettingsModal
+            open
+            section={settingsSection}
+            onClose={() => setSettingsSection(null)}
           />
         )}
       </Suspense>

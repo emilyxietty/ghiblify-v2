@@ -41,8 +41,12 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 12px;
+    padding: calc(12px * var(--pad-scale, 1));
     box-sizing: border-box;
+    /* Tiles are inset 12px by this padding plus 4px by the scroll
+       container, so they use the shell's radius minus 16 (see
+       --radius-nested-* in App.css) and stay concentric with it. */
+    --nest-inset: 16px;
     /* Always dark surface so white tile text reads, regardless of mode. */
     --surface-rgb: var(--dark-rgb, 31, 38, 32);
 }
@@ -64,7 +68,7 @@
 
 .ql-grid-cell {
     position: relative;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-nested-lg, var(--radius-md));
     /* Force square tiles regardless of column width (columns are
        auto-fill minmax(96px, 1fr), so they grow with the widget). */
     aspect-ratio: 1 / 1;
@@ -188,82 +192,6 @@
 /* The + add control card. Hidden by default — only shown while Shift is
    held. Exception: when the grid is empty, show it always so the user
    has an obvious way to add their first link. */
-.ql-control-cell {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: var(--radius-lg);
-    border: 2px dashed var(--ql-border-strong);
-    /* Use the same theme-tinted surface as the link tiles (rather
-       than the 4% near-transparent ghost we used to have) so the
-       cell has a consistent backdrop on any palette and against
-       any region of the photo behind it. The dashed border keeps
-       the "empty / add here" affordance. */
-    background: var(--ql-bg);
-    transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
-    /* Square — matches the link tiles. */
-    aspect-ratio: 1 / 1;
-}
-
-.show-widget-outline .ql-control-cell,
-.ql-control-cell:only-child {
-    display: flex;
-}
-
-.ql-control-cell:hover {
-    background: var(--ql-bg-hover);
-    border-color: var(--ql-border-strong);
-    transform: scale(1.02);
-}
-
-/* The + button inside the control cell — make it a soft pill that fills
-   the card and reads as the primary action. */
-.ql-control-cell .btn {
-    background: transparent !important;
-    border: none !important;
-    color: var(--ql-text) !important;
-    padding: 0 !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: transform 140ms ease, color 140ms ease;
-}
-
-.ql-control-cell .btn svg {
-    font-size: 32px !important;
-    /* Full --ql-text strength (was 70%) + a soft drop-shadow that
-       picks up the palette's text-shadow color so the glyph reads
-       on light photos AND inside light-mode palettes where --light
-       is itself a dark text color. */
-    color: var(--ql-text);
-    filter: drop-shadow(0 1px 2px var(--text-shadow-color));
-    transition: color 140ms ease;
-}
-
-.ql-control-cell:hover .btn svg,
-.ql-control-cell .btn:hover svg {
-    color: var(--ql-text);
-}
-
-.ql-control-cell.control-dark {
-    border-color: rgba(0, 0, 0, 0.3);
-}
-
-.ql-control-cell.control-light {
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.ql-control-cell:hover {
-    border-color: var(--ql-border-strong);
-    background: var(--ql-bg-hover);
-}
-
 /* Delete overlay on each tile — hidden by default, shown only while
    Shift is held (body.show-widget-outline). User clicks the X to remove
    the link. */
@@ -322,7 +250,7 @@
    of the widget overlay (~50px tall pill). Without breathing room,
    the slider lands directly on top of the inline add-link form when
    both are visible. Push the form up so the two never collide. */
-.widget.edit-mode .quicklinksSettings-add:not(.quicklinksSettings-add-popover) {
+.widget.edit-mode .quicklinksSettings-add {
     margin-bottom: 72px;
 }
 
@@ -338,51 +266,6 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px) saturate(1.4);
     -webkit-backdrop-filter: blur(10px) saturate(1.4);
-}
-
-/* Tooltip-style add-link card anchored to the right of the grid + cell.
-   The .ql-control-cell is `position: relative` (see ql-control-cell
-   below) so this card uses absolute positioning relative to that cell
-   — no JS positioning math, just CSS. */
-.quicklinksSettings-add.quicklinksSettings-add-popover {
-    position: absolute;
-    left: calc(100% + 12px);
-    top: 50%;
-    transform: translateY(-50%);
-    margin-bottom: 0;
-    width: max-content;
-    min-width: 240px;
-    padding: 10px 12px;
-    background: rgba(0, 0, 0, 0.82);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--radius-lg);
-    box-shadow:
-        0 12px 32px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: #ffffff;
-    z-index: 50;
-}
-
-/* Caret pointing back at the + button on the left side. */
-.quicklinksSettings-add-popover::before {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: 50%;
-    transform: translateY(-50%) rotate(45deg);
-    width: 10px;
-    height: 10px;
-    background: rgba(0, 0, 0, 0.82);
-    border-left: 1px solid rgba(255, 255, 255, 0.12);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* The control cell needs `position: relative` so the absolute popover
-   anchors to it. */
-.ql-control-cell {
-    position: relative;
 }
 
 /* Circular palette-themed save button — matches the SearchBar circular
@@ -661,4 +544,187 @@
 .quicklinksSettings-link {
     position: relative;
     z-index: 1;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Grid: add tile + add card
+   ---------------------------------------------------------------------------
+   The add tile is always visible (the delete overlays stay Shift-gated):
+   adding a link is the one action a first-time user has to be able to
+   find without knowing a modifier key. */
+
+.ql-add-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2px, 4cqi, 8px);
+    padding: 8px;
+    font-family: inherit;
+    color: var(--ql-text);
+    background: var(--ql-bg);
+    border: 2px dashed var(--ql-border-strong);
+    border-radius: var(--radius-nested-lg, var(--radius-md));
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease,
+        transform 140ms ease;
+}
+
+.ql-add-cell:hover {
+    background: var(--ql-bg-hover);
+    transform: scale(1.02);
+}
+
+.ql-add-cell-icon {
+    font-size: clamp(20px, 26cqi, 34px);
+    filter: drop-shadow(0 1px 2px var(--text-shadow-color));
+}
+
+.ql-add-cell-label {
+    font-size: clamp(9px, 10cqi, 12px);
+    opacity: 0.8;
+    text-align: center;
+}
+
+/* Full-screen modal (portalled to <body>) rather than a panel inside
+   the widget: the grid scrolls and clips, and the widget can be as
+   small as a couple of tiles. */
+.ql-add-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: ql-add-overlay-in 180ms ease both;
+}
+
+@keyframes ql-add-overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ql-add-card-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ql-add-card {
+    width: min(340px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    padding: calc(22px * var(--pad-scale, 1));
+    animation: ql-add-card-in 220ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #ffffff;
+    background: rgba(var(--surface-rgb, 20, 24, 21), 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    scrollbar-width: thin;
+}
+
+.ql-add-title {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ql-add-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.ql-add-preview-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.ql-add-preview-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.ql-add-preview-title {
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+/* The resolved address, so what gets saved is visible before saving. */
+.ql-add-preview-url {
+    font-size: 10.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.55;
+}
+
+.ql-add-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.6;
+}
+
+.ql-add-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.ql-add-cancel,
+.ql-add-submit {
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    transition: background 140ms ease, opacity 140ms ease;
+}
+
+.ql-add-cancel {
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.ql-add-cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.ql-add-submit {
+    color: #14201a;
+    background: #ffffff;
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+
+.ql-add-submit:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }

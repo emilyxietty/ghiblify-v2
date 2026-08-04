@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -112,7 +113,8 @@ export const CURSOR_NAMES = [
   "heart",
   "leaf",
   "strawberry",
-  "rainbow",
+  // The folded paper birds from Spirited Away.
+  "shikigami",
 ] as const;
 export type CursorName = (typeof CURSOR_NAMES)[number];
 
@@ -128,6 +130,12 @@ export const FONT_NAMES = [
 ] as const;
 export type FontName = (typeof FONT_NAMES)[number];
 
+/** How round every surface in the app is. Drives the --radius-* scale
+ *  (see App.css) through a class on <html>, so one setting moves widget
+ *  shells, inputs, popovers and modals together. */
+export const CORNER_STYLES = ["square", "rounded", "pill"] as const;
+export type CornerStyle = (typeof CORNER_STYLES)[number];
+
 export interface AppearanceSettings {
   theme: ThemeName;
   highContrast: boolean;
@@ -141,7 +149,18 @@ export interface AppearanceSettings {
    *  numbers are used as-is. Toggled from the LeftSidebar's
    *  "Widget Settings" modal. Default ON preserves prior behavior. */
   proportionalScaling: boolean;
+  /** Corner softness for every surface. Default "rounded" is the scale
+   *  the app has always shipped. */
+  corners: CornerStyle;
 }
+
+/** A stored cursor that no longer exists (the retired "rainbow" trail)
+ *  falls back to the plain pointer rather than leaving the picker with
+ *  nothing selected. */
+export const normalizeCursor = (value: unknown): CursorName =>
+  (CURSOR_NAMES as readonly string[]).includes(value as string)
+    ? (value as CursorName)
+    : "default";
 
 const DEFAULT_APPEARANCE: AppearanceSettings = {
   theme: "ghibli",
@@ -149,6 +168,7 @@ const DEFAULT_APPEARANCE: AppearanceSettings = {
   cursor: "default",
   font: "default",
   proportionalScaling: true,
+  corners: "rounded",
 };
 
 export interface BackgroundFilters {
@@ -253,7 +273,18 @@ interface AppContextType {
   updateAppearance: (patch: Partial<AppearanceSettings>) => void;
 
   // widgets — single source of truth
+  /** Widget state as the app should *render* it — the committed
+   *  settings with any live hover preview merged on top. */
   widgets: WidgetsState;
+  /** Widget state as it is actually saved. Menus and settings UI read
+   *  this so a hover preview can't make a radio look already-selected. */
+  widgetsCommitted: WidgetsState;
+  /** Overlay a settings patch for one widget without saving it, so a
+   *  menu row can demo what picking it would do. null clears. */
+  previewWidgetSettings: (
+    key: WidgetKey,
+    patch: Record<string, unknown> | null
+  ) => void;
   toggleWidgetVisibility: (key: WidgetKey) => void;
   updateWidgetPosition: (key: WidgetKey, pos: WidgetPosition) => void;
   updateWidgetSettings: <K extends WidgetKey>(
@@ -673,6 +704,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       "palette-dark",
       !LIGHT_MODE_THEMES.has(appearance.theme)
     );
+    // Corner style — html.corners-<key> reassigns --radius-unit, which
+    // the whole --radius-* scale derives from. "rounded" is the base
+    // scale, so it needs no class.
+    CORNER_STYLES.forEach((c) => root.classList.remove(`corners-${c}`));
+    if ((appearance.corners ?? "rounded") !== "rounded") {
+      root.classList.add(`corners-${appearance.corners}`);
+    }
     // Font class — "default" means the system stack so no class is
     // applied; otherwise html.font-<key> sets --app-font via App.css.
     FONT_NAMES.forEach((f) => root.classList.remove(`font-${f}`));
@@ -688,6 +726,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   }, [appearance]);
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);
+
+  // Live hover preview. Kept out of `widgets` entirely — it must never
+  // be persisted, and menus need to keep seeing the committed value to
+  // render their selection marks correctly.
+  const [settingsPreview, setSettingsPreview] = useState<{
+    key: WidgetKey;
+    patch: Record<string, unknown>;
+  } | null>(null);
+  const previewWidgetSettings = (
+    key: WidgetKey,
+    patch: Record<string, unknown> | null
+  ) => setSettingsPreview(patch ? { key, patch } : null);
+
+  const widgetsForRender = useMemo(() => {
+    if (!settingsPreview) return widgets;
+    const { key, patch } = settingsPreview;
+    return {
+      ...widgets,
+      [key]: {
+        ...widgets[key],
+        settings: { ...widgets[key].settings, ...patch },
+      },
+    } as WidgetsState;
+  }, [widgets, settingsPreview]);
 
   // Debounced persist — coalesces high-frequency state changes
   // (resize-drag fires on every mousemove → updateWidgetSettings →
@@ -948,7 +1010,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setCurrentBackground,
         appearance,
         updateAppearance,
-        widgets,
+        widgets: widgetsForRender,
+        widgetsCommitted: widgets,
+        previewWidgetSettings,
         toggleWidgetVisibility,
         updateWidgetPosition,
         updateWidgetSettings,

@@ -389,6 +389,12 @@
    ::after, which stays anchored under the heading text since the h4
    itself only grows to its text width by default — `flex: 1` here
    keeps that). */
+/* Section heading rows (Widgets / Appearance / Background / Cursor)
+   all share this layout — heading on the left, a ghost cog on the
+   right that only appears while the section is hovered or the cog
+   itself has keyboard focus. Hiding it keeps four identical cogs from
+   turning the sidebar into a column of buttons. */
+.section-heading-row,
 .widgets-heading-row {
     display: flex;
     align-items: flex-start;
@@ -396,6 +402,7 @@
     gap: 8px;
 }
 
+.section-heading-row h4,
 .widgets-heading-row h4 {
     /* Keep the underline accent anchored under the heading text only,
        not stretched across the row, by letting the h4 hug its
@@ -410,6 +417,7 @@
    heading's cap height instead of its descender line. */
 .widgets-settings-btn {
     display: inline-flex;
+    opacity: 0;
     align-items: center;
     justify-content: center;
     width: 24px;
@@ -425,7 +433,13 @@
     transition:
         background 140ms ease,
         color 140ms ease,
+        opacity 140ms ease,
         transform 220ms ease;
+}
+
+.sidebar-section:hover .widgets-settings-btn,
+.widgets-settings-btn:focus-visible {
+    opacity: 1;
 }
 
 .widgets-settings-btn:hover {
@@ -490,7 +504,7 @@
     grid-template-columns: repeat(var(--widget-cols), 1fr);
     gap: 6px;
     background: var(--sidebar-card);
-    padding: 14px;
+    padding: calc(14px * var(--pad-scale, 1));
     border-radius: var(--radius-xl);
     border: 1px solid rgba(253, 246, 233, 0.06);
 }
@@ -690,24 +704,7 @@
 /* Rainbow preview pill in the cursor section's collapsed summary —
    no SVG asset to render, so we paint the same gradient stripe the
    picker swatch uses. Sized to match the other preview glyphs. */
-.collapsible-preview .preview-cursor-rainbow {
-    display: block;
-    width: 22px;
-    height: 6px;
-    border-radius: 999px;
-    pointer-events: none;
-    background: linear-gradient(
-        90deg,
-        #ff5b6a,
-        #ff9a3d,
-        #ffd84d,
-        #5fc56e,
-        #56b8ff,
-        #7a72ff,
-        #b969ff
-    );
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
+
 
 .filter-collapsible-summary::-webkit-details-marker {
     display: none;
@@ -825,7 +822,7 @@
 .cursor-swatches {
     /* 9 columns — fits all current cursor presets (default + 8
        effects: soot, sparkle, petal, bubble, heart, leaf,
-       strawberry, rainbow) on one row at the default sidebar
+       strawberry, shikigami) on one row at the default sidebar
        width. */
     display: grid;
     grid-template-columns: repeat(9, 1fr);
@@ -856,30 +853,7 @@
     pointer-events: none;
 }
 
-/* Rainbow swatch preview — small gradient pill in place of an SVG.
-   Mirrors the actual trail palette in CursorEffect.tsx so the
-   picker tile previews what you'll get. Class is `…-pill` (not
-   `cursor-swatch-rainbow`) because the button itself already
-   carries `cursor-swatch-rainbow` from the template, and a shared
-   class would shrink the button to an unclickable strip. */
-.cursor-swatch-rainbow-pill {
-    display: block;
-    width: 70%;
-    height: 24%;
-    border-radius: 999px;
-    pointer-events: none;
-    background: linear-gradient(
-        90deg,
-        #ff5b6a,
-        #ff9a3d,
-        #ffd84d,
-        #5fc56e,
-        #56b8ff,
-        #7a72ff,
-        #b969ff
-    );
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-}
+
 
 .cursor-swatch:hover {
     transform: scale(1.06);
@@ -1217,4 +1191,117 @@
     font-weight: 600;
     line-height: 1;
     color: var(--light);
+}
+
+/* ---------------------------------------------------------------------------
+   Corner style picker
+   ---------------------------------------------------------------------------
+   Each tile previews the radius it applies, so the choice reads at a
+   glance instead of relying on the words Square / Rounded / Soft. */
+
+.corner-swatch-chip {
+    width: 18px;
+    height: 12px;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--light) 70%, transparent);
+}
+
+/* Hardcoded rather than token-driven: these previews have to show the
+   three options side by side, so they can't all follow the setting the
+   user is currently on.
+
+   The values are spaced to stay distinguishable at 18×12px, not scaled
+   from the real tokens. At this size a 5px radius already reads as a
+   capsule on a 12px-tall chip, which made Rounded and Soft look like
+   the same option — so Rounded stays a visibly-cornered rectangle and
+   only Soft goes fully round. */
+.corner-swatch-square .corner-swatch-chip {
+    border-radius: 0;
+}
+
+.corner-swatch-rounded .corner-swatch-chip {
+    border-radius: 3px;
+}
+
+.corner-swatch-pill .corner-swatch-chip {
+    border-radius: 999px;
+}
+
+/* The collapsed summary reuses the swatch chip (same element, same
+   per-style radii), so the preview and the option it stands for can't
+   drift apart. */
+.collapsible-preview .corner-swatch-chip {
+    display: inline-block;
+    background: color-mix(in srgb, var(--light) 60%, transparent);
+}
+
+/* Corner style picker — three tiles across one full-width row, chip
+   and label side by side. */
+.corner-swatches {
+    display: flex;
+    gap: 6px;
+}
+
+.corner-swatch {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 6px;
+    white-space: nowrap;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--light-muted);
+    background: color-mix(in srgb, var(--light) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease;
+}
+
+.corner-swatch:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    color: var(--light);
+}
+
+.corner-swatch.is-active {
+    color: var(--light);
+    border-color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+.corner-swatch-chip {
+    width: 18px;
+    height: 12px;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--light) 70%, transparent);
+}
+
+/* Hardcoded rather than token-driven: these previews have to show the
+   three options side by side, so they can't all follow the setting the
+   user is currently on.
+
+   The values are spaced to stay distinguishable at 18×12px, not scaled
+   from the real tokens. At this size a 5px radius already reads as a
+   capsule on a 12px-tall chip, which made Rounded and Soft look like
+   the same option — so Rounded stays a visibly-cornered rectangle and
+   only Soft goes fully round. */
+.corner-swatch-square .corner-swatch-chip {
+    border-radius: 0;
+}
+
+.corner-swatch-rounded .corner-swatch-chip {
+    border-radius: 3px;
+}
+
+.corner-swatch-pill .corner-swatch-chip {
+    border-radius: 999px;
+}
+
+/* The collapsed summary reuses the swatch chip (same element, same
+   per-style radii), so the preview and the option it stands for can't
+   drift apart. */
+.collapsible-preview .corner-swatch-chip {
+    display: inline-block;
+    background: color-mix(in srgb, var(--light) 60%, transparent);
 }

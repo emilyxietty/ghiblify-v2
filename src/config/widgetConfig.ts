@@ -1,3 +1,7 @@
+import type { ManualPlace } from "../utils/geocoding";
+import type { HighlightTextColor } from "../utils/textHighlight";
+import type { PomodoroSoundKey } from "../utils/pomodoroChime";
+
 export interface WidgetPosition {
   x: number;
   y: number;
@@ -30,20 +34,64 @@ export interface TimeSettings {
    *  instead of the digital readout. is24Hour is ignored in analog
    *  mode — the dial always shows 12 numerals. */
   analog: boolean;
+  highlightColor: HighlightColor;
+  /** Ink on top of the highlight. "auto" picks from the highlight's
+   *  luminance; light/dark are the user overruling that. */
+  highlightTextColor: HighlightTextColor;
+  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+   *  so picking a new swatch doesn't reset it. */
+  highlightOpacity: number;
+  /** Type the text out on load, one character at a time, then leave it.
+   *  A once-per-tab flourish, not a loop. */
+  typeIn: boolean;
 }
+/** A highlighter bar behind the widget's text. A `#rrggbb` string turns
+ *  it on and is the colour; null is off. One field rather than an
+ *  enabled flag plus a colour, so the two can't disagree. */
+export type HighlightColor = string | null;
 export interface DateSettings {
   fontSize: number;
   textShadow: number;
+  highlightColor: HighlightColor;
+  /** Ink on top of the highlight. "auto" picks from the highlight's
+   *  luminance; light/dark are the user overruling that. */
+  highlightTextColor: HighlightTextColor;
+  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+   *  so picking a new swatch doesn't reset it. */
+  highlightOpacity: number;
+  /** Type the text out on load, one character at a time, then leave it.
+   *  A once-per-tab flourish, not a loop. */
+  typeIn: boolean;
 }
 export interface GreetingSettings {
   fontSize: number;
   name: string;
   textShadow: number;
+  highlightColor: HighlightColor;
+  /** Ink on top of the highlight. "auto" picks from the highlight's
+   *  luminance; light/dark are the user overruling that. */
+  highlightTextColor: HighlightTextColor;
+  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+   *  so picking a new swatch doesn't reset it. */
+  highlightOpacity: number;
+  /** Type the text out on load, one character at a time, then leave it.
+   *  A once-per-tab flourish, not a loop. */
+  typeIn: boolean;
 }
 export interface InfoSettings {
   fontSize: number;
   infoFields: InfoFields;
   textShadow: number;
+  highlightColor: HighlightColor;
+  /** Ink on top of the highlight. "auto" picks from the highlight's
+   *  luminance; light/dark are the user overruling that. */
+  highlightTextColor: HighlightTextColor;
+  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+   *  so picking a new swatch doesn't reset it. */
+  highlightOpacity: number;
+  /** Type the text out on load, one character at a time, then leave it.
+   *  A once-per-tab flourish, not a loop. */
+  typeIn: boolean;
 }
 export interface TodoSettings {
   width: number;
@@ -90,21 +138,66 @@ export interface PomodoroSettings {
   size: PomodoroSize;
   /** 0–100 — surface alpha, drives the card's background opacity. */
   opacity: number;
+  /** Chime played when a focus or break period runs out. Synthesised
+   *  at playback time — see `utils/pomodoroChime.ts`. "none" is silent. */
+  sound: PomodoroSoundKey;
+  /** 0–100 — chime volume. Independent of `opacity`; 0 is silent and
+   *  is the same end state as `sound: "none"`. */
+  soundVolume: number;
 }
-export interface WeatherSections {
-  /** Current conditions (location + temp + condition). */
-  now: boolean;
-  /** 6-hour mini-forecast strip. */
-  hourly: boolean;
-  /** 7-day forecast strip. */
-  daily: boolean;
+/**
+ * How much forecast the widget shows.
+ *
+ * This is one scale, not three independent switches: each step is a
+ * superset of the one before it. The previous model — a checkbox each
+ * for now / hourly / daily, plus a separate "icons only" toggle — could
+ * express states nobody wants (daily without hourly) and one that
+ * doesn't render at all, which is why it needed a "keep at least one
+ * on" rule and a disabled-checkbox state to police itself. A scale has
+ * no invalid position to police.
+ */
+export const WEATHER_DETAILS = ["icon", "now", "hourly", "full"] as const;
+export type WeatherDetail = (typeof WEATHER_DETAILS)[number];
+
+/** Which strips a detail level renders. */
+export const sectionsForDetail = (detail: WeatherDetail) => ({
+  // "Now" is always on: every level shows current conditions, and
+  // "icon" is that same block with the text stripped rather than a
+  // fourth section.
+  now: true,
+  hourly: detail === "hourly" || detail === "full",
+  daily: detail === "full",
+});
+
+/** Legacy shape, still sitting in storage for anyone upgrading. */
+interface LegacyWeatherDisplay {
+  sections?: { now?: boolean; hourly?: boolean; daily?: boolean };
+  iconsOnly?: boolean;
 }
+
+/**
+ * The detail level for a stored settings blob, migrating the old
+ * checkbox trio when the new field isn't there yet. Deliberately not a
+ * one-time storage migration: settings sync across devices, and a tab
+ * running an older build would write the legacy shape straight back.
+ */
+export const resolveWeatherDetail = (
+  settings: Partial<WeatherSettings> & LegacyWeatherDisplay
+): WeatherDetail => {
+  const stored = settings.detail;
+  if (stored && (WEATHER_DETAILS as readonly string[]).includes(stored)) {
+    return stored;
+  }
+  if (settings.iconsOnly) return "icon";
+  if (settings.sections?.daily) return "full";
+  if (settings.sections?.hourly) return "hourly";
+  return "now";
+};
 export interface WeatherSettings {
   /** "C" = Celsius, "F" = Fahrenheit. */
   unit: "C" | "F";
-  /** Independent toggles — any combination of now / hourly / daily.
-   *  At least one must be on (enforced by the FieldSelector minSelected). */
-  sections: WeatherSections;
+  /** How much forecast to show — see WEATHER_DETAILS. */
+  detail: WeatherDetail;
   /** 0–100 — alpha of the hourly/daily forecast cell backgrounds
    *  (non-Frost). The widget itself stays transparent; only the cells
    *  use this. */
@@ -121,13 +214,15 @@ export interface WeatherSettings {
    *  transparent-on-photo treatment. Default false so existing
    *  users see no change. */
   showCard: boolean;
-  /** When true, the widget renders only weather icons — no
-   *  temperature, condition, feels-like, hourly/daily labels or
-   *  temps. The "Now" icon stays large and centered; forecast
-   *  strips collapse to icon rows. Default false so existing
-   *  users see no change. Toggled from EditWidget and from the
-   *  right-click context menu. */
-  iconsOnly: boolean;
+  /** A city the user picked by name. When set it wins over device
+   *  location and the widget needs no geolocation permission at all.
+   *  null = auto-detect (the default). */
+  manualPlace: ManualPlace | null;
+  /** Whether the widget may ask the device where it is. Chrome won't
+   *  let `geolocation` be an optional permission, so this app-level
+   *  switch — not a Chrome grant — is what the privacy toggle controls:
+   *  off means the API is never called. */
+  useDeviceLocation: boolean;
 }
 // Bookmarks is a right-side sliding panel, not a positioned widget. It's in
 // WIDGET_KEYS so its visibility lives in the same state as everything else
@@ -201,12 +296,15 @@ export interface CustomControls {
   gridMode?: boolean;
   darkMode?: boolean;
   weatherUnit?: boolean;
-  weatherSections?: boolean;
-  weatherIconStyle?: boolean;
-  weatherCard?: boolean;
-  weatherIconsOnly?: boolean;
+  /** Detail scale — replaces the old sections + icons-only pair. */
+  weatherDetail?: boolean;
+  /** Card + icon animation, as one visual group. */
+  weatherStyle?: boolean;
+  /** City search + "use my location" reset, in the edit overlay. */
+  weatherLocation?: boolean;
   notesShowBorder?: boolean;
   pomodoroSize?: boolean;
+  pomodoroSound?: boolean;
 }
 
 export interface WidgetConfig<K extends WidgetKey> {
@@ -231,20 +329,44 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   time: {
     name: "Time",
     position: { x: 50, y: 24.77064220183486 },
-    settings: { fontSize: 200, is24Hour: false, textShadow: 100, analog: false },
+    settings: {
+      fontSize: 200,
+      is24Hour: false,
+      textShadow: 100,
+      analog: false,
+      highlightColor: null,
+      highlightTextColor: "auto",
+      highlightOpacity: 100,
+      typeIn: false,
+    },
     fontSize: { min: 20, max: 250, step: 20 },
     customControls: { timeFormat: true },
   },
   date: {
     name: "Date",
     position: { x: 50, y: 50 },
-    settings: { fontSize: 24, textShadow: 100 },
+    settings: {
+      fontSize: 24,
+      textShadow: 100,
+      highlightColor: null,
+      highlightTextColor: "auto",
+      highlightOpacity: 100,
+      typeIn: false,
+    },
     fontSize: { min: 10, max: 50, step: 5 },
   },
   greeting: {
     name: "Greeting",
     position: { x: 50, y: 21.498311671763506 },
-    settings: { fontSize: 28, name: "", textShadow: 100 },
+    settings: {
+      fontSize: 28,
+      name: "",
+      textShadow: 100,
+      highlightColor: null,
+      highlightTextColor: "auto",
+      highlightOpacity: 100,
+      typeIn: false,
+    },
     fontSize: { min: 14, max: 60, step: 4 },
   },
   info: {
@@ -260,6 +382,10 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
         quote: true,
       },
       textShadow: 100,
+      highlightColor: null,
+      highlightTextColor: "auto",
+      highlightOpacity: 100,
+      typeIn: false,
     },
     fontSize: { min: 10, max: 50, step: 5 },
     customControls: { infoFields: true },
@@ -302,19 +428,28 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   searchbar: {
     name: "Search Bar",
     position: { x: 50, y: 2 },
-    settings: { width: 550, height: 40, opacity: 75, blur: 10 },
+    settings: { width: 550, height: 64, opacity: 75, blur: 10 },
     width: { min: 200, max: 800, step: 25 },
-    height: { min: 20, max: 40, step: 2 },
+    // These are reference px against a 1920-wide viewport, so they
+    // render smaller on a laptop — 64 lands at ~48 real px on a 1440
+    // screen, which is the Google pill's height. The floor was 20 back
+    // when this was a thin input; the pill carries 34px icon buttons.
+    height: { min: 48, max: 96, step: 4 },
   },
   pomodoro: {
     name: "Pomodoro",
     position: { x: 86.83040935672514, y: 57.429153924566776 },
-    settings: { size: "medium", opacity: 100 },
+    settings: {
+      size: "medium",
+      opacity: 100,
+      sound: "musicbox",
+      soundVolume: 70,
+    },
     // No width/height ResizeBound — Pomodoro snaps to small /
     // medium / large via the right-click size radio (or the
     // EditWidget overlay) rather than free-resize, so each preset
     // has its own crafted layout.
-    customControls: { pomodoroSize: true },
+    customControls: { pomodoroSize: true, pomodoroSound: true },
   },
   bookmarks: {
     name: "Bookmarks",
@@ -329,20 +464,20 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     position: { x: 92.44901315789474, y: 2 },
     settings: {
       unit: "C",
-      sections: { now: true, hourly: false, daily: false },
+      detail: "now",
       opacity: 75,
       blur: 10,
       iconStyle: "animated",
       showCard: false,
-      iconsOnly: false,
+      manualPlace: null,
+      useDeviceLocation: true,
     },
     // No width/height ResizeBound — widget auto-sizes to content.
     customControls: {
       weatherUnit: true,
-      weatherSections: true,
-      weatherIconStyle: true,
-      weatherCard: true,
-      weatherIconsOnly: true,
+      weatherDetail: true,
+      weatherStyle: true,
+      weatherLocation: true,
     },
   },
   notes: {

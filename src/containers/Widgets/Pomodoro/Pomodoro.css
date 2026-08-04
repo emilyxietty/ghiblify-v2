@@ -29,7 +29,12 @@
         0 12px 32px rgba(0, 0, 0, 0.25),
         0 0 0 1px rgba(0, 0, 0, 0.08) inset;
     color: var(--light);
-    padding: 22px 24px;
+    /* Two floors: the padding scale for the corner setting, and the
+       card's own radius — content sitting inside a 32px curve needs to
+       start further in than content inside a 16px one, or it crowds the
+       arc at the corners. max() takes whichever is larger. */
+    padding: max(calc(22px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.7))
+        max(calc(24px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.75));
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -162,7 +167,8 @@
 /* Small (160×200) — pocket-clock footprint. Icon-only controls
    (text labels hide), tightest spacing, smaller everything. */
 .pomodoro-widget.size-small {
-    padding: 8px 10px;
+    padding: max(calc(8px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.45))
+        max(calc(10px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.5));
     gap: 4px;
 }
 
@@ -224,7 +230,8 @@
    controls so the row doesn't wrap on a 220-wide card; reduced
    padding + tighter type. */
 .pomodoro-widget.size-medium {
-    padding: 14px 16px;
+    padding: max(calc(14px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.6))
+        max(calc(16px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.65));
     gap: 8px;
 }
 

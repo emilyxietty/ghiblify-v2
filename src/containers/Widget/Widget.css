@@ -237,3 +237,141 @@
 
 /* Right-click menu styles moved to ContextMenu.css (shared with the
    background's context menu). */
+
+/* ---------------------------------------------------------------------------
+   Text highlight
+   ---------------------------------------------------------------------------
+   Widgets that render bare text on the wallpaper can paint a
+   highlighter bar behind it. The shell publishes --text-highlight (the
+   colour) and --text-highlight-fg (a legible ink picked from its
+   luminance); the selectors below name the specific text nodes, since
+   each of these widgets has its own markup.
+
+   The drop shadows those widgets normally carry are dropped here: a
+   shadow designed to lift white text off a photo just smudges the edge
+   of a solid highlight. */
+
+.widget.has-text-highlight .time,
+.widget.has-text-highlight .date,
+.widget.has-text-highlight .greeting-text {
+    background: var(--text-highlight);
+    color: var(--text-highlight-fg);
+    text-shadow: none;
+    padding: 0.08em 0.3em;
+    border-radius: var(--text-highlight-radius, 0.16em);
+    /* Wrapped text gets the padding + rounding on every line rather
+       than only the first and last. */
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/* These two live inside their own text node and inherit `color` from an
+   ancestor that isn't being repainted, so they need it restated. */
+.widget.has-text-highlight .time-period,
+.widget.has-text-highlight .greeting-name {
+    color: var(--text-highlight-fg);
+    text-shadow: none;
+}
+
+/* Info stacks one div per field. Left as block they'd each stretch the
+   full container width and the highlight would read as a slab rather
+   than as marker over the words. */
+/* Info stacks one div per field, and flex blockifies its children — so
+   the highlight goes on an inline <span> one level in. That way it hugs
+   the words (and each wrapped line of a long quote) instead of painting
+   the full-width row. */
+.widget.has-text-highlight .info-item-text {
+    background: var(--text-highlight);
+    color: var(--text-highlight-fg);
+    text-shadow: none;
+    padding: 0.08em 0.3em;
+    border-radius: var(--text-highlight-radius, 0.16em);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/* ---------------------------------------------------------------------------
+   Type-in
+   ---------------------------------------------------------------------------
+   Reveals the text a character at a time on load, then leaves it alone.
+   Done by animating the clip width in `steps()` rather than by
+   re-rendering a growing substring in JS: the widgets involved contain
+   real elements (the greeting's editable name button, Info's list), and
+   swapping their text every 55ms would fight React and lose the caret
+   position mid-edit. The step count comes from the measured character
+   count (see --type-in-steps in Widget.tsx) — a fixed count lands
+   mid-glyph on short strings and reads as a wipe. */
+
+.widget.has-type-in .time,
+.widget.has-type-in .date,
+.widget.has-type-in .greeting-text,
+.widget.has-type-in .info-item-text {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+    /* Ends at the caret, which is why the border sits inside the clip. */
+    border-right: 0.06em solid currentColor;
+    animation:
+        widget-type-in var(--type-in-duration, 1.3s) steps(var(--type-in-steps, 24), end) both,
+        widget-type-caret 0.75s steps(1, end) infinite;
+    animation-fill-mode: both, none;
+}
+
+/* Once the reveal finishes the caret has no reason to keep blinking —
+   this stops it a beat after the text lands. */
+.widget.has-type-in .time,
+.widget.has-type-in .date,
+.widget.has-type-in .greeting-text,
+.widget.has-type-in .info-item-text {
+    animation-name: widget-type-in, widget-type-caret, widget-type-caret-off;
+    animation-duration: var(--type-in-duration, 1.3s), 0.75s, 0.01s;
+    animation-timing-function: steps(var(--type-in-steps, 24), end), steps(1, end), linear;
+    animation-iteration-count: 1, 3, 1;
+    animation-delay: 0s, 0s, calc(var(--type-in-duration, 1.3s) + 0.3s);
+    animation-fill-mode: both, none, forwards;
+}
+
+@keyframes widget-type-in {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes widget-type-caret {
+    0%, 49% { border-right-color: currentColor; }
+    50%, 100% { border-right-color: transparent; }
+}
+
+@keyframes widget-type-caret-off {
+    to { border-right-color: transparent; }
+}
+
+/* Info stacks several lines; each types in a beat after the one above
+   so the block reads top-to-bottom instead of all at once. */
+.widget.has-type-in .info-item:nth-child(2) .info-item-text {
+    animation-delay: 0.18s, 0.18s, calc(var(--type-in-duration, 1.3s) + 0.48s);
+}
+
+.widget.has-type-in .info-item:nth-child(3) .info-item-text {
+    animation-delay: 0.36s, 0.36s, calc(var(--type-in-duration, 1.3s) + 0.66s);
+}
+
+.widget.has-type-in .info-item:nth-child(4) .info-item-text {
+    animation-delay: 0.54s, 0.54s, calc(var(--type-in-duration, 1.3s) + 0.84s);
+}
+
+.widget.has-type-in .info-item:nth-child(5) .info-item-text {
+    animation-delay: 0.72s, 0.72s, calc(var(--type-in-duration, 1.3s) + 1.02s);
+}
+
+/* An animated reveal is exactly what this preference is about. */
+@media (prefers-reduced-motion: reduce) {
+    .widget.has-type-in .time,
+    .widget.has-type-in .date,
+    .widget.has-type-in .greeting-text,
+    .widget.has-type-in .info-item-text {
+        animation: none;
+        border-right-color: transparent;
+        width: auto;
+    }
+}

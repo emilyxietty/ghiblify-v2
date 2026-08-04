@@ -1,0 +1,208 @@
+/* Highlight colour picker — a chip-bearing trigger in the widget edit
+   strip plus a drop panel with recents, presets and a free-form hex
+   field. Surface treatment matches WeatherLocationPicker so the edit
+   overlay's popovers read as one family. */
+
+.color-picker {
+    position: relative;
+    display: inline-flex;
+}
+
+.color-picker-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    font-family: inherit;
+    color: var(--light);
+    background: color-mix(in srgb, var(--dark, #1f2620) 65%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 20%, transparent);
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.color-picker-trigger:hover {
+    background: color-mix(in srgb, var(--dark, #1f2620) 85%, transparent);
+}
+
+.color-picker-chip {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* "Off" reads as an empty slot rather than as a colour — a diagonal
+   slash through a transparent chip. */
+.color-picker-chip.is-empty {
+    background:
+        linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            rgba(255, 255, 255, 0.7) calc(50% - 1px),
+            rgba(255, 255, 255, 0.7) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        );
+}
+
+.color-picker-panel {
+    /* Position comes from JS (fixed, viewport coords) — the panel is
+       portalled to <body> so it can't be trapped by the stacking
+       context or overflow of whatever opened it. */
+    /* Opens from the edit panel AND from the right-click menu, so it
+       has to clear both — the shared portal tier does. */
+    z-index: var(--z-portal);
+    width: 196px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.97);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    color: var(--light);
+    text-align: left;
+}
+
+.color-picker-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+.color-picker-off {
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+}
+
+.color-picker-off:hover {
+    background: color-mix(in srgb, var(--light) 16%, transparent);
+}
+
+.color-picker-off.is-active {
+    border-color: color-mix(in srgb, var(--light) 45%, transparent);
+}
+
+.color-picker-swatches {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.color-picker-swatch {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.color-picker-swatch:hover {
+    transform: scale(1.12);
+}
+
+.color-picker-swatch.is-active {
+    box-shadow: 0 0 0 2px var(--light);
+}
+
+.color-picker-custom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.color-picker-native {
+    width: 30px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--light) 20%, transparent);
+    border-radius: var(--radius-md, 8px);
+    background: transparent;
+    cursor: pointer;
+}
+
+.color-picker-hex {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-md, 8px);
+    outline: none;
+}
+
+.color-picker-hex:focus {
+    border-color: color-mix(in srgb, var(--light) 40%, transparent);
+}
+
+.color-picker-hex.is-invalid {
+    border-color: color-mix(in srgb, var(--red) 60%, transparent);
+}
+
+/* White / black ink choice. The two swatch buttons preview themselves —
+   the same words in the same colour they'd produce. */
+.color-picker-text-modes {
+    display: flex;
+    gap: 6px;
+}
+
+.color-picker-text-mode {
+    flex: 1;
+    padding: 5px 6px;
+    font-family: inherit;
+    font-size: 11.5px;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+}
+
+.color-picker-text-mode.is-active {
+    border-color: var(--light);
+}
+
+/* Opacity steps preview themselves — same colour, the alpha each would
+   apply — so the choice is visible rather than numeric. */
+.color-picker-opacity {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.color-picker-opacity-step {
+    padding: 5px 0;
+    font-family: inherit;
+    font-size: 10.5px;
+    color: var(--light);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-sm, 6px);
+    cursor: pointer;
+    /* The swatch behind the number can be pale, so the label carries a
+       shadow rather than switching colour per step. */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.color-picker-opacity-step.is-active {
+    border-color: var(--light);
+}

@@ -1,0 +1,164 @@
+/* Weather location modal — shares the dialog language of the other
+   small settings dialogs (backdrop, surface, close button). */
+
+.weather-location-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: weather-location-in 180ms ease both;
+}
+
+@keyframes weather-location-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.weather-location-dialog {
+    position: relative;
+    width: min(380px, 100%);
+    padding: 24px 24px 18px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--light);
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.97);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    outline: none;
+    animation: weather-location-dialog-in 220ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes weather-location-dialog-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.weather-location-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--light-muted);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.weather-location-close:hover,
+.weather-location-close:focus-visible {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+    outline: none;
+}
+
+.weather-location-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+/* Where the forecast is coming from right now — the question the dialog
+   exists to answer, so it sits above the controls that change it. */
+.weather-location-current {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--light-muted);
+}
+
+.weather-location-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.weather-location-action {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.weather-location-action:hover {
+    background: color-mix(in srgb, var(--light) 16%, transparent);
+}
+
+.weather-location-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 11px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-md, 8px);
+    outline: none;
+}
+
+.weather-location-input:focus {
+    border-color: color-mix(in srgb, var(--light) 40%, transparent);
+}
+
+.weather-location-input::placeholder {
+    color: color-mix(in srgb, var(--light) 45%, transparent);
+}
+
+.weather-location-results {
+    display: flex;
+    flex-direction: column;
+    min-height: 44px;
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.weather-location-result {
+    padding: 9px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    text-align: left;
+    color: var(--light);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm, 6px);
+    cursor: pointer;
+}
+
+.weather-location-result:hover,
+.weather-location-result[aria-selected="true"] {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.weather-location-hint {
+    padding: 9px 10px;
+    font-size: 12px;
+    opacity: 0.65;
+}

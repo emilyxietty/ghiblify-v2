@@ -1,12 +1,20 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { ManualPlace } from "../utils/geocoding";
 import { useOnline } from "./useOnline";
 
 /**
  * Weather hook backed by Open-Meteo (free, no API key, generous limits).
  *
- * Coordinates come from `navigator.geolocation`. The new tab page is a
- * regular HTML context — chrome.geolocation / offscreen documents are
- * only needed when calling from a service worker.
+ * Coordinates come from one of two places:
+ *   - A manual city the user picked (Weather settings → Location). This
+ *     wins whenever it's set, and needs no permission at all.
+ *   - Otherwise `navigator.geolocation`. The new tab page is a regular
+ *     HTML context — chrome.geolocation / offscreen documents are only
+ *     needed when calling from a service worker. `geolocation` is an
+ *     *optional* permission, so the hook checks the grant first and
+ *     reports "permission-denied" without touching the API when it's
+ *     missing (an ungranted extension origin gets no browser prompt,
+ *     it just fails).
  *
  * Both the coords and the API response are cached in localStorage:
  *   - Coords for 24h, so we don't re-prompt on every tab open. (The
@@ -72,6 +80,11 @@ interface CachedPlace {
   coordsAt: number;
   label?: string;
   labelAt?: number;
+  /** True when these coords came from a city the user picked by hand.
+   *  Geolocation must ignore such an entry — otherwise switching back
+   *  to "use my location" would keep serving the manual city until the
+   *  24h coords TTL ran out. */
+  manual?: boolean;
 }
 
 interface CachedApi extends WeatherData {
@@ -172,10 +185,26 @@ const migrateLegacyCaches = () => {
 };
 migrateLegacyCaches();
 
-const getCoords = (): Promise<{ lat: number; lon: number }> =>
+/**
+ * Forget where we are.
+ *
+ * Called when the user revokes location access: the coords cache has a
+ * 24h TTL, so without this the widget would keep serving the last known
+ * position long after permission was handed back — which looks exactly
+ * like the revoke didn't work.
+ */
+export const clearWeatherLocation = (): void => {
+  writeBlob({});
+};
+
+const getGeolocationCoords = (): Promise<{ lat: number; lon: number }> =>
   new Promise((resolve, reject) => {
     const cached = readPlace();
-    if (cached && Date.now() - cached.coordsAt < COORDS_TTL_MS) {
+    if (
+      cached &&
+      !cached.manual &&
+      Date.now() - cached.coordsAt < COORDS_TTL_MS
+    ) {
       resolve({ lat: cached.lat, lon: cached.lon });
       return;
     }
@@ -218,6 +247,39 @@ const getCoords = (): Promise<{ lat: number; lon: number }> =>
       { maximumAge: COORDS_TTL_MS, timeout: 10_000 }
     );
   });
+
+/**
+ * Resolve the coordinates to forecast for.
+ *
+ * A manual place short-circuits everything: its label is already the
+ * name the user picked out of the geocoder, so it's written straight
+ * into the place cache and no reverse-geocode is needed.
+ */
+const getCoords = async (
+  manual: ManualPlace | null,
+  allowDevice: boolean
+): Promise<{ lat: number; lon: number }> => {
+  if (manual) {
+    writePlace({
+      lat: manual.lat,
+      lon: manual.lon,
+      coordsAt: Date.now(),
+      label: manual.name,
+      labelAt: Date.now(),
+      manual: true,
+    });
+    return { lat: manual.lat, lon: manual.lon };
+  }
+  // The user can switch device location off entirely (Settings →
+  // Permissions). Chrome's `geolocation` permission can't be revoked at
+  // runtime — it's install-time only — so this app-level flag is what
+  // actually stops the call, and reporting it as denied gives the
+  // widget something actionable to render.
+  if (!allowDevice) {
+    throw { code: "permission-denied" as WeatherErrorCode };
+  }
+  return getGeolocationCoords();
+};
 
 // Reverse geocode coords → human-readable city/region label.
 // Uses BigDataCloud's free, no-key reverse-geocode-client endpoint.
@@ -262,6 +324,7 @@ const fetchLocationLabel = async (
       coordsAt: cached?.coordsAt ?? Date.now(),
       label,
       labelAt: Date.now(),
+      manual: cached?.manual,
     });
     return label;
   } catch {
@@ -339,11 +402,36 @@ const fetchOpenMeteo = async (
   };
 };
 
-export const useWeather = (unit: "C" | "F") => {
+/**
+ * @param unit        °C / °F — refetched rather than converted client-side.
+ * @param manual      A user-picked city, or null to use device location.
+ * @param allowDevice Whether device location may be used at all.
+ */
+export const useWeather = (
+  unit: "C" | "F",
+  manual: ManualPlace | null = null,
+  allowDevice = true
+) => {
   const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<WeatherErrorCode | null>(null);
+  // Bumped by refresh() to re-run the effect past the cache check.
+  const [nonce, setNonce] = useState(0);
   const online = useOnline();
+
+  /** Drop the cached response and refetch now. The place cache is left
+   *  alone — the point is fresh conditions, not a fresh geolocation
+   *  prompt. */
+  const refresh = useCallback(() => {
+    const blob = readBlob();
+    writeBlob({ ...blob, api: undefined });
+    setNonce((n) => n + 1);
+  }, []);
+
+  // Objects are re-created every render, so depend on the primitive
+  // fields rather than on `manual` itself — otherwise the effect would
+  // refetch on every parent render.
+  const manualKey = manual ? `${manual.lat},${manual.lon},${manual.name}` : "";
 
   useEffect(() => {
     let cancelled = false;
@@ -360,10 +448,19 @@ export const useWeather = (unit: "C" | "F") => {
       return;
     }
 
+    // The cache is only usable if it was fetched for the place we're
+    // about to ask about. Without the coordinate check, switching cities
+    // would show the previous city's numbers for up to 10 minutes.
     const cachedApi = readApi();
+    const cacheMatchesPlace =
+      !manual ||
+      (!!cachedApi &&
+        Math.abs(cachedApi.lat - manual.lat) < 0.01 &&
+        Math.abs(cachedApi.lon - manual.lon) < 0.01);
     if (
       cachedApi &&
       cachedApi.unit === unit &&
+      cacheMatchesPlace &&
       Date.now() - cachedApi.fetchedAt < API_TTL_MS
     ) {
       setData(cachedApi);
@@ -374,7 +471,7 @@ export const useWeather = (unit: "C" | "F") => {
     setLoading(true);
     (async () => {
       try {
-        const { lat, lon } = await getCoords();
+        const { lat, lon } = await getCoords(manual, allowDevice);
         if (cancelled) return;
         const fresh = await fetchOpenMeteo(lat, lon, unit);
         if (cancelled) return;
@@ -395,7 +492,10 @@ export const useWeather = (unit: "C" | "F") => {
     return () => {
       cancelled = true;
     };
-  }, [unit, online]);
+    // `manual` is read inside but deliberately not a dep — it's a fresh
+    // object every render. `manualKey` carries its identity instead.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unit, online, manualKey, nonce, allowDevice]);
 
-  return { data, loading, error };
+  return { data, loading, error, refresh, isManual: !!manual };
 };

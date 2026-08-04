@@ -1,10 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Ghiblify",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
-  "permissions": ["storage", "bookmarks", "search", "favicon", "geolocation"],
+  "permissions": [
+    "storage",
+    "search",
+    "favicon",
+    "geolocation"
+  ],
+  "optional_permissions": [
+    "bookmarks",
+    "audioCapture"
+  ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
@@ -18,7 +27,9 @@
   },
   "host_permissions": [
     "https://api.open-meteo.com/*",
-    "https://api.bigdatacloud.net/*"
+    "https://geocoding-api.open-meteo.com/*",
+    "https://api.bigdatacloud.net/*",
+    "https://suggestqueries.google.com/*"
   ],
   "icons": {
     "48": "icon48.png",

@@ -54,7 +54,7 @@
       "heart": "Heart",
       "leaf": "Leaf",
       "strawberry": "Strawberry",
-      "rainbow": "Rainbow"
+      "shikigami": "Paper birds"
     },
     "buttons": {
       "githubRepo": "Github Repo",
@@ -158,7 +158,19 @@
       "selectAvatar": "Choose avatar",
       "pomodoroSizeLarge": "Large",
       "pomodoroSizeSmall": "Small",
-      "pomodoroSizeMedium": "Medium"
+      "pomodoroSizeMedium": "Medium",
+      "timeFormat": "Clock format",
+      "weatherLocation": "Location",
+      "weatherUseMyLocation": "Use my location",
+      "weatherChooseCity": "Choose a city…",
+      "weatherRefresh": "Refresh now",
+      "highlight": "Highlight",
+      "highlightOff": "None",
+      "quicklinksView": "View",
+      "weatherDetail": "Detail",
+      "weatherStyle": "Style",
+      "highlightCustom": "Colour picker…",
+      "typeIn": "Type in on load"
     },
     "edit": {
       "ariaEdit": "Edit {{key}} widget",
@@ -196,33 +208,51 @@
       "weatherUnitLabel": "Unit",
       "weatherUnitC": "°C",
       "weatherUnitF": "°F",
-      "weatherSections": {
-        "now": "Now",
-        "hourly": "Hourly",
-        "daily": "Daily"
-      },
-      "weatherSectionsLabel": "Sections",
-      "weatherIconStyle": {
-        "animated": "Animated",
-        "still": "Still"
-      },
-      "weatherIconStyleLabel": "Icon style",
-      "weatherIconStyleAria": {
-        "animated": "Icons animate — click to switch to still",
-        "still": "Icons are still — click to switch to animated"
-      },
-      "weatherShowCard": "Card",
-      "weatherHideCard": "Card",
-      "weatherShowCardLabel": "Show card background",
-      "weatherShowCardAria": "Show a soft gradient card behind the weather",
-      "weatherHideCardAria": "Remove the card background",
-      "weatherIconsOnly": "Icons only",
-      "weatherIconsOnlyOnAria": "Showing icons only — click to bring text back",
-      "weatherIconsOnlyOffAria": "Hide text and show icons only",
       "pomodoroSizeLabel": "Size",
       "pomodoroSizeSmall": "S",
       "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "L"
+      "pomodoroSizeLarge": "L",
+      "pomodoroSoundLabel": "Sound",
+      "pomodoroSoundAria": "Choose completion sound",
+      "pomodoroVolume": "Volume",
+      "pomodoroVolumeAria": "Completion sound volume",
+      "pomodoroSound": {
+        "musicbox": "Music box",
+        "sootsprite": "Soot sprite",
+        "catbus": "Catbus",
+        "windchime": "Wind chime",
+        "kodama": "Kodama",
+        "none": "None"
+      },
+      "weatherLocationAria": "Set the weather location",
+      "weatherLocationAuto": "Auto",
+      "weatherLocationUseMine": "My location",
+      "weatherLocationRefresh": "Refresh",
+      "weatherLocationPlaceholder": "Search a city…",
+      "weatherLocationSearching": "Searching…",
+      "weatherLocationNoResults": "No cities found",
+      "weatherLocationError": "Search failed. Try again.",
+      "highlightLabel": "Highlight",
+      "highlightAria": "Choose a text highlight colour",
+      "highlightNone": "No highlight",
+      "highlightRecent": "Recent",
+      "highlightPresets": "Presets",
+      "highlightCustomAria": "Pick a custom colour",
+      "highlightHexAria": "Hex colour",
+      "highlightTextColor": "Text colour",
+      "highlightTextAuto": "Auto",
+      "weatherDetail": {
+        "icon": "Icon only",
+        "now": "Now",
+        "hourly": "Hourly",
+        "full": "Full forecast"
+      },
+      "weatherStylePlain": "Plain",
+      "weatherStyleCard": "Card",
+      "weatherAnimatedIcons": "Animated icons",
+      "weatherAnimatedOn": "On",
+      "weatherAnimatedOff": "Off",
+      "panelDragHint": "Drag to move"
     }
   },
   "greeting": {
@@ -250,7 +280,13 @@
     "placeholder": "Search the web...",
     "ariaLabelInput": "Search the web",
     "ariaLabelButton": "Search",
-    "tooltipButton": "Search"
+    "tooltipButton": "Search",
+    "clearAria": "Clear search",
+    "voiceAria": "Search by voice",
+    "voiceTooltip": "Search by voice",
+    "imageAria": "Search by image",
+    "imageTooltip": "Search by image",
+    "removeHistoryAria": "Remove “{{query}}” from recent searches"
   },
   "quicklinks": {
     "trigger": "Links",
@@ -270,7 +306,16 @@
     "labelSrOnly": "Label (optional)",
     "urlPlaceholder": "https://example.com",
     "urlSrOnly": "URL",
-    "emptyMessage": "No quick links yet. Add one above to get started."
+    "emptyMessage": "No quick links yet. Add one above to get started.",
+    "addTile": "Add",
+    "addTitle": "Add a link",
+    "editTitle": "Edit link",
+    "urlLabel": "Address",
+    "labelOptional": "Name (optional)",
+    "previewEmpty": "New link",
+    "cancel": "Cancel",
+    "save": "Save",
+    "addButton": "Add"
   },
   "pomodoro": {
     "modeFocus": "Pomodoro",
@@ -303,7 +348,9 @@
     "errorLoad": "Failed to load bookmarks: {{message}}",
     "delete": "Delete bookmark",
     "noResultsTitle": "No bookmarks found",
-    "noResultsSub": "Nothing matches \"{{query}}\". Try a shorter search?"
+    "noResultsSub": "Nothing matches \"{{query}}\". Try a shorter search?",
+    "permissionPrompt": "Ghiblify needs permission to read your Chrome bookmarks before it can show them here.",
+    "permissionGrant": "Allow bookmarks access"
   },
   "notes": {
     "placeholder": "Jot something down…",
@@ -357,7 +404,10 @@
       "4": "Thu",
       "5": "Fri",
       "6": "Sat"
-    }
+    },
+    "enableLocation": "Enable location",
+    "retry": "Try again",
+    "today": "Today"
   },
   "socials": {
     "buttonLabel": "My socials",
@@ -504,7 +554,8 @@
         "navigateGuide": "Navigate slides in this guide",
         "orSep": "or"
       }
-    }
+    },
+    "exitButton": "Exit guide"
   },
   "options": {
     "subtitle": "A Studio Ghibli-inspired new tab",
@@ -523,5 +574,70 @@
     "footerCredit": "Made with care",
     "viewSource": "View source on GitHub",
     "privacy": "Privacy policy"
+  },
+  "settings": {
+    "title": "Settings",
+    "buttonLabel": "Settings",
+    "buttonAria": "Open settings",
+    "permissionsTitle": "Permissions",
+    "permissionsSub": "Ghiblify asks for nothing up front. Turn on only what you use — revoking takes effect immediately.",
+    "permissionGeolocation": "Location",
+    "permissionGeolocationSub": "Lets Weather detect where you are. Off means the location API is never called — pick a city by hand instead.",
+    "permissionBookmarks": "Bookmarks",
+    "permissionBookmarksSub": "Lets the bookmarks panel read and organise your Chrome bookmarks.",
+    "storageTitle": "Stored data",
+    "storageSub": "{{count}} keys · {{size}} total. Expand a row to see its contents.",
+    "storageEmpty": "Nothing is stored yet.",
+    "deleteKey": "Delete",
+    "deleteKeyAria": "Delete {{key}}",
+    "resetTitle": "Reset everything",
+    "resetSub": "Deletes every saved setting — widgets, backgrounds, names, todos, the lot — and reloads the page.",
+    "resetButton": "Reset everything",
+    "resetConfirm": "This can't be undone.",
+    "resetConfirmYes": "Yes, reset",
+    "resetConfirmCancel": "Cancel",
+    "section": {
+      "widgets": "Widget settings",
+      "appearance": "Appearance settings",
+      "background": "Background settings",
+      "cursor": "Cursor settings"
+    },
+    "widgetsTitle": "Widgets",
+    "appearanceTitle": "Appearance",
+    "backgroundTitle": "Background",
+    "cursorTitle": "Cursor",
+    "cursorSub": "Puts the cursor trail back to the plain system pointer. Its setting is stored with Appearance.",
+    "dockBackgrounds": "Dock card backgrounds",
+    "dockBackgroundsSub": "Paint a glass card behind widgets docked on the right.",
+    "highContrastSub": "Stronger text contrast across the whole page.",
+    "parallaxSub": "The wallpaper drifts gently with your cursor.",
+    "resetWidgets": "Reset all widgets",
+    "resetDock": "Reset dock layout",
+    "resetAppearance": "Reset appearance",
+    "resetBackground": "Reset background settings",
+    "resetCursor": "Reset cursor",
+    "storageGroup": {
+      "widgets": "Widgets",
+      "background": "Background",
+      "appearance": "Appearance",
+      "other": "Other"
+    },
+    "deleteKeyConfirm": "Delete “{{key}}” from storage? Anything it holds is gone for good.",
+    "resetWidgetsConfirm": "Put every widget back to its default position, size and settings? Your quick links and greeting name are kept.",
+    "resetDockConfirm": "Put the right-hand dock back to its default layout?",
+    "resetAppearanceConfirm": "Put the theme, font and contrast back to their defaults?",
+    "resetBackgroundConfirm": "Put the background filters and parallax back to their defaults?",
+    "resetCursorConfirm": "Put the cursor back to the plain system pointer?",
+    "storedDataLabel": "Stored data",
+    "otherSub": "Install flags and anything not owned by a section above.",
+    "permissionMicrophone": "Microphone",
+    "permissionMicrophoneSub": "Lets the search bar's voice search listen. Only active while you hold the mic button's session.",
+    "corners": "Corners",
+    "cornersSub": "How round widgets, menus and modals are.",
+    "cornerStyle": {
+      "square": "Square",
+      "rounded": "Rounded",
+      "pill": "Soft"
+    }
   }
 }

@@ -10,7 +10,7 @@
         saturate(var(--surface-saturate, 1));
     -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
         saturate(var(--surface-saturate, 1));
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-control, var(--radius-md));
     font-size: 14px;
     outline: none;
     transition: background 160ms ease, border-color 160ms ease,

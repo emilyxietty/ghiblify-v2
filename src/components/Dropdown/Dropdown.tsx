@@ -1,11 +1,23 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Z_FLOATING } from "../../utils/zLayers";
 import "./Dropdown.css";
 
 export interface DropdownOption {
   value: string;
-  label: string;
+  /** A node, not just a string, so an option can preview what it does —
+   *  a font name rendered in its own family, a chip drawn at its own
+   *  corner radius. */
+  label: React.ReactNode;
   icon?: React.ReactNode;
+  /** Plain-text form for the accessible name, needed when `label` is a
+   *  node rather than a string. */
+  labelText?: string;
+  /** What the closed trigger shows when this option is selected. The
+   *  list needs to name every choice; the trigger only has to identify
+   *  the current one, which a specimen ("Aa", a corner chip) often does
+   *  better than a word. Falls back to `label`. */
+  triggerLabel?: React.ReactNode;
 }
 
 interface DropdownProps {
@@ -151,6 +163,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
               minWidth: menuPos.width,
               width: "max-content",
               maxWidth: 280,
+              zIndex: Z_FLOATING,
             }
           : undefined
       }
@@ -164,6 +177,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           onClick={() => handleSelect(option.value)}
           role="option"
           aria-selected={option.value === value}
+          aria-label={option.labelText}
         >
           {option.icon && (
             <span className="dropdown-icon">{option.icon}</span>
@@ -196,7 +210,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
               {selectedOption.icon && (
                 <span className="dropdown-icon">{selectedOption.icon}</span>
               )}
-              {selectedOption.label}
+              {selectedOption.triggerLabel ?? selectedOption.label}
             </>
           ) : (
             placeholder

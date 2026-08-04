@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "../../../components/Button/Button";
 import { DeleteOutlineIcon, EditIcon, OpenWithIcon } from "../../../components/Icons/Icons";
-import { AddCircleIcon, AddIcon, CancelIcon, VisibilityOffIcon } from "../../../components/Icons/Icons";
+import { AddIcon, CancelIcon, VisibilityOffIcon } from "../../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
 } from "../../../components/ContextMenu/ContextMenu";
+import { Favicon } from "../../../components/Favicon/Favicon";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import TextInput from "../../../components/TextInput/TextInput";
 import { useAppContext } from "../../../contexts/AppContext";
@@ -13,32 +15,59 @@ import { useT } from "../../../i18n/i18n";
 import { useScaledPx } from "../../../utils/viewportScale";
 import "./QuickLinks.css";
 
+/**
+ * Turn whatever was typed into a URL worth storing.
+ *
+ * People paste all of "tiktok.com", "www.tiktok.com/@x", "HTTP://Foo.com",
+ * "  github.com  " and "localhost:3000". The rules, in order:
+ *   - trim, and drop any zero-width junk a copy-paste dragged along
+ *   - keep a real scheme, but lower-case it (and upgrade bare http on
+ *     hosts that aren't local, since everything public is https now)
+ *   - otherwise assume https
+ *   - lower-case the host (paths stay case-sensitive — they matter)
+ *   - drop a trailing "/" on a bare origin so "site.com" and
+ *     "site.com/" don't become two different tiles
+ */
 const normalizeUrl = (raw: string) => {
-  const t = raw.trim();
-  if (!t) return t;
-  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(t)) return t;
-  return `https://${t}`;
+  const trimmed = raw.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+  if (!trimmed) return trimmed;
+  const withScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  try {
+    const url = new URL(withScheme);
+    const isLocal =
+      url.hostname === "localhost" ||
+      url.hostname.endsWith(".local") ||
+      /^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname);
+    if (url.protocol === "http:" && !isLocal) url.protocol = "https:";
+    url.hostname = url.hostname.toLowerCase();
+    const out = url.toString();
+    return url.pathname === "/" && !url.search && !url.hash
+      ? out.replace(/\/$/, "")
+      : out;
+  } catch {
+    // Unparseable (a bare word, say) — store what they typed rather
+    // than silently mangling it.
+    return withScheme;
+  }
 };
 
-const getFavicon = (rawUrl: string, size = 64) => {
-  if (!rawUrl) return "";
-  const fullUrl = normalizeUrl(rawUrl);
-  // Prefer Chrome's built-in favicon cache (MV3 _favicon API). Requires
-  // "favicon" in manifest permissions. Only available inside an extension
-  // context (chrome-extension:// pages); falls back to Google's s2 service
-  // for dev preview / non-extension contexts.
-  const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
-  if (chromeNs?.runtime?.getURL) {
-    try {
-      const faviconUrl = new URL(chromeNs.runtime.getURL("/_favicon/"));
-      faviconUrl.searchParams.set("pageUrl", fullUrl);
-      faviconUrl.searchParams.set("size", String(size));
-      return faviconUrl.toString();
-    } catch {
-      /* fall through */
-    }
+/**
+ * A human label for a URL the user didn't name.
+ *
+ * The old fallback was the raw URL, which made tiles read
+ * "https://github.com/…" under an icon with room for one word. The
+ * first host label, capitalised, is what the tile actually wants.
+ */
+const titleFromUrl = (rawUrl: string): string => {
+  try {
+    const host = new URL(normalizeUrl(rawUrl)).hostname.replace(/^www\./, "");
+    const label = host.split(".")[0] ?? host;
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  } catch {
+    return rawUrl.trim();
   }
-  return;
 };
 
 export const QuickLinks: React.FC = () => {
@@ -79,14 +108,13 @@ export const QuickLinks: React.FC = () => {
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const showGrid = !!quicklinksSettings.gridMode;
 
-  // Auto-open the grid add-link form whenever the user is in edit
-  // mode on the grid view, so they can immediately type a new link
-  // without having to click the + tile first. Closes back when edit
-  // mode exits.
+  // The add card used to spring open by itself whenever the widget
+  // entered edit mode. It now sits over the grid, so opening it
+  // unasked hides the very tiles the user came to rearrange — and the
+  // + tile is permanently visible, so there's nothing to compensate
+  // for. Leaving edit mode still clears any half-typed entry.
   useEffect(() => {
-    if (isEditing && showGrid) {
-      setAddGridLink(true);
-    } else {
+    if (!isEditing || !showGrid) {
       setAddGridLink(false);
       setTitle("");
       setUrl("");
@@ -117,24 +145,20 @@ export const QuickLinks: React.FC = () => {
     if (anchorEl) setTimeout(() => urlInputRef.current?.focus(), 0);
   }, [anchorEl]);
 
-  // Auto-focus the URL field when the grid add form opens. While
-  // edit mode is on, skip the outside-click / Escape dismissal — the
-  // form is supposed to stay open for the duration of the edit
-  // session so the user can keep adding links.
+  // Auto-focus the URL field when the grid add card opens, and close
+  // on Escape / a click outside it.
   useEffect(() => {
     if (!addGridLink) return;
     const id = window.setTimeout(() => urlInputRef.current?.focus(), 0);
-    if (isEditing) {
-      return () => window.clearTimeout(id);
-    }
     const dismiss = () => {
       setAddGridLink(false);
+      setEditingLinkId(null);
       setTitle("");
       setUrl("");
     };
     const handleClick = (e: MouseEvent) => {
-      const form = document.querySelector(".quicklinksSettings-add");
-      const trigger = document.querySelector(".ql-control-cell");
+      const form = document.querySelector(".ql-add-card");
+      const trigger = document.querySelector(".ql-add-cell");
       const target = e.target as Node;
       if (form?.contains(target)) return;
       if (trigger?.contains(target)) return;
@@ -161,7 +185,7 @@ export const QuickLinks: React.FC = () => {
           l.id === editingLinkId
             ? {
                 ...l,
-                title: title.trim() || url.trim(),
+                title: title.trim() || titleFromUrl(url),
                 url: normalizeUrl(url),
               }
             : l
@@ -171,7 +195,7 @@ export const QuickLinks: React.FC = () => {
     } else {
       const newLink = {
         id: Date.now().toString(),
-        title: title.trim() || url.trim(),
+        title: title.trim() || titleFromUrl(url),
         url: normalizeUrl(url),
       };
       updateWidgetSettings("quicklinks", {
@@ -241,7 +265,6 @@ export const QuickLinks: React.FC = () => {
             style={{ width, height }}
           >
             {quicklinksSettings.links.map((l, index) => {
-              const favicon = getFavicon(l.url);
               const isDragOver =
                 draggedIndex !== null && dragOverIndex === index;
               return (
@@ -266,22 +289,12 @@ export const QuickLinks: React.FC = () => {
                     className="ql-grid-link"
                     title={l.url}
                   >
-                    {favicon ? (
-                      <img
-                        src={favicon}
-                        alt=""
-                        className="ql-grid-favicon"
-                        aria-hidden="true"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div
-                        className="ql-grid-favicon ql-favicon-fallback"
-                        aria-hidden="true"
-                      >
-                        {l.title.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <Favicon
+                      url={l.url}
+                      className="ql-grid-favicon"
+                      fallbackClassName="ql-grid-favicon ql-favicon-fallback"
+                      fallback={l.title.charAt(0).toUpperCase()}
+                    />
                     <span className="ql-grid-title">{l.title}</span>
                   </a>
                   {/* Always rendered; CSS hides it unless Shift is held
@@ -302,67 +315,160 @@ export const QuickLinks: React.FC = () => {
                 </div>
               );
             })}
-            {/* Add control — only visible while Shift is held (body class
-                .show-widget-outline). Delete X overlays on each tile follow
-                the same pattern. */}
-            <div className="ql-grid-cell ql-control-cell">
-              <Button
-                variant="dark"
-                icon={<AddCircleIcon fontSize="small" />}
-                onClick={() => setAddGridLink(true)}
-                aria-label={t("quicklinks.addAria")}
-                data-tooltip={t("quicklinks.addTooltip")}
-              />
-            </div>
-          </div>
-        </div>
-        {addGridLink && (
-          <form
-            className="quicklinksSettings-add"
-            onSubmit={(e) => {
-              e.preventDefault();
-              addLink();
-              // Keep the form open while in edit mode so the user
-              // can chain multiple adds without re-opening it. Focus
-              // returns to the URL field for the next entry.
-              if (!isEditing) setAddGridLink(false);
-              else window.setTimeout(() => urlInputRef.current?.focus(), 0);
-            }}
-          >
-            <label className="ql-sr-only" htmlFor="ql-grid-title-input">
-              {t("quicklinks.labelSrOnly")}
-            </label>
-            <TextInput
-              id="ql-grid-title-input"
-              placeholder={t("quicklinks.labelPlaceholder")}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              key={`grid-title-${addGridLink}`}
-            />
-            <label className="ql-sr-only" htmlFor="ql-grid-url-input">
-              {t("quicklinks.urlSrOnly")}
-            </label>
-            <TextInput
-              id="ql-grid-url-input"
-              ref={urlInputRef}
-              placeholder={t("quicklinks.urlPlaceholder")}
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              key={`grid-url-${addGridLink}`}
-            />
+            {/* Permanently visible, unlike the delete overlays on each
+                tile: adding a link is the one thing a new user needs to
+                find, and it used to appear only while Shift was held. */}
             <button
-              type="submit"
-              className="quicklinksSettings-add-btn"
-              disabled={!url.trim()}
-              aria-label={t("quicklinks.saveAria")}
-              data-tooltip={t("quicklinks.saveTooltip")}
+              type="button"
+              className="ql-grid-cell ql-add-cell"
+              onClick={() => {
+                setEditingLinkId(null);
+                setTitle("");
+                setUrl("");
+                setAddGridLink(true);
+              }}
+              aria-label={t("quicklinks.addAria")}
             >
-              <AddIcon fontSize="small" />
+              <AddIcon className="ql-add-cell-icon" />
+              <span className="ql-add-cell-label">
+                {t("quicklinks.addTile")}
+              </span>
             </button>
-          </form>
-        )}
+          </div>
+
+          {/* A real modal, portalled to <body>: the widget shell is
+              `transform`ed, so a fixed-position child of it would
+              anchor to the widget instead of the viewport — and inside
+              the widget the card had to compete with a grid that
+              scrolls and clips. */}
+          {addGridLink &&
+            createPortal(
+            <div
+              className="ql-add-overlay"
+              onMouseDown={(e) => {
+                // Backdrop click closes; the card stops propagation.
+                if (e.target !== e.currentTarget) return;
+                setAddGridLink(false);
+                setEditingLinkId(null);
+                setTitle("");
+                setUrl("");
+              }}
+            >
+              <form
+                className="ql-add-card"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addLink();
+                  // Closes on save either way — a modal that stays up
+                  // after you commit reads as "that didn't work".
+                  setAddGridLink(false);
+                  setEditingLinkId(null);
+                }}
+              >
+                <h4 className="ql-add-title">
+                  {editingLinkId
+                    ? t("quicklinks.editTitle")
+                    : t("quicklinks.addTitle")}
+                </h4>
+
+                {/* Live preview of the tile being built — the favicon
+                    lands as soon as the URL resolves, which is the
+                    fastest way to see you typed the right site. */}
+                <div className="ql-add-preview">
+                  {url.trim() ? (
+                    <Favicon
+                      url={url}
+                      size={32}
+                      className="ql-add-preview-icon"
+                      fallbackClassName="ql-add-preview-icon ql-favicon-fallback"
+                      fallback={titleFromUrl(url).charAt(0)}
+                    />
+                  ) : (
+                    <span className="ql-add-preview-icon ql-favicon-fallback" />
+                  )}
+                  <span className="ql-add-preview-text">
+                    <span className="ql-add-preview-title">
+                      {title.trim() ||
+                        (url.trim()
+                          ? titleFromUrl(url)
+                          : t("quicklinks.previewEmpty"))}
+                    </span>
+                    {/* The address as it will actually be saved. Shown
+                        rather than typed into the field: rewriting the
+                        input mid-keystroke moves the caret and makes
+                        the scheme impossible to edit — you'd type "g",
+                        get "https://g", and be unable to get back in
+                        front of it. */}
+                    {url.trim() && (
+                      <span className="ql-add-preview-url">
+                        {normalizeUrl(url)}
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                <label className="ql-add-label" htmlFor="ql-grid-url-input">
+                  {t("quicklinks.urlLabel")}
+                </label>
+                <TextInput
+                  id="ql-grid-url-input"
+                  ref={urlInputRef}
+                  placeholder={t("quicklinks.urlPlaceholder")}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  // Settle the field to its canonical form once you
+                  // leave it — the same normalisation submit applies,
+                  // just made visible a step earlier.
+                  onBlur={() => setUrl((v) => (v.trim() ? normalizeUrl(v) : v))}
+                  onClick={(e) => e.stopPropagation()}
+                />
+
+                <label className="ql-add-label" htmlFor="ql-grid-title-input">
+                  {t("quicklinks.labelOptional")}
+                </label>
+                <TextInput
+                  id="ql-grid-title-input"
+                  // Placeholder previews the name it would get from the
+                  // URL, so leaving it blank is an informed choice
+                  // rather than a guess.
+                  placeholder={
+                    url.trim()
+                      ? titleFromUrl(url)
+                      : t("quicklinks.labelPlaceholder")
+                  }
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+
+                <div className="ql-add-actions">
+                  <button
+                    type="button"
+                    className="ql-add-cancel"
+                    onClick={() => {
+                      setAddGridLink(false);
+                      setEditingLinkId(null);
+                      setTitle("");
+                      setUrl("");
+                    }}
+                  >
+                    {t("quicklinks.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    className="ql-add-submit"
+                    disabled={!url.trim()}
+                  >
+                    {editingLinkId
+                      ? t("quicklinks.save")
+                      : t("quicklinks.addButton")}
+                  </button>
+                </div>
+              </form>
+            </div>,
+            document.body
+          )}
+        </div>
         {linkMenu &&
           (() => {
             const link = quicklinksSettings.links.find(
@@ -519,7 +625,6 @@ export const QuickLinks: React.FC = () => {
                 </li>
               ) : (
                 quicklinksSettings.links.map((l, index) => {
-                  const favicon = getFavicon(l.url);
                   return (
                     <li
                       key={l.id}
@@ -530,22 +635,13 @@ export const QuickLinks: React.FC = () => {
                       }`}
                       {...dndProps(index)}
                     >
-                      {favicon ? (
-                        <img
-                          src={favicon}
-                          alt=""
-                          className="ql-favicon"
-                          aria-hidden="true"
-                          draggable={false}
-                        />
-                      ) : (
-                        <div
-                          className="ql-favicon ql-favicon-fallback"
-                          aria-hidden="true"
-                        >
-                          {l.title.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      <Favicon
+                        url={l.url}
+                        size={32}
+                        className="ql-favicon"
+                        fallbackClassName="ql-favicon ql-favicon-fallback"
+                        fallback={l.title.charAt(0).toUpperCase()}
+                      />
                       <a
                         href={normalizeUrl(l.url)}
                         className="quicklinksSettings-link"

@@ -285,3 +285,158 @@
     border-bottom-color: white;
     border-right-color: white;
 }
+
+/* Highlight sits in the same panel as the text-shadow slider — both
+   control how the text itself reads, so they share one surface with no
+   gap between them. */
+.widget-highlight-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+/* ---------------------------------------------------------------------------
+   Edit panel
+   ---------------------------------------------------------------------------
+   Sits beside the widget (portalled, fixed, positioned in JS) instead of
+   covering it. Rows stack, so the panel grows downward as settings are
+   added rather than sideways — and the widget stays visible while it's
+   being changed. */
+
+.edit-panel {
+    /* Overridden per panel by the stacking counter in EditWidget.tsx;
+       this is only the floor for the first paint. */
+    z-index: var(--z-edit-panel-base, 90000);
+    width: 248px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: calc(14px * var(--pad-scale, 1));
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--light);
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    scrollbar-width: thin;
+    animation: edit-panel-in 180ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+}
+
+@keyframes edit-panel-in {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.edit-panel-title {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.edit-panel-empty {
+    margin: 0;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--light-muted);
+}
+
+.edit-panel-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 28px;
+}
+
+.edit-panel-row-label {
+    font-size: 11.5px;
+    color: var(--light-muted);
+    white-space: nowrap;
+}
+
+.edit-panel-row-control {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+/* Two or three short options where a dropdown would hide the
+   alternatives behind a click. */
+.edit-panel-segmented {
+    display: flex;
+    padding: 2px;
+    gap: 2px;
+    border-radius: var(--radius-pill, 999px);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+}
+
+.edit-panel-segment {
+    padding: 4px 9px;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--light-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.edit-panel-segment:hover {
+    color: var(--light);
+}
+
+.edit-panel-segment.is-active {
+    color: var(--dark, #1f2620);
+    background: var(--light);
+}
+
+.edit-panel-slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.edit-panel-slider-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.edit-panel-slider-value {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--light-muted);
+}
+
+/* The title doubles as the drag handle — the panels overlap once a few
+   widgets are in edit mode, so each one has to be movable. */
+.edit-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.edit-panel-title:active {
+    cursor: grabbing;
+}
+
+.edit-panel-grip {
+    color: var(--light-muted);
+    flex-shrink: 0;
+}
