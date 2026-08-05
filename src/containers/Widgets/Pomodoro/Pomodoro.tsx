@@ -522,7 +522,8 @@ const Pomodoro: React.FC = () => {
   // get normalised to the new names so existing users don't see a
   // jarring layout shift on first open after the rename.
   const { widgets } = useAppContext();
-  const { size, opacity, sound, soundVolume } = widgets.pomodoro.settings;
+  const { size, opacity, sound, soundVolume, cardColor } =
+    widgets.pomodoro.settings;
 
   // Keep the countdown effect's view of the chime settings current —
   // see chimeSettingsRef above. Validated on the way in because stored
@@ -561,13 +562,25 @@ const Pomodoro: React.FC = () => {
     <div
       className={`pomodoro-widget widget-header${
         focusMode ? "" : ` size-${normalizedSize}`
-      }${isBreak ? " break-mode" : ""}`}
+      }${isBreak ? " break-mode" : ""}${
+        // A user-picked card colour applies to BOTH modes — the
+        // break-mode surface recolor rules skip .custom-card, so the
+        // card keeps the chosen colour (and its light text) during
+        // breaks. The break progress-bar gradient stays as the mode
+        // signal.
+        typeof cardColor === "string" ? " custom-card" : ""
+      }`}
       style={{
         ...(focusMode
           ? {}
           : { width: `${dims.width}px`, height: `${dims.height}px` }),
         ["--pomodoro-opacity" as string]:
           (typeof opacity === "number" ? opacity : 100) / 100,
+        // Custom focus-card base colour — CSS falls back to the
+        // theme's --purple-dark when unset.
+        ...(typeof cardColor === "string"
+          ? { ["--pomodoro-card" as string]: cardColor }
+          : {}),
       }}
     >
       <div className="pomodoro-switch-header">

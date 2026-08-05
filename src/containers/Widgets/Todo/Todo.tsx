@@ -358,14 +358,36 @@ export const Todo: React.FC = () => {
 
   return (
     <div
-      className="todo-container widget-header"
+      className={`todo-container widget-header${
+        (todoSettings as any).frosted === true ? " todo-frosted" : ""
+      }`}
       style={{
         width: `${width}px`,
-        height: `${height}px`,
+        maxHeight: `${height}px`,
+        // Frosted: the .widget shell blurs the wallpaper (see
+        // .widget-surface-frost) and the item/input surfaces drop to
+        // a whisper of tint so the glass reads through them.
         ["--todo-opacity" as any]:
-          ((todoSettings as any).opacity ?? 50) / 100,
+          (todoSettings as any).frosted === true
+            ? 0.14
+            : ((todoSettings as any).opacity ?? 50) / 100,
         ["--input-opacity" as any]:
-          ((todoSettings as any).opacity ?? 50) / 100,
+          (todoSettings as any).frosted === true
+            ? 0.14
+            : ((todoSettings as any).opacity ?? 50) / 100,
+        // Custom surface tint — override the theme's --surface-rgb
+        // with the chosen hex as an "r, g, b" triplet.
+        ...(typeof (todoSettings as any).surfaceColor === "string"
+          ? {
+              ["--todo-surface-rgb" as any]: (
+                (todoSettings as any).surfaceColor as string
+              )
+                .replace("#", "")
+                .match(/../g)!
+                .map((h: string) => parseInt(h, 16))
+                .join(", "),
+            }
+          : {}),
       }}
     >
       <div className="todo-input-wrapper">
@@ -377,15 +399,16 @@ export const Todo: React.FC = () => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyPress}
         />
-        <button
-          className="todo-add-btn"
-          onClick={addTodo}
-          disabled={!inputValue.trim()}
-          aria-label={t("todo.addAria")}
-          data-tooltip={t("todo.addTooltip")}
-        >
-          +
-        </button>
+        {inputValue.trim() && (
+          <button
+            className="todo-add-btn"
+            onClick={addTodo}
+            aria-label={t("todo.addAria")}
+            data-tooltip={t("todo.addTooltip")}
+          >
+            +
+          </button>
+        )}
       </div>
       <ul
         className="todo-list"

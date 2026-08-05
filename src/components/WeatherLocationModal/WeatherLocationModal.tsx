@@ -116,9 +116,10 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
   };
 
   const useMyLocation = () => {
-    // No permission request here: Chrome grants `geolocation` at install
-    // time and won't revoke it at runtime, so switching back to device
-    // location is purely our own setting.
+    // No permission request here: `geolocation` is on Chrome's list of
+    // permissions that CANNOT be optional for extensions, so it's
+    // granted at install and the user-facing switch is purely our own
+    // setting.
     updateWidgetSettings("weather", {
       manualPlace: null,
       useDeviceLocation: true,
@@ -166,10 +167,10 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
         <div className="weather-location-actions">
           <button
             type="button"
-            className="weather-location-action"
+            className="weather-location-action weather-location-action-primary"
             onClick={useMyLocation}
           >
-            <MyLocationIcon style={{ fontSize: 14 }} />
+            <MyLocationIcon style={{ fontSize: 15 }} />
             {t("widgets.edit.weatherLocationUseMine")}
           </button>
           <button
@@ -184,6 +185,10 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
             {t("widgets.edit.weatherLocationRefresh")}
           </button>
         </div>
+
+        <p className="weather-location-hint">
+          {t("widgets.edit.weatherLocationHint")}
+        </p>
 
         <input
           ref={inputRef}

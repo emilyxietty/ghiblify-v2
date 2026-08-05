@@ -120,7 +120,8 @@
       "bookmarks": "Marcadores",
       "weather": "Clima",
       "notes": "Nota adhesiva",
-      "rightSidebar": "Barra lateral derecha"
+      "rightSidebar": "Barra lateral derecha",
+      "googleApps": "Aplicaciones de Google"
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
@@ -181,7 +182,7 @@
       "timeFormatAnalog": "Analógico",
       "gridShow": "Ver como cuadrícula",
       "gridShowList": "Ver como lista",
-      "resizeTitle": "Arrastra para redimensionar",
+      "resizeTitle": "Arrastra para redimensionar {{name}}",
       "infoFields": {
         "japaneseTitle": "Título japonés",
         "title": "Título",
@@ -240,7 +241,33 @@
       "weatherAnimatedIcons": "Iconos animados",
       "weatherAnimatedOn": "Sí",
       "weatherAnimatedOff": "No",
-      "panelDragHint": "Arrastra para mover"
+      "panelDragHint": "Arrastra para mover",
+      "notesBorder": "Borde",
+      "borderShow": "Mostrar",
+      "borderHide": "Ocultar",
+      "notesPaper": "Papel",
+      "notesPaperNone": "Sin papel",
+      "notesPaperAria": "Color del papel",
+      "notesPaperStyle": "Estilo de papel",
+      "styleSolid": "Sólido",
+      "styleFrost": "Esmerilado",
+      "highlightStyle": "Estilo de resaltado",
+      "pomodoroColor": "Color de tarjeta",
+      "pomodoroColorAria": "Color de tarjeta",
+      "pomodoroColorDefaultAria": "Predeterminado del tema",
+      "highlightTextLight": "Claro",
+      "highlightTextDark": "Oscuro",
+      "surfaceStyle": "Fondo",
+      "styleFrostDark": "Esmerilado oscuro",
+      "styleClear": "Transparente",
+      "styleWeather": "Clima",
+      "highlightTune": "Ajustar resaltado",
+      "weatherLocationHint": "Tu ubicación solo se usa para obtener el pronóstico local; no sale de este dispositivo salvo al servicio meteorológico."
+    },
+    "gapps": {
+      "menuAria": "Aplicaciones de Google",
+      "accountAria": "Cuenta de Google",
+      "personalize": "Mostrar mi inicial de cuenta"
     }
   },
   "greeting": {
@@ -274,7 +301,8 @@
     "voiceTooltip": "Buscar por voz",
     "imageAria": "Buscar por imagen",
     "imageTooltip": "Buscar por imagen",
-    "removeHistoryAria": "Quitar «{{query}}» de las búsquedas recientes"
+    "removeHistoryAria": "Quitar «{{query}}» de las búsquedas recientes",
+    "voiceDenied": "Acceso al micrófono rechazado — haz clic para reintentar"
   },
   "quicklinks": {
     "trigger": "Enlaces",
@@ -340,7 +368,42 @@
   },
   "notes": {
     "placeholder": "Anota algo…",
-    "ariaLabel": "Nota adhesiva"
+    "ariaLabel": "Nota adhesiva",
+    "toolbar": {
+      "ariaLabel": "Barra de formato",
+      "bold": "Negrita",
+      "italic": "Cursiva",
+      "underline": "Subrayado",
+      "highlight": "Resaltar",
+      "bulletList": "Lista con viñetas",
+      "checkList": "Lista de tareas",
+      "strikethrough": "Tachado",
+      "heading1": "Título 1",
+      "heading2": "Título 2",
+      "quote": "Cita",
+      "alignLeft": "Alinear a la izquierda",
+      "alignCenter": "Centrar",
+      "alignRight": "Alinear a la derecha",
+      "paragraph": "Texto",
+      "heading3": "Título 3",
+      "align": "Alineación",
+      "blockType": "Estilo de texto",
+      "textColor": "Color del texto",
+      "colors": {
+        "default": "Predeterminado",
+        "yellow": "Amarillo",
+        "green": "Verde",
+        "pink": "Rosa",
+        "blue": "Azul",
+        "red": "Rojo",
+        "purple": "Morado",
+        "white": "Blanco",
+        "paleYellow": "Amarillo claro",
+        "palePink": "Rosa claro",
+        "paleBlue": "Azul claro",
+        "paleGreen": "Verde claro"
+      }
+    }
   },
   "weather": {
     "unavailable": "N/D",
@@ -391,9 +454,11 @@
       "5": "Vie",
       "6": "Sáb"
     },
-    "enableLocation": "Activar ubicación",
+    "enableLocation": "Usar mi ubicación",
     "retry": "Reintentar",
-    "today": "Hoy"
+    "today": "Hoy",
+    "locationOff": "Sin ubicación — usa la tuya o elige una ciudad ☁️",
+    "chooseCity": "Elegir ciudad"
   },
   "socials": {
     "buttonLabel": "Mis redes",
@@ -568,7 +633,7 @@
     "permissionsTitle": "Permisos",
     "permissionsSub": "Ghiblify no pide nada de entrada. Activa solo lo que uses; revocar surte efecto de inmediato.",
     "permissionGeolocation": "Ubicación",
-    "permissionGeolocationSub": "Permite que el clima detecte dónde estás. Desactivado, nunca se llama a la API de ubicación: elige una ciudad a mano.",
+    "permissionGeolocationSub": "Ubicación aproximada (a nivel de ciudad) según tu conexión de red — solo para obtener el pronóstico local. Sin GPS ni permiso de ubicación.",
     "permissionBookmarks": "Marcadores",
     "permissionBookmarksSub": "Permite que el panel lea y organice tus marcadores de Chrome.",
     "storageTitle": "Datos guardados",
@@ -624,6 +689,8 @@
       "square": "Rectas",
       "rounded": "Redondeadas",
       "pill": "Suaves"
-    }
+    },
+    "permissionEmail": "Dirección de correo",
+    "permissionEmailSub": "Personaliza el botón de cuenta del widget de Google con tu inicial. Nada más."
   }
 }

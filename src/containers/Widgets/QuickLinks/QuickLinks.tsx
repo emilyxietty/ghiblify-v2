@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../../components/Button/Button";
-import { DeleteOutlineIcon, EditIcon, OpenWithIcon } from "../../../components/Icons/Icons";
-import { AddIcon, CancelIcon, VisibilityOffIcon } from "../../../components/Icons/Icons";
+import { DeleteOutlineIcon, EditIcon } from "../../../components/Icons/Icons";
+import { AddIcon, CancelIcon } from "../../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -77,9 +77,6 @@ export const QuickLinks: React.FC = () => {
     updateWidgetSettings,
     showWidgetEdits,
     editingWidgetKey,
-    setEditingWidgetKey,
-    setDragMode,
-    toggleWidgetVisibility,
   } = useAppContext();
   // True when QuickLinks is in any kind of edit mode — global or per-widget.
   const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
@@ -262,7 +259,7 @@ export const QuickLinks: React.FC = () => {
         <div className="quicklinksSettings-grid-list">
           <div
             className="quicklinksSettings-grid-scroll"
-            style={{ width, height }}
+            style={{ width, maxHeight: height }}
           >
             {quicklinksSettings.links.map((l, index) => {
               const isDragOver =
@@ -315,9 +312,6 @@ export const QuickLinks: React.FC = () => {
                 </div>
               );
             })}
-            {/* Permanently visible, unlike the delete overlays on each
-                tile: adding a link is the one thing a new user needs to
-                find, and it used to appear only while Shift was held. */}
             <button
               type="button"
               className="ql-grid-cell ql-add-cell"
@@ -498,53 +492,16 @@ export const QuickLinks: React.FC = () => {
                 icon: <DeleteOutlineIcon style={{ fontSize: 14 }} />,
                 onClick: () => removeLink(link.id),
               },
-              { type: "separator" },
-              {
-                type: "action",
-                label: t("widgets.contextMenu.edit", {
-                  name: t("widgets.names.quicklinks"),
-                }),
-                icon: <EditIcon style={{ fontSize: 14 }} />,
-                onClick: () => setEditingWidgetKey("quicklinks"),
-              },
-              {
-                type: "action",
-                label: t("widgets.contextMenu.drag", {
-                  name: t("widgets.names.quicklinks"),
-                }),
-                icon: <OpenWithIcon style={{ fontSize: 14 }} />,
-                onClick: () => setDragMode(true),
-              },
-              {
-                type: "action",
-                label: t("widgets.contextMenu.hide", {
-                  name: t("widgets.names.quicklinks"),
-                }),
-                icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
-                onClick: () => toggleWidgetVisibility("quicklinks"),
-              },
-              { type: "separator" },
               {
                 type: "action",
                 label: t("widgets.contextMenu.addLink"),
-                onClick: () =>
-                  window.dispatchEvent(
-                    new CustomEvent("ghiblify:quicklinks:add")
-                  ),
-              },
-              {
-                type: "radio",
-                label: t("widgets.edit.gridShow"),
-                selected: !!quicklinksSettings.gridMode,
-                onClick: () =>
-                  updateWidgetSettings("quicklinks", { gridMode: true }),
-              },
-              {
-                type: "radio",
-                label: t("widgets.edit.gridShowList"),
-                selected: !quicklinksSettings.gridMode,
-                onClick: () =>
-                  updateWidgetSettings("quicklinks", { gridMode: false }),
+                icon: <AddIcon style={{ fontSize: 14 }} />,
+                onClick: () => {
+                  setEditingLinkId(null);
+                  setTitle("");
+                  setUrl("");
+                  setAddGridLink(true);
+                },
               },
             ];
             return (

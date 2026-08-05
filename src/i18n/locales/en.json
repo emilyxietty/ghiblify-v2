@@ -130,7 +130,8 @@
       "bookmarks": "Bookmarks",
       "weather": "Weather",
       "notes": "Sticky note",
-      "rightSidebar": "Right sidebar"
+      "rightSidebar": "Right sidebar",
+      "googleApps": "Google apps"
     },
     "tooltip": {
       "show": "Show {{name}} widget",
@@ -191,7 +192,7 @@
       "timeFormatAnalog": "Analog",
       "gridShow": "Show as grid",
       "gridShowList": "Show as list",
-      "resizeTitle": "Drag to resize",
+      "resizeTitle": "Drag to resize {{name}}",
       "infoFields": {
         "japaneseTitle": "Japanese Title",
         "title": "Title",
@@ -252,7 +253,33 @@
       "weatherAnimatedIcons": "Animated icons",
       "weatherAnimatedOn": "On",
       "weatherAnimatedOff": "Off",
-      "panelDragHint": "Drag to move"
+      "panelDragHint": "Drag to move",
+      "notesBorder": "Border",
+      "borderShow": "Show",
+      "borderHide": "Hide",
+      "notesPaper": "Paper",
+      "notesPaperNone": "No paper",
+      "notesPaperAria": "Paper colour",
+      "notesPaperStyle": "Paper style",
+      "styleSolid": "Solid",
+      "styleFrost": "Frosted",
+      "highlightStyle": "Highlight style",
+      "pomodoroColor": "Card colour",
+      "pomodoroColorAria": "Card colour",
+      "pomodoroColorDefaultAria": "Theme default",
+      "highlightTextLight": "Light",
+      "highlightTextDark": "Dark",
+      "surfaceStyle": "Background",
+      "styleFrostDark": "Dark frost",
+      "styleClear": "Clear",
+      "styleWeather": "Weather",
+      "highlightTune": "Adjust highlight",
+      "weatherLocationHint": "Your location is only used to fetch the local forecast — it never leaves this device except to the weather service."
+    },
+    "gapps": {
+      "menuAria": "Google apps",
+      "accountAria": "Google Account",
+      "personalize": "Show my account initial"
     }
   },
   "greeting": {
@@ -286,7 +313,8 @@
     "voiceTooltip": "Search by voice",
     "imageAria": "Search by image",
     "imageTooltip": "Search by image",
-    "removeHistoryAria": "Remove “{{query}}” from recent searches"
+    "removeHistoryAria": "Remove “{{query}}” from recent searches",
+    "voiceDenied": "Microphone access declined — click to try again"
   },
   "quicklinks": {
     "trigger": "Links",
@@ -354,7 +382,42 @@
   },
   "notes": {
     "placeholder": "Jot something down…",
-    "ariaLabel": "Sticky note"
+    "ariaLabel": "Sticky note",
+    "toolbar": {
+      "ariaLabel": "Formatting toolbar",
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "highlight": "Highlight",
+      "bulletList": "Bullet list",
+      "checkList": "Checklist",
+      "strikethrough": "Strikethrough",
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "quote": "Quote",
+      "alignLeft": "Align left",
+      "alignCenter": "Align center",
+      "alignRight": "Align right",
+      "paragraph": "Text",
+      "heading3": "Heading 3",
+      "align": "Alignment",
+      "blockType": "Text style",
+      "textColor": "Text colour",
+      "colors": {
+        "default": "Default",
+        "yellow": "Yellow",
+        "green": "Green",
+        "pink": "Pink",
+        "blue": "Blue",
+        "red": "Red",
+        "purple": "Purple",
+        "white": "White",
+        "paleYellow": "Pale yellow",
+        "palePink": "Pale pink",
+        "paleBlue": "Pale blue",
+        "paleGreen": "Pale green"
+      }
+    }
   },
   "weather": {
     "unavailable": "N/A",
@@ -405,9 +468,11 @@
       "5": "Fri",
       "6": "Sat"
     },
-    "enableLocation": "Enable location",
+    "enableLocation": "Use my location",
     "retry": "Try again",
-    "today": "Today"
+    "today": "Today",
+    "locationOff": "No location set — use yours, or pick a city ☁️",
+    "chooseCity": "Choose a city"
   },
   "socials": {
     "buttonLabel": "My socials",
@@ -582,7 +647,7 @@
     "permissionsTitle": "Permissions",
     "permissionsSub": "Ghiblify asks for nothing up front. Turn on only what you use — revoking takes effect immediately.",
     "permissionGeolocation": "Location",
-    "permissionGeolocationSub": "Lets Weather detect where you are. Off means the location API is never called — pick a city by hand instead.",
+    "permissionGeolocationSub": "Approximate (city-level) location from your network connection — used only to fetch the local forecast. No GPS, no location permission.",
     "permissionBookmarks": "Bookmarks",
     "permissionBookmarksSub": "Lets the bookmarks panel read and organise your Chrome bookmarks.",
     "storageTitle": "Stored data",
@@ -638,6 +703,8 @@
       "square": "Square",
       "rounded": "Rounded",
       "pill": "Soft"
-    }
+    },
+    "permissionEmail": "Email address",
+    "permissionEmailSub": "Personalizes the Google widget's account button with your initial. Nothing else."
   }
 }

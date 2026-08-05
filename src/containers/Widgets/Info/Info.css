@@ -34,6 +34,12 @@
     white-space: break-spaces;
 }
 
+/* Stable formatting context for the paint-only highlight layer. This is
+   present in every state, so toggling highlight/frost cannot reflow text. */
+.info-item-text {
+    display: inline-block;
+}
+
 /* 
 .info-item:last-child {
     margin-bottom: 0;

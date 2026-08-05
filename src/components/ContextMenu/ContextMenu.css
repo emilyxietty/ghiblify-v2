@@ -104,7 +104,7 @@
 }
 
 .ctx-menu-row.is-selected .ctx-menu-icon {
-    color: var(--yellow, #e9b330);
+    color: var(--interaction-accent, #8fc7e8);
 }
 
 .ctx-menu-label {

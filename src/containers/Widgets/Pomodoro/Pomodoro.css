@@ -20,7 +20,8 @@
         ),
         color-mix(
             in srgb,
-            var(--purple-dark) calc(var(--pomodoro-opacity, 0.75) * 100%),
+            var(--pomodoro-card, var(--purple-dark))
+                calc(var(--pomodoro-opacity, 0.75) * 100%),
             transparent
         );
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
@@ -64,8 +65,13 @@
    bright yellow (no var(--yellow)) so the contrast against the dark
    text stays the same across every palette — Frost in particular
    binds --yellow to a desaturated tan that, when mixed, dropped the
-   contrast against the dark text below readable. */
-.pomodoro-widget.break-mode {
+   contrast against the dark text below readable.
+
+   :not(.custom-card) on every break-mode surface rule — when the
+   user picked a card colour it applies to BOTH modes, so break keeps
+   the custom surface (and focus-mode's light text) instead of
+   swapping to the blue card + dark ink. */
+.pomodoro-widget.break-mode:not(.custom-card) {
     /* Drive the alpha directly with rgba(...) so --pomodoro-opacity is
        used as a literal alpha channel — no calc, no color-mix wrapper.
        (The previous color-mix(in srgb, #9bc8db calc(var * 100%),
@@ -81,16 +87,18 @@
     border-color: rgba(15, 42, 58, 0.22);
 }
 
-.pomodoro-widget.break-mode .pomodoro-switch-header {
+.pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header {
     background: rgba(15, 42, 58, 0.12);
     border-color: rgba(15, 42, 58, 0.18);
 }
 
-.pomodoro-widget.break-mode .pomodoro-switch-header h2 {
+.pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2 {
     color: #0f2a3a;
 }
 
-.pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
+.pomodoro-widget.break-mode:not(.custom-card)
+    .pomodoro-switch-header
+    h2.active-mode {
     background: rgba(15, 42, 58, 0.18);
 }
 

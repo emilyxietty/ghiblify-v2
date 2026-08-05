@@ -41,6 +41,13 @@ export interface TimeSettings {
   /** 0–100 — how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
+  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+   *  behind the text so the wallpaper diffuses through the tint.
+   *  Composes with colour + opacity (drop opacity low for near-pure
+   *  glass). Absent/false = classic solid highlighter. */
+  highlightFrost?: boolean;
+  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
@@ -59,6 +66,13 @@ export interface DateSettings {
   /** 0–100 — how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
+  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+   *  behind the text so the wallpaper diffuses through the tint.
+   *  Composes with colour + opacity (drop opacity low for near-pure
+   *  glass). Absent/false = classic solid highlighter. */
+  highlightFrost?: boolean;
+  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
@@ -74,6 +88,13 @@ export interface GreetingSettings {
   /** 0–100 — how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
+  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+   *  behind the text so the wallpaper diffuses through the tint.
+   *  Composes with colour + opacity (drop opacity low for near-pure
+   *  glass). Absent/false = classic solid highlighter. */
+  highlightFrost?: boolean;
+  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
@@ -89,6 +110,13 @@ export interface InfoSettings {
   /** 0–100 — how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
+  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+   *  behind the text so the wallpaper diffuses through the tint.
+   *  Composes with colour + opacity (drop opacity low for near-pure
+   *  glass). Absent/false = classic solid highlighter. */
+  highlightFrost?: boolean;
+  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
@@ -103,6 +131,18 @@ export interface TodoSettings {
   /** 0–100 — controls Frost glass blur intensity. Independent from
    *  opacity so each can have its own ergonomic default. Default 25. */
   blur: number;
+  /** Frosted-glass surface on any theme — shell-level wallpaper blur
+   *  with near-transparent item cards (same glass the sticky note
+   *  offers via its paper swatches). Default false. */
+  frosted?: boolean;
+  /** Dark ("smoked") variant of the frosted glass — same blur with a
+   *  dark tint on the shell. Only meaningful while `frosted` is true.
+   *  Default false (light glass). */
+  frostDark?: boolean;
+  /** Surface tint. null/absent = the theme's --surface-rgb. Deep-tone
+   *  presets only (todo text is var(--light)) — same palette as the
+   *  pomodoro card. */
+  surfaceColor?: string | null;
 }
 export interface AvatarSettings {
   selectedAvatar: string;
@@ -144,7 +184,23 @@ export interface PomodoroSettings {
   /** 0–100 — chime volume. Independent of `opacity`; 0 is silent and
    *  is the same end state as `sound: "none"`. */
   soundVolume: number;
+  /** Focus-mode card base colour. null/absent = the theme's
+   *  --purple-dark. Swatches are deliberately deep tones so the
+   *  card's light text keeps its contrast. Break mode keeps its
+   *  signal-yellow regardless. */
+  cardColor?: string | null;
 }
+
+/** Pomodoro card swatches — deep tones only; the card's text is
+ *  var(--light) and must stay readable on every pick. Default (theme
+ *  purple) renders as its own leading swatch, stored as null. */
+export const POMODORO_CARD_PRESETS = [
+  "#274a5e", // ocean
+  "#2e4638", // forest
+  "#4a2e50", // plum
+  "#542e2e", // ember
+  "#2f3136", // charcoal
+] as const;
 /**
  * How much forecast the widget shows.
  *
@@ -204,6 +260,14 @@ export interface WeatherSettings {
   opacity: number;
   /** 0–100 — Frost blur intensity for the widget shell. */
   blur: number;
+  /** Frosted-glass surface on any theme — shell-level wallpaper blur
+   *  with near-transparent cells (same glass as todo/notes). Default
+   *  false. */
+  frosted?: boolean;
+  /** Dark ("smoked") variant of the frosted glass — same blur with a
+   *  dark tint on the shell. Only meaningful while `frosted` is true.
+   *  Default false (light glass). */
+  frostDark?: boolean;
   /** "animated" = Meteocons SMIL-animated SVG (default — sun glints,
    *  rain falls). "still" = single-frame static variant for users who
    *  prefer no motion (or to save battery). */
@@ -234,16 +298,42 @@ export type BookmarksSettings = Record<string, never>;
 // unused; the dock contents come from each widget's `inRightSidebar`
 // flag (added in a later chunk).
 export type RightSidebarSettings = Record<string, never>;
+/** Google corner — waffle apps menu + account button. Stateless. */
+export type GoogleAppsSettings = Record<string, never>;
 export interface NotesSettings {
   width: number;
   height: number;
-  /** Free-form note body. Plain text (newlines preserved). Persisted
-   *  alongside the widget. */
+  /** Plaintext mirror of the note body (newlines preserved). Kept in
+   *  lockstep with `richContent` on every persist so (a) pre-Lexical
+   *  builds that only know this field still show the text if the user
+   *  downgrades, and (b) the first Lexical load of a legacy note can
+   *  import from it. Never read for display when `richContent`
+   *  parses. */
   content: string;
+  /** Serialized Lexical EditorState JSON — the rich source of truth
+   *  (bold / highlight / checklists). Absent on legacy notes; the
+   *  editor then imports `content` line-by-line as literal plain
+   *  paragraphs so old notes render exactly as they did in the
+   *  textarea era. */
+  richContent?: string;
   /** When true, paint the cardborder.svg behind the textarea. When
    *  false the widget is just a plain cream rectangle (no border art).
    *  Toggled from the widget's edit-mode controls. Default true. */
   showBorder: boolean;
+  /** Paper tint. null/absent = the classic cream (#fbf3df). Chosen
+   *  from the preset sticky-note swatches in the edit panel. */
+  paperColor?: string | null;
+  /** Remove the paper fill entirely. Border art remains independently
+   *  controlled by showBorder. */
+  paperNone?: boolean;
+  /** Frosted-glass paper — the tint goes translucent and the wallpaper
+   *  blurs through the note. Default false (solid paper). */
+  paperFrost?: boolean;
+  /** Paper intensity (0–100). Drives the generic --widget-opacity
+   *  cascade (edit-panel slider + right-click submenu). For solid paper
+   *  it controls fill alpha; for frosted paper it controls blur strength.
+   *  The ink and decorative border stay fully opaque. Default 100. */
+  opacity?: number;
 }
 
 export interface WidgetSettingsMap {
@@ -260,6 +350,7 @@ export interface WidgetSettingsMap {
   weather: WeatherSettings;
   notes: NotesSettings;
   rightSidebar: RightSidebarSettings;
+  googleApps: GoogleAppsSettings;
 }
 
 export type WidgetKey = keyof WidgetSettingsMap;
@@ -278,6 +369,7 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "weather",
   "notes",
   "rightSidebar",
+  "googleApps",
 ];
 
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
@@ -303,9 +395,29 @@ export interface CustomControls {
   /** City search + "use my location" reset, in the edit overlay. */
   weatherLocation?: boolean;
   notesShowBorder?: boolean;
+  /** Paper swatches + solid/frost style for the sticky note. */
+  notesPaper?: boolean;
+  /** Solid/frosted surface choice for the todo list. */
+  todoFrosted?: boolean;
+  /** Solid/frosted surface choice for the weather widget. */
+  weatherFrosted?: boolean;
   pomodoroSize?: boolean;
   pomodoroSound?: boolean;
+  /** Card colour swatches for the pomodoro focus card. */
+  pomodoroColor?: boolean;
 }
+
+/** Sticky-note paper swatches — the classic pad colours. First entry
+ *  is the shipped cream default (stored as null so pre-feature blobs
+ *  and "never touched it" mean the same thing). */
+export const NOTE_PAPER_PRESETS = [
+  "#fbf3df", // cream (default)
+  "#fff3a8", // canary yellow
+  "#ffd9e8", // pink
+  "#d6ecff", // sky blue
+  "#ddf3d9", // mint
+  "#e8ddff", // lavender
+] as const;
 
 export interface WidgetConfig<K extends WidgetKey> {
   name: string;
@@ -337,6 +449,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightColor: null,
       highlightTextColor: "auto",
       highlightOpacity: 100,
+      highlightBlur: 60,
       typeIn: false,
     },
     fontSize: { min: 20, max: 250, step: 20 },
@@ -351,6 +464,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightColor: null,
       highlightTextColor: "auto",
       highlightOpacity: 100,
+      highlightBlur: 60,
       typeIn: false,
     },
     fontSize: { min: 10, max: 50, step: 5 },
@@ -365,6 +479,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightColor: null,
       highlightTextColor: "auto",
       highlightOpacity: 100,
+      highlightBlur: 60,
       typeIn: false,
     },
     fontSize: { min: 14, max: 60, step: 4 },
@@ -385,6 +500,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightColor: null,
       highlightTextColor: "auto",
       highlightOpacity: 100,
+      highlightBlur: 60,
       typeIn: false,
     },
     fontSize: { min: 10, max: 50, step: 5 },
@@ -395,13 +511,16 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     position: { x: 13.169590643274855, y: 2 },
     settings: {
       width: 350,
-      height: 200,
+      height: 350,
       collapsed: false,
       opacity: 75,
       blur: 10,
+      frosted: false,
+      surfaceColor: null,
     },
     width: { min: 250, max: 600, step: 50 },
     height: { min: 200, max: 700, step: 50 },
+    customControls: { todoFrosted: true },
   },
   avatar: {
     name: "Avatar",
@@ -444,12 +563,17 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       opacity: 100,
       sound: "musicbox",
       soundVolume: 70,
+      cardColor: null,
     },
     // No width/height ResizeBound — Pomodoro snaps to small /
     // medium / large via the right-click size radio (or the
     // EditWidget overlay) rather than free-resize, so each preset
     // has its own crafted layout.
-    customControls: { pomodoroSize: true, pomodoroSound: true },
+    customControls: {
+      pomodoroSize: true,
+      pomodoroSound: true,
+      pomodoroColor: true,
+    },
   },
   bookmarks: {
     name: "Bookmarks",
@@ -471,6 +595,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       showCard: false,
       manualPlace: null,
       useDeviceLocation: true,
+      frosted: false,
     },
     // No width/height ResizeBound — widget auto-sizes to content.
     customControls: {
@@ -478,16 +603,39 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       weatherDetail: true,
       weatherStyle: true,
       weatherLocation: true,
+      weatherFrosted: true,
     },
   },
   notes: {
     name: "Notes",
     position: { x: 80, y: 30 },
-    // Fixed square footprint so the cardborder.svg (square) sits flush
-    // against the widget's edges with no letterboxing cream gap around
-    // it. Not user-resizable — no width/height ResizeBound.
-    settings: { width: 260, height: 260, content: "", showBorder: true },
-    customControls: { notesShowBorder: true },
+    // Square footprint so the cardborder.svg (square) sits flush
+    // against the widget's edges with no letterboxing cream gap
+    // around it. squareLock ties the two axes during drag-resize so
+    // the note stays square at every size; identical bounds on both
+    // axes keep the snapped values aligned.
+    settings: {
+      width: 260,
+      height: 260,
+      content: "",
+      showBorder: true,
+      paperColor: null,
+      paperNone: false,
+      paperFrost: false,
+      opacity: 100,
+    },
+    width: { min: 200, max: 600, step: 20 },
+    height: { min: 200, max: 600, step: 20 },
+    squareLock: true,
+    customControls: { notesShowBorder: true, notesPaper: true },
+  },
+  googleApps: {
+    name: "Google apps",
+    // Top-right region, mirroring Google's own NTP cluster — inset a
+    // touch from the true corner so it clears the weather widget and
+    // the screen edge.
+    position: { x: 93, y: 5 },
+    settings: {},
   },
   rightSidebar: {
     name: "Right Sidebar",

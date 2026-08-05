@@ -5,7 +5,194 @@
 
 .color-picker {
     position: relative;
-    display: inline-flex;
+    /* One fixed row of nine chips, evenly distributed across the full
+       panel width — a deterministic count never wraps, so the strip
+       always reads as a designed unit rather than a ragged grid. */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    width: 100%;
+}
+
+.color-picker-inline-swatch,
+.color-picker-custom-trigger {
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--light) 28%, transparent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease,
+        border-color 120ms ease;
+}
+
+.color-picker-inline-swatch:hover,
+.color-picker-custom-trigger:hover {
+    transform: scale(1.12);
+}
+
+.color-picker-inline-swatch.is-active {
+    box-shadow: 0 0 0 2px var(--light);
+}
+
+/* Live demo bar at the top of the hovercard — renders "Aa" in the
+   resolved ink on the colour being hovered/committed at the current
+   opacity, so sweeping the strip previews the pill inside the card
+   as well as on the widget itself. */
+.color-picker-hovercard-demo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 0;
+    border-radius: var(--radius-md, 8px);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    transition: background 100ms ease, color 100ms ease;
+}
+
+/* ---------------------------------------------------------------------------
+   Fine-tuning hovercard — opacity / blur / ink float above the strip
+   on hover or keyboard focus, instead of claiming permanent rows in
+   the edit panel. The bridge's padding keeps the hover unbroken while
+   the cursor travels from strip to card.
+   --------------------------------------------------------------------------- */
+/* Portaled to <body> and positioned above the strip in fixed coords —
+   inside the strip it was clipped by the edit panel's overflow.
+   Open/close is JS-managed hover with a 100ms grace timer (see
+   ColorPicker.tsx), so leaving genuinely closes it. */
+.color-picker-hovercard-floating {
+    position: fixed;
+    transform: translateY(-100%);
+    box-sizing: border-box;
+}
+
+/* Chevron — expands the edit panel's tuning column. Chip-sized to
+   sit in the strip; dimmed when no colour is active (nothing to
+   tune); flips to point back while open. */
+.color-picker-expand {
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--light) 28%, transparent);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--light);
+    cursor: pointer;
+    transition: transform 120ms ease, background 120ms ease;
+}
+
+.color-picker-expand:hover:not(:disabled) {
+    transform: scale(1.12);
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+}
+
+.color-picker-expand svg {
+    transition: transform 160ms ease;
+}
+
+.color-picker-expand.is-open svg {
+    transform: rotate(180deg);
+}
+
+.color-picker-expand.is-open {
+    background: var(--light);
+    color: var(--dark, #1f2620);
+}
+
+.color-picker-expand:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.color-picker-hovercard {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 10px 12px;
+    /* Fully opaque, matching the edit panel's surface exactly (same
+       --surface-rgb token, alpha 1 instead of the panel's 0.96) so
+       the card reads as part of the same chrome — not a translucent
+       layer floating over widget content. */
+    background: rgb(var(--surface-rgb, 31, 38, 32));
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-md, 10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.color-picker-hovercard-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-picker-hovercard-label {
+    font-size: 11px;
+    color: color-mix(in srgb, var(--light) 72%, transparent);
+    min-width: 62px;
+    white-space: nowrap;
+}
+
+.color-picker-hovercard-row .filter-slider {
+    flex: 1;
+    min-width: 0;
+}
+
+.color-picker-ink {
+    display: flex;
+    gap: 4px;
+}
+
+.color-picker-ink-btn {
+    padding: 3px 9px;
+    font-size: 11px;
+    font-family: inherit;
+    border-radius: var(--radius-pill, 999px);
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
+    background: transparent;
+    color: var(--light);
+    cursor: pointer;
+}
+
+/* The Aa chips preview their own result: light ink on dark, dark ink
+   on paper. */
+.color-picker-ink-btn.ink-light {
+    background: #2a323a;
+    color: #ffffff;
+}
+
+.color-picker-ink-btn.ink-dark {
+    background: #f2ead8;
+    color: #1f2620;
+}
+
+.color-picker-ink-btn.is-active {
+    box-shadow: 0 0 0 2px var(--light);
+}
+
+.color-picker-ink-btn.ink-auto.is-active {
+    background: var(--light);
+    color: var(--dark, #1f2620);
+}
+
+.color-picker-inline-off {
+    background:
+        linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--red, #d54a3e) calc(50% - 1px),
+            var(--red, #d54a3e) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        ),
+        color-mix(in srgb, var(--light) 10%, transparent);
 }
 
 .color-picker-trigger {
@@ -20,6 +207,21 @@
     border-radius: var(--radius-pill, 999px);
     cursor: pointer;
     transition: background 140ms ease;
+}
+
+.color-picker-custom-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2px;
+    color: var(--light);
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 18%, transparent);
+    border-color: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 55%, transparent);
+}
+
+.color-picker-custom-trigger:hover {
+    color: #ffffff;
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 30%, transparent);
 }
 
 .color-picker-trigger:hover {
@@ -125,14 +327,38 @@
     gap: 6px;
 }
 
-.color-picker-native {
+.color-picker-native-wrap {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
     width: 30px;
     height: 28px;
+}
+
+.color-picker-native {
+    width: 100%;
+    height: 100%;
     padding: 0;
     border: 1px solid color-mix(in srgb, var(--light) 20%, transparent);
     border-radius: var(--radius-md, 8px);
     background: transparent;
     cursor: pointer;
+}
+
+.color-picker-native-pencil {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 78%, var(--dark, #1f2620));
+    border: 1px solid color-mix(in srgb, #ffffff 55%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
 }
 
 .color-picker-hex {
@@ -205,4 +431,34 @@
 
 .color-picker-opacity-step.is-active {
     border-color: var(--light);
+}
+
+
+/* Inside the narrow side column, rows STACK (label above control) —
+   the label-left layout that works at panel width piles controls on
+   top of each other at ~150px. */
+.highlight-tuning .color-picker-hovercard-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+}
+
+.highlight-tuning .color-picker-hovercard-label {
+    min-width: 0;
+}
+
+.highlight-tuning .color-picker-ink {
+    flex-wrap: wrap;
+}
+
+/* Palette chip + hex field share one line under the Custom label. */
+.highlight-tuning-custom-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.highlight-tuning-custom-line .color-picker-hex {
+    flex: 1;
+    min-width: 0;
 }

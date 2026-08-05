@@ -1,0 +1,124 @@
+/* ===========================================================================
+   Google corner — waffle (apps grid) + account button, mirroring the
+   cluster on Google's own new-tab page.
+   =========================================================================== */
+
+.gapps-widget {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gapps-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
+    transition: background 140ms ease;
+}
+
+.gapps-btn:hover,
+.gapps-btn.is-open {
+    background: rgba(255, 255, 255, 0.18);
+    filter: none;
+}
+
+.gapps-account {
+    text-decoration: none;
+}
+
+/* Letter avatar — Google's signed-in look: initial on a stable
+   per-email colour. */
+.gapps-letter {
+    width: 28px;
+    height: 28px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    user-select: none;
+}
+
+
+/* The apps grid — a rounded card dropping from the cluster's right
+   edge, like the real launcher. Solid surface (matches the edit-panel
+   family) so tiles read over any wallpaper. */
+.gapps-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 264px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 14px;
+    box-sizing: border-box;
+    background: rgb(var(--surface-rgb, 31, 38, 32));
+    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    z-index: 60;
+    animation: gapps-panel-in 160ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+    scrollbar-width: thin;
+}
+
+@keyframes gapps-panel-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.gapps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.gapps-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 4px 9px;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--light);
+    transition: background 120ms ease;
+}
+
+.gapps-tile:hover {
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+}
+
+.gapps-tile-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+}
+
+.gapps-tile-fallback {
+    background: color-mix(in srgb, var(--light) 16%, transparent);
+}
+
+.gapps-tile-name {
+    font-size: 11.5px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}

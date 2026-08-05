@@ -7,12 +7,12 @@
   "permissions": [
     "storage",
     "search",
-    "favicon",
-    "geolocation"
+    "favicon"
   ],
   "optional_permissions": [
     "bookmarks",
-    "audioCapture"
+    "audioCapture",
+    "identity.email"
   ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"

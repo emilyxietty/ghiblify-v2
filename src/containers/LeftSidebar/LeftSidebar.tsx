@@ -21,7 +21,7 @@ import type { SettingsSection } from "../../components/SettingsModal/SettingsMod
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
 import { isManualPlace } from "../../utils/geocoding";
-import { DeleteOutlineIcon, EditIcon, FormatQuoteIcon, RefreshIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
+import { DeleteOutlineIcon, FormatQuoteIcon, RefreshIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon, AppsIcon } from "../../components/Icons/Icons";
 import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
 import {
   codeToIconName,
@@ -50,6 +50,14 @@ import {
   useAppContext,
 } from "../../contexts/AppContext";
 import { LANGUAGES, getLocale, setLocale, useT } from "../../i18n/i18n";
+import { isEditableTarget } from "../../utils/isEditableTarget";
+import { ContextMenu } from "../../components/ContextMenu/ContextMenu";
+import {
+  hasPermission,
+  removePermission,
+  requestPermission,
+} from "../../utils/chromePermissions";
+import { clearWeatherLocation } from "../../hooks/useWeather";
 import {
   readBlacklist,
   readFavorites,
@@ -103,6 +111,7 @@ const WIDGET_TOGGLES: Array<{
   { key: "pomodoro", icon: <TimerIcon /> },
   { key: "weather", icon: <WbSunnyIcon /> },
   { key: "notes", icon: <StickyNote2Icon /> },
+  { key: "googleApps", icon: <AppsIcon /> },
   // Edge-panel toggles live at the end, side-by-side. They're
   // mutually exclusive (both occupy the right edge); grouping them
   // last reads as "the right-edge picker" instead of being scattered
@@ -120,18 +129,29 @@ const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
 
 export const LeftSidebar: React.FC = () => {
   const t = useT();
+  // Right-click dropdown on a widget toggle: Edit / Show-Hide /
+  // permission switches where the widget has one. Anchored at the
+  // cursor; permission state is fetched when the menu opens (checkbox
+  // needs a concrete value, and the API is async).
+  const [toggleMenu, setToggleMenu] = useState<{
+    key: WidgetKey;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [menuPermGranted, setMenuPermGranted] = useState<boolean | null>(
+    null
+  );
   const {
     widgets,
     toggleWidgetVisibility,
-    resetAllWidgets,
+    setEditingWidgetKey,
+    updateWidgetSettings,
     backgroundFilters,
     updateBackgroundFilters,
     backgroundParallax,
     setBackgroundParallax,
     appearance,
     updateAppearance,
-    showWidgetEdits,
-    toggleEditMode,
     setShowGuide,
     showGuide,
     sidebarSpotlight,
@@ -252,11 +272,6 @@ export const LeftSidebar: React.FC = () => {
     }
   }, [sidebarSpotlight]);
 
-  // Close sidebar when entering edit mode
-  useEffect(() => {
-    setIsOpen(false);
-  }, [showWidgetEdits]);
-
   // Edge-hover open + outside close (mouse UX preserved). While the
   // welcome guide is open the auto-close branch is skipped so the
   // sidebar stays put for the spotlight tour — the user shouldn't
@@ -281,6 +296,9 @@ export const LeftSidebar: React.FC = () => {
   // entry point now that the visible trigger button is gone). Escape closes.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Same guard as the bookmarks Cmd+B — don't hijack combos from
+      // an editable surface (Notes editor, search inputs).
+      if (isEditableTarget(e.target)) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setIsOpen((v) => !v);
@@ -303,11 +321,6 @@ export const LeftSidebar: React.FC = () => {
 
   const selectedAvatar = widgets.avatar.settings.selectedAvatar;
   const avatarData = AVATAR_OPTIONS.find((a) => a.value === selectedAvatar);
-
-  const handleEditToggle = () => {
-    toggleEditMode();
-    setIsOpen(false);
-  };
 
   const handleSiteClick = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
@@ -483,6 +496,23 @@ export const LeftSidebar: React.FC = () => {
                       if (blockedBy) return;
                       toggleWidgetVisibility(key);
                     }}
+                    // Right-click = quick-actions dropdown for this
+                    // widget (edit / show-hide / permissions).
+                    onContextMenu={(e: React.MouseEvent) => {
+                      e.preventDefault();
+                      if (blockedBy) return;
+                      setMenuPermGranted(null);
+                      const perm =
+                        key === "bookmarks"
+                          ? "bookmarks"
+                          : key === "searchbar"
+                            ? "audioCapture"
+                            : null;
+                      if (perm) {
+                        void hasPermission(perm).then(setMenuPermGranted);
+                      }
+                      setToggleMenu({ key, x: e.clientX, y: e.clientY });
+                    }}
                     aria-label={
                       blockedTooltip ??
                       t(
@@ -527,28 +557,6 @@ export const LeftSidebar: React.FC = () => {
                 aria-pressed={widgets.avatar.visible}
                 data-tooltip={t("widgets.names.avatar")}
               />
-            </div>
-            <div className="widget-edits">
-              <Button
-                variant="dark"
-                size="medium"
-                pill
-                onClick={handleEditToggle}
-              >
-                <EditIcon style={{ fontSize: 14 }} />
-                {showWidgetEdits
-                  ? t("common.done")
-                  : t("sidebar.buttons.editWidgets")}
-              </Button>
-              <Button
-                variant="dark"
-                size="medium"
-                pill
-                onClick={resetAllWidgets}
-              >
-                <RestoreIcon style={{ fontSize: 14 }} />
-                {t("sidebar.buttons.resetAllWidgets")}
-              </Button>
             </div>
           </section>
 
@@ -1072,6 +1080,90 @@ export const LeftSidebar: React.FC = () => {
           </div>
         </div>
       </aside>
+      {toggleMenu &&
+        (() => {
+          const key = toggleMenu.key;
+          const isVisible = widgets[key].visible;
+          const name = t(`widgets.names.${key}`);
+          const items: React.ComponentProps<typeof ContextMenu>["items"] = [];
+          // Edge panels have no canvas edit surface.
+          if (key !== "bookmarks" && key !== "rightSidebar") {
+            items.push({
+              type: "action",
+              label: t("widgets.contextMenu.edit", { name }),
+              onClick: () => {
+                if (!widgets[key].visible) toggleWidgetVisibility(key);
+                setEditingWidgetKey(key);
+                setIsOpen(false);
+              },
+            });
+          }
+          items.push({
+            type: "action",
+            label: t(
+              isVisible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
+              { name }
+            ),
+            onClick: () => toggleWidgetVisibility(key),
+          });
+          // Chrome-grant switches, where the widget has one. The click
+          // is a real user gesture, which permissions.request needs.
+          if (key === "bookmarks" || key === "searchbar") {
+            const permName =
+              key === "bookmarks" ? ("bookmarks" as const) : ("audioCapture" as const);
+            items.push({ type: "separator" });
+            items.push({
+              type: "checkbox",
+              label: t(
+                key === "bookmarks"
+                  ? "settings.permissionBookmarks"
+                  : "settings.permissionMicrophone"
+              ),
+              checked: menuPermGranted === true,
+              onClick: () => {
+                if (menuPermGranted) {
+                  void removePermission(permName).then(
+                    () => void setMenuPermGranted(false)
+                  );
+                } else {
+                  void requestPermission(permName).then((ok) =>
+                    setMenuPermGranted(ok)
+                  );
+                }
+              },
+            });
+          }
+          if (key === "weather") {
+            const useDev =
+              (widgets.weather.settings as WeatherSettings)
+                .useDeviceLocation !== false;
+            items.push({ type: "separator" });
+            items.push({
+              type: "checkbox",
+              label: t("settings.permissionGeolocation"),
+              checked: useDev,
+              onClick: () => {
+                updateWidgetSettings("weather", {
+                  useDeviceLocation: !useDev,
+                });
+                if (useDev) {
+                  // Off must forget the cached coords too.
+                  clearWeatherLocation();
+                  window.dispatchEvent(
+                    new CustomEvent("ghiblify:weather:refresh")
+                  );
+                }
+              },
+            });
+          }
+          return (
+            <ContextMenu
+              position={{ x: toggleMenu.x, y: toggleMenu.y }}
+              items={items}
+              onClose={() => setToggleMenu(null)}
+            />
+          );
+        })()}
       <Suspense fallback={null}>
         {showBackgroundSettings && (
           <BackgroundSettingsModal

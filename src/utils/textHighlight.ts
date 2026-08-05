@@ -18,17 +18,18 @@ const MAX_RECENTS = 5;
 /** Fired after the recents list changes so open pickers re-render. */
 export const RECENT_COLORS_EVENT = "ghiblify:recent-colors:change";
 
-/** One swatch per colour a person would actually name. Anything between
- *  these lives behind the colour wheel — a grid of near-identical
- *  pastels is harder to choose from, not easier. */
+/** One swatch per colour a person would actually name — curated as a
+ *  soft watercolor set that harmonizes with the Ghibli wallpapers
+ *  (the old list mixed harsh saturated web-blue/red/orange with
+ *  pastels and read as clashing). Anything between these lives behind
+ *  the colour wheel. */
 export const HIGHLIGHT_PRESETS = [
-  "#ffffff",
-  "#000000",
-  "#3b82f6",
-  "#e04b4b",
-  "#f7d774",
-  "#f08c3c",
-  "#a870d8",
+  "#ffffff", // paper white
+  "#f7d774", // butter yellow (the classic highlighter)
+  "#f2a7c3", // blossom pink
+  "#9bc495", // sage green
+  "#8ec5e8", // sky blue
+  "#1a1a1a", // ink black (soft, not pure #000 — plays nicer with alpha)
 ] as const;
 
 /** How the text on top of a highlight is coloured. "auto" derives it
@@ -95,16 +96,35 @@ export const foregroundFor = (hex: string): string => {
   return luminance > 0.6 ? HIGHLIGHT_TEXT_DARK : HIGHLIGHT_TEXT_LIGHT;
 };
 
+/** Presets retired from HIGHLIGHT_PRESETS (Aug 2026 palette recut).
+ *  Residue of these in a user's stored recents keeps the removed
+ *  swatch alive in the strip — scrub them at read time. A colour
+ *  freshly picked from the OS palette re-enters recents normally,
+ *  because the scrub-and-rewrite below only runs against what's
+ *  already stored. */
+const RETIRED_PRESETS = ["#f08c3c", "#000000", "#3b82f6", "#e04b4b"];
+
 export const readRecentColors = (): string[] => {
   try {
     const raw = localStorage.getItem(RECENTS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
+    const cleaned = parsed
       .map((v) => (typeof v === "string" ? normalizeHex(v) : null))
-      .filter((v): v is string => !!v)
+      .filter((v): v is string => !!v && !RETIRED_PRESETS.includes(v))
       .slice(0, MAX_RECENTS);
+    // One-time scrub: persist the cleaned list so the retired swatches
+    // don't linger in storage (and future picks aren't filtered —
+    // pushRecentColor writes fresh entries that bypass this).
+    if (cleaned.length !== parsed.length) {
+      try {
+        localStorage.setItem(RECENTS_KEY, JSON.stringify(cleaned));
+      } catch {
+        /* ignore */
+      }
+    }
+    return cleaned;
   } catch {
     return [];
   }

@@ -12,6 +12,14 @@
   "license": "ISC",
   "description": "Beautiful Studio Ghibli-inspired new tab page",
   "dependencies": {
+    "@lexical/link": "^0.49.0",
+    "@lexical/list": "^0.49.0",
+    "@lexical/markdown": "^0.49.0",
+    "@lexical/react": "^0.49.0",
+    "@lexical/rich-text": "^0.49.0",
+    "@lexical/selection": "^0.49.0",
+    "@lexical/utils": "^0.49.0",
+    "lexical": "^0.49.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

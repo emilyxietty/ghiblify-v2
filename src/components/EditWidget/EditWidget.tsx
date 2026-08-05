@@ -1,13 +1,17 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../components/Button/Button";
 import { DragIndicatorIcon, PlaceIcon } from "../Icons/Icons";
+import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
+  AvatarSettings,
   getWidgetConfig,
   InfoFields,
   InfoSettings,
   isWidgetKey,
+  NOTE_PAPER_PRESETS,
   NotesSettings,
+  POMODORO_CARD_PRESETS,
   PomodoroSettings,
   QuicklinksSettings,
   resolveWeatherDetail,
@@ -26,7 +30,7 @@ import {
   type PomodoroSoundKey,
 } from "../../utils/pomodoroChime";
 import { isHighlightTextColor, normalizeHex } from "../../utils/textHighlight";
-import { ColorPicker } from "../ColorPicker/ColorPicker";
+import { ColorPicker, HighlightTuning } from "../ColorPicker/ColorPicker";
 import { Dropdown } from "../Dropdown/Dropdown";
 import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
 import "./EditWidget.css";
@@ -138,8 +142,21 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   anchorEl,
 }) => {
   const t = useT();
-  const { widgets, updateWidgetSettings, appearance } = useAppContext();
+  const {
+    widgetsCommitted,
+    updateWidgetSettings,
+    previewWidgetSettings,
+    appearance,
+  } = useAppContext();
   const panelRef = useRef<HTMLDivElement | null>(null);
+  // While a hover-preview is active, the panel must NOT re-place
+  // itself. Previewing "analog" swells the Time widget, the
+  // ResizeObserver re-anchors the panel, the cursor is suddenly off
+  // the segment, the preview clears, the widget shrinks, the panel
+  // snaps back under the cursor… a feedback loop that reads as the
+  // panel spasming. Freezing placement for the hover's duration
+  // breaks the loop; placement resumes on leave/click.
+  const previewFreezeRef = useRef(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(
     () => (storageKey ? movedPanels.get(storageKey) ?? null : null)
   );
@@ -151,6 +168,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     () => !!storageKey && movedPanels.has(storageKey)
   );
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
+  // Whether the tuning column (opacity / blur / ink) is expanded out
+  // the panel's right side — toggled by the strip's chevron.
+  const [highlightTuneOpen, setHighlightTuneOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isWidgetKey(storageKey)) return;
+    const key = storageKey;
+    setHighlightTuneOpen(false);
+    return () => previewWidgetSettings(key, null);
+  }, [storageKey]);
 
   const bringToFront = () => setZ(nextPanelZ());
 
@@ -200,6 +227,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     const place = () => {
       const panel = panelRef.current;
       if (!panel) return;
+      if (previewFreezeRef.current) return;
       const anchor = anchorEl.getBoundingClientRect();
       const rect = panel.getBoundingClientRect();
       // Prefer the right side; flip left when it wouldn't fit.
@@ -230,21 +258,27 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   if (!showWidgetEdits || isResizing || !isWidgetKey(storageKey)) return null;
 
   const widgetConfig = getWidgetConfig(storageKey);
-  const settings = widgets[storageKey].settings as Record<string, unknown>;
+  const settings = widgetsCommitted[storageKey].settings as Record<string, unknown>;
   const controls = widgetConfig.customControls;
 
   // --- Generic controls, driven by what the config declares ----------
   const isFrost = appearance.theme === "frost";
+  const isNotes = storageKey === "notes";
+  const isNotesPaperFrost =
+    isNotes && (settings as Record<string, unknown>).paperFrost === true;
   // The single slider drives `blur` on Frost (the widget renders as
   // glass with no surface alpha to tune) and `opacity` everywhere else.
-  const sliderField: "blur" | "opacity" = isFrost ? "blur" : "opacity";
+  // Notes always persists this value as opacity: solid paper uses it as
+  // alpha, while frosted paper maps it to blur strength in CSS.
+  const sliderField: "blur" | "opacity" =
+    isNotes ? "opacity" : isFrost ? "blur" : "opacity";
   let supportsSlider =
     sliderField in (widgetConfig.settings as Record<string, unknown>);
   if (supportsSlider && !isFrost && storageKey === "weather") {
     // Weather's opacity only tints the forecast cells, which don't
     // exist below the "hourly" detail level.
     const detail = resolveWeatherDetail(
-      widgets.weather.settings as WeatherSettings
+      widgetsCommitted.weather.settings as WeatherSettings
     );
     if (detail !== "hourly" && detail !== "full") supportsSlider = false;
   }
@@ -279,6 +313,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
   const hasAnyControls = !!(
     controls?.timeFormat ||
+    controls?.avatarSelector ||
     controls?.infoFields ||
     controls?.gridMode ||
     controls?.weatherUnit ||
@@ -286,38 +321,57 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.weatherStyle ||
     controls?.weatherLocation ||
     controls?.notesShowBorder ||
+    controls?.notesPaper ||
+    controls?.todoFrosted ||
     controls?.pomodoroSize ||
     controls?.pomodoroSound ||
+    controls?.pomodoroColor ||
     supportsSlider ||
     supportsTextShadow ||
     supportsHighlight ||
     supportsTypeIn
   );
 
-  const timeSettings = widgets.time.settings as TimeSettings;
+  const timeSettings = widgetsCommitted.time.settings as TimeSettings;
   const currentTimeFormat: "12h" | "24h" | "analog" = timeSettings.analog
     ? "analog"
     : timeSettings.is24Hour
       ? "24h"
       : "12h";
-  const quicklinksGrid = (widgets.quicklinks.settings as QuicklinksSettings)
+  const quicklinksGrid = (widgetsCommitted.quicklinks.settings as QuicklinksSettings)
     .gridMode;
-  const infoFields = (widgets.info.settings as InfoSettings).infoFields;
-  const weatherSettings = widgets.weather.settings as WeatherSettings;
+  const infoFields = (widgetsCommitted.info.settings as InfoSettings).infoFields;
+  const weatherSettings = widgetsCommitted.weather.settings as WeatherSettings;
   const notesShowBorder =
-    (widgets.notes.settings as NotesSettings).showBorder !== false;
+    (widgetsCommitted.notes.settings as NotesSettings).showBorder !== false;
+  const notesSettings = widgetsCommitted.notes.settings as NotesSettings;
+  const notesPaperColor =
+    typeof notesSettings.paperColor === "string"
+      ? normalizeHex(notesSettings.paperColor)
+      : null;
+  const notesPaperFrost = notesSettings.paperFrost === true;
+  const notesPaperNone = notesSettings.paperNone === true;
+  const avatarSettings = widgetsCommitted.avatar.settings as AvatarSettings;
+  const highlightFrost = settings.highlightFrost === true;
+  const highlightBlur = Math.round(
+    typeof settings.highlightBlur === "number" ? settings.highlightBlur : 60
+  );
   // Both fall back rather than trusting storage: these keys are newer
   // than the widget, so anyone upgrading has settings without them.
   // `??` on the volume so a deliberate 0 (mute) isn't bounced back up.
-  const pomodoroSettings = widgets.pomodoro.settings as PomodoroSettings;
+  const pomodoroSettings = widgetsCommitted.pomodoro.settings as PomodoroSettings;
   const pomodoroSound: PomodoroSoundKey = isPomodoroSoundKey(
     pomodoroSettings.sound
   )
     ? pomodoroSettings.sound
     : "musicbox";
   const pomodoroVolume = Math.round(pomodoroSettings.soundVolume ?? 70);
+  const pomodoroCardColor =
+    typeof pomodoroSettings.cardColor === "string"
+      ? normalizeHex(pomodoroSettings.cardColor)
+      : null;
   const pomodoroSize: "small" | "medium" | "large" = (() => {
-    const raw = (widgets.pomodoro.settings as { size?: string }).size;
+    const raw = (widgetsCommitted.pomodoro.settings as { size?: string }).size;
     return raw === "small" || raw === "medium" || raw === "large"
       ? raw
       : "medium";
@@ -329,7 +383,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     ariaLabel: string,
     options: Array<{ key: T; label: string }>,
     current: T,
-    onPick: (key: T) => void
+    onPick: (key: T) => void,
+    previewPatch?: (key: T) => Record<string, unknown>
   ) => (
     <div className="edit-panel-segmented" role="radiogroup" aria-label={ariaLabel}>
       {options.map((o) => (
@@ -341,8 +396,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           className={`edit-panel-segment${
             current === o.key ? " is-active" : ""
           }`}
+          onMouseEnter={() => {
+            if (previewPatch) {
+              previewFreezeRef.current = true;
+              previewWidgetSettings(storageKey, previewPatch(o.key));
+            }
+          }}
+          onMouseLeave={() => {
+            previewFreezeRef.current = false;
+            previewWidgetSettings(storageKey, null);
+          }}
           onClick={(e) => {
             e.stopPropagation();
+            previewFreezeRef.current = false;
+            previewWidgetSettings(storageKey, null);
             onPick(o.key);
           }}
         >
@@ -355,7 +422,11 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const panel = (
     <div
       ref={panelRef}
-      className="edit-panel"
+      className={`edit-panel${
+        highlightTuneOpen && supportsHighlight && highlightValue
+          ? " edit-panel-expanded"
+          : ""
+      }`}
       role="dialog"
       aria-label={t("widgets.contextMenu.edit", {
         name: t(`widgets.names.${storageKey}`),
@@ -368,6 +439,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             { position: "fixed", top: -9999, left: -9999, zIndex: z }
       }
       onClick={(e) => e.stopPropagation()}
+      onMouseLeave={() => {
+        // Safety net: leaving the whole panel always releases the
+        // placement freeze along with any live preview.
+        previewFreezeRef.current = false;
+        previewWidgetSettings(storageKey, null);
+      }}
       // Any press inside the panel raises it — clicking a control on a
       // half-covered panel should bring the whole thing forward, not
       // just work blind.
@@ -387,6 +464,9 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         <DragIndicatorIcon className="edit-panel-grip" style={{ fontSize: 14 }} />
         {t(`widgets.names.${storageKey}`)}
       </h3>
+
+      <div className="edit-panel-body">
+      <div className="edit-panel-main">
 
       {!hasAnyControls && (
         <p className="edit-panel-empty">{t("widgets.edit.noCustomization")}</p>
@@ -411,9 +491,50 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 fmt === "analog"
                   ? { analog: true }
                   : { analog: false, is24Hour: fmt === "24h" }
-              )
+              ),
+            (fmt) =>
+              fmt === "analog"
+                ? { analog: true }
+                : { analog: false, is24Hour: fmt === "24h" }
           )}
         </Row>
+      )}
+
+      {controls?.avatarSelector && (
+        <div className="edit-panel-avatar-grid" role="radiogroup" aria-label={t("widgets.contextMenu.selectAvatar")}>
+          {AVATAR_OPTIONS.map((avatar) => (
+            <div key={avatar.value} className="edit-panel-avatar-option">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={avatarSettings.selectedAvatar === avatar.value}
+                aria-label={avatar.label}
+                className={`edit-panel-avatar-button${
+                  avatarSettings.selectedAvatar === avatar.value ? " is-active" : ""
+                }`}
+                onMouseEnter={() =>
+                  previewWidgetSettings("avatar", { selectedAvatar: avatar.value })
+                }
+                onMouseLeave={() => previewWidgetSettings("avatar", null)}
+                onClick={() =>
+                  updateWidgetSettings("avatar", { selectedAvatar: avatar.value })
+                }
+              >
+                <img src={avatar.src} alt="" />
+                <span>{avatar.label}</span>
+              </button>
+              {avatar.creator && (
+                avatar.source ? (
+                  <a href={avatar.source} target="_blank" rel="noopener noreferrer">
+                    {avatar.creator}
+                  </a>
+                ) : (
+                  <span className="edit-panel-avatar-credit">{avatar.creator}</span>
+                )
+              )}
+            </div>
+          ))}
+        </div>
       )}
 
       {controls?.gridMode && (
@@ -426,7 +547,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             ],
             quicklinksGrid ? "grid" : "list",
             (v) =>
-              updateWidgetSettings("quicklinks", { gridMode: v === "grid" })
+              updateWidgetSettings("quicklinks", { gridMode: v === "grid" }),
+            (v) => ({ gridMode: v === "grid" })
           )}
         </Row>
       )}
@@ -459,25 +581,299 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
+      {controls?.todoFrosted && (
+        // Preview circles: theme default + deep-tone surface colours
+        // (light text stays readable) + light/dark glass.
+        <Row label={t("widgets.edit.surfaceStyle")}>
+          <div
+            className="edit-panel-swatches"
+            role="radiogroup"
+            aria-label={t("widgets.edit.surfaceStyle")}
+          >
+            {(() => {
+              const s = settings as {
+                frosted?: boolean;
+                frostDark?: boolean;
+                surfaceColor?: string | null;
+              };
+              const pick = (patch: Record<string, unknown>) => ({
+                onMouseEnter: () => previewWidgetSettings(storageKey, patch),
+                onMouseLeave: () => previewWidgetSettings(storageKey, null),
+                onClick: (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  updateWidgetSettings(storageKey, patch as never);
+                },
+              });
+              return (
+                <>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={s.frosted !== true && !s.surfaceColor}
+                    aria-label={t("widgets.edit.pomodoroColorDefaultAria")}
+                    data-tooltip={t("widgets.edit.pomodoroColorDefaultAria")}
+                    className={`edit-panel-swatch edit-panel-swatch-theme${
+                      s.frosted !== true && !s.surfaceColor ? " is-active" : ""
+                    }`}
+                    {...pick({
+                      frosted: false,
+                      frostDark: false,
+                      surfaceColor: null,
+                    })}
+                  />
+                  {POMODORO_CARD_PRESETS.map((hex) => (
+                    <button
+                      key={hex}
+                      type="button"
+                      role="radio"
+                      aria-checked={s.frosted !== true && s.surfaceColor === hex}
+                      aria-label={hex.toUpperCase()}
+                      data-tooltip={hex.toUpperCase()}
+                      className={`edit-panel-swatch${
+                        s.frosted !== true && s.surfaceColor === hex
+                          ? " is-active"
+                          : ""
+                      }`}
+                      style={{ background: hex }}
+                      {...pick({
+                        frosted: false,
+                        frostDark: false,
+                        surfaceColor: hex,
+                      })}
+                    />
+                  ))}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={s.frosted === true && s.frostDark !== true}
+                    aria-label={t("widgets.edit.styleFrost")}
+                    data-tooltip={t("widgets.edit.styleFrost")}
+                    className={`edit-panel-swatch edit-panel-swatch-frost${
+                      s.frosted === true && s.frostDark !== true
+                        ? " is-active"
+                        : ""
+                    }`}
+                    {...pick({ frosted: true, frostDark: false })}
+                  />
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={s.frosted === true && s.frostDark === true}
+                    aria-label={t("widgets.edit.styleFrostDark")}
+                    data-tooltip={t("widgets.edit.styleFrostDark")}
+                    className={`edit-panel-swatch edit-panel-swatch-frost-dark${
+                      s.frosted === true && s.frostDark === true
+                        ? " is-active"
+                        : ""
+                    }`}
+                    {...pick({ frosted: true, frostDark: true })}
+                  />
+                </>
+              );
+            })()}
+          </div>
+        </Row>
+      )}
+
+      {controls?.weatherFrosted && (
+        // Weather's four surfaces as preview circles: Clear (nothing),
+        // light/dark glass, or the weather-mood card.
+        <Row label={t("widgets.edit.surfaceStyle")}>
+          <div
+            className="edit-panel-swatches"
+            role="radiogroup"
+            aria-label={t("widgets.edit.surfaceStyle")}
+          >
+            {(
+              [
+                {
+                  key: "clear",
+                  labelKey: "widgets.edit.styleClear",
+                  cls: " edit-panel-swatch-clear",
+                  active:
+                    !weatherSettings.showCard &&
+                    weatherSettings.frosted !== true,
+                },
+                {
+                  key: "frost",
+                  labelKey: "widgets.edit.styleFrost",
+                  cls: " edit-panel-swatch-frost",
+                  active:
+                    !weatherSettings.showCard &&
+                    weatherSettings.frosted === true &&
+                    weatherSettings.frostDark !== true,
+                },
+                {
+                  key: "frostDark",
+                  labelKey: "widgets.edit.styleFrostDark",
+                  cls: " edit-panel-swatch-frost-dark",
+                  active:
+                    !weatherSettings.showCard &&
+                    weatherSettings.frosted === true &&
+                    weatherSettings.frostDark === true,
+                },
+                {
+                  key: "card",
+                  labelKey: "widgets.edit.styleWeather",
+                  cls: " edit-panel-swatch-weather",
+                  active: weatherSettings.showCard === true,
+                },
+              ] as const
+            ).map(({ key, labelKey, cls, active }) => {
+              const patch = {
+                showCard: key === "card",
+                frosted: key === "frost" || key === "frostDark",
+                frostDark: key === "frostDark",
+              };
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  aria-label={t(labelKey)}
+                  data-tooltip={t(labelKey)}
+                  className={`edit-panel-swatch${cls}${
+                    active ? " is-active" : ""
+                  }`}
+                  onMouseEnter={() => previewWidgetSettings("weather", patch)}
+                  onMouseLeave={() => previewWidgetSettings("weather", null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateWidgetSettings("weather", patch);
+                  }}
+                />
+              );
+            })}
+          </div>
+        </Row>
+      )}
+
       {controls?.notesShowBorder && (
-        <Row label={t("widgets.edit.notesShowBorder")}>
+        // Short "Border: Show | Hide" — the previous full "Show
+        // border" strings in both the label AND the segments made the
+        // row wider than the panel, so the control painted over the
+        // label.
+        <Row label={t("widgets.edit.notesBorder")}>
           {segmented(
-            t("widgets.edit.notesShowBorder"),
+            t("widgets.edit.notesBorder"),
             [
-              { key: "on" as const, label: t("widgets.edit.notesShowBorder") },
-              { key: "off" as const, label: t("widgets.edit.notesHideBorder") },
+              { key: "on" as const, label: t("widgets.edit.borderShow") },
+              { key: "off" as const, label: t("widgets.edit.borderHide") },
             ],
             notesShowBorder ? "on" : "off",
-            (v) => updateWidgetSettings("notes", { showBorder: v === "on" })
+            (v) => updateWidgetSettings("notes", { showBorder: v === "on" }),
+            (v) => ({ showBorder: v === "on" })
           )}
+        </Row>
+      )}
+
+      {controls?.notesPaper && (
+        <Row label={t("widgets.edit.notesPaper")}>
+          <div
+            className="edit-panel-swatches"
+            role="radiogroup"
+            aria-label={t("widgets.edit.notesPaperAria")}
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={notesPaperNone}
+              aria-label={t("widgets.edit.notesPaperNone")}
+              className={`edit-panel-swatch edit-panel-swatch-empty${
+                notesPaperNone ? " is-active" : ""
+              }`}
+              onMouseEnter={() =>
+                previewWidgetSettings("notes", {
+                  paperColor: null,
+                  paperNone: true,
+                  paperFrost: false,
+                })
+              }
+              onMouseLeave={() => previewWidgetSettings("notes", null)}
+              onClick={() =>
+                updateWidgetSettings("notes", {
+                  paperColor: null,
+                  paperNone: true,
+                  paperFrost: false,
+                })
+              }
+            />
+            {NOTE_PAPER_PRESETS.map((hex, i) => {
+              // Slot 0 is the shipped cream — stored as null so
+              // pre-feature blobs and an explicit default pick are
+              // the same state.
+              const value = i === 0 ? null : hex;
+              const isActive =
+                !notesPaperNone && !notesPaperFrost && notesPaperColor === value;
+              return (
+                <button
+                  key={hex}
+                  type="button"
+                  role="radio"
+                  aria-checked={isActive}
+                  aria-label={`${t("widgets.edit.notesPaperAria")} ${hex}`}
+                  className={`edit-panel-swatch${
+                    isActive ? " is-active" : ""
+                  }`}
+                  style={{ background: hex }}
+                  onMouseEnter={() =>
+                    previewWidgetSettings("notes", {
+                      paperColor: value,
+                      paperNone: false,
+                      paperFrost: false,
+                    })
+                  }
+                  onMouseLeave={() => previewWidgetSettings("notes", null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateWidgetSettings("notes", {
+                      paperColor: value,
+                      paperNone: false,
+                      paperFrost: false,
+                    });
+                  }}
+                />
+              );
+            })}
+            {/* Frosted glass is just another paper — picking it wins
+                over any colour swatch. */}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={notesPaperFrost}
+              aria-label={t("widgets.edit.styleFrost")}
+              title={t("widgets.edit.styleFrost")}
+              className={`edit-panel-swatch edit-panel-swatch-frost${
+                notesPaperFrost ? " is-active" : ""
+              }`}
+              onMouseEnter={() =>
+                previewWidgetSettings("notes", {
+                  paperColor: null,
+                  paperNone: false,
+                  paperFrost: true,
+                })
+              }
+              onMouseLeave={() => previewWidgetSettings("notes", null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                updateWidgetSettings("notes", {
+                  paperColor: null,
+                  paperNone: false,
+                  paperFrost: true,
+                });
+              }}
+            />
+          </div>
         </Row>
       )}
 
       {controls?.weatherLocation && (
         <Row label={t("widgets.contextMenu.weatherLocation")}>
           <Button
+            className="edit-panel-location-button"
             size="small"
-            variant="dark"
+            variant="outline-light"
             aria-label={t("widgets.edit.weatherLocationAria")}
             onClick={(e) => {
               e.stopPropagation();
@@ -489,7 +885,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             }}
           >
             <PlaceIcon style={{ fontSize: 14 }} />
-            {t("widgets.edit.weatherLocationAuto")}
+            {weatherSettings.manualPlace?.name ??
+              t("widgets.edit.weatherLocationAuto")}
           </Button>
         </Row>
       )}
@@ -497,6 +894,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       {controls?.weatherDetail && (
         <Row label={t("widgets.contextMenu.weatherDetail")}>
           <Dropdown
+            className="edit-panel-dropdown"
             size="small"
             variant="outline-light"
             portal
@@ -508,6 +906,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             onChange={(v) =>
               updateWidgetSettings("weather", { detail: v as WeatherDetail })
             }
+            onOptionPreview={(v) =>
+              previewWidgetSettings("weather", { detail: v })
+            }
+            onPreviewEnd={() => previewWidgetSettings("weather", null)}
           />
         </Row>
       )}
@@ -521,31 +923,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               { key: "F" as const, label: t("widgets.edit.weatherUnitF") },
             ],
             weatherSettings.unit,
-            (v) => updateWidgetSettings("weather", { unit: v })
+            (v) => updateWidgetSettings("weather", { unit: v }),
+            (v) => ({ unit: v })
           )}
         </Row>
       )}
 
       {controls?.weatherStyle && (
         <>
-          <Row label={t("widgets.contextMenu.weatherStyle")}>
-            {segmented(
-              t("widgets.contextMenu.weatherStyle"),
-              [
-                {
-                  key: "plain" as const,
-                  label: t("widgets.edit.weatherStylePlain"),
-                },
-                {
-                  key: "card" as const,
-                  label: t("widgets.edit.weatherStyleCard"),
-                },
-              ],
-              weatherSettings.showCard ? "card" : "plain",
-              (v) =>
-                updateWidgetSettings("weather", { showCard: v === "card" })
-            )}
-          </Row>
+          {/* The plain/card style pair moved into the four-way
+              Background row below — one control owns the surface. */}
           <Row label={t("widgets.edit.weatherAnimatedIcons")}>
             {segmented(
               t("widgets.edit.weatherAnimatedIcons"),
@@ -587,7 +974,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               },
             ],
             pomodoroSize,
-            (v) => updateWidgetSettings("pomodoro", { size: v })
+            (v) => updateWidgetSettings("pomodoro", { size: v }),
+            (v) => ({ size: v })
           )}
         </Row>
       )}
@@ -618,6 +1006,49 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
+      {controls?.pomodoroColor && (
+        <Row label={t("widgets.edit.pomodoroColor")}>
+          <div
+            className="edit-panel-swatches"
+            role="radiogroup"
+            aria-label={t("widgets.edit.pomodoroColorAria")}
+          >
+            {/* Leading swatch = theme default, stored as null. */}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={pomodoroCardColor === null}
+              aria-label={t("widgets.edit.pomodoroColorDefaultAria")}
+              className={`edit-panel-swatch${
+                pomodoroCardColor === null ? " is-active" : ""
+              }`}
+              style={{ background: "var(--purple-dark)" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                updateWidgetSettings("pomodoro", { cardColor: null });
+              }}
+            />
+            {POMODORO_CARD_PRESETS.map((hex) => (
+              <button
+                key={hex}
+                type="button"
+                role="radio"
+                aria-checked={pomodoroCardColor === hex}
+                aria-label={`${t("widgets.edit.pomodoroColorAria")} ${hex}`}
+                className={`edit-panel-swatch${
+                  pomodoroCardColor === hex ? " is-active" : ""
+                }`}
+                style={{ background: hex }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateWidgetSettings("pomodoro", { cardColor: hex });
+                }}
+              />
+            ))}
+          </div>
+        </Row>
+      )}
+
       {controls?.pomodoroSound && pomodoroSound !== "none" && (
         <SliderRow
           id="widget-pomodoro-soundVolume"
@@ -640,11 +1071,30 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       )}
 
       {supportsHighlight && (
-        <Row label={t("widgets.edit.highlightLabel")}>
+        // Stacked layout (label above, full-width swatch grid below) —
+        // ~10 chips beside a side label was an unreadable squeeze.
+        <div className="edit-panel-slider-row">
+          <span className="edit-panel-row-label">
+            {t("widgets.edit.highlightLabel")}
+          </span>
           <ColorPicker
             color={highlightValue}
             textColor={highlightTextColor}
             opacity={highlightOpacity}
+            expanded={highlightTuneOpen}
+            onExpandChange={setHighlightTuneOpen}
+            blur={highlightBlur}
+            // Blur is a property of the colour: >0 frosts the pill in
+            // that colour, 0 is solid. highlightFrost tracks it so
+            // the shell's backdrop-filter class stays in sync.
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, {
+                highlightBlur: v,
+                highlightFrost: v > 0,
+              } as never)
+            }
+            // Colour changes leave blur alone — a frosted pill stays
+            // frosted when you re-tint it.
             onChange={(next) =>
               updateWidgetSettings(storageKey, {
                 highlightColor: next,
@@ -660,9 +1110,23 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 highlightOpacity: next,
               } as never)
             }
+            onPreviewChange={(next) =>
+              previewWidgetSettings(storageKey, { highlightColor: next })
+            }
+            onPreviewOpacity={(next) =>
+              previewWidgetSettings(storageKey, { highlightOpacity: next })
+            }
+            onPreviewTextColor={(next) =>
+              previewWidgetSettings(storageKey, { highlightTextColor: next })
+            }
+            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
           />
-        </Row>
+        </div>
       )}
+
+      {/* Opacity / ink / blur fine-tuning lives in the ColorPicker's
+          hovercard (hover the swatch strip) rather than as permanent
+          rows here. */}
 
       {supportsTypeIn && (
         <Row label={t("widgets.contextMenu.typeIn")}>
@@ -702,12 +1166,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       {supportsSlider && (
         <SliderRow
           id={`widget-${storageKey}-${sliderField}`}
-          label={isFrost ? t("widgets.edit.blur") : t("widgets.edit.opacity")}
+          label={
+            isNotesPaperFrost || (!isNotes && isFrost)
+              ? t("widgets.edit.blur")
+              : t("widgets.edit.opacity")
+          }
           value={sliderValue}
           min={0}
           max={100}
           ariaLabel={
-            isFrost
+            isNotesPaperFrost || (!isNotes && isFrost)
               ? t("widgets.edit.blurAria")
               : t("widgets.edit.opacityAria")
           }
@@ -716,6 +1184,45 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           }
         />
       )}
+      </div>
+
+      {highlightTuneOpen && supportsHighlight && highlightValue && (
+        <div className="edit-panel-side">
+          <HighlightTuning
+            onClose={() => setHighlightTuneOpen(false)}
+            color={highlightValue}
+            textColor={highlightTextColor}
+            opacity={highlightOpacity}
+            blur={highlightBlur}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, {
+                highlightBlur: v,
+                highlightFrost: v > 0,
+              } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                highlightColor: next,
+              } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                highlightTextColor: next,
+              } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                highlightOpacity: next,
+              } as never)
+            }
+            onPreviewTextColor={(next) =>
+              previewWidgetSettings(storageKey, { highlightTextColor: next })
+            }
+            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+          />
+        </div>
+      )}
+      </div>
     </div>
   );
 

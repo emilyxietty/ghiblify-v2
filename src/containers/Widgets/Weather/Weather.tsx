@@ -360,32 +360,43 @@ const Weather: React.FC = () => {
       </div>
     );
   } else if (error) {
-    // Both permission errors are recoverable in place — device location
-    // is an app setting (Chrome won't let `geolocation` be optional), so
-    // the button just switches it back on and refetches.
+    // Location-off is a normal state, not a failure — greet it with an
+    // invitation (turn location on, or pick a city) rather than error
+    // language. Both actions recover in place.
     const isPermission =
       error === "permission-denied" || error === "permission-unavailable";
     body = (
       <div className="weather-empty weather-error">
-        <span>
-          {error === "permission-denied"
-            ? t("weather.permissionDenied")
-            : error === "permission-unavailable"
-              ? t("weather.permissionUnavailable")
-              : t("weather.fetchError")}
+        <span className="weather-error-text">
+          {isPermission ? t("weather.locationOff") : t("weather.fetchError")}
         </span>
-        <button
-          type="button"
-          className="weather-error-action"
-          onClick={() => {
-            if (isPermission) {
-              updateWidgetSettings("weather", { useDeviceLocation: true });
-            }
-            refresh();
-          }}
-        >
-          {isPermission ? t("weather.enableLocation") : t("weather.retry")}
-        </button>
+        <div className="weather-error-actions">
+          <button
+            type="button"
+            className="weather-error-action weather-error-action-primary"
+            onClick={() => {
+              if (isPermission) {
+                updateWidgetSettings("weather", { useDeviceLocation: true });
+              }
+              refresh();
+            }}
+          >
+            {isPermission ? t("weather.enableLocation") : t("weather.retry")}
+          </button>
+          {isPermission && (
+            <button
+              type="button"
+              className="weather-error-action"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("ghiblify:weather:choose-city")
+                )
+              }
+            >
+              {t("weather.chooseCity")}
+            </button>
+          )}
+        </div>
       </div>
     );
   } else if (data) {
@@ -420,8 +431,12 @@ const Weather: React.FC = () => {
       }${iconsOnly ? " weather-icons-only" : ""}`}
       data-weather-mood={mood}
       style={{
-        ["--weather-cell-opacity" as any]: (
-          (settings.opacity ?? 35) / 100
+        // Frosted: the .widget shell blurs the wallpaper (see
+        // .widget-surface-frost) and the cell tint drops to a whisper
+        // so the glass reads through.
+        ["--weather-cell-opacity" as any]: (settings.frosted === true
+          ? 0.14
+          : (settings.opacity ?? 35) / 100
         ).toString(),
       }}
     >

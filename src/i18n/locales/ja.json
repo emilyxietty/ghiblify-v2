@@ -126,7 +126,8 @@
       "bookmarks": "ブックマーク",
       "weather": "天気",
       "notes": "付箋",
-      "rightSidebar": "右サイドバー"
+      "rightSidebar": "右サイドバー",
+      "googleApps": "Google アプリ"
     },
     "tooltip": {
       "show": "{{name}}を表示",
@@ -187,7 +188,7 @@
       "timeFormatAnalog": "アナログ",
       "gridShow": "グリッド表示",
       "gridShowList": "リスト表示",
-      "resizeTitle": "ドラッグでサイズ変更",
+      "resizeTitle": "ドラッグして「{{name}}」のサイズを変更",
       "infoFields": {
         "japaneseTitle": "日本語タイトル",
         "title": "タイトル",
@@ -246,7 +247,33 @@
       "weatherAnimatedIcons": "アイコンを動かす",
       "weatherAnimatedOn": "オン",
       "weatherAnimatedOff": "オフ",
-      "panelDragHint": "ドラッグで移動"
+      "panelDragHint": "ドラッグで移動",
+      "notesBorder": "枠線",
+      "borderShow": "表示",
+      "borderHide": "非表示",
+      "notesPaper": "用紙",
+      "notesPaperNone": "用紙なし",
+      "notesPaperAria": "用紙の色",
+      "notesPaperStyle": "用紙スタイル",
+      "styleSolid": "不透明",
+      "styleFrost": "すりガラス",
+      "highlightStyle": "ハイライトの種類",
+      "pomodoroColor": "カードの色",
+      "pomodoroColorAria": "カードの色",
+      "pomodoroColorDefaultAria": "テーマの既定色",
+      "highlightTextLight": "明",
+      "highlightTextDark": "暗",
+      "surfaceStyle": "背景",
+      "styleFrostDark": "ダークフロスト",
+      "styleClear": "クリア",
+      "styleWeather": "天気",
+      "highlightTune": "ハイライトを調整",
+      "weatherLocationHint": "位置情報は地域の天気予報の取得のみに使用され、天気サービス以外に送信されることはありません。"
+    },
+    "gapps": {
+      "menuAria": "Google アプリ",
+      "accountAria": "Google アカウント",
+      "personalize": "アカウントの頭文字を表示"
     }
   },
   "greeting": {
@@ -280,7 +307,8 @@
     "voiceTooltip": "音声で検索",
     "imageAria": "画像で検索",
     "imageTooltip": "画像で検索",
-    "removeHistoryAria": "「{{query}}」を最近の検索から削除"
+    "removeHistoryAria": "「{{query}}」を最近の検索から削除",
+    "voiceDenied": "マイクへのアクセスが拒否されました — クリックで再試行"
   },
   "quicklinks": {
     "trigger": "リンク",
@@ -346,7 +374,42 @@
   },
   "notes": {
     "placeholder": "メモを書く…",
-    "ariaLabel": "付箋"
+    "ariaLabel": "付箋",
+    "toolbar": {
+      "ariaLabel": "書式ツールバー",
+      "bold": "太字",
+      "italic": "斜体",
+      "underline": "下線",
+      "highlight": "ハイライト",
+      "bulletList": "箇条書き",
+      "checkList": "チェックリスト",
+      "strikethrough": "取り消し線",
+      "heading1": "見出し1",
+      "heading2": "見出し2",
+      "quote": "引用",
+      "alignLeft": "左揃え",
+      "alignCenter": "中央揃え",
+      "alignRight": "右揃え",
+      "paragraph": "本文",
+      "heading3": "見出し3",
+      "align": "配置",
+      "blockType": "テキストスタイル",
+      "textColor": "文字色",
+      "colors": {
+        "default": "既定",
+        "yellow": "黄",
+        "green": "緑",
+        "pink": "ピンク",
+        "blue": "青",
+        "red": "赤",
+        "purple": "紫",
+        "white": "白",
+        "paleYellow": "淡い黄",
+        "palePink": "淡いピンク",
+        "paleBlue": "淡い青",
+        "paleGreen": "淡い緑"
+      }
+    }
   },
   "weather": {
     "offline": "オフライン",
@@ -396,9 +459,11 @@
       "5": "金",
       "6": "土"
     },
-    "enableLocation": "位置情報を許可",
+    "enableLocation": "現在地を使う",
     "retry": "再試行",
-    "today": "今日"
+    "today": "今日",
+    "locationOff": "位置情報が未設定です — 現在地を使うか、都市を選んでください ☁️",
+    "chooseCity": "都市を選ぶ"
   },
   "socials": {
     "buttonLabel": "SNS",
@@ -573,7 +638,7 @@
     "permissionsTitle": "権限",
     "permissionsSub": "Ghiblify は最初は何も要求しません。使うものだけを有効にしてください。取り消しは即時反映されます。",
     "permissionGeolocation": "位置情報",
-    "permissionGeolocationSub": "天気が現在地を取得できるようにします。オフにすると位置情報 API は一切呼び出されません（都市を手動で選んでください）。",
+    "permissionGeolocationSub": "ネットワーク接続からのおおよその（都市レベルの）位置情報 — 地域の天気予報の取得のみに使用します。GPS・位置情報権限は不要です。",
     "permissionBookmarks": "ブックマーク",
     "permissionBookmarksSub": "パネルが Chrome のブックマークを読み取り、整理できるようにします。",
     "storageTitle": "保存データ",
@@ -629,6 +694,8 @@
       "square": "直角",
       "rounded": "標準",
       "pill": "丸め"
-    }
+    },
+    "permissionEmail": "メールアドレス",
+    "permissionEmailSub": "Google ウィジェットのアカウントボタンに頭文字を表示します。それ以外には使いません。"
   }
 }

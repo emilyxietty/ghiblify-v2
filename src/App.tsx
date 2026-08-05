@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from "react";
-import { EditIcon, OpenWithIcon } from "./components/Icons/Icons";
+import { OpenWithIcon } from "./components/Icons/Icons";
 import { HelpOutlineIcon } from "./components/Icons/Icons";
 import "./App.css";
 import { Button } from "./components/Button/Button";
@@ -17,7 +17,12 @@ import CursorEffect from "./components/CursorEffect/CursorEffect";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Greeting } from "./containers/Widgets/Greeting/Greeting";
+// Notes is a lightweight paper shell (static import — paints instantly);
+// it lazy-loads its own Lexical editor chunk internally, so users who
+// never enable Notes still don't download Lexical (the shell's dynamic
+// import() only fires when the widget actually mounts).
 import { Notes } from "./containers/Widgets/Notes/Notes";
+import { GoogleApps } from "./containers/Widgets/GoogleApps/GoogleApps";
 import { Info } from "./containers/Widgets/Info/Info";
 import Pomodoro from "./containers/Widgets/Pomodoro/Pomodoro";
 import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
@@ -63,7 +68,6 @@ const AppContent: React.FC = () => {
 
   const {
     showWidgetEdits,
-    toggleEditMode,
     backgroundFilters,
     widgets,
     showGuide,
@@ -136,36 +140,6 @@ const AppContent: React.FC = () => {
 
 
   //   const widgetsContainerRef = useRef<HTMLDivElement>(null);
-
-  // Exit GLOBAL edit mode on outside click / Esc / Enter.
-  useEffect(() => {
-    if (!showWidgetEdits) return;
-
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target.closest(
-          ".widget, .left-sidebar, .edit-toggle-button, [role='dialog']"
-        )
-      )
-        return;
-      toggleEditMode();
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "Enter") {
-        toggleEditMode();
-      }
-    };
-
-    document.addEventListener("click", handleClick);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("click", handleClick);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [showWidgetEdits, toggleEditMode]);
 
   // Exit per-widget edit mode on outside click / Esc / Enter.
   useEffect(() => {
@@ -245,7 +219,10 @@ const AppContent: React.FC = () => {
             element: !bgLoading && !infoLoading ? <Avatar /> : null,
           },
           { key: "weather", element: <Weather /> },
-          { key: "notes", element: <Notes /> },
+          {
+            key: "notes",
+            element: <Notes />,
+          },
         ];
         const docked = dockEntries
           .filter((e) => widgets[e.key].inRightSidebar && e.element)
@@ -284,52 +261,26 @@ const AppContent: React.FC = () => {
             <HelpOutlineIcon style={{ fontSize: 14 }} />
             {t("common.guide")}
           </Button>
-          {/* Mode segmented toggle — Edit Widgets and Drag Mode are
-              mutually exclusive (enforced in AppContext). Rendering
-              them as one connected pill with a filled "active" half
-              makes the current mode unmistakable; the previous pair
-              of similarly-styled outline buttons made it hard to tell
-              which was on. */}
-          <div
-            className="mode-toggle"
-            role="tablist"
-            aria-label={t("sidebar.buttons.modeToggleAria")}
+          <Button
+            variant={dragMode ? "dark" : "outline-light"}
+            size="small"
+            pill
+            aria-pressed={dragMode}
+            onClick={() => setDragMode(!dragMode)}
+            data-tooltip={t(
+              dragMode
+                ? "sidebar.buttons.dragModeOnAria"
+                : "sidebar.buttons.dragModeAria"
+            )}
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={showWidgetEdits}
-              className={`mode-toggle-segment${
-                showWidgetEdits ? " is-active" : ""
-              }`}
-              onClick={() => {
-                if (!showWidgetEdits) toggleEditMode();
-              }}
-            >
-              <EditIcon style={{ fontSize: 14 }} />
-              {t("sidebar.buttons.editWidgets")}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={dragMode}
-              className={`mode-toggle-segment${
-                dragMode ? " is-active" : ""
-              }`}
-              onClick={() => {
-                if (!dragMode) setDragMode(true);
-              }}
-            >
-              <OpenWithIcon style={{ fontSize: 14 }} />
-              {t("sidebar.buttons.dragMode")}
-            </button>
-          </div>
+            <OpenWithIcon style={{ fontSize: 14 }} />
+            {t("sidebar.buttons.dragMode")}
+          </Button>
           <Button
             variant="outline-light"
             size="small"
             pill
             onClick={() => {
-              if (showWidgetEdits) toggleEditMode();
               if (editingWidgetKey) setEditingWidgetKey(null);
               if (dragMode) setDragMode(false);
             }}
@@ -403,6 +354,9 @@ const AppContent: React.FC = () => {
         </Widget>
         <Widget storageKey="weather" visible={widgets.weather.visible}>
           <Weather />
+        </Widget>
+        <Widget storageKey="googleApps" visible={widgets.googleApps.visible}>
+          <GoogleApps />
         </Widget>
         <Widget storageKey="notes" visible={widgets.notes.visible}>
           <Notes />

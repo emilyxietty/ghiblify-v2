@@ -33,6 +33,8 @@
        accents (which use --yellow). Light/dark/frost themes
        override below for contrast reasons. */
     --focus-ring: rgba(245, 130, 165, 0.9);
+    --interaction-accent: #8fc7e8;
+    --interaction-accent-strong: #6fb5dc;
 
     /* High-contrast overridable params */
     --focus-ring-width: 2px;
@@ -985,7 +987,7 @@
 
 .edit-toggle-button .btn:hover:not(:disabled):not(.btn-disabled) {
     background: rgba(0, 0, 0, 0.78) !important;
-    border-color: var(--yellow, #e9b330) !important;
+    border-color: var(--interaction-accent, #8fc7e8) !important;
     color: #ffffff !important;
 }
 

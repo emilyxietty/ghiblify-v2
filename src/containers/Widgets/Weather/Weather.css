@@ -1,16 +1,30 @@
 /* Weather widget — no background panel, no dark/light mode. Text and
    icons are always white with a soft halo so they read on any photo. */
 
+/* The shell's frost slab (.widget-surface-frost) and the mood card
+   paint on DIFFERENT boxes — shell vs .weather-widget. As an
+   inline-flex child, .weather-widget sat on the content wrapper's
+   text baseline, leaving a phantom line-height strut below it that
+   inflated the shell (and thus the frost slab) past the card's box.
+   Flex formatting removes the strut so both surfaces are exactly the
+   same size. */
+.widget[data-widget-key="weather"] .widget-content {
+    display: flex;
+}
+
 .weather-widget {
     /* Auto-size: width and height shrink/grow to fit whatever the
        current `display` mode renders. No scrollbars, no clipping. */
     display: inline-flex;
     flex-direction: column;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 16px 18px;
     width: max-content;
     max-width: 90vw;
+    box-sizing: border-box;
     background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
     overflow: visible;
     transition: background 220ms ease, box-shadow 220ms ease,
         border-radius 220ms ease, padding 220ms ease;
@@ -22,7 +36,6 @@
    The 360 ms `transition: background` smooths the swap when the
    weather code or day/night flips on a long-open new tab. */
 .weather-widget.weather-card-on {
-    padding: 16px 18px;
     /* Match the outer .widget shell's --radius-lg so the gradient
        reaches the same rounded corners as the widget outline — no
        photo bleeds through at the corners. */
@@ -32,7 +45,6 @@
        App.css). Without it the two curves run at different rates and
        the gap between cell and card pinches at the corners. */
     --nest-inset: 16px;
-    box-sizing: border-box;
     border: 1px solid rgba(255, 255, 255, 0.32);
     box-shadow:
         0 12px 32px rgba(20, 28, 48, 0.28),
@@ -178,15 +190,6 @@
     -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
-/* In edit mode, just give the shell a minimum width so the EditWidget
-   overlay buttons have somewhere to lay out — but DON'T stretch the
-   inner weather-widget to fill, otherwise the content slides to a
-   corner of a giant box and the padding around it visually evaporates.
-   The overlay controls wrap when narrow (see EditWidget.css). */
-.widget.edit-mode[data-widget-key="weather"] {
-    min-width: 240px;
-}
-
 /* Location + current-conditions block sits over the bare photo, so
    text is always white with a halo for legibility. The forecast strip
    cells get their own theme-tinted surface and use --light for text
@@ -322,6 +325,28 @@
     text-align: center;
     font-size: 12.5px;
     padding: 8px 4px;
+    /* The widget is width:max-content — without a cap, a sentence
+       renders as one enormous unwrapped line. This keeps the state
+       card-sized and lets the text wrap inside it. */
+    max-width: 200px;
+    white-space: normal;
+}
+
+.weather-error-text {
+    line-height: 1.45;
+    opacity: 0.92;
+}
+
+.weather-error-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.weather-error-action-primary {
+    background: color-mix(in srgb, currentColor 22%, transparent);
+    font-weight: 600;
 }
 
 /* Error state stacks its message over a recovery button — geolocation

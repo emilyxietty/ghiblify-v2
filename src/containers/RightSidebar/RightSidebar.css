@@ -403,7 +403,7 @@
 
 .right-sidebar::-webkit-scrollbar-thumb:hover,
 .right-sidebar-content::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--yellow) 60%, transparent);
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 60%, transparent);
 }
 
 .right-sidebar {

@@ -38,6 +38,8 @@ interface DropdownProps {
    *  classic select behavior; pass "up" for pickers anchored at the
    *  bottom of a panel. */
   direction?: "up" | "down";
+  onOptionPreview?: (value: string) => void;
+  onPreviewEnd?: () => void;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -51,6 +53,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
   className = "",
   portal = false,
   direction = "down",
+  onOptionPreview,
+  onPreviewEnd,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -74,6 +78,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       // also tolerate clicks inside the menu itself.
       if (menuRef.current && menuRef.current.contains(target)) return;
       setIsOpen(false);
+      onPreviewEnd?.();
     };
 
     if (isOpen) {
@@ -83,7 +88,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, onPreviewEnd]);
 
   // Reposition the portaled menu against the toggle. Runs synchronously
   // after layout (useLayoutEffect) so the menu doesn't flicker at
@@ -112,11 +117,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   const handleToggle = () => {
     if (!disabled) {
+      if (isOpen) onPreviewEnd?.();
       setIsOpen(!isOpen);
     }
   };
 
   const handleSelect = (optionValue: string) => {
+    onPreviewEnd?.();
     onChange(optionValue);
     setIsOpen(false);
   };
@@ -129,6 +136,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       setIsOpen(!isOpen);
     } else if (e.key === "Escape") {
       setIsOpen(false);
+      onPreviewEnd?.();
     } else if (e.key === "ArrowDown" && isOpen) {
       e.preventDefault();
       const currentIndex = options.findIndex((opt) => opt.value === value);
@@ -175,6 +183,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
             option.value === value ? "selected" : ""
           }`}
           onClick={() => handleSelect(option.value)}
+          onMouseEnter={() => onOptionPreview?.(option.value)}
+          onMouseLeave={onPreviewEnd}
           role="option"
           aria-selected={option.value === value}
           aria-label={option.labelText}

@@ -126,7 +126,8 @@
       "bookmarks": "북마크",
       "weather": "날씨",
       "notes": "스티키 노트",
-      "rightSidebar": "오른쪽 사이드바"
+      "rightSidebar": "오른쪽 사이드바",
+      "googleApps": "Google 앱"
     },
     "tooltip": {
       "show": "{{name}} 위젯 표시",
@@ -187,7 +188,7 @@
       "timeFormatAnalog": "아날로그",
       "gridShow": "격자 보기",
       "gridShowList": "목록 보기",
-      "resizeTitle": "드래그하여 크기 조절",
+      "resizeTitle": "드래그하여 {{name}} 크기 조절",
       "infoFields": {
         "japaneseTitle": "일본어 제목",
         "title": "제목",
@@ -246,7 +247,33 @@
       "weatherAnimatedIcons": "애니메이션 아이콘",
       "weatherAnimatedOn": "켜기",
       "weatherAnimatedOff": "끄기",
-      "panelDragHint": "드래그하여 이동"
+      "panelDragHint": "드래그하여 이동",
+      "notesBorder": "테두리",
+      "borderShow": "표시",
+      "borderHide": "숨기기",
+      "notesPaper": "종이",
+      "notesPaperNone": "종이 없음",
+      "notesPaperAria": "종이 색상",
+      "notesPaperStyle": "종이 스타일",
+      "styleSolid": "단색",
+      "styleFrost": "반투명",
+      "highlightStyle": "강조 스타일",
+      "pomodoroColor": "카드 색상",
+      "pomodoroColorAria": "카드 색상",
+      "pomodoroColorDefaultAria": "테마 기본값",
+      "highlightTextLight": "밝게",
+      "highlightTextDark": "어둡게",
+      "surfaceStyle": "배경",
+      "styleFrostDark": "다크 프로스트",
+      "styleClear": "투명",
+      "styleWeather": "날씨",
+      "highlightTune": "강조 조정",
+      "weatherLocationHint": "위치 정보는 지역 날씨를 가져오는 데만 사용되며, 날씨 서비스 외에는 전송되지 않습니다."
+    },
+    "gapps": {
+      "menuAria": "Google 앱",
+      "accountAria": "Google 계정",
+      "personalize": "계정 이니셜 표시"
     }
   },
   "greeting": {
@@ -280,7 +307,8 @@
     "voiceTooltip": "음성으로 검색",
     "imageAria": "이미지로 검색",
     "imageTooltip": "이미지로 검색",
-    "removeHistoryAria": "최근 검색에서 “{{query}}” 삭제"
+    "removeHistoryAria": "최근 검색에서 “{{query}}” 삭제",
+    "voiceDenied": "마이크 접근이 거부되었습니다 — 클릭하여 다시 시도"
   },
   "quicklinks": {
     "trigger": "링크",
@@ -346,7 +374,42 @@
   },
   "notes": {
     "placeholder": "메모 작성…",
-    "ariaLabel": "스티키 노트"
+    "ariaLabel": "스티키 노트",
+    "toolbar": {
+      "ariaLabel": "서식 도구 모음",
+      "bold": "굵게",
+      "italic": "기울임꼴",
+      "underline": "밑줄",
+      "highlight": "형광펜",
+      "bulletList": "글머리 기호",
+      "checkList": "체크리스트",
+      "strikethrough": "취소선",
+      "heading1": "제목 1",
+      "heading2": "제목 2",
+      "quote": "인용",
+      "alignLeft": "왼쪽 정렬",
+      "alignCenter": "가운데 정렬",
+      "alignRight": "오른쪽 정렬",
+      "paragraph": "본문",
+      "heading3": "제목 3",
+      "align": "정렬",
+      "blockType": "텍스트 스타일",
+      "textColor": "글자 색",
+      "colors": {
+        "default": "기본",
+        "yellow": "노랑",
+        "green": "초록",
+        "pink": "분홍",
+        "blue": "파랑",
+        "red": "빨강",
+        "purple": "보라",
+        "white": "흰색",
+        "paleYellow": "연노랑",
+        "palePink": "연분홍",
+        "paleBlue": "연파랑",
+        "paleGreen": "연초록"
+      }
+    }
   },
   "weather": {
     "offline": "오프라인",
@@ -396,9 +459,11 @@
       "5": "금",
       "6": "토"
     },
-    "enableLocation": "위치 권한 허용",
+    "enableLocation": "내 위치 사용",
     "retry": "다시 시도",
-    "today": "오늘"
+    "today": "오늘",
+    "locationOff": "위치가 설정되지 않았어요 — 내 위치를 쓰거나 도시를 골라주세요 ☁️",
+    "chooseCity": "도시 선택"
   },
   "socials": {
     "buttonLabel": "내 SNS",
@@ -573,7 +638,7 @@
     "permissionsTitle": "권한",
     "permissionsSub": "Ghiblify는 처음에 아무것도 요구하지 않습니다. 사용하는 것만 켜세요. 취소는 즉시 적용됩니다.",
     "permissionGeolocation": "위치",
-    "permissionGeolocationSub": "날씨가 현재 위치를 확인할 수 있게 합니다. 끄면 위치 API를 전혀 호출하지 않습니다 — 도시를 직접 선택하세요.",
+    "permissionGeolocationSub": "네트워크 연결 기반의 대략적인(도시 수준) 위치 — 지역 날씨를 가져오는 데만 사용됩니다. GPS나 위치 권한이 필요 없습니다.",
     "permissionBookmarks": "북마크",
     "permissionBookmarksSub": "패널이 Chrome 북마크를 읽고 정리할 수 있게 합니다.",
     "storageTitle": "저장된 데이터",
@@ -629,6 +694,8 @@
       "square": "각지게",
       "rounded": "기본",
       "pill": "둥글게"
-    }
+    },
+    "permissionEmail": "이메일 주소",
+    "permissionEmailSub": "Google 위젯의 계정 버튼에 이니셜을 표시합니다. 그 외에는 사용하지 않습니다."
   }
 }

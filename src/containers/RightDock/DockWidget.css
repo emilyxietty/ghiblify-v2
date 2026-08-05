@@ -265,10 +265,6 @@ body.dock-show-bg .dock-widget-avatar {
     /* Tight horizontal padding so the temperature + condition text
        have more usable inline width (the canvas defaults assumed a
        wider tile). Vertical padding stays generous. */
-    padding: 14px 12px !important;
-}
-
-.dock-widget .weather-widget.weather-card-on {
     padding: 16px 14px !important;
 }
 

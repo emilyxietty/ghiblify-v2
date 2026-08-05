@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { clearWeatherLocation } from "../../hooks/useWeather";
 import {
   CORNER_STYLES,
   useAppContext,
@@ -682,9 +683,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 (widgets.weather.settings as WeatherSettings)
                   .useDeviceLocation !== false
               }
-              onChange={(v) =>
-                updateWidgetSettings("weather", { useDeviceLocation: v })
-              }
+              onChange={(v) => {
+                updateWidgetSettings("weather", { useDeviceLocation: v });
+                // Off must also FORGET: the device coords are cached
+                // with a TTL, so without clearing them the widget kept
+                // showing your location long after the toggle flipped.
+                if (!v) {
+                  clearWeatherLocation();
+                  window.dispatchEvent(
+                    new CustomEvent("ghiblify:weather:refresh")
+                  );
+                }
+              }}
             />
             <PermissionRow
               name="bookmarks"
@@ -695,6 +705,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               name="audioCapture"
               label={t("settings.permissionMicrophone")}
               description={t("settings.permissionMicrophoneSub")}
+            />
+            <PermissionRow
+              name="identity.email"
+              label={t("settings.permissionEmail")}
+              description={t("settings.permissionEmailSub")}
             />
           </section>
         )}

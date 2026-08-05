@@ -45,6 +45,7 @@ const SearchBar: React.FC = () => {
   const [activeIdx, setActiveIdx] = useState(-1);
   const [focused, setFocused] = useState(false);
   const [listening, setListening] = useState(false);
+  const [micDenied, setMicDenied] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const lensFormRef = useRef<HTMLFormElement | null>(null);
@@ -144,7 +145,14 @@ const SearchBar: React.FC = () => {
     // requires. Then getUserMedia itself, which is what actually opens
     // the device — speech recognition won't start otherwise.
     const granted = await requestPermission("audioCapture");
-    if (!granted) return;
+    if (!granted) {
+      // Visible feedback instead of a silent no-op: flash the mic as
+      // denied for a beat. Clicking again re-prompts — the permission
+      // request always rides the click gesture.
+      setMicDenied(true);
+      window.setTimeout(() => setMicDenied(false), 1600);
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices?.getUserMedia({
         audio: true,
@@ -300,9 +308,13 @@ const SearchBar: React.FC = () => {
             type="button"
             className={`searchbar-icon-btn searchbar-mic${
               listening ? " is-listening" : ""
-            }`}
+            }${micDenied ? " is-denied" : ""}`}
             aria-label={t("searchbar.voiceAria")}
-            data-tooltip={t("searchbar.voiceTooltip")}
+            data-tooltip={
+              micDenied
+                ? t("searchbar.voiceDenied")
+                : t("searchbar.voiceTooltip")
+            }
             onClick={() => void startVoiceSearch()}
           >
             <MicIcon style={{ fontSize: 20 }} />

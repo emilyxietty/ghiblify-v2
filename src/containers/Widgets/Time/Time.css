@@ -63,8 +63,14 @@
 
 /* Strip the standard widget padding in analog mode so the dial fills
    the shell exactly — otherwise the circular backdrop-filter area
-   extends past the SVG edge. */
-.widget[data-widget-key="time"]:has(.time-analog) .widget-content {
+   extends past the SVG edge. The frost variant repeats it with enough
+   specificity to beat the generic frost pill-padding rule in
+   Widget.css regardless of bundle order. */
+.widget[data-widget-key="time"]:has(.time-analog) .widget-content,
+.widget.has-text-highlight.highlight-frost[data-widget-key="time"]:has(
+        .time-analog
+    )
+    .widget-content {
     padding: 0;
 }
 
@@ -98,6 +104,60 @@
 
 .time-analog-pin-outer {
     fill: rgba(255, 255, 255, 0.3);
+}
+
+/* ---------------------------------------------------------------------------
+   Highlight × analog. The digital highlight paints a pill behind the
+   text; the analog equivalent is the dial itself: the face circle
+   takes the highlight tint (colour × opacity via --text-highlight),
+   and the hands / ticks / pin take the ink var so Auto/Light/Dark
+   applies. The shell publishes both vars whenever a highlight is on,
+   in either mode — these rules just give analog something to paint.
+   --------------------------------------------------------------------------- */
+.widget.has-text-highlight .time-analog-face {
+    fill: var(--text-highlight);
+}
+
+.widget.has-text-highlight .time-analog-hand {
+    stroke: var(--text-highlight-fg);
+}
+
+.widget.has-text-highlight .time-analog-tick {
+    fill: color-mix(in srgb, var(--text-highlight-fg) 70%, transparent);
+}
+
+.widget.has-text-highlight .time-analog-tick-cardinal,
+.widget.has-text-highlight .time-analog-pin {
+    fill: var(--text-highlight-fg);
+}
+
+.widget.has-text-highlight .time-analog-pin-outer {
+    fill: color-mix(in srgb, var(--text-highlight-fg) 30%, transparent);
+}
+
+/* Frosted highlight in analog mode: the user's Blur slider drives the
+   dial's glass instead of the fixed 6px ambience. Extra specificity
+   (attr + :has) so this wins over both the base analog frost rule and
+   the generic .highlight-frost shell rule regardless of bundle order —
+   and keeps the circular clip rather than the pill radius. */
+/* Analog opts out of the rectangular shell pill in EVERY highlight
+   state: the dial's face circle carries the tint, so the shell stays
+   transparent and circular (the generic rules tint the shell for
+   digital). */
+.widget.has-text-highlight[data-widget-key="time"]:has(.time-analog) {
+    background: transparent;
+    border-radius: 50%;
+}
+
+.widget.has-text-highlight.highlight-frost[data-widget-key="time"]:has(
+        .time-analog
+    ) {
+    background: transparent;
+    border-radius: 50%;
+    -webkit-backdrop-filter: blur(calc(var(--text-highlight-blur, 0.6) * 20px))
+        saturate(1.15);
+    backdrop-filter: blur(calc(var(--text-highlight-blur, 0.6) * 20px))
+        saturate(1.15);
 }
 
 .time-analog-pin {

@@ -183,3 +183,31 @@
 .dropdown-menu.dropdown-menu-portal {
     z-index: var(--z-portal);
 }
+
+/* Edit-panel dropdowns use the same dark-glass menu language as Info's
+   multi-select instead of the generic white application dropdown. */
+.dropdown-menu.edit-panel-dropdown {
+    box-sizing: border-box;
+    min-width: 160px !important;
+    padding: 4px;
+    background: rgba(10, 14, 20, 0.96);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-md);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown-menu.edit-panel-dropdown .dropdown-option {
+    padding: 7px 10px;
+    color: inherit;
+    font-size: 13px;
+}
+
+.dropdown-menu.edit-panel-dropdown .dropdown-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu.edit-panel-dropdown .dropdown-option.selected {
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 18%, transparent);
+}

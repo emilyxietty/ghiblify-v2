@@ -45,7 +45,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--yellow, #e9b330);
+    background: var(--interaction-accent, #8fc7e8);
     cursor: pointer;
     border: 2px solid #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -55,7 +55,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--yellow, #e9b330);
+    background: var(--interaction-accent, #8fc7e8);
     cursor: pointer;
     border: 2px solid #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -354,6 +354,10 @@
     justify-content: space-between;
     gap: 10px;
     min-height: 28px;
+    /* A control that can't shrink (nowrap segment buttons) drops to
+       its own line instead of painting over the label — long
+       localized strings made label + control exceed the panel width. */
+    flex-wrap: wrap;
 }
 
 .edit-panel-row-label {
@@ -367,6 +371,38 @@
     align-items: center;
     justify-content: flex-end;
     min-width: 0;
+}
+
+/* Weather's single-select and location action share the same compact
+   control geometry as Info's Fields button. */
+.edit-panel-dropdown {
+    width: auto;
+    min-width: 92px;
+}
+
+.edit-panel-dropdown .dropdown-toggle,
+.edit-panel-location-button.btn {
+    min-height: 28px;
+    padding: 4px 10px;
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    color: var(--light);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.edit-panel-dropdown .dropdown-toggle:hover:not(:disabled),
+.edit-panel-location-button.btn:hover:not(.btn-disabled) {
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 16%, transparent);
+    border-color: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 55%, transparent);
+    color: var(--light);
+}
+
+.edit-panel-location-button.btn {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Two or three short options where a dropdown would hide the
@@ -399,6 +435,215 @@
 .edit-panel-segment.is-active {
     color: var(--dark, #1f2620);
     background: var(--light);
+}
+
+/* Expanded state: the tuning column slides out the right side — the
+   panel itself grows instead of floating anything over content. */
+.edit-panel-expanded {
+    width: 460px;
+}
+
+.edit-panel-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.edit-panel-main {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.edit-panel-side {
+    flex: 0 0 178px;
+    min-width: 0;
+    padding-left: 12px;
+    border-left: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    animation: edit-panel-side-in 160ms ease both;
+}
+
+@keyframes edit-panel-side-in {
+    from {
+        opacity: 0;
+        transform: translateX(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.highlight-tuning {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.highlight-tuning-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--light-muted, rgba(255, 255, 255, 0.7));
+}
+
+.highlight-tuning-close {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--light);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.highlight-tuning-close:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+/* Paper colour swatches — small round chips, active one ringed. */
+.edit-panel-swatches {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.edit-panel-swatch {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--dark, #1f2620) 25%, transparent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.edit-panel-swatch:hover {
+    transform: scale(1.12);
+}
+
+.edit-panel-swatch.is-active {
+    box-shadow: 0 0 0 2px var(--light);
+}
+
+.edit-panel-swatch-empty {
+    background:
+        linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--red, #d54a3e) calc(50% - 1px),
+            var(--red, #d54a3e) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        ),
+        color-mix(in srgb, var(--light) 8%, transparent);
+}
+
+/* Frosted-glass paper swatch — translucent stripes read as "glass"
+   next to the solid colour chips. */
+.edit-panel-swatch-frost {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.75) 0 3px,
+        rgba(255, 255, 255, 0.3) 3px 6px
+    );
+}
+
+/* Smoked-glass variant — same stripes, dark. */
+.edit-panel-swatch-frost-dark {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(18, 24, 30, 0.85) 0 3px,
+        rgba(18, 24, 30, 0.45) 3px 6px
+    );
+}
+
+/* "Clear" (no surface) — diagonal slash over nothing. */
+.edit-panel-swatch-clear {
+    background: linear-gradient(
+        to top right,
+        transparent 42%,
+        #e05a5a 46%,
+        #e05a5a 54%,
+        transparent 58%
+    );
+}
+
+/* Theme-default surface chip. */
+.edit-panel-swatch-theme {
+    background: rgb(var(--surface-rgb, 31, 38, 32));
+}
+
+/* Weather-mood card chip — sky-to-sun wash. */
+.edit-panel-swatch-weather {
+    background: linear-gradient(135deg, #7ec3e8 0%, #b8dcf0 55%, #f5d98a 100%);
+}
+
+.edit-panel-avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.edit-panel-avatar-option {
+    min-width: 0;
+    text-align: center;
+}
+
+.edit-panel-avatar-button {
+    width: 100%;
+    padding: 7px 5px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--light);
+    font: inherit;
+    font-size: 11px;
+    background: color-mix(in srgb, var(--light) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.edit-panel-avatar-button:hover {
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 16%, transparent);
+}
+
+.edit-panel-avatar-button.is-active {
+    border-color: var(--interaction-accent, #8fc7e8);
+    box-shadow: 0 0 0 1px var(--interaction-accent, #8fc7e8);
+}
+
+.edit-panel-avatar-button img {
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    border-radius: var(--radius-sm, 6px);
+}
+
+.edit-panel-avatar-option a,
+.edit-panel-avatar-credit {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--light) 66%, transparent);
+    font-size: 9px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.edit-panel-avatar-option a:hover {
+    color: var(--light);
 }
 
 .edit-panel-slider-row {

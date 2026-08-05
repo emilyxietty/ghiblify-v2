@@ -53,7 +53,7 @@
 
 .greeting-name:hover,
 .greeting-name:focus-visible {
-    border-bottom-color: var(--yellow, #ffe082);
+    border-bottom-color: var(--interaction-accent, #8fc7e8);
     outline: none;
 }
 
@@ -92,7 +92,7 @@
 
 .greeting-name-input:focus {
     background: rgba(255, 255, 255, 0.28);
-    border-color: var(--yellow, #ffe082);
+    border-color: var(--interaction-accent, #8fc7e8);
     border-style: solid;
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
 }

@@ -334,6 +334,7 @@ const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "pomodoro",
   "notes",
   "rightSidebar",
+  "googleApps",
 ]);
 
 const buildDefaultWidgets = (): WidgetsState => {
@@ -801,9 +802,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, []);
 
-  // Edit mode and Drag mode are mutually exclusive — turning one on
-  // turns the other off. Single-widget edit mode (`editingWidgetKey`)
-  // is a peer of edit mode, so entering drag mode also clears it.
+  // The legacy global edit state remains for guided-tour compatibility.
+  // Normal editing is per-widget and can coexist with drag mode.
   const toggleEditMode = () => {
     setShowWidgetEdits((prev) => {
       const next = !prev;
@@ -817,7 +817,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     setDragMode(b);
     if (b) {
       setShowWidgetEdits(false);
-      setEditingWidgetKey(null);
     }
   };
 
@@ -825,7 +824,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const setEditingWidgetKeyExclusive = (k: WidgetKey | null) => {
     setEditingWidgetKey(k);
-    if (k) setDragMode(false);
   };
 
   const setBackgroundParallax = (on: boolean) => {

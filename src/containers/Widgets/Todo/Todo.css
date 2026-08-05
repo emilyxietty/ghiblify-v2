@@ -24,6 +24,13 @@
     --todo-danger: #ff8a8a;
 }
 
+/* The configured height is a cap, not a forced empty footprint. The
+   widget grows with its rows until that cap is reached; after that the
+   flex-shrinking .todo-list becomes the scrollable region. */
+.todo-container:not(.collapsed) {
+    height: auto;
+}
+
 /* Frost-specific Todo overrides — text and border tokens that
    AREN'T derived from the global --surface-rgb token. The surface
    itself is handled automatically via --surface-rgb (set to a
@@ -53,22 +60,13 @@
 /* remove manual padding reservation — header will be sticky and remain in flow */
 
 .todo-input-wrapper {
-    /* Two-column row: input grows, add button sits to its right.
-       align-items: stretch lets the button match the input's
-       natural height. No horizontal padding — the wrapper spans the
-       full container width, same as .todo-list, so the input + add
-       button row visually matches the items below. */
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
+    position: relative;
     width: 100%;
     box-sizing: border-box;
 }
 
 .todo-input-wrapper > :first-child {
-    /* The TextInput should fill the remaining row space. */
-    flex: 1;
-    min-width: 0;
+    width: 100%;
 }
 
 /* .todo-input {
@@ -94,22 +92,17 @@
 }
 
 .todo-add-btn {
-    flex-shrink: 0;
-    /* Match the input field's full height so the row reads as a
-       single horizontal control. The TextInput has 12px vertical
-       padding + ~20px line-height = ~44px box; align-stretch on the
-       wrapper would also work but explicit height keeps the button
-       visually consistent across browsers. */
-    width: 38px;
-    align-self: stretch;
-    min-height: 38px;
-    background: rgba(
-        var(--todo-surface-rgb),
-        min(calc(var(--todo-opacity, 0.5) + 0.15), var(--surface-alpha-cap, 1))
-    );
-    color: var(--todo-text);
-    border: 1px solid var(--todo-border);
-    border-radius: var(--radius-control, var(--radius-md));
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    transform: translateY(-50%);
+    background: var(--todo-accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
     font-size: 18px;
     font-weight: 600;
     line-height: 1;
@@ -119,30 +112,42 @@
     justify-content: center;
     transition: transform 160ms ease, box-shadow 160ms ease,
         background 160ms ease, border-color 160ms ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+    animation: todo-add-in 140ms ease both;
 }
 
-.todo-add-btn:hover:not(:disabled) {
-    transform: scale(1.08);
+.todo-add-btn:hover {
+    transform: translateY(-50%) scale(1.08);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-    border-color: color-mix(in srgb, var(--todo-text) 30%, transparent);
+    background: color-mix(in srgb, var(--todo-accent) 82%, white);
 }
 
-.todo-add-btn:active:not(:disabled) {
-    transform: scale(0.96);
+.todo-add-btn:active {
+    transform: translateY(-50%) scale(0.94);
 }
 
-/* Always-rendered, so it needs a clear "nothing to add" state.
-   Slightly faded + un-clickable, but stays in place so users know
-   the button exists even before they start typing. */
-.todo-add-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    box-shadow: none;
+.todo-add-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+@keyframes todo-add-in {
+    from { opacity: 0; transform: translateY(-50%) scale(0.7); }
+    to { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .todo-add-btn {
+        animation: none;
+    }
 }
 
 .todo-list {
-    width: 100%;
+    /* Extend only the scrolling box into the container's right padding.
+       The item content remains the same width as the input above while
+       the scrollbar sits in the added outer gutter. */
+    width: calc(100% + 14px);
+    margin-right: -14px;
     /* Fill the remaining vertical space inside the .todo-container
        (which is a flex column sized to the widget's chosen height).
        The previous `max-height: 240px` capped the list at ~5 items
@@ -152,15 +157,13 @@
     flex: 1 1 auto;
     min-height: 0;
     list-style: none;
-    /* Right padding pushes the row of items inboard so the scrollbar
-       sits in the gutter to their right rather than overlaying their
-       right edge. `scrollbar-gutter: stable` keeps that gutter
-       reserved even when the list isn't overflowing, so toggling
-       between short/long lists doesn't reflow the row widths. Top
-       padding leaves room for the first item's hover lift; bottom
-       padding keeps the last item clear of the scroll thumb. */
-    padding: 2px 10px 28px 0;
-    margin: 0;
+    /* The right padding is outside the input-aligned item width because
+       of the expanded scroll box above. Top padding leaves room for the
+       first item's hover lift; bottom padding clears the scroll thumb. */
+    padding: 2px 14px 28px 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
     overflow-y: auto;
     scrollbar-gutter: stable;
     display: flex;

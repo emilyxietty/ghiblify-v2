@@ -106,6 +106,39 @@
     transition: background 140ms ease;
 }
 
+/* "Use my location" — the primary action, dressed as one: accent
+   fill, readable ink, a touch of lift on hover. */
+.weather-location-action-primary {
+    background: color-mix(
+        in srgb,
+        var(--interaction-accent, #8fc7e8) 26%,
+        transparent
+    );
+    border-color: color-mix(
+        in srgb,
+        var(--interaction-accent, #8fc7e8) 60%,
+        transparent
+    );
+    font-weight: 600;
+}
+
+.weather-location-action-primary:hover {
+    background: color-mix(
+        in srgb,
+        var(--interaction-accent, #8fc7e8) 40%,
+        transparent
+    );
+    transform: translateY(-1px);
+}
+
+/* Soft reassurance line under the actions. */
+.weather-location-hint {
+    margin: 2px 0 0;
+    font-size: 11px;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
 .weather-location-action:hover {
     background: color-mix(in srgb, var(--light) 16%, transparent);
 }

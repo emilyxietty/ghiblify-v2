@@ -116,6 +116,14 @@
     border-radius: var(--radius-lg);
     background: color-mix(in srgb, var(--light) 6%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    /* PermissionRow renders as a real <button> (the click gesture must
+       reach permissions.request()), and buttons do NOT inherit color /
+       font — the UA paints them black buttontext. Explicit inherits
+       keep the button rows identical to the <label> rows. */
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
 }
 
 .settings-row-text {

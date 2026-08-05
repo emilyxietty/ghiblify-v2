@@ -51,6 +51,25 @@ interface MovieMetadataData {
   [key: string]: MovieMetadata;
 }
 
+// URLs that failed to load this session. A rotation pick is verified
+// with a real image fetch before it's painted; failures land here and
+// are skipped on re-picks. Session-scoped ON PURPOSE — a favorite
+// that 404s might be a transient host hiccup, so we never silently
+// delete it from the user's stored favorites; it just sits out until
+// the next full page load gives it another chance.
+const deadUrls = new Set<string>();
+
+// Resolve true iff the browser can actually decode an image at `url`.
+// Warms the HTTP cache, so the CSS background-image that follows is
+// served instantly from cache.
+const preloadImage = (url: string): Promise<boolean> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+
 export const useBackground = () => {
   const [currentBackground, setCurrentBackground] = useState<string>("");
   const [filmTitle, setFilmTitle] = useState<string>("");
@@ -192,22 +211,49 @@ export const useBackground = () => {
 
         // Pick a random link from valid candidates. Prefer a different link
         // than the current background to ensure users see an immediate change.
-        let selected: { link: string; sourceTitle: string } | null = null;
-        if (allLinks.length === 1) {
-          selected = allLinks[0];
-        } else {
+        const pickCandidate = (
+          pool: { link: string; sourceTitle: string }[],
+        ): { link: string; sourceTitle: string } => {
+          if (pool.length === 1) return pool[0];
           // try up to 5 times to pick a different link
           for (let i = 0; i < 5; i++) {
-            const idx = Math.floor(Math.random() * allLinks.length);
-            const candidate = allLinks[idx];
-            if (candidate.link !== currentBackground) {
-              selected = candidate;
-              break;
-            }
+            const candidate = pool[Math.floor(Math.random() * pool.length)];
+            if (candidate.link !== currentBackground) return candidate;
           }
           // fallback to any link
-          if (!selected)
-            selected = allLinks[Math.floor(Math.random() * allLinks.length)];
+          return pool[Math.floor(Math.random() * pool.length)];
+        };
+
+        // Verify the pick actually decodes before painting it. A URL
+        // can rot after users store it (favorites outlive
+        // background.json removals; hosts 404 / change hotlink
+        // policy), and Background.tsx paints via CSS background-image
+        // which has no error path — an unverified dead pick means a
+        // black tab. Dead picks are skipped for the session and we
+        // re-roll; if everything in the pool is dead (offline-ish or
+        // pool of one rotten favorite), fall back to a bundled asset
+        // so the user is never left staring at nothing.
+        let pool = allLinks.filter((c) => !deadUrls.has(c.link));
+        if (pool.length === 0) pool = allLinks;
+        let selected: { link: string; sourceTitle: string } | null = null;
+        for (let attempt = 0; attempt < 4 && pool.length > 0; attempt++) {
+          const candidate = pickCandidate(pool);
+          if (await preloadImage(candidate.link)) {
+            selected = candidate;
+            break;
+          }
+          deadUrls.add(candidate.link);
+          pool = pool.filter((c) => c.link !== candidate.link);
+        }
+        if (!selected) {
+          const pick =
+            OFFLINE_FALLBACKS[
+              Math.floor(Math.random() * OFFLINE_FALLBACKS.length)
+            ];
+          setCurrentBackground(chrome.runtime.getURL(pick.path));
+          setFilmTitle(pick.film);
+          setLoading(false);
+          return;
         }
 
         // If the selected link equals the current background (rare), append

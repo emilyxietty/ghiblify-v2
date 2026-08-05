@@ -10,12 +10,6 @@ import {
 // below means the chunk only fetches the first time any widget enters
 // edit mode.
 const EditWidget = lazy(() => import("../../components/EditWidget/EditWidget"));
-// Lazy for the same reason: only the widget being styled ever needs it.
-const ColorPickerPopover = lazy(() =>
-  import("../../components/ColorPicker/ColorPicker").then((m) => ({
-    default: m.ColorPickerPopover,
-  }))
-);
 import { AddIcon, BlurOnIcon, KeyboardIcon, ListIcon, OpacityIcon, PaletteIcon, TextFieldsIcon, ThermostatIcon, ViewModuleIcon, VisibilityIcon } from "../../components/Icons/Icons";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
@@ -26,7 +20,9 @@ import {
   AvatarSettings,
   getWidgetConfig,
   InfoSettings,
+  NOTE_PAPER_PRESETS,
   NotesSettings,
+  POMODORO_CARD_PRESETS,
   QuicklinksSettings,
   TimeSettings,
   WeatherSettings,
@@ -160,11 +156,9 @@ export const Widget: React.FC<WidgetProps> = ({
   // would restart the animation every second.
   const [typeSteps, setTypeSteps] = useState(24);
 
-  // Where to float the highlight picker, opened from the context menu.
-  const [highlightPickerAt, setHighlightPickerAt] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  // Hidden native colour input — the context menu's "custom colour"
+  // row clicks it to open the OS palette directly.
+  const nativeHighlightInput = useRef<HTMLInputElement | null>(null);
 
   // Listen for programmatic open/close (used by the welcome guide's
   // "right-click for quick actions" slide so the Time widget's menu
@@ -682,13 +676,14 @@ export const Widget: React.FC<WidgetProps> = ({
     const dragKeyHeld = document.body.classList.contains(
       "show-widget-outline",
     );
-    if (!dragKeyHeld && !dragMode) return;
+    const target = e.target as HTMLElement | null;
+    const fromEditDragHandle = !!target?.closest?.(".widget-drag-handle");
+    if (!dragKeyHeld && !dragMode && !fromEditDragHandle) return;
     if (isResizing) return;
 
     // Don't hijack mousedowns that originated on the resize handle or
     // the quick-edit button — those have their own click handlers and
     // the drag flow swallows the click.
-    const target = e.target as HTMLElement | null;
     if (target?.closest?.(".widget-resize-handle")) return;
     if (target?.closest?.(".widget-quick-edit")) return;
 
@@ -775,6 +770,15 @@ export const Widget: React.FC<WidgetProps> = ({
     typeof widgetSettings.highlightOpacity === "number"
       ? widgetSettings.highlightOpacity
       : 100;
+  const highlightBlurFraction = Math.max(
+    0,
+    Math.min(
+      1,
+      (typeof widgetSettings.highlightBlur === "number"
+        ? widgetSettings.highlightBlur
+        : 60) / 100
+    )
+  );
   const typeIn = widgetSettings.typeIn === true;
 
   return (
@@ -786,12 +790,35 @@ export const Widget: React.FC<WidgetProps> = ({
         isFadingOut ? "fade-out" : ""
       } draggable widget-align-${alignment}${
         highlight ? " has-text-highlight" : ""
+      }${
+        highlight && widgetSettings.highlightFrost === true
+          ? " highlight-frost"
+          : ""
+      }${
+        storageKey === "notes" && widgetSettings.paperFrost === true
+          ? " widget-notes-frost"
+          : ""
+      }${
+        (storageKey === "todo" || storageKey === "weather") &&
+        widgetSettings.frosted === true
+          ? ` widget-surface-frost${
+              widgetSettings.frostDark === true ? " frost-dark" : ""
+            }`
+          : ""
       }${typeIn ? " has-type-in" : ""}`}
       data-widget-key={storageKey}
       style={{
         left: `${position.x}vw`,
         top: `${position.y}vh`,
         transform: getTransform(),
+        // The shell adopts its content's font size so em-based tokens
+        // (--text-highlight-radius: the corner-style-aware pill
+        // rounding) resolve against the TEXT scale, not the 16px base.
+        // Safe: every fontSize-bearing widget sets its own inline
+        // font-size below the shell, so nothing inherits this.
+        ...(typeof widgetSettings.fontSize === "number"
+          ? { fontSize: `${toScreenPx(widgetSettings.fontSize)}px` }
+          : {}),
         ...(opacityFraction !== undefined
           ? { ["--widget-opacity" as any]: opacityFraction }
           : {}),
@@ -807,6 +834,7 @@ export const Widget: React.FC<WidgetProps> = ({
         ...(highlight
           ? {
               ["--text-highlight" as any]: withAlpha(highlight, highlightAlpha),
+              ["--text-highlight-blur" as any]: highlightBlurFraction,
               ["--text-highlight-fg" as any]: resolveForeground(
                 highlight,
                 isHighlightTextColor(widgetSettings.highlightTextColor)
@@ -837,7 +865,8 @@ export const Widget: React.FC<WidgetProps> = ({
         e.stopPropagation();
         if (isEditable) return;
         e.preventDefault();
-        setContextMenuPos({ x: e.clientX, y: e.clientY });
+        setContextMenuPos(null);
+        setEditingWidgetKey(storageKey);
       }}
     >
       {/* if child doesn't render a '.widget-header', show a small invisible
@@ -865,9 +894,29 @@ export const Widget: React.FC<WidgetProps> = ({
             ref={resizeHandleRef}
             className="widget-resize-handle"
             onMouseDown={handleResizeMouseDown}
-            title={t("widgets.edit.resizeTitle")}
+            title={t("widgets.edit.resizeTitle", {
+              name: t(`widgets.names.${storageKey}`),
+            })}
+            data-tooltip={t("widgets.edit.resizeTitle", {
+              name: t(`widgets.names.${storageKey}`),
+            })}
           ></div>
         )}
+      {isEditingThis && !isResizing && (
+        <button
+          type="button"
+          className="widget-drag-handle"
+          onMouseDown={handleWidgetMouseDown}
+          aria-label={t("widgets.contextMenu.drag", {
+            name: widgetConfig.name,
+          })}
+          data-tooltip={t("widgets.contextMenu.drag", {
+            name: widgetConfig.name,
+          })}
+        >
+          <span className="widget-drag-dots" aria-hidden="true" />
+        </button>
+      )}
       {/* Drag-mode-only quick controls — only visible while `d` is held
           and the widget isn't already in edit mode. The pencil at top-
           right jumps straight into editing this widget; the minus at
@@ -922,48 +971,32 @@ export const Widget: React.FC<WidgetProps> = ({
             setDragMode,
             isFrost: appearance.theme === "frost",
             preview: (patch) => previewWidgetSettings(storageKey, patch),
-            openHighlightPicker: () =>
-              setHighlightPickerAt(contextMenuPos ?? { x: 80, y: 80 }),
+            // Straight to the OS palette — no intermediate panel. The
+            // hidden input below carries the current colour; changes
+            // apply live while the user drags through the spectrum.
+            openHighlightPicker: () => nativeHighlightInput.current?.click(),
           })}
         />
       )}
-      {highlightPickerAt && (
-        <Suspense fallback={null}>
-          <ColorPickerPopover
-            anchor={highlightPickerAt}
-            color={
-              typeof committedSettings.highlightColor === "string"
-                ? normalizeHex(committedSettings.highlightColor)
-                : null
-            }
-            textColor={
-              isHighlightTextColor(committedSettings.highlightTextColor)
-                ? committedSettings.highlightTextColor
-                : "auto"
-            }
-            opacity={
-              typeof committedSettings.highlightOpacity === "number"
-                ? committedSettings.highlightOpacity
-                : 100
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightColor: next,
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightTextColor: next,
-              } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightOpacity: next,
-              } as never)
-            }
-            onClose={() => setHighlightPickerAt(null)}
-          />
-        </Suspense>
+      {"highlightColor" in committedSettings && (
+        <input
+          ref={nativeHighlightInput}
+          type="color"
+          className="native-color-input"
+          tabIndex={-1}
+          aria-hidden="true"
+          value={
+            (typeof committedSettings.highlightColor === "string"
+              ? normalizeHex(committedSettings.highlightColor)
+              : null) ?? "#f7d774"
+          }
+          onChange={(e) =>
+            updateWidgetSettings(storageKey, {
+              highlightColor: e.target.value,
+            } as never)
+          }
+          onBlur={(e) => pushRecentColor(e.target.value)}
+        />
       )}
     </div>
   );
@@ -1292,6 +1325,9 @@ export function buildContextMenuItems(args: {
   } else if (storageKey === "notes") {
     const s = widgets.notes.settings as NotesSettings;
     const showBorder = s.showBorder !== false;
+    const paper =
+      typeof s.paperColor === "string" ? normalizeHex(s.paperColor) : null;
+    const paperFrost = s.paperFrost === true;
     extras = [
       {
         type: "checkbox",
@@ -1299,6 +1335,45 @@ export function buildContextMenuItems(args: {
         checked: showBorder,
         onClick: () =>
           updateWidgetSettings("notes", { showBorder: !showBorder }),
+      },
+      // Paper swatches — mirror of the EditWidget row. Slot 0 of the
+      // presets is the shipped cream, stored as null; frosted glass
+      // is just another paper at the end of the list.
+      {
+        type: "submenu",
+        label: t("widgets.edit.notesPaper"),
+        icon: <FormatColorFillIcon style={{ fontSize: 14 }} />,
+        items: [
+          ...NOTE_PAPER_PRESETS.map((hex, i) => {
+            const value = i === 0 ? null : hex;
+            return {
+              type: "radio" as const,
+              label:
+                i === 0
+                  ? t("widgets.edit.pomodoroColorDefaultAria")
+                  : hex.toUpperCase(),
+              swatch: hex,
+              selected: !paperFrost && paper === value,
+              onHover: demo({ paperColor: value, paperFrost: false }),
+              onClick: () =>
+                updateWidgetSettings("notes", {
+                  paperColor: value,
+                  paperFrost: false,
+                }),
+            };
+          }),
+          {
+            type: "radio" as const,
+            label: t("widgets.edit.styleFrost"),
+            selected: paperFrost,
+            onHover: demo({ paperColor: null, paperFrost: true }),
+            onClick: () =>
+              updateWidgetSettings("notes", {
+                paperColor: null,
+                paperFrost: true,
+              }),
+          },
+        ],
       },
     ];
   } else if (storageKey === "avatar") {
@@ -1339,7 +1414,20 @@ export function buildContextMenuItems(args: {
       size?: "small" | "medium" | "large" | "compact" | "regular";
       sound?: PomodoroSoundKey;
       soundVolume?: number;
+      cardColor?: string | null;
+      opacity?: number;
     };
+    const currentCard =
+      typeof pSettings.cardColor === "string"
+        ? normalizeHex(pSettings.cardColor)
+        : null;
+    const currentCardOpacity =
+      typeof pSettings.opacity === "number" ? pSettings.opacity : 100;
+    const nearestCardOpacity = HIGHLIGHT_OPACITY_PRESETS.reduce((best, v) =>
+      Math.abs(v - currentCardOpacity) < Math.abs(best - currentCardOpacity)
+        ? v
+        : best
+    );
     // Anything that isn't a known current size (small/medium/large)
     // collapses to "medium" — covers legacy "compact" / "regular"
     // labels and any other stale value, so the default experience
@@ -1397,7 +1485,11 @@ export function buildContextMenuItems(args: {
           onClick: () => updateWidgetSettings("pomodoro", { size: v }),
         })),
       },
-      // Picking a sound previews it, same as the EditWidget dropdown.
+      // Each sound cascades onto its volume levels — one gesture sets
+      // chime + volume together, same pattern as card colour →
+      // opacity (so there's no separate flat Volume cascade). "None"
+      // stays a flat radio: volume is meaningless with no chime.
+      // Picking a row previews it, same as the EditWidget dropdown.
       // The click is a real user gesture, so it doubles as the audio
       // unlock — otherwise the context is still suspended when the
       // timer ends half an hour later and the chime is silent.
@@ -1405,38 +1497,88 @@ export function buildContextMenuItems(args: {
         type: "submenu",
         label: t("widgets.edit.pomodoroSoundLabel"),
         icon: <MusicNoteIcon style={{ fontSize: 14 }} />,
-        items: POMODORO_SOUND_KEYS.map((v) => ({
-          type: "radio" as const,
-          label: t(`widgets.edit.pomodoroSound.${v}`),
-          selected: currentSound === v,
-          onClick: () => {
-            updateWidgetSettings("pomodoro", { sound: v });
-            primePomodoroAudio();
-            playPomodoroChime(v, currentVolume);
-          },
-        })),
-      },
-      // Volume is meaningless with no chime to play — hidden on "none",
-      // matching the EditWidget slider's own gate.
-      ...(currentSound === "none"
-        ? []
-        : [
-            {
-              type: "submenu" as const,
-              label: t("widgets.edit.pomodoroVolume"),
-              icon: <VolumeUpIcon style={{ fontSize: 14 }} />,
-              items: VOLUME_PRESETS.map((v) => ({
+        items: POMODORO_SOUND_KEYS.map((v) =>
+          v === "none"
+            ? {
                 type: "radio" as const,
-                label: `${v}%`,
-                selected: nearestVolume === v,
-                onClick: () => {
-                  updateWidgetSettings("pomodoro", { soundVolume: v });
-                  primePomodoroAudio();
-                  playPomodoroChime(currentSound, v);
-                },
-              })),
-            },
-          ]),
+                label: t(`widgets.edit.pomodoroSound.${v}`),
+                selected: currentSound === v,
+                onClick: () => updateWidgetSettings("pomodoro", { sound: v }),
+              }
+            : {
+                type: "submenu" as const,
+                label: t(`widgets.edit.pomodoroSound.${v}`),
+                icon:
+                  currentSound === v ? (
+                    <VolumeUpIcon style={{ fontSize: 14 }} />
+                  ) : undefined,
+                items: VOLUME_PRESETS.filter((vol) => vol > 0).map((vol) => ({
+                  type: "radio" as const,
+                  label: `${vol}%`,
+                  selected: currentSound === v && nearestVolume === vol,
+                  onClick: () => {
+                    updateWidgetSettings("pomodoro", {
+                      sound: v,
+                      soundVolume: vol,
+                    });
+                    primePomodoroAudio();
+                    playPomodoroChime(v, vol);
+                  },
+                })),
+              }
+        ),
+      },
+      // Card colour — mirror of the EditWidget swatch row, applied to
+      // both focus and break (see Pomodoro.css custom-card rules).
+      // Each colour cascades onto its opacity levels, same one-gesture
+      // pattern as the text highlight: the row you land on sets colour
+      // and surface alpha together (which is why pomodoro is excluded
+      // from the generic flat opacity cascade below).
+      {
+        type: "submenu",
+        label: t("widgets.edit.pomodoroColor"),
+        icon: <FormatColorFillIcon style={{ fontSize: 14 }} />,
+        items: [
+          {
+            type: "submenu" as const,
+            label: t("widgets.edit.pomodoroColorDefaultAria"),
+            items: HIGHLIGHT_OPACITY_PRESETS.map((v) => ({
+              type: "radio" as const,
+              label: `${v}%`,
+              selected: currentCard === null && nearestCardOpacity === v,
+              onHover: demo({ cardColor: null, opacity: v }),
+              onClick: () =>
+                updateWidgetSettings("pomodoro", {
+                  cardColor: null,
+                  opacity: v,
+                }),
+            })),
+          },
+          ...POMODORO_CARD_PRESETS.map((hex) => ({
+            type: "submenu" as const,
+            label: hex.toUpperCase(),
+            icon: (
+              <span
+                className="ctx-menu-swatch"
+                style={{ background: withAlpha(hex, currentCardOpacity) }}
+                aria-hidden="true"
+              />
+            ),
+            items: HIGHLIGHT_OPACITY_PRESETS.map((v) => ({
+              type: "radio" as const,
+              label: `${v}%`,
+              swatch: withAlpha(hex, v),
+              selected: currentCard === hex && nearestCardOpacity === v,
+              onHover: demo({ cardColor: hex, opacity: v }),
+              onClick: () =>
+                updateWidgetSettings("pomodoro", {
+                  cardColor: hex,
+                  opacity: v,
+                }),
+            })),
+          })),
+        ],
+      },
     ];
   } else if (storageKey === "info") {
     const s = widgets.info.settings as InfoSettings;
@@ -1495,7 +1637,28 @@ export function buildContextMenuItems(args: {
     extras.push({
       type: "submenu",
       label: t("widgets.contextMenu.highlight"),
-      icon: <FormatColorFillIcon style={{ fontSize: 14 }} />,
+      // Same pencil-chip as the custom-colour row inside: rainbow when
+      // no highlight is set, the live colour when one is. The pencil
+      // on the PARENT row signals the whole cascade is where colours
+      // get edited.
+      icon: (
+        <span
+          className="ctx-menu-swatch ctx-menu-swatch-edit"
+          style={
+            current
+              ? { background: withAlpha(current, highlightOpacity) }
+              : undefined
+          }
+          aria-hidden="true"
+        >
+          <EditIcon style={{ fontSize: 11 }} />
+        </span>
+      ),
+      // ONE flat level: swatches apply directly at the current
+      // opacity, opacity/style are inline rows, and the custom row
+      // jumps STRAIGHT into the OS palette. (The old shape nested an
+      // opacity cascade under every colour and routed custom through
+      // an intermediate panel — three layers before paint hit text.)
       items: [
         {
           type: "radio",
@@ -1508,44 +1671,76 @@ export function buildContextMenuItems(args: {
             } as never),
         },
         { type: "separator" },
-        // Each colour opens onto its own alpha levels, so a pick is one
-        // gesture: the row you land on sets colour and opacity
-        // together. A shared opacity submenu meant choosing twice, and
-        // the alpha you'd get was invisible while picking the colour.
         ...swatches.map((hex) => ({
-          type: "submenu" as const,
+          type: "radio" as const,
           label: hex.toUpperCase(),
-          icon: (
-            <span
-              className="ctx-menu-swatch"
-              style={{ background: withAlpha(hex, highlightOpacity) }}
-              aria-hidden="true"
-            />
-          ),
-          items: HIGHLIGHT_OPACITY_PRESETS.map((v) => ({
-            type: "radio" as const,
-            label: `${v}%`,
-            // The chip shows this exact colour+alpha, so the row is a
-            // preview of the bar it produces.
-            swatch: withAlpha(hex, v),
-            selected: current === hex && highlightOpacity === v,
-            onHover: demo({ highlightColor: hex, highlightOpacity: v }),
-            onClick: () => {
-              pushRecentColor(hex);
-              updateWidgetSettings(storageKey, {
-                highlightColor: hex,
-                highlightOpacity: v,
-              } as never);
-            },
-          })),
+          swatch: withAlpha(hex, highlightOpacity),
+          selected: current === hex,
+          onHover: demo({ highlightColor: hex }),
+          onClick: () => {
+            pushRecentColor(hex);
+            updateWidgetSettings(storageKey, {
+              highlightColor: hex,
+            } as never);
+          },
         })),
         { type: "separator" },
         {
           type: "action",
           label: t("widgets.contextMenu.highlightCustom"),
-          icon: <FormatColorFillIcon style={{ fontSize: 14 }} />,
+          icon: (
+            <span
+              className="ctx-menu-swatch ctx-menu-swatch-edit"
+              style={
+                current
+                  ? { background: withAlpha(current, highlightOpacity) }
+                  : undefined
+              }
+              aria-hidden="true"
+            >
+              <EditIcon style={{ fontSize: 11 }} />
+            </span>
+          ),
           onClick: () => openHighlightPicker?.(),
         },
+        // Opacity + style rows — inline, only while a highlight is on.
+        ...(current
+          ? ([
+              { type: "separator" },
+              ...HIGHLIGHT_OPACITY_PRESETS.map((v) => ({
+                type: "radio" as const,
+                label: `${v}%`,
+                swatch: withAlpha(current, v),
+                selected: highlightOpacity === v,
+                onHover: demo({ highlightOpacity: v }),
+                onClick: () =>
+                  updateWidgetSettings(storageKey, {
+                    highlightOpacity: v,
+                  } as never),
+              })),
+              { type: "separator" },
+              {
+                type: "radio" as const,
+                label: t("widgets.edit.styleSolid"),
+                selected: widgetSettingsAny.highlightFrost !== true,
+                onHover: demo({ highlightFrost: false }),
+                onClick: () =>
+                  updateWidgetSettings(storageKey, {
+                    highlightFrost: false,
+                  } as never),
+              },
+              {
+                type: "radio" as const,
+                label: t("widgets.edit.styleFrost"),
+                selected: widgetSettingsAny.highlightFrost === true,
+                onHover: demo({ highlightFrost: true }),
+                onClick: () =>
+                  updateWidgetSettings(storageKey, {
+                    highlightFrost: true,
+                  } as never),
+              },
+            ] as const)
+          : []),
       ],
     });
   }
@@ -1612,7 +1807,10 @@ export function buildContextMenuItems(args: {
   if (
     typeof widgetSettingsAny.opacity === "number" &&
     !isFrost &&
-    !weatherOpacityIsNoOp
+    !weatherOpacityIsNoOp &&
+    // Pomodoro's opacity lives inside its card-colour cascade — a
+    // second flat entry here would fight it.
+    storageKey !== "pomodoro"
   ) {
     if (extras.length > 0) extras.push({ type: "separator" });
     const current = widgetSettingsAny.opacity as number;

@@ -13,7 +13,7 @@ import {
   type HighlightTextColor,
 } from "../../utils/textHighlight";
 import { Z_FLOATING } from "../../utils/zLayers";
-import { FormatColorFillIcon } from "../Icons/Icons";
+import { ChevronRightIcon, EditIcon } from "../Icons/Icons";
 import "./ColorPicker.css";
 
 const VIEWPORT_MARGIN = 8;
@@ -28,6 +28,21 @@ interface PanelProps {
   onChange: (next: string | null) => void;
   onTextColorChange: (next: HighlightTextColor) => void;
   onOpacityChange: (next: number) => void;
+  onPreviewChange?: (next: string | null) => void;
+  onPreviewTextColor?: (next: HighlightTextColor) => void;
+  onPreviewOpacity?: (next: number) => void;
+  onPreviewClear?: () => void;
+  /** 0–100 — backdrop blur behind the highlight pill. Blur is a
+   *  property of ANY colour (0 = solid, >0 = frosted glass in that
+   *  colour), not a separate highlight type. */
+  blur?: number;
+  onBlurChange?: (v: number) => void;
+  /** Whether the edit panel's tuning column is expanded — the strip's
+   *  chevron reflects and drives it (state lives in EditWidget).
+   *  Explicit target value, NOT a toggle: idempotent under double-
+   *  fired clicks. */
+  expanded?: boolean;
+  onExpandChange?: (open: boolean) => void;
 }
 
 /**
@@ -46,6 +61,10 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
   onChange,
   onTextColorChange,
   onOpacityChange,
+  onPreviewChange,
+  onPreviewTextColor,
+  onPreviewOpacity,
+  onPreviewClear,
 }) => {
   const t = useT();
   const [recents, setRecents] = useState<string[]>(() => readRecentColors());
@@ -80,6 +99,8 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
       style={{ background: hex }}
       aria-label={hex}
       data-tooltip={hex.toUpperCase()}
+      onMouseEnter={() => onPreviewChange?.(hex)}
+      onMouseLeave={onPreviewClear}
       onClick={() => commit(hex)}
     />
   );
@@ -89,6 +110,8 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
       <button
         type="button"
         className={`color-picker-off${color ? "" : " is-active"}`}
+        onMouseEnter={() => onPreviewChange?.(null)}
+        onMouseLeave={onPreviewClear}
         onClick={() => onChange(null)}
       >
         {t("widgets.edit.highlightNone")}
@@ -114,14 +137,19 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
         {/* The native swatch fires per-drag in the OS dialog; only the
             committed value goes into recents, so dragging through the
             spectrum doesn't fill the list with noise. */}
-        <input
-          type="color"
-          className="color-picker-native"
-          value={normalizeHex(color ?? "") ?? "#f7d774"}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={(e) => commit(e.target.value)}
-          aria-label={t("widgets.edit.highlightCustomAria")}
-        />
+        <span className="color-picker-native-wrap">
+          <input
+            type="color"
+            className="color-picker-native"
+            value={normalizeHex(color ?? "") ?? "#f7d774"}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={(e) => commit(e.target.value)}
+            aria-label={t("widgets.edit.highlightCustomAria")}
+          />
+          <span className="color-picker-native-pencil" aria-hidden="true">
+            <EditIcon style={{ fontSize: 14 }} />
+          </span>
+        </span>
         <input
           type="text"
           className={`color-picker-hex${hexIsValid ? "" : " is-invalid"}`}
@@ -157,6 +185,8 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
                 // Each step previews itself: the same colour at the
                 // alpha it would apply.
                 style={{ background: withAlpha(color, v) }}
+                onMouseEnter={() => onPreviewOpacity?.(v)}
+                onMouseLeave={onPreviewClear}
                 onClick={() => onOpacityChange(v)}
               >
                 {v}%
@@ -192,6 +222,8 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
                         color: resolveForeground(color, mode),
                       }
                 }
+                onMouseEnter={() => onPreviewTextColor?.(mode)}
+                onMouseLeave={onPreviewClear}
                 onClick={() => onTextColorChange(mode)}
               >
                 {mode === "auto" ? t("widgets.edit.highlightTextAuto") : "Aa"}
@@ -287,57 +319,227 @@ export const ColorPickerPopover: React.FC<PopoverProps> = ({
     document.body
   );
 };
-
-/** Trigger button + the floating panel, for the widget edit overlay. */
+/** Inline swatch strip for the widget edit overlay: off + the six
+ *  curated presets + custom-palette pencil + a chevron that expands
+ *  the edit panel's tuning column (opacity / blur / ink — see
+ *  HighlightTuning, rendered by EditWidget as a second panel column
+ *  rather than a floating overlay, so it never overlaps content and
+ *  dismisses with the panel). */
 export const ColorPicker: React.FC<PanelProps> = (props) => {
   const t = useT();
-  const [anchor, setAnchor] = useState<{
-    x: number;
-    y: number;
-    height: number;
-  } | null>(null);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  // FIXED chip set — a variable count made the row wrap raggedly.
+  // Recents are deliberately absent; custom/recent colours live one
+  // click away behind the pencil (OS palette).
+  const inlinePresets = HIGHLIGHT_PRESETS;
 
   return (
     <div className="color-picker" onClick={(e) => e.stopPropagation()}>
       <button
-        ref={triggerRef}
         type="button"
-        className="color-picker-trigger"
-        aria-haspopup="dialog"
-        aria-expanded={!!anchor}
-        aria-label={t("widgets.edit.highlightAria")}
-        data-tooltip={t("widgets.edit.highlightLabel")}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (anchor) {
-            setAnchor(null);
-            return;
-          }
-          const rect = triggerRef.current?.getBoundingClientRect();
-          if (!rect) return;
-          setAnchor({ x: rect.left, y: rect.top, height: rect.height });
+        className={`color-picker-inline-swatch color-picker-inline-off${
+          props.color ? "" : " is-active"
+        }`}
+        aria-label={t("widgets.edit.highlightNone")}
+        onMouseEnter={() => props.onPreviewChange?.(null)}
+        onMouseLeave={props.onPreviewClear}
+        onClick={() => {
+          props.onChange(null);
+          props.onExpandChange?.(false);
+        }}
+      />
+
+      {inlinePresets.map((hex) => (
+        <button
+          key={hex}
+          type="button"
+          className={`color-picker-inline-swatch${
+            props.color === hex ? " is-active" : ""
+          }`}
+          style={{ background: withAlpha(hex, props.opacity) }}
+          aria-label={hex.toUpperCase()}
+          data-tooltip={hex.toUpperCase()}
+          onMouseEnter={() => props.onPreviewChange?.(hex)}
+          onMouseLeave={props.onPreviewClear}
+          // Committing a colour auto-expands the tuning column — the
+          // controls appear the moment they become relevant.
+          onClick={() => {
+            pushRecentColor(hex);
+            props.onChange(hex);
+            props.onExpandChange?.(true);
+          }}
+        />
+      ))}
+
+
+      {/* Chevron — expands the panel's tuning column. Only shown
+          while CLOSED (and only with a colour to tune): once open,
+          the column's own ✕ is the close affordance, so no flipped
+          chevron sits around overlapping the divider. */}
+      {props.color && props.onExpandChange && !props.expanded && (
+        <button
+          type="button"
+          className="color-picker-expand"
+          aria-label={t("widgets.edit.highlightTune")}
+          data-tooltip={t("widgets.edit.highlightTune")}
+          aria-expanded={false}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onExpandChange?.(true);
+          }}
+        >
+          <ChevronRightIcon style={{ fontSize: 15 }} />
+        </button>
+      )}
+    </div>
+  );
+};
+
+/** The tuning column — live "Aa" demo of the current pill, opacity,
+ *  blur, ink. Rendered by EditWidget inside the panel's expandable
+ *  right column (see .edit-panel-side). */
+export const HighlightTuning: React.FC<PanelProps & { onClose?: () => void }> = (
+  props
+) => {
+  const t = useT();
+  const [hexDraft, setHexDraft] = useState(props.color ?? "");
+  useEffect(() => {
+    setHexDraft(props.color ?? "");
+  }, [props.color]);
+  if (!props.color) return null;
+  const hexIsValid = !hexDraft || !!normalizeHex(hexDraft);
+  const commitHex = () => {
+    const norm = normalizeHex(hexDraft);
+    if (!norm) return;
+    pushRecentColor(norm);
+    props.onChange(norm);
+  };
+  return (
+    <div className="highlight-tuning">
+      <div className="highlight-tuning-head">
+        <span>{t("widgets.edit.highlightTune")}</span>
+        {props.onClose && (
+          <button
+            type="button"
+            className="highlight-tuning-close"
+            aria-label={t("widgets.edit.highlightTune")}
+            onClick={props.onClose}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+      <div
+        className="color-picker-hovercard-demo"
+        aria-hidden="true"
+        style={{
+          background: withAlpha(props.color, props.opacity),
+          color: resolveForeground(props.color, props.textColor),
         }}
       >
-        <FormatColorFillIcon style={{ fontSize: 14 }} />
-        <span
-          className={`color-picker-chip${props.color ? "" : " is-empty"}`}
-          style={
-            props.color
-              ? { background: withAlpha(props.color, props.opacity) }
-              : undefined
-          }
-          aria-hidden="true"
+        Aa
+      </div>
+      <div className="color-picker-hovercard-row">
+        <span className="color-picker-hovercard-label">
+          {t("widgets.edit.highlightCustomAria")}
+        </span>
+        <div className="highlight-tuning-custom-line">
+          <span className="color-picker-native-wrap">
+            <input
+              type="color"
+              className="color-picker-native"
+              value={normalizeHex(props.color ?? "") ?? "#f7d774"}
+              onChange={(e) => props.onChange(e.target.value)}
+              onBlur={(e) => pushRecentColor(e.target.value)}
+              aria-label={t("widgets.edit.highlightCustomAria")}
+            />
+            <span className="color-picker-native-pencil" aria-hidden="true">
+              <EditIcon style={{ fontSize: 14 }} />
+            </span>
+          </span>
+          <input
+            type="text"
+            className={`color-picker-hex${hexIsValid ? "" : " is-invalid"}`}
+          value={hexDraft}
+          placeholder="#F7D774"
+          spellCheck={false}
+          onChange={(e) => setHexDraft(e.target.value)}
+          onBlur={commitHex}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitHex();
+            }
+          }}
+            aria-label={t("widgets.edit.highlightHexAria")}
+          />
+        </div>
+      </div>
+      <label className="color-picker-hovercard-row">
+        <span className="color-picker-hovercard-label">
+          {t("widgets.contextMenu.opacity")}
+        </span>
+        <input
+          type="range"
+          className="filter-slider"
+          min={5}
+          max={100}
+          step={5}
+          value={props.opacity}
+          aria-label={t("widgets.contextMenu.opacity")}
+          onChange={(e) => props.onOpacityChange(Number(e.target.value))}
         />
-      </button>
-
-      {anchor && (
-        <ColorPickerPopover
-          {...props}
-          anchor={anchor}
-          onClose={() => setAnchor(null)}
-        />
+      </label>
+      {props.onBlurChange && (
+        <label className="color-picker-hovercard-row">
+          <span className="color-picker-hovercard-label">
+            {t("widgets.edit.blur")}
+          </span>
+          <input
+            type="range"
+            className="filter-slider"
+            min={0}
+            max={100}
+            step={5}
+            value={props.blur ?? 0}
+            aria-label={t("widgets.edit.blur")}
+            onChange={(e) => props.onBlurChange?.(Number(e.target.value))}
+          />
+        </label>
       )}
+      <div className="color-picker-hovercard-row">
+        <span className="color-picker-hovercard-label">
+          {t("widgets.edit.highlightTextColor")}
+        </span>
+        <div
+          className="color-picker-ink"
+          role="radiogroup"
+          aria-label={t("widgets.edit.highlightTextColor")}
+        >
+          {(["auto", "light", "dark"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              role="radio"
+              aria-checked={props.textColor === mode}
+              aria-label={
+                mode === "auto"
+                  ? t("widgets.edit.highlightTextAuto")
+                  : mode === "light"
+                    ? t("widgets.edit.highlightTextLight")
+                    : t("widgets.edit.highlightTextDark")
+              }
+              className={`color-picker-ink-btn ink-${mode}${
+                props.textColor === mode ? " is-active" : ""
+              }`}
+              onMouseEnter={() => props.onPreviewTextColor?.(mode)}
+              onMouseLeave={props.onPreviewClear}
+              onClick={() => props.onTextColorChange(mode)}
+            >
+              {mode === "auto" ? t("widgets.edit.highlightTextAuto") : "Aa"}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

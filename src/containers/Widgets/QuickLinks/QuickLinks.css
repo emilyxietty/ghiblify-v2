@@ -56,10 +56,12 @@
 }
 
 .quicklinksSettings-grid-scroll {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 8px;
     overflow-y: auto;
+    height: auto;
     align-content: flex-start;
     padding: 4px;
     scrollbar-width: thin;
@@ -554,6 +556,9 @@
    adding a link is the one action a first-time user has to be able to
    find without knowing a modifier key. */
 
+/* A regular grid tile, always visible and sized like every other
+   quicklink — not a floating corner button. Dashed border keeps it
+   readable as "empty slot / add here". */
 .ql-add-cell {
     display: flex;
     flex-direction: column;
@@ -568,7 +573,8 @@
     border-radius: var(--radius-nested-lg, var(--radius-md));
     cursor: pointer;
     transition: background 140ms ease, border-color 140ms ease,
-        transform 140ms ease;
+        transform 140ms ease, opacity 140ms ease;
+    aspect-ratio: 1 / 1;
 }
 
 .ql-add-cell:hover {

@@ -106,6 +106,20 @@
 /* While the mic is live, the button pulses — the only feedback that
    the page is listening, since there's no other visible state change
    until words arrive. */
+/* Permission denied — brief red shake so the click visibly did
+   something; clicking again re-prompts. */
+.searchbar-mic.is-denied {
+    color: var(--red, #d54a3e);
+    animation: searchbar-mic-shake 320ms ease;
+}
+
+@keyframes searchbar-mic-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-2px); }
+}
+
 .searchbar-mic.is-listening {
     color: #ea4335;
     animation: searchbar-mic-pulse 1.4s ease-in-out infinite;
@@ -117,7 +131,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .searchbar-mic.is-listening {
+    /* Permission denied — brief red shake so the click visibly did
+   something; clicking again re-prompts. */
+.searchbar-mic.is-denied {
+    color: var(--red, #d54a3e);
+    animation: searchbar-mic-shake 320ms ease;
+}
+
+@keyframes searchbar-mic-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-2px); }
+}
+
+.searchbar-mic.is-listening {
         animation: none;
         background: rgba(234, 67, 53, 0.16);
     }

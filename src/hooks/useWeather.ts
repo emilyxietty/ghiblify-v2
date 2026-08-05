@@ -197,6 +197,19 @@ export const clearWeatherLocation = (): void => {
   writeBlob({});
 };
 
+/**
+ * IP-based approximate location — city-level, which is exactly the
+ * precision a weather forecast needs.
+ *
+ * This replaced `navigator.geolocation`: the GPS route required the
+ * `geolocation` manifest permission (it can't be optional, and it's
+ * the scary "detect your physical location" install warning), while
+ * BigDataCloud's keyless client endpoint resolves the caller's IP on
+ * a host we already hold for reverse geocoding — no permission, no
+ * prompt, no new data exposure (that host already saw the IP on every
+ * reverse-geocode call). Bonus: the response carries the city name,
+ * so the place label comes free with the coords.
+ */
 const getGeolocationCoords = (): Promise<{ lat: number; lon: number }> =>
   new Promise((resolve, reject) => {
     const cached = readPlace();
@@ -208,44 +221,39 @@ const getGeolocationCoords = (): Promise<{ lat: number; lon: number }> =>
       resolve({ lat: cached.lat, lon: cached.lon });
       return;
     }
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      reject({ code: "permission-unavailable" as WeatherErrorCode });
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        // Preserve the existing label if the new coords are still close
-        // to the cached ones — saves a reverse-geocode call.
-        const existing = readPlace();
-        const labelStillValid =
-          existing &&
-          existing.label &&
-          existing.labelAt &&
-          Math.abs(existing.lat - lat) < 0.05 &&
-          Math.abs(existing.lon - lon) < 0.05 &&
-          Date.now() - existing.labelAt < LOCATION_TTL_MS;
-        const next: CachedPlace = {
-          lat,
-          lon,
-          coordsAt: Date.now(),
-          label: labelStillValid ? existing.label : undefined,
-          labelAt: labelStillValid ? existing.labelAt : undefined,
-        };
-        writePlace(next);
-        resolve({ lat, lon });
-      },
-      (err) => {
-        reject({
-          code:
-            err.code === err.PERMISSION_DENIED
-              ? ("permission-denied" as WeatherErrorCode)
-              : ("permission-unavailable" as WeatherErrorCode),
-        });
-      },
-      { maximumAge: COORDS_TTL_MS, timeout: 10_000 }
-    );
+    fetch("https://api.bigdatacloud.net/data/reverse-geocode-client")
+      .then((res) => {
+        if (!res.ok) throw new Error(`ip-geolocation ${res.status}`);
+        return res.json();
+      })
+      .then(
+        (data: {
+          latitude?: number;
+          longitude?: number;
+          city?: string;
+          locality?: string;
+        }) => {
+          const lat = data.latitude;
+          const lon = data.longitude;
+          if (typeof lat !== "number" || typeof lon !== "number") {
+            reject({ code: "permission-unavailable" as WeatherErrorCode });
+            return;
+          }
+          const label = data.city || data.locality || undefined;
+          const next: CachedPlace = {
+            lat,
+            lon,
+            coordsAt: Date.now(),
+            label,
+            labelAt: label ? Date.now() : undefined,
+          };
+          writePlace(next);
+          resolve({ lat, lon });
+        }
+      )
+      .catch(() => {
+        reject({ code: "permission-unavailable" as WeatherErrorCode });
+      });
   });
 
 /**

@@ -294,6 +294,67 @@ export const runOneTimeSetup = async (
 };
 
 /**
+ * Boot-time mirror recovery — the fix for "my settings reset
+ * themselves".
+ *
+ * The localStorage mirror is NOT durable: Chrome wipes an extension's
+ * localStorage when the user clears browsing data (and under storage
+ * pressure), while chrome.storage survives. Since the app boots
+ * synchronously from the mirror alone, a wiped mirror meant booting
+ * into defaults — and the first persisted change (including automatic
+ * ones) then overwrote the user's REAL data in chrome.storage.
+ * Quick links, todos, positions: all gone.
+ *
+ * This scans every registered key: where the mirror is missing a key
+ * that chrome.storage still has, the mirror is restored from
+ * chrome.storage. Returns true if anything was restored — the caller
+ * should reload the page so the whole synchronous init path re-runs
+ * against the recovered mirror.
+ */
+export const restoreMirrorFromChrome = async (): Promise<boolean> => {
+  if (!hasChromeStorage) return false;
+
+  const keysByArea: Record<Area, string[]> = { sync: [], local: [] };
+  for (const [key, area] of Object.entries(HYBRID_KEYS)) {
+    let mirrored: string | null = null;
+    try {
+      mirrored = localStorage.getItem(key);
+    } catch {
+      return false; // storage unavailable — nothing sensible to do
+    }
+    if (mirrored == null) keysByArea[area].push(key);
+  }
+  if (!keysByArea.sync.length && !keysByArea.local.length) return false;
+
+  const getArea = (area: Area, keys: string[]) =>
+    new Promise<Record<string, unknown>>((resolve) => {
+      if (!keys.length) return resolve({});
+      try {
+        chromeNs.storage[area].get(keys, (items: Record<string, unknown>) =>
+          resolve(items ?? {})
+        );
+      } catch {
+        resolve({});
+      }
+    });
+
+  const [syncItems, localItems] = await Promise.all([
+    getArea("sync", keysByArea.sync),
+    getArea("local", keysByArea.local),
+  ]);
+
+  let restored = false;
+  for (const items of [syncItems, localItems]) {
+    for (const [key, value] of Object.entries(items)) {
+      if (value === undefined) continue;
+      writeMirror(key, value);
+      restored = true;
+    }
+  }
+  return restored;
+};
+
+/**
  * Wipe every trace of the extension's state.
  *
  * Both layers have to go, and in that order matters less than

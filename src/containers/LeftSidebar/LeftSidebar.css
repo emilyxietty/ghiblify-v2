@@ -257,7 +257,7 @@
     border-color: color-mix(in srgb, var(--light) 40%, transparent);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
-        0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--interaction-accent, #8fc7e8) 50%, transparent);
 }
 
 .left-sidebar .language-picker .dropdown-toggle:focus-visible,
@@ -477,7 +477,7 @@
 .left-sidebar .btn:not(.widget-icon):hover:not(.btn-disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3),
-        0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--interaction-accent, #8fc7e8) 50%, transparent);
 }
 
 .left-sidebar .btn:not(.widget-icon):active:not(.btn-disabled) {
@@ -700,11 +700,6 @@
     color: var(--light);
     pointer-events: none;
 }
-
-/* Rainbow preview pill in the cursor section's collapsed summary —
-   no SVG asset to render, so we paint the same gradient stripe the
-   picker swatch uses. Sized to match the other preview glyphs. */
-
 
 .filter-collapsible-summary::-webkit-details-marker {
     display: none;

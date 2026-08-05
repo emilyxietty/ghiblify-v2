@@ -126,7 +126,8 @@
       "bookmarks": "书签",
       "weather": "天气",
       "notes": "便签",
-      "rightSidebar": "右侧栏"
+      "rightSidebar": "右侧栏",
+      "googleApps": "Google 应用"
     },
     "tooltip": {
       "show": "显示 {{name}} 小组件",
@@ -187,7 +188,7 @@
       "timeFormatAnalog": "指针",
       "gridShow": "网格显示",
       "gridShowList": "列表显示",
-      "resizeTitle": "拖动以调整大小",
+      "resizeTitle": "拖动以调整“{{name}}”的大小",
       "infoFields": {
         "japaneseTitle": "日文标题",
         "title": "标题",
@@ -246,7 +247,33 @@
       "weatherAnimatedIcons": "动画图标",
       "weatherAnimatedOn": "开",
       "weatherAnimatedOff": "关",
-      "panelDragHint": "拖动以移动"
+      "panelDragHint": "拖动以移动",
+      "notesBorder": "边框",
+      "borderShow": "显示",
+      "borderHide": "隐藏",
+      "notesPaper": "纸张",
+      "notesPaperNone": "无纸张",
+      "notesPaperAria": "纸张颜色",
+      "notesPaperStyle": "纸张样式",
+      "styleSolid": "纯色",
+      "styleFrost": "磨砂",
+      "highlightStyle": "高亮样式",
+      "pomodoroColor": "卡片颜色",
+      "pomodoroColorAria": "卡片颜色",
+      "pomodoroColorDefaultAria": "主题默认",
+      "highlightTextLight": "浅色",
+      "highlightTextDark": "深色",
+      "surfaceStyle": "背景",
+      "styleFrostDark": "深色磨砂",
+      "styleClear": "透明",
+      "styleWeather": "天气",
+      "highlightTune": "调整高亮",
+      "weatherLocationHint": "您的位置仅用于获取本地天气预报，除天气服务外不会发送到任何地方。"
+    },
+    "gapps": {
+      "menuAria": "Google 应用",
+      "accountAria": "Google 账号",
+      "personalize": "显示我的账号首字母"
     }
   },
   "greeting": {
@@ -280,7 +307,8 @@
     "voiceTooltip": "语音搜索",
     "imageAria": "以图搜索",
     "imageTooltip": "以图搜索",
-    "removeHistoryAria": "从最近搜索中移除“{{query}}”"
+    "removeHistoryAria": "从最近搜索中移除“{{query}}”",
+    "voiceDenied": "麦克风访问被拒绝 — 点击重试"
   },
   "quicklinks": {
     "trigger": "链接",
@@ -346,7 +374,42 @@
   },
   "notes": {
     "placeholder": "记点什么…",
-    "ariaLabel": "便签"
+    "ariaLabel": "便签",
+    "toolbar": {
+      "ariaLabel": "格式工具栏",
+      "bold": "加粗",
+      "italic": "斜体",
+      "underline": "下划线",
+      "highlight": "高亮",
+      "bulletList": "无序列表",
+      "checkList": "清单",
+      "strikethrough": "删除线",
+      "heading1": "标题1",
+      "heading2": "标题2",
+      "quote": "引用",
+      "alignLeft": "左对齐",
+      "alignCenter": "居中",
+      "alignRight": "右对齐",
+      "paragraph": "正文",
+      "heading3": "标题3",
+      "align": "对齐",
+      "blockType": "文本样式",
+      "textColor": "文字颜色",
+      "colors": {
+        "default": "默认",
+        "yellow": "黄色",
+        "green": "绿色",
+        "pink": "粉色",
+        "blue": "蓝色",
+        "red": "红色",
+        "purple": "紫色",
+        "white": "白色",
+        "paleYellow": "淡黄",
+        "palePink": "淡粉",
+        "paleBlue": "淡蓝",
+        "paleGreen": "淡绿"
+      }
+    }
   },
   "weather": {
     "offline": "离线",
@@ -396,9 +459,11 @@
       "5": "五",
       "6": "六"
     },
-    "enableLocation": "启用位置",
+    "enableLocation": "使用我的位置",
     "retry": "重试",
-    "today": "今天"
+    "today": "今天",
+    "locationOff": "尚未设置位置 — 使用您的位置，或选择一个城市 ☁️",
+    "chooseCity": "选择城市"
   },
   "socials": {
     "buttonLabel": "我的社交",
@@ -573,7 +638,7 @@
     "permissionsTitle": "权限",
     "permissionsSub": "Ghiblify 默认不请求任何权限。只开启你需要的，撤销后立即生效。",
     "permissionGeolocation": "位置",
-    "permissionGeolocationSub": "让天气小组件获取你的位置。关闭后完全不会调用定位接口——请手动选择城市。",
+    "permissionGeolocationSub": "根据网络连接获取的大致（城市级）位置 — 仅用于获取本地天气预报。无需 GPS，无需位置权限。",
     "permissionBookmarks": "书签",
     "permissionBookmarksSub": "让书签面板读取并整理你的 Chrome 书签。",
     "storageTitle": "已存储数据",
@@ -629,6 +694,8 @@
       "square": "直角",
       "rounded": "标准",
       "pill": "更圆"
-    }
+    },
+    "permissionEmail": "电子邮件地址",
+    "permissionEmailSub": "用您的首字母个性化 Google 小组件的账号按钮，仅此而已。"
   }
 }

@@ -7,6 +7,7 @@ import {
 } from "../../components/ContextMenu/ContextMenu";
 import { useAppContext } from "../../contexts/AppContext";
 import { useT } from "../../i18n/i18n";
+import { isEditableTarget } from "../../utils/isEditableTarget";
 import { useOptionalPermission } from "../../utils/chromePermissions";
 import "./RightSidebar.css";
 
@@ -617,6 +618,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   useEffect(() => {
     if (!visible) return;
     const handler = (e: KeyboardEvent) => {
+      // Not while typing somewhere editable — Cmd+B in the Notes
+      // editor is "bold", not "toggle bookmarks".
+      if (isEditableTarget(e.target)) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
         e.preventDefault();
         setIsOpen((v) => !v);

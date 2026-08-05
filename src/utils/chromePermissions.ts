@@ -5,16 +5,16 @@
  * `optional_permissions` in the manifest rather than `permissions`, so a
  * fresh install asks for neither.
  *
- * `geolocation` is deliberately NOT here. Chrome refuses to make it
- * optional — it's on the documented list of permissions that can only be
- * declared up front ("debugger", "declarativeNetRequest", "devtools",
- * "geolocation", "mdns", "proxy", "tts", "ttsEngine", "wallpaper") — so
- * requesting it at runtime always fails, and an invalid entry in
- * `optional_permissions` can void the whole key. It stays in
- * `permissions`, and the user-facing switch for it is an app setting
- * (`weather.useDeviceLocation`) that gates whether we ever call the API. The user grants them from the Settings
- * modal (or from the in-place prompt on the feature that needs one) and
- * can revoke them again at any time.
+ * `geolocation` is deliberately ABSENT from the manifest entirely.
+ * Chrome refuses to make it optional (it's on the documented
+ * cannot-be-optional list), and it carried the scary "detect your
+ * physical location" install warning — so the Weather widget now
+ * resolves approximate location from the IP via BigDataCloud's
+ * keyless client endpoint (a host we already hold), gated by the
+ * `weather.useDeviceLocation` app setting. No permission involved.
+ * The optional grants below are requested from the Settings modal
+ * (or the in-place prompt on the feature that needs one) and can be
+ * revoked again at any time.
  *
  * Two consequences worth knowing:
  *   - `chrome.permissions.request()` only works while a user gesture is
@@ -31,7 +31,12 @@ export type OptionalPermission =
   // Voice search. An extension page never gets the browser's mic
   // prompt — getUserMedia is denied outright unless the extension holds
   // `audioCapture` — so this grant is the only route to the microphone.
-  | "audioCapture";
+  | "audioCapture"
+  // The Google-corner widget's letter avatar. Carries the "know your
+  // email address" install warning, so it MUST stay optional — adding
+  // a warning-bearing required permission in an update auto-disables
+  // the extension for every existing user until they re-approve.
+  | "identity.email";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const permissionsApi = (): any => {
