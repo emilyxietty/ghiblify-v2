@@ -521,7 +521,13 @@
 .quicklinksSettings-delete {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    /* Follows the palette's text colour (not hardcoded white) so the
+       icons read on light palettes too. */
+    color: var(--ql-text-muted, color-mix(in srgb, var(--light) 60%, transparent));
+    /* Hidden until the row is hovered / keyboard-focused — resting
+       rows show just favicon + link. */
+    opacity: 0;
+    transition: opacity 120ms ease;
     cursor: pointer;
     padding: 6px;
     border-radius: var(--radius-sm);
@@ -736,27 +742,33 @@
 }
 
 
-/* List-mode "Add link" opener — same modal as the grid; replaces the
-   old cramped two-field form that sat at the top of the dropdown. */
+/* List-mode "Add link" opener — same modal as the grid. Deliberately
+   quiet: a muted text row appended after the list, brightening on
+   hover, instead of the previous full-width dashed billboard. */
 .ql-list-add {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 6px;
     width: 100%;
-    padding: 8px;
-    margin-bottom: 8px;
+    padding: 7px 8px 5px;
+    margin-top: 2px;
     font-family: inherit;
-    font-size: 12.5px;
-    color: var(--ql-text, var(--light));
+    font-size: 12px;
+    color: var(--ql-text-muted, color-mix(in srgb, var(--light) 55%, transparent));
     background: transparent;
-    border: 1.5px dashed color-mix(in srgb, var(--light) 32%, transparent);
-    border-radius: var(--radius-md);
+    border: none;
+    border-top: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    border-radius: 0;
     cursor: pointer;
-    transition: background 140ms ease, border-color 140ms ease;
+    transition: color 120ms ease;
 }
 
 .ql-list-add:hover {
-    background: color-mix(in srgb, var(--light) 8%, transparent);
-    border-color: color-mix(in srgb, var(--light) 50%, transparent);
+    color: var(--ql-text, var(--light));
+}
+
+/* Row actions (edit pencil + delete) reveal on row hover or focus. */
+.quicklinksSettings-item:hover .quicklinksSettings-delete,
+.quicklinksSettings-item:focus-within .quicklinksSettings-delete {
+    opacity: 1;
 }

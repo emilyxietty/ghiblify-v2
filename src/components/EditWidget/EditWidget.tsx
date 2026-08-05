@@ -21,6 +21,7 @@ import {
   type WeatherDetail,
 } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
+import { clearWeatherLocation } from "../../hooks/useWeather";
 import { useT } from "../../i18n/i18n";
 import {
   POMODORO_SOUND_KEYS,
@@ -865,6 +866,36 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               }}
             />
           </div>
+        </Row>
+      )}
+
+      {controls?.weatherLocation && (
+        // Right-click on the canvas widget opens THIS panel, so the
+        // permission-style switch lives here. "Off" also forgets the
+        // cached coords so it visibly takes effect.
+        <Row label={t("settings.permissionGeolocation")}>
+          {segmented(
+            t("settings.permissionGeolocation"),
+            [
+              { key: "on" as const, label: t("widgets.edit.weatherAnimatedOn") },
+              {
+                key: "off" as const,
+                label: t("widgets.edit.weatherAnimatedOff"),
+              },
+            ],
+            weatherSettings.useDeviceLocation !== false ? "on" : "off",
+            (v) => {
+              updateWidgetSettings("weather", {
+                useDeviceLocation: v === "on",
+              });
+              if (v === "off") {
+                clearWeatherLocation();
+                window.dispatchEvent(
+                  new CustomEvent("ghiblify:weather:refresh")
+                );
+              }
+            }
+          )}
         </Row>
       )}
 

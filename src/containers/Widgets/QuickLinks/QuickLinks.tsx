@@ -9,6 +9,7 @@ import {
 import { Favicon } from "../../../components/Favicon/Favicon";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import TextInput from "../../../components/TextInput/TextInput";
+import { resolveSurfaceFrost } from "../../../config/widgetConfig";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import { useScaledPx } from "../../../utils/viewportScale";
@@ -76,6 +77,7 @@ export const QuickLinks: React.FC = () => {
     updateWidgetSettings,
     showWidgetEdits,
     editingWidgetKey,
+    appearance,
   } = useAppContext();
   // True when QuickLinks is in any kind of edit mode — global or per-widget.
   const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
@@ -122,8 +124,7 @@ export const QuickLinks: React.FC = () => {
   // form or list popover).
   useEffect(() => {
     const onAdd = () => {
-
-  if (showGrid) {
+      if (showGrid) {
         setAddGridLink(true);
       } else if (triggerRef.current) {
         setAnchorEl(triggerRef.current);
@@ -384,16 +385,87 @@ export const QuickLinks: React.FC = () => {
             document.body
           );
 
+  // Per-link right-click menu — shared verbatim between grid tiles and
+  // list rows so the two modes keep the same functionality.
+  const linkMenuRender =
+    linkMenu &&
+    (() => {
+            const link = quicklinksSettings.links.find(
+              (l) => l.id === linkMenu.id
+            );
+            if (!link) return null;
+            // Per-link items first (most specific to the click target),
+            // then the same widget-level items the widget shell's
+            // right-click menu shows. Keeps tile right-click as a
+            // superset so users don't have to right-click the widget
+            // edge to get widget options.
+            const items: ContextMenuItem[] = [
+              {
+                type: "action",
+                label: t("quicklinks.editLink"),
+                icon: <EditIcon style={{ fontSize: 14 }} />,
+                onClick: () => {
+                  setEditingLinkId(link.id);
+                  setTitle(link.title);
+                  setUrl(link.url);
+                  setAddGridLink(true);
+                },
+              },
+              {
+                type: "action",
+                label: t("quicklinks.deleteLink"),
+                icon: <DeleteOutlineIcon style={{ fontSize: 14 }} />,
+                onClick: () => removeLink(link.id),
+              },
+              {
+                type: "action",
+                label: t("widgets.contextMenu.addLink"),
+                icon: <AddIcon style={{ fontSize: 14 }} />,
+                onClick: () => {
+                  setEditingLinkId(null);
+                  setTitle("");
+                  setUrl("");
+                  setAddGridLink(true);
+                },
+              },
+            ];
+            return (
+              <ContextMenu
+                position={{ x: linkMenu.x, y: linkMenu.y }}
+                items={items}
+                onClose={() => setLinkMenu(null)}
+              />
+            );
+          })();
+
+  // Shared surface treatment (mirrors todo): frosted drops the tile
+  // alpha to a whisper so the shell's glass reads through; a custom
+  // surfaceColor overrides the theme's --dark-rgb triplet locally.
+  const qs = quicklinksSettings as unknown as {
+    opacity?: number;
+    frosted?: boolean;
+    surfaceColor?: string | null;
+  };
+  const qlFrosted = resolveSurfaceFrost(qs.frosted, appearance.theme);
+  const surfaceStyle: Record<string, string | number> = {
+    "--ql-opacity": qlFrosted ? 0.14 : (qs.opacity ?? 50) / 100,
+    "--input-opacity": qlFrosted ? 0.14 : (qs.opacity ?? 50) / 100,
+    ...(typeof qs.surfaceColor === "string"
+      ? {
+          "--dark-rgb": qs.surfaceColor
+            .replace("#", "")
+            .match(/../g)!
+            .map((h) => parseInt(h, 16))
+            .join(", "),
+        }
+      : {}),
+  };
+
   if (showGrid) {
     return (
       <div
         className="quicklinksSettings-grid-wrapper widget-header"
-        style={{
-          ["--ql-opacity" as any]:
-            ((quicklinksSettings as any).opacity ?? 50) / 100,
-          ["--input-opacity" as any]:
-            ((quicklinksSettings as any).opacity ?? 50) / 100,
-        }}
+        style={surfaceStyle as React.CSSProperties}
       >
         <div className="quicklinksSettings-grid-list">
           <div
@@ -471,55 +543,7 @@ export const QuickLinks: React.FC = () => {
 
           {addEditModal}
         </div>
-        {linkMenu &&
-          (() => {
-            const link = quicklinksSettings.links.find(
-              (l) => l.id === linkMenu.id
-            );
-            if (!link) return null;
-            // Per-link items first (most specific to the click target),
-            // then the same widget-level items the widget shell's
-            // right-click menu shows. Keeps tile right-click as a
-            // superset so users don't have to right-click the widget
-            // edge to get widget options.
-            const items: ContextMenuItem[] = [
-              {
-                type: "action",
-                label: t("quicklinks.editLink"),
-                icon: <EditIcon style={{ fontSize: 14 }} />,
-                onClick: () => {
-                  setEditingLinkId(link.id);
-                  setTitle(link.title);
-                  setUrl(link.url);
-                  setAddGridLink(true);
-                },
-              },
-              {
-                type: "action",
-                label: t("quicklinks.deleteLink"),
-                icon: <DeleteOutlineIcon style={{ fontSize: 14 }} />,
-                onClick: () => removeLink(link.id),
-              },
-              {
-                type: "action",
-                label: t("widgets.contextMenu.addLink"),
-                icon: <AddIcon style={{ fontSize: 14 }} />,
-                onClick: () => {
-                  setEditingLinkId(null);
-                  setTitle("");
-                  setUrl("");
-                  setAddGridLink(true);
-                },
-              },
-            ];
-            return (
-              <ContextMenu
-                position={{ x: linkMenu.x, y: linkMenu.y }}
-                items={items}
-                onClose={() => setLinkMenu(null)}
-              />
-            );
-          })()}
+        {linkMenuRender}
       </div>
     );
   }
@@ -534,30 +558,9 @@ export const QuickLinks: React.FC = () => {
       aria-modal={false}
       aria-label={t("quicklinks.ariaDialog")}
       ref={popperRef}
-      style={{
-        ["--ql-opacity" as any]:
-          ((quicklinksSettings as any).opacity ?? 50) / 100,
-        ["--input-opacity" as any]:
-          ((quicklinksSettings as any).opacity ?? 50) / 100,
-      }}
+      style={surfaceStyle as React.CSSProperties}
     >
-            {/* Add/edit both use the SAME modal card the grid uses —
-                the old cramped two-field inline form at the top of the
-                dropdown is gone. */}
-            <button
-              type="button"
-              className="ql-list-add"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingLinkId(null);
-                setTitle("");
-                setUrl("");
-                setAddGridLink(true);
-              }}
-            >
-              <AddIcon fontSize="small" />
-              {t("widgets.contextMenu.addLink")}
-            </button>
+
             <ul className="quicklinksSettings-list">
               {quicklinksSettings.links.length === 0 ? (
                 <li className="quicklinksSettings-empty">
@@ -574,6 +577,11 @@ export const QuickLinks: React.FC = () => {
                         showWidgetEdits ? "" : " draggable"
                       }`}
                       {...dndProps(index)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setLinkMenu({ id: l.id, x: e.clientX, y: e.clientY });
+                      }}
                     >
                       <Favicon
                         url={l.url}
@@ -620,6 +628,21 @@ export const QuickLinks: React.FC = () => {
                 })
               )}
             </ul>
+            {/* Subtle append row — same modal card as the grid. */}
+            <button
+              type="button"
+              className="ql-list-add"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingLinkId(null);
+                setTitle("");
+                setUrl("");
+                setAddGridLink(true);
+              }}
+            >
+              <AddIcon fontSize="small" />
+              {t("widgets.contextMenu.addLink")}
+            </button>
           </div>
   );
 
@@ -683,6 +706,7 @@ export const QuickLinks: React.FC = () => {
         )}
       </div>
       {addEditModal}
+      {linkMenuRender}
     </div>
   );
 };

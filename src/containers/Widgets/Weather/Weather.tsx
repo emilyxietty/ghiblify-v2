@@ -3,8 +3,7 @@ import { useAppContext } from "../../../contexts/AppContext";
 import { useDockSurface } from "../../../contexts/DockSurfaceContext";
 import {
   resolveWeatherDetail,
-  sectionsForDetail,
-} from "../../../config/widgetConfig";
+  sectionsForDetail, resolveSurfaceFrost } from "../../../config/widgetConfig";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useWeather, WeatherDaily } from "../../../hooks/useWeather";
 import { useT } from "../../../i18n/i18n";
@@ -56,7 +55,7 @@ const formatHour = (iso: string, is24Hour: boolean) => {
 
 const Weather: React.FC = () => {
   const t = useT();
-  const { widgets, dockShowBackgrounds, updateWidgetSettings } =
+  const { widgets, dockShowBackgrounds, updateWidgetSettings, appearance } =
     useAppContext();
   const { settings: rawSettings } = useWidgetSettings("weather");
   const inDock = useDockSurface();
@@ -434,7 +433,10 @@ const Weather: React.FC = () => {
         // Frosted: the .widget shell blurs the wallpaper (see
         // .widget-surface-frost) and the cell tint drops to a whisper
         // so the glass reads through.
-        ["--weather-cell-opacity" as any]: (settings.frosted === true
+        ["--weather-cell-opacity" as any]: (resolveSurfaceFrost(
+          settings.frosted,
+          appearance.theme
+        ) && !settings.showCard
           ? 0.14
           : (settings.opacity ?? 35) / 100
         ).toString(),

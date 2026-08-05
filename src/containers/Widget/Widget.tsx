@@ -24,6 +24,7 @@ import {
   NotesSettings,
   POMODORO_CARD_PRESETS,
   QuicklinksSettings,
+  resolveSurfaceFrost,
   TimeSettings,
   WeatherSettings,
   WidgetKey,
@@ -799,8 +800,16 @@ export const Widget: React.FC<WidgetProps> = ({
           ? " widget-notes-frost"
           : ""
       }${
-        (storageKey === "todo" || storageKey === "weather") &&
-        widgetSettings.frosted === true
+        (storageKey === "todo" ||
+          storageKey === "weather" ||
+          storageKey === "quicklinks") &&
+        resolveSurfaceFrost(
+          widgetSettings.frosted as boolean | undefined,
+          appearance.theme
+        ) &&
+        // An explicitly-chosen weather card wins over theme-default
+        // frost (they're the same control's mutually exclusive states).
+        !(storageKey === "weather" && widgetSettings.showCard === true)
           ? ` widget-surface-frost${
               widgetSettings.frostDark === true ? " frost-dark" : ""
             }`

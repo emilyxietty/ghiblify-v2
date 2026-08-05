@@ -157,6 +157,14 @@ export interface QuicklinksSettings {
   opacity: number;
   /** 0–100 — Frost blur intensity for tiles. */
   blur: number;
+  /** Frosted-glass surface (shell-level wallpaper blur) — same model
+   *  as todo/weather. Default false. */
+  frosted?: boolean;
+  /** Dark ("smoked") glass variant; only meaningful while frosted. */
+  frostDark?: boolean;
+  /** Surface tint override — an "r, g, b"-able hex. null/absent = the
+   *  theme's --dark-rgb. Deep tones only (tile text is var(--light)). */
+  surfaceColor?: string | null;
 }
 export interface SearchBarSettings {
   width: number;
@@ -372,6 +380,16 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "googleApps",
 ];
 
+/** Surface-frost resolution. An EXPLICIT user choice (true/false,
+ *  written by the surface chips) always wins; untouched (undefined)
+ *  follows the palette — the Frost theme defaults frost-capable
+ *  widgets to glass, every other theme to solid. Render-time only:
+ *  switching themes never rewrites anyone's stored settings. */
+export const resolveSurfaceFrost = (
+  stored: boolean | undefined,
+  theme: string
+): boolean => stored ?? theme === "frost";
+
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
   !!s && (WIDGET_KEYS as readonly string[]).includes(s);
 
@@ -515,7 +533,8 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       collapsed: false,
       opacity: 75,
       blur: 10,
-      frosted: false,
+      // `frosted` intentionally absent: undefined = follow the theme
+      // (Frost palette ⇒ glass). The chips write true/false explicitly.
       surfaceColor: null,
     },
     width: { min: 250, max: 600, step: 50 },
@@ -539,10 +558,13 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       links: [],
       opacity: 75,
       blur: 10,
+      // `frosted` intentionally absent — see the todo note.
+      surfaceColor: null,
     },
     width: { min: 200, max: 600, step: 100 },
     height: { min: 200, max: 700, step: 100 },
-    customControls: { gridMode: true },
+    // todoFrosted = the shared surface-chips row (theme/colours/glass).
+    customControls: { gridMode: true, todoFrosted: true },
   },
   searchbar: {
     name: "Search Bar",
@@ -595,7 +617,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       showCard: false,
       manualPlace: null,
       useDeviceLocation: true,
-      frosted: false,
+      // `frosted` intentionally absent — see the todo note.
     },
     // No width/height ResizeBound — widget auto-sizes to content.
     customControls: {

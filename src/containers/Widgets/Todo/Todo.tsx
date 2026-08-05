@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
+import { resolveSurfaceFrost } from "../../../config/widgetConfig";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import { useScaledPx } from "../../../utils/viewportScale";
@@ -116,7 +117,7 @@ export const Todo: React.FC = () => {
   // bouncy "task completed" pop on the row; stripped after
   // COMPLETE_ANIM_MS so subsequent re-renders don't re-trigger it.
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
-  const { widgets } = useAppContext();
+  const { widgets, appearance } = useAppContext();
   const todoSettings = widgets.todo.settings;
   // settings.width/height are reference-px (1920 baseline); scale to
   // current-viewport px so the widget stays proportional to screen.
@@ -359,7 +360,12 @@ export const Todo: React.FC = () => {
   return (
     <div
       className={`todo-container widget-header${
-        (todoSettings as any).frosted === true ? " todo-frosted" : ""
+        resolveSurfaceFrost(
+          (todoSettings as any).frosted,
+          appearance.theme
+        )
+          ? " todo-frosted"
+          : ""
       }`}
       style={{
         width: `${width}px`,
@@ -367,14 +373,18 @@ export const Todo: React.FC = () => {
         // Frosted: the .widget shell blurs the wallpaper (see
         // .widget-surface-frost) and the item/input surfaces drop to
         // a whisper of tint so the glass reads through them.
-        ["--todo-opacity" as any]:
-          (todoSettings as any).frosted === true
-            ? 0.14
-            : ((todoSettings as any).opacity ?? 50) / 100,
-        ["--input-opacity" as any]:
-          (todoSettings as any).frosted === true
-            ? 0.14
-            : ((todoSettings as any).opacity ?? 50) / 100,
+        ["--todo-opacity" as any]: resolveSurfaceFrost(
+          (todoSettings as any).frosted,
+          appearance.theme
+        )
+          ? 0.14
+          : ((todoSettings as any).opacity ?? 50) / 100,
+        ["--input-opacity" as any]: resolveSurfaceFrost(
+          (todoSettings as any).frosted,
+          appearance.theme
+        )
+          ? 0.14
+          : ((todoSettings as any).opacity ?? 50) / 100,
         // Custom surface tint — override the theme's --surface-rgb
         // with the chosen hex as an "r, g, b" triplet.
         ...(typeof (todoSettings as any).surfaceColor === "string"

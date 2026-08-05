@@ -261,21 +261,26 @@ const AppContent: React.FC = () => {
             <HelpOutlineIcon style={{ fontSize: 14 }} />
             {t("common.guide")}
           </Button>
-          <Button
-            variant={dragMode ? "dark" : "outline-light"}
-            size="small"
-            pill
-            aria-pressed={dragMode}
-            onClick={() => setDragMode(!dragMode)}
-            data-tooltip={t(
-              dragMode
-                ? "sidebar.buttons.dragModeOnAria"
-                : "sidebar.buttons.dragModeAria"
-            )}
-          >
-            <OpenWithIcon style={{ fontSize: 14 }} />
-            {t("sidebar.buttons.dragMode")}
-          </Button>
+          {/* Drag Mode is hidden while a widget is being edited — the
+              two modes fight over the same gestures, and the bar
+              reads cleaner with just Guide + Done during edits. */}
+          {!editingWidgetKey && !showWidgetEdits && (
+            <Button
+              variant={dragMode ? "dark" : "outline-light"}
+              size="small"
+              pill
+              aria-pressed={dragMode}
+              onClick={() => setDragMode(!dragMode)}
+              data-tooltip={t(
+                dragMode
+                  ? "sidebar.buttons.dragModeOnAria"
+                  : "sidebar.buttons.dragModeAria"
+              )}
+            >
+              <OpenWithIcon style={{ fontSize: 14 }} />
+              {t("sidebar.buttons.dragMode")}
+            </Button>
+          )}
           <Button
             variant="outline-light"
             size="small"
