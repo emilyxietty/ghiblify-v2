@@ -1321,6 +1321,20 @@ export function buildContextMenuItems(args: {
           },
         ],
       },
+      { type: "separator" },
+      // Location permission switch, mirroring Settings — "off" also
+      // forgets the cached coords so it visibly takes effect.
+      {
+        type: "checkbox",
+        label: t("settings.permissionGeolocation"),
+        checked: s.useDeviceLocation !== false,
+        onClick: () => {
+          const next = s.useDeviceLocation === false;
+          updateWidgetSettings("weather", { useDeviceLocation: next });
+          if (!next) clearWeatherLocation();
+          window.dispatchEvent(new CustomEvent("ghiblify:weather:refresh"));
+        },
+      },
     ];
   } else if (storageKey === "notes") {
     const s = widgets.notes.settings as NotesSettings;

@@ -637,7 +637,7 @@
     "buttonAria": "打开设置",
     "permissionsTitle": "权限",
     "permissionsSub": "Ghiblify 默认不请求任何权限。只开启你需要的，撤销后立即生效。",
-    "permissionGeolocation": "位置",
+    "permissionGeolocation": "位置访问权限",
     "permissionGeolocationSub": "根据网络连接获取的大致（城市级）位置 — 仅用于获取本地天气预报。无需 GPS，无需位置权限。",
     "permissionBookmarks": "书签",
     "permissionBookmarksSub": "让书签面板读取并整理你的 Chrome 书签。",

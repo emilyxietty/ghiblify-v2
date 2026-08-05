@@ -637,7 +637,7 @@
     "buttonAria": "설정 열기",
     "permissionsTitle": "권한",
     "permissionsSub": "Ghiblify는 처음에 아무것도 요구하지 않습니다. 사용하는 것만 켜세요. 취소는 즉시 적용됩니다.",
-    "permissionGeolocation": "위치",
+    "permissionGeolocation": "위치 접근 권한",
     "permissionGeolocationSub": "네트워크 연결 기반의 대략적인(도시 수준) 위치 — 지역 날씨를 가져오는 데만 사용됩니다. GPS나 위치 권한이 필요 없습니다.",
     "permissionBookmarks": "북마크",
     "permissionBookmarksSub": "패널이 Chrome 북마크를 읽고 정리할 수 있게 합니다.",

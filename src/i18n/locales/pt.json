@@ -630,7 +630,7 @@
     "buttonAria": "Abrir configurações",
     "permissionsTitle": "Permissões",
     "permissionsSub": "O Ghiblify não pede nada de início. Ative apenas o que usar; revogar tem efeito imediato.",
-    "permissionGeolocation": "Localização",
+    "permissionGeolocation": "Acesso à localização",
     "permissionGeolocationSub": "Localização aproximada (nível de cidade) pela sua conexão de rede — usada apenas para obter a previsão local. Sem GPS, sem permissão de localização.",
     "permissionBookmarks": "Favoritos",
     "permissionBookmarksSub": "Permite que o painel leia e organize seus favoritos do Chrome.",

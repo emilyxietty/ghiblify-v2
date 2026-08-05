@@ -626,7 +626,7 @@
     "buttonAria": "Ouvrir les paramètres",
     "permissionsTitle": "Autorisations",
     "permissionsSub": "Ghiblify ne demande rien au départ. N'activez que ce que vous utilisez ; la révocation est immédiate.",
-    "permissionGeolocation": "Localisation",
+    "permissionGeolocation": "Accès à la position",
     "permissionGeolocationSub": "Position approximative (à l'échelle de la ville) d'après votre connexion réseau — uniquement pour la météo locale. Ni GPS ni permission de localisation.",
     "permissionBookmarks": "Favoris",
     "permissionBookmarksSub": "Permet au panneau de lire et d'organiser vos favoris Chrome.",

@@ -646,7 +646,7 @@
     "buttonAria": "Open settings",
     "permissionsTitle": "Permissions",
     "permissionsSub": "Ghiblify asks for nothing up front. Turn on only what you use — revoking takes effect immediately.",
-    "permissionGeolocation": "Location",
+    "permissionGeolocation": "Location access",
     "permissionGeolocationSub": "Approximate (city-level) location from your network connection — used only to fetch the local forecast. No GPS, no location permission.",
     "permissionBookmarks": "Bookmarks",
     "permissionBookmarksSub": "Lets the bookmarks panel read and organise your Chrome bookmarks.",

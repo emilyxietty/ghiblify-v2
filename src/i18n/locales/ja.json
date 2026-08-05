@@ -637,7 +637,7 @@
     "buttonAria": "設定を開く",
     "permissionsTitle": "権限",
     "permissionsSub": "Ghiblify は最初は何も要求しません。使うものだけを有効にしてください。取り消しは即時反映されます。",
-    "permissionGeolocation": "位置情報",
+    "permissionGeolocation": "位置情報へのアクセス",
     "permissionGeolocationSub": "ネットワーク接続からのおおよその（都市レベルの）位置情報 — 地域の天気予報の取得のみに使用します。GPS・位置情報権限は不要です。",
     "permissionBookmarks": "ブックマーク",
     "permissionBookmarksSub": "パネルが Chrome のブックマークを読み取り、整理できるようにします。",

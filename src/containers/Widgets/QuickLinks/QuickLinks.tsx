@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../../components/Button/Button";
-import { DeleteOutlineIcon, EditIcon } from "../../../components/Icons/Icons";
-import { AddIcon, CancelIcon } from "../../../components/Icons/Icons";
+import { AddIcon, CancelIcon, DeleteOutlineIcon, EditIcon } from "../../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -123,7 +122,8 @@ export const QuickLinks: React.FC = () => {
   // form or list popover).
   useEffect(() => {
     const onAdd = () => {
-      if (showGrid) {
+
+  if (showGrid) {
         setAddGridLink(true);
       } else if (triggerRef.current) {
         setAnchorEl(triggerRef.current);
@@ -245,98 +245,19 @@ export const QuickLinks: React.FC = () => {
           },
         };
 
-  if (showGrid) {
-    return (
-      <div
-        className="quicklinksSettings-grid-wrapper widget-header"
-        style={{
-          ["--ql-opacity" as any]:
-            ((quicklinksSettings as any).opacity ?? 50) / 100,
-          ["--input-opacity" as any]:
-            ((quicklinksSettings as any).opacity ?? 50) / 100,
-        }}
-      >
-        <div className="quicklinksSettings-grid-list">
-          <div
-            className="quicklinksSettings-grid-scroll"
-            style={{ width, maxHeight: height }}
-          >
-            {quicklinksSettings.links.map((l, index) => {
-              const isDragOver =
-                draggedIndex !== null && dragOverIndex === index;
-              return (
-                <div
-                  key={l.id}
-                  className={`ql-grid-cell${
-                    draggedIndex === index ? " dragging" : ""
-                  }${isDragOver ? " drag-over" : ""}${
-                    showWidgetEdits ? "" : " draggable"
-                  }`}
-                  {...dndProps(index)}
-                  onContextMenu={(e) => {
-                    // Per-tile right-click → custom menu with edit
-                    // and delete actions for this specific link.
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setLinkMenu({ id: l.id, x: e.clientX, y: e.clientY });
-                  }}
-                >
-                  <a
-                    href={normalizeUrl(l.url)}
-                    className="ql-grid-link"
-                    title={l.url}
-                  >
-                    <Favicon
-                      url={l.url}
-                      className="ql-grid-favicon"
-                      fallbackClassName="ql-grid-favicon ql-favicon-fallback"
-                      fallback={l.title.charAt(0).toUpperCase()}
-                    />
-                    <span className="ql-grid-title">{l.title}</span>
-                  </a>
-                  {/* Always rendered; CSS hides it unless Shift is held
-                      (body.show-widget-outline). */}
-                  <button
-                    type="button"
-                    className="ql-delete-overlay"
-                    aria-label={t("quicklinks.deleteAria", { title: l.title })}
-                    data-tooltip={t("quicklinks.deleteGridTooltip", { title: l.title })}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      removeLink(l.id);
-                    }}
-                  >
-                    <CancelIcon fontSize="small" />
-                  </button>
-                </div>
-              );
-            })}
-            <button
-              type="button"
-              className="ql-grid-cell ql-add-cell"
-              onClick={() => {
-                setEditingLinkId(null);
-                setTitle("");
-                setUrl("");
-                setAddGridLink(true);
-              }}
-              aria-label={t("quicklinks.addAria")}
-            >
-              <AddIcon className="ql-add-cell-icon" />
-              <span className="ql-add-cell-label">
-                {t("quicklinks.addTile")}
-              </span>
-            </button>
-          </div>
-
-          {/* A real modal, portalled to <body>: the widget shell is
+      // A real modal, portalled to <body>: the widget shell is transform'ed,
+  // so a fixed-position child would anchor to the widget, and inside the
+  // widget the card competes with surfaces that scroll and clip. Shared
+  // by BOTH modes — grid tiles and the list dropdown open the same card
+  // for add and edit.
+  /* prior placement note: the widget shell is
               `transform`ed, so a fixed-position child of it would
               anchor to the widget instead of the viewport — and inside
               the widget the card had to compete with a grid that
-              scrolls and clips. */}
-          {addGridLink &&
-            createPortal(
+              scrolls and clips. */
+  const addEditModal =
+    addGridLink &&
+    createPortal(
             <div
               className="ql-add-overlay"
               onMouseDown={(e) => {
@@ -461,7 +382,94 @@ export const QuickLinks: React.FC = () => {
               </form>
             </div>,
             document.body
-          )}
+          );
+
+  if (showGrid) {
+    return (
+      <div
+        className="quicklinksSettings-grid-wrapper widget-header"
+        style={{
+          ["--ql-opacity" as any]:
+            ((quicklinksSettings as any).opacity ?? 50) / 100,
+          ["--input-opacity" as any]:
+            ((quicklinksSettings as any).opacity ?? 50) / 100,
+        }}
+      >
+        <div className="quicklinksSettings-grid-list">
+          <div
+            className="quicklinksSettings-grid-scroll"
+            style={{ width, maxHeight: height }}
+          >
+            {quicklinksSettings.links.map((l, index) => {
+              const isDragOver =
+                draggedIndex !== null && dragOverIndex === index;
+              return (
+                <div
+                  key={l.id}
+                  className={`ql-grid-cell${
+                    draggedIndex === index ? " dragging" : ""
+                  }${isDragOver ? " drag-over" : ""}${
+                    showWidgetEdits ? "" : " draggable"
+                  }`}
+                  {...dndProps(index)}
+                  onContextMenu={(e) => {
+                    // Per-tile right-click → custom menu with edit
+                    // and delete actions for this specific link.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLinkMenu({ id: l.id, x: e.clientX, y: e.clientY });
+                  }}
+                >
+                  <a
+                    href={normalizeUrl(l.url)}
+                    className="ql-grid-link"
+                    title={l.url}
+                  >
+                    <Favicon
+                      url={l.url}
+                      className="ql-grid-favicon"
+                      fallbackClassName="ql-grid-favicon ql-favicon-fallback"
+                      fallback={l.title.charAt(0).toUpperCase()}
+                    />
+                    <span className="ql-grid-title">{l.title}</span>
+                  </a>
+                  {/* Always rendered; CSS hides it unless Shift is held
+                      (body.show-widget-outline). */}
+                  <button
+                    type="button"
+                    className="ql-delete-overlay"
+                    aria-label={t("quicklinks.deleteAria", { title: l.title })}
+                    data-tooltip={t("quicklinks.deleteGridTooltip", { title: l.title })}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeLink(l.id);
+                    }}
+                  >
+                    <CancelIcon fontSize="small" />
+                  </button>
+                </div>
+              );
+            })}
+            <button
+              type="button"
+              className="ql-grid-cell ql-add-cell"
+              onClick={() => {
+                setEditingLinkId(null);
+                setTitle("");
+                setUrl("");
+                setAddGridLink(true);
+              }}
+              aria-label={t("quicklinks.addAria")}
+            >
+              <AddIcon className="ql-add-cell-icon" />
+              <span className="ql-add-cell-label">
+                {t("quicklinks.addTile")}
+              </span>
+            </button>
+          </div>
+
+          {addEditModal}
         </div>
         {linkMenu &&
           (() => {
@@ -533,48 +541,23 @@ export const QuickLinks: React.FC = () => {
           ((quicklinksSettings as any).opacity ?? 50) / 100,
       }}
     >
-            <form
-              className="quicklinksSettings-add"
-              onSubmit={(e) => {
-                e.preventDefault();
-                addLink();
+            {/* Add/edit both use the SAME modal card the grid uses —
+                the old cramped two-field inline form at the top of the
+                dropdown is gone. */}
+            <button
+              type="button"
+              className="ql-list-add"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingLinkId(null);
+                setTitle("");
+                setUrl("");
+                setAddGridLink(true);
               }}
             >
-              <label className="ql-sr-only" htmlFor="ql-list-title-input">
-                {t("quicklinks.labelSrOnly")}
-              </label>
-              <TextInput
-                id="ql-list-title-input"
-                placeholder={t("quicklinks.labelPlaceholder")}
-                inputSize="small"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                key={`popover-title-${anchorEl ? "open" : "closed"}`}
-              />
-              <label className="ql-sr-only" htmlFor="ql-list-url-input">
-                {t("quicklinks.urlSrOnly")}
-              </label>
-              <TextInput
-                id="ql-list-url-input"
-                ref={urlInputRef}
-                inputSize="small"
-                placeholder={t("quicklinks.urlPlaceholder")}
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                key={`popover-url-${anchorEl ? "open" : "closed"}`}
-              />
-              <button
-                type="submit"
-                className="quicklinksSettings-add-btn"
-                disabled={!url.trim()}
-                aria-label={t("quicklinks.saveAria")}
-                data-tooltip={t("quicklinks.saveTooltip")}
-              >
-                <AddIcon fontSize="small" />
-              </button>
-            </form>
+              <AddIcon fontSize="small" />
+              {t("widgets.contextMenu.addLink")}
+            </button>
             <ul className="quicklinksSettings-list">
               {quicklinksSettings.links.length === 0 ? (
                 <li className="quicklinksSettings-empty">
@@ -607,6 +590,22 @@ export const QuickLinks: React.FC = () => {
                         <span className="ql-title">{l.title}</span>
                         <span className="ql-url">{l.url}</span>
                       </a>
+                      <button
+                        type="button"
+                        className="quicklinksSettings-delete quicklinksSettings-editlink"
+                        aria-label={t("widgets.contextMenu.edit", {
+                          name: l.title,
+                        })}
+                        data-tooltip={t("quicklinks.editTitle")}
+                        onClick={() => {
+                          setEditingLinkId(l.id);
+                          setTitle(l.title);
+                          setUrl(l.url);
+                          setAddGridLink(true);
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </button>
                       <button
                         type="button"
                         className="quicklinksSettings-delete"
@@ -683,6 +682,7 @@ export const QuickLinks: React.FC = () => {
           </InlinePopover>
         )}
       </div>
+      {addEditModal}
     </div>
   );
 };

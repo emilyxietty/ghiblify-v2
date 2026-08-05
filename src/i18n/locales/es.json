@@ -632,7 +632,7 @@
     "buttonAria": "Abrir ajustes",
     "permissionsTitle": "Permisos",
     "permissionsSub": "Ghiblify no pide nada de entrada. Activa solo lo que uses; revocar surte efecto de inmediato.",
-    "permissionGeolocation": "Ubicación",
+    "permissionGeolocation": "Acceso a la ubicación",
     "permissionGeolocationSub": "Ubicación aproximada (a nivel de ciudad) según tu conexión de red — solo para obtener el pronóstico local. Sin GPS ni permiso de ubicación.",
     "permissionBookmarks": "Marcadores",
     "permissionBookmarksSub": "Permite que el panel lea y organice tus marcadores de Chrome.",

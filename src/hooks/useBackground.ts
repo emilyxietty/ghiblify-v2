@@ -224,27 +224,21 @@ export const useBackground = () => {
           return pool[Math.floor(Math.random() * pool.length)];
         };
 
-        // Verify the pick actually decodes before painting it. A URL
-        // can rot after users store it (favorites outlive
-        // background.json removals; hosts 404 / change hotlink
-        // policy), and Background.tsx paints via CSS background-image
-        // which has no error path — an unverified dead pick means a
-        // black tab. Dead picks are skipped for the session and we
-        // re-roll; if everything in the pool is dead (offline-ish or
-        // pool of one rotten favorite), fall back to a bundled asset
-        // so the user is never left staring at nothing.
-        let pool = allLinks.filter((c) => !deadUrls.has(c.link));
-        if (pool.length === 0) pool = allLinks;
-        let selected: { link: string; sourceTitle: string } | null = null;
-        for (let attempt = 0; attempt < 4 && pool.length > 0; attempt++) {
-          const candidate = pickCandidate(pool);
-          if (await preloadImage(candidate.link)) {
-            selected = candidate;
-            break;
-          }
-          deadUrls.add(candidate.link);
-          pool = pool.filter((c) => c.link !== candidate.link);
-        }
+        // Dead-URL protection, OPTIMISTIC edition. The first version
+        // AWAITED a full image download before painting anything —
+        // which fixed black tabs from rotten favorites but made every
+        // tab measurably slower (the old behavior painted the CSS
+        // background progressively as bytes streamed). Now: paint the
+        // pick immediately, verify in the background, and only when
+        // the verify FAILS mark the URL dead and re-run selection —
+        // the rare bad pick shows the pre-paint wallpaper for a beat
+        // longer, the common good pick costs nothing.
+        // NO reset-to-allLinks when the filtered pool empties — that
+        // would make the verify-fail → re-run cycle loop forever on an
+        // all-dead pool. Empty means "fall back to a bundled asset".
+        const pool = allLinks.filter((c) => !deadUrls.has(c.link));
+        const selected: { link: string; sourceTitle: string } | null =
+          pool.length > 0 ? pickCandidate(pool) : null;
         if (!selected) {
           const pick =
             OFFLINE_FALLBACKS[
@@ -255,6 +249,15 @@ export const useBackground = () => {
           setLoading(false);
           return;
         }
+        void preloadImage(selected.link).then((ok) => {
+          if (ok) return;
+          deadUrls.add(selected.link);
+          // Re-run the whole selection — deadUrls now excludes this
+          // pick, and if everything is dead the empty-pool branch
+          // above lands on a bundled fallback. background.json is a
+          // local extension file, so the re-run is effectively free.
+          loadBackground();
+        });
 
         // If the selected link equals the current background (rare), append
         // a cache-busting query param so the browser reloads it without a full page refresh.
