@@ -35,18 +35,10 @@
       because Chrome's strict-mode iframes / private contexts can
       throw on localStorage access.
     -->
-    <script>
-      (function () {
-        var splash = "/assets/backgrounds/chihiro043.jpg";
-        var url = splash;
-        try {
-          var last = localStorage.getItem("ghiblify:lastBg");
-          if (last) url = last;
-        } catch (e) { /* ignored */ }
-        document.body.style.backgroundImage =
-          "url('" + url.replace(/'/g, "\\'") + "')";
-      })();
-    </script>
+    <!-- External file, NOT inline: MV3's CSP blocks inline scripts in
+         extension pages (an inline version of this ran for months as
+         a silent no-op — see the comment in prepaint.js). -->
+    <script src="/prepaint.js"></script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
 </body>
