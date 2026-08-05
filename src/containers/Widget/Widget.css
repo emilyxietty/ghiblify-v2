@@ -189,14 +189,21 @@
 
 .widget-drag-handle {
     position: absolute;
-    top: 6px;
+    /* Vertically centered via auto margins (top+bottom 0) so the fixed
+       transform slots below stay free for the hover/active nudges. The
+       height clamp keeps the tab inside the shell on short widgets —
+       a fixed 40px tab pinned to the top used to hang past the bottom
+       edge of anything shorter than ~46px. */
+    top: 0;
+    bottom: 0;
+    margin: auto 0;
     left: -30px;
     z-index: 110;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 26px;
-    height: 40px;
+    height: min(40px, 100%);
     padding: 0;
     transform: none;
     color: var(--interaction-accent, #8fc7e8);

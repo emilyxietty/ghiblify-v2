@@ -449,10 +449,17 @@ const CheckGlyph = () => (
 type ActiveListType = "bullet" | "check" | null;
 type ActiveBlockType = "h1" | "h2" | "h3" | "quote" | null;
 
+// Toolbar height + gap: less viewport headroom than this above the
+// note and the bar flips below the note's top edge instead.
+const TOOLBAR_CLEARANCE_PX = 48;
+
 const FloatingToolbarPlugin: React.FC = () => {
   const t = useT();
   const [editor] = useLexicalComposerContext();
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  // Flipped under the note's top edge when there's no viewport
+  // headroom above it (note dragged against the top of the screen).
+  const [below, setBelow] = useState(false);
   const [active, setActive] = useState<Record<string, boolean>>({});
   const [listType, setListType] = useState<ActiveListType>(null);
   const [blockType, setBlockType] = useState<ActiveBlockType>(null);
@@ -484,10 +491,17 @@ const FloatingToolbarPlugin: React.FC = () => {
   const refresh = useCallback(() => {
     editor.getEditorState().read(() => {
       const selection = $getSelection();
+      // A caret alone is enough — the toolbar shows the whole time the
+      // note is being edited, selection or not. Every control works on
+      // a collapsed caret: text formats and colours become "pending"
+      // and apply to whatever is typed next; block/list/align act on
+      // the caret's block. Focus is the visibility gate (mirrors the
+      // blur-hide listener below).
+      const rootEl = editor.getRootElement();
       if (
         !$isRangeSelection(selection) ||
-        selection.isCollapsed() ||
-        selection.getTextContent() === ""
+        !rootEl ||
+        document.activeElement !== rootEl
       ) {
         setPos(null);
         setOpenGroup(null);
@@ -524,11 +538,15 @@ const FloatingToolbarPlugin: React.FC = () => {
       setTextColor(
         $getSelectionStyleValueForProperty(selection, "color", ""),
       );
-      const native = window.getSelection();
-      if (native && native.rangeCount > 0) {
-        const rect = native.getRangeAt(0).getBoundingClientRect();
-        setPos({ x: rect.left + rect.width / 2, y: rect.top });
-      }
+      // Anchored to the NOTE, not the selection — a fixed bar above the
+      // paper's top edge ("popup at the top"), so it neither chases the
+      // caret around nor covers the line being edited. When the note
+      // touches the top of the screen the bar flips under the top edge
+      // instead of sliding off-screen.
+      const rect = rootEl.getBoundingClientRect();
+      const flip = rect.top < TOOLBAR_CLEARANCE_PX;
+      setBelow(flip);
+      setPos({ x: rect.left + rect.width / 2, y: rect.top });
     });
   }, [editor]);
 
@@ -548,15 +566,21 @@ const FloatingToolbarPlugin: React.FC = () => {
     [editor, refresh],
   );
 
-  // Hide when the editor loses focus. Toolbar buttons preventDefault
-  // on mousedown so pressing them doesn't count as leaving.
+  // Show on focus / hide on blur. Focus needs its own listener: the
+  // toolbar appears as soon as the caret lands in the note, and on a
+  // plain click-in Lexical may not fire an update if the selection
+  // didn't move. Toolbar buttons preventDefault on mousedown so
+  // pressing them doesn't count as leaving.
   useEffect(() => {
     const onBlur = () => setPos(null);
+    const onFocus = () => refresh();
     return editor.registerRootListener((rootElement, prevRootElement) => {
       prevRootElement?.removeEventListener("blur", onBlur);
+      prevRootElement?.removeEventListener("focus", onFocus);
       rootElement?.addEventListener("blur", onBlur);
+      rootElement?.addEventListener("focus", onFocus);
     });
-  }, [editor]);
+  }, [editor, refresh]);
 
   if (!pos) return null;
 
@@ -654,7 +678,7 @@ const FloatingToolbarPlugin: React.FC = () => {
 
   return createPortal(
     <div
-      className="notes-toolbar"
+      className={`notes-toolbar${below ? " below" : ""}`}
       style={{ left: pos.x, top: pos.y }}
       role="toolbar"
       aria-label={t("notes.toolbar.ariaLabel")}

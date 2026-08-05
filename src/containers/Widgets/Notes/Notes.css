@@ -300,6 +300,13 @@
     z-index: 3000;
 }
 
+/* No headroom above the note (dragged against the top of the screen):
+   drop the bar just inside the note's top edge instead of off-screen.
+   Anchor point (pos.y) is the note's top in both modes. */
+.notes-toolbar.below {
+    transform: translate(-50%, 8px);
+}
+
 .notes-tb-btn {
     display: flex;
     align-items: center;

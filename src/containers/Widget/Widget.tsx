@@ -50,6 +50,7 @@ import {
   type PomodoroSoundKey,
 } from "../../utils/pomodoroChime";
 import { toReferencePx, toScreenPx } from "../../utils/viewportScale";
+import { bringWidgetToFront, useWidgetZIndex } from "../../utils/widgetStack";
 import { useT } from "../../i18n/i18n";
 import "./Widget.css";
 
@@ -127,6 +128,8 @@ export const Widget: React.FC<WidgetProps> = ({
   >;
 
   const [position, setPosition] = useState(() => widgets[storageKey].position);
+  // Bounded click-to-front stacking — see utils/widgetStack.ts.
+  const zIndex = useWidgetZIndex(storageKey);
 
   useLayoutEffect(() => {
     if (widgetSettings.typeIn !== true) return;
@@ -662,6 +665,10 @@ export const Widget: React.FC<WidgetProps> = ({
   }, [children]);
 
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
+    // Any press (left click, drag start, right-click for the context
+    // menu) surfaces this widget above its siblings — before the drag
+    // gating below, which returns early for plain clicks.
+    bringWidgetToFront(storageKey);
     // Two ways to opt into widget dragging:
     //   1. Hold 'd' + left-click (one-shot drag without leaving
     //      normal mode). The 'd' keydown/keyup effect above keeps
@@ -819,6 +826,7 @@ export const Widget: React.FC<WidgetProps> = ({
       style={{
         left: `${position.x}vw`,
         top: `${position.y}vh`,
+        zIndex,
         transform: getTransform(),
         // The shell adopts its content's font size so em-based tokens
         // (--text-highlight-radius: the corner-style-aware pill

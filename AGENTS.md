@@ -29,6 +29,8 @@ npm run preview  # serve dist/
 
 There are no tests, no linter, and no formatter configured. Don't add CI tooling unless asked.
 
+**After making changes, always rebuild** (`pnpm build`) so `dist/` reflects them — the unpacked extension loads from `dist/`, and a stale build means the change is invisible in the browser.
+
 To load the extension: `chrome://extensions` → Developer mode → Load unpacked → select `dist/`.
 
 ## Directory map
