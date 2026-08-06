@@ -562,6 +562,21 @@
     transition: background 140ms ease, border-color 140ms ease,
         transform 140ms ease, opacity 140ms ease;
     aspect-ratio: 1 / 1;
+    /* Hidden until the widget is hovered: a permanent dashed "+" tile
+       reads as an empty slot in the grid rather than an action, and it
+       competes with the links themselves. Kept in the layout (opacity,
+       not display) so the grid doesn't reflow on hover. */
+    opacity: 0;
+    pointer-events: none;
+}
+
+.quicklinksSettings-grid-wrapper:hover .ql-add-cell,
+.quicklinksSettings-grid-wrapper:focus-within .ql-add-cell,
+/* Edit mode is the "arrange your links" state, so the affordance
+   stays put there without needing a hover. */
+.widget.edit-mode .ql-add-cell {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .ql-add-cell:hover {

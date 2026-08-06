@@ -71,6 +71,13 @@
    user picked a card colour it applies to BOTH modes, so break keeps
    the custom surface (and focus-mode's light text) instead of
    swapping to the blue card + dark ink. */
+/* Custom surface: ink comes from --pomodoro-ink, resolved in
+   Pomodoro.tsx against whichever mode's colour is active. */
+.pomodoro-widget.custom-card,
+.pomodoro-widget.custom-card .pomodoro-switch-header h2 {
+    color: var(--pomodoro-ink, inherit);
+}
+
 .pomodoro-widget.break-mode:not(.custom-card) {
     /* Drive the alpha directly with rgba(...) so --pomodoro-opacity is
        used as a literal alpha channel - no calc, no color-mix wrapper.

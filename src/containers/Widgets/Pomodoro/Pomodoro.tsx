@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/Button/Button";
 import { useAppContext } from "../../../contexts/AppContext";
+import {
+  isHighlightTextColor,
+  resolveForeground,
+} from "../../../utils/textHighlight";
 import { useT } from "../../../i18n/i18n";
 import { CloseIcon } from "../../../components/Icons/Icons";
 import { CenterFocusStrongIcon, PauseCircleIcon, PlayCircleFilledWhiteIcon, ReplayCircleFilledIcon } from "../../../components/Icons/Icons";
@@ -522,8 +526,17 @@ const Pomodoro: React.FC = () => {
   // get normalised to the new names so existing users don't see a
   // jarring layout shift on first open after the rename.
   const { widgets } = useAppContext();
-  const { size, opacity, sound, soundVolume, cardColor } =
-    widgets.pomodoro.settings;
+  const {
+    size,
+    opacity,
+    sound,
+    soundVolume,
+    cardColor,
+    textColor,
+    breakColor,
+    breakOpacity,
+    breakTextColor,
+  } = widgets.pomodoro.settings;
 
   // Keep the countdown effect's view of the chime settings current -
   // see chimeSettingsRef above. Validated on the way in because stored
@@ -568,19 +581,55 @@ const Pomodoro: React.FC = () => {
         // card keeps the chosen colour (and its light text) during
         // breaks. The break progress-bar gradient stays as the mode
         // signal.
-        typeof cardColor === "string" ? " custom-card" : ""
+        // Each mode has its OWN surface now, so "custom" is decided
+        // per mode rather than one flag covering both.
+        (isBreak ? typeof breakColor === "string" : typeof cardColor === "string")
+          ? " custom-card"
+          : ""
       }`}
       style={{
         ...(focusMode
           ? {}
           : { width: `${dims.width}px`, height: `${dims.height}px` }),
+        // Focus and break each carry their own alpha; the active mode
+        // publishes into the single var the CSS reads.
         ["--pomodoro-opacity" as string]:
-          (typeof opacity === "number" ? opacity : 100) / 100,
-        // Custom focus-card base colour - CSS falls back to the
-        // theme's --purple-dark when unset.
-        ...(typeof cardColor === "string"
-          ? { ["--pomodoro-card" as string]: cardColor }
-          : {}),
+          ((isBreak
+            ? typeof breakOpacity === "number"
+              ? breakOpacity
+              : 100
+            : typeof opacity === "number"
+              ? opacity
+              : 100) as number) / 100,
+        ...(() => {
+          const colour = isBreak ? breakColor : cardColor;
+          const mode = isBreak ? breakTextColor : textColor;
+          const out: Record<string, string> = {};
+          if (typeof colour === "string") {
+            out["--pomodoro-card"] = colour;
+            // Ink follows the surface, so a pale card gets dark text
+            // instead of the light default.
+            const ink = resolveForeground(
+              colour,
+              isHighlightTextColor(mode) ? mode : "auto",
+            );
+            out["--pomodoro-ink"] = ink;
+            // Most of Pomodoro's text and borders read var(--light)
+            // rather than a widget-scoped token, so rebinding it here
+            // is what actually makes the digits, labels and controls
+            // follow the surface. Scoped to this element, and only
+            // while a custom colour is set - the built-in focus and
+            // break cards already ship tuned ink.
+            out["--light"] = ink;
+          } else if (mode === "light") {
+            out["--pomodoro-ink"] = "#f7f3ea";
+            out["--light"] = "#f7f3ea";
+          } else if (mode === "dark") {
+            out["--pomodoro-ink"] = "#1f2420";
+            out["--light"] = "#1f2420";
+          }
+          return out;
+        })(),
       }}
     >
       <div className="pomodoro-switch-header">

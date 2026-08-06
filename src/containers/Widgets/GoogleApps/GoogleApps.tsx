@@ -31,34 +31,21 @@ import "./GoogleApps.css";
 // Google-style letter circle. Signed out / restricted → the classic
 // blank-profile silhouette.
 
-// The full modern waffle set. `slug` names the BUNDLED icon under
+// A curated shortlist rather than Google's full waffle: the real
+// launcher is a 24-tile wall most people use eight of, and a shorter
+// grid is quicker to scan on a new-tab page. `slug` names the BUNDLED
+// icon under
 // /assets/google/<slug>.png (downloaded from Google's favicon service
 // at build-authoring time - real product icons, shipped offline).
 const GOOGLE_APPS: Array<{ name: string; url: string; slug: string }> = [
-  { name: "Account", url: "https://myaccount.google.com", slug: "account" },
-  { name: "Search", url: "https://www.google.com", slug: "search" },
-  { name: "Maps", url: "https://maps.google.com", slug: "maps" },
-  { name: "YouTube", url: "https://www.youtube.com", slug: "youtube" },
-  { name: "Play", url: "https://play.google.com", slug: "play" },
+  { name: "Drive", url: "https://drive.google.com", slug: "drive" },
+  { name: "Photos", url: "https://photos.google.com", slug: "photos" },
   { name: "Gmail", url: "https://mail.google.com", slug: "gmail" },
+  { name: "Calendar", url: "https://calendar.google.com", slug: "calendar" },
   { name: "Meet", url: "https://meet.google.com", slug: "meet" },
   { name: "Chat", url: "https://chat.google.com", slug: "chat" },
-  { name: "Contacts", url: "https://contacts.google.com", slug: "contacts" },
-  { name: "Drive", url: "https://drive.google.com", slug: "drive" },
-  { name: "Calendar", url: "https://calendar.google.com", slug: "calendar" },
-  { name: "Translate", url: "https://translate.google.com", slug: "translate" },
-  { name: "Photos", url: "https://photos.google.com", slug: "photos" },
-  { name: "Docs", url: "https://docs.google.com", slug: "docs" },
-  { name: "Sheets", url: "https://sheets.google.com", slug: "sheets" },
-  { name: "Slides", url: "https://slides.google.com", slug: "slides" },
-  { name: "Keep", url: "https://keep.google.com", slug: "keep" },
-  { name: "News", url: "https://news.google.com", slug: "news" },
-  { name: "Shopping", url: "https://shopping.google.com", slug: "shopping" },
-  { name: "Earth", url: "https://earth.google.com", slug: "earth" },
-  { name: "Gemini", url: "https://gemini.google.com", slug: "gemini" },
-  { name: "Classroom", url: "https://classroom.google.com", slug: "classroom" },
-  { name: "One", url: "https://one.google.com", slug: "one" },
-  { name: "YT Music", url: "https://music.youtube.com", slug: "ytmusic" },
+  { name: "Maps", url: "https://maps.google.com", slug: "maps" },
+  { name: "Account", url: "https://myaccount.google.com", slug: "account" },
 ];
 
 const ACCOUNT_URL = "https://myaccount.google.com";

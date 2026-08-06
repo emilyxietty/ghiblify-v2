@@ -341,6 +341,26 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     Number(surfaceSettings[surfaceFields.blur]) || 0
   );
 
+  // Pomodoro's two surfaces, read straight off its settings.
+  const pomoRead = (c: string, o: string, b: string, tc: string) => ({
+    color:
+      typeof surfaceSettings[c] === "string"
+        ? (surfaceSettings[c] as string)
+        : null,
+    opacity: Math.round(Number(surfaceSettings[o]) || 0),
+    blur: Math.round(Number(surfaceSettings[b]) || 0),
+    ink: isHighlightTextColor(surfaceSettings[tc])
+      ? (surfaceSettings[tc] as "auto" | "light" | "dark")
+      : ("auto" as const),
+  });
+  const pomoFocus = pomoRead("cardColor", "opacity", "blur", "textColor");
+  const pomoBreak = pomoRead(
+    "breakColor",
+    "breakOpacity",
+    "breakBlur",
+    "breakTextColor"
+  );
+
   const rowColorValue =
     typeof surfaceSettings.rowColor === "string"
       ? surfaceSettings.rowColor
@@ -526,7 +546,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       className={`edit-panel${
         (highlightTuneOpen && supportsHighlight && highlightValue) ||
         (surfaceTuneOpen && controls?.todoFrosted && supportsSlider) ||
-        (rowTuneOpen && storageKey === "todo")
+        (rowTuneOpen && (storageKey === "todo" || storageKey === "pomodoro")) ||
+        (surfaceTuneOpen && storageKey === "pomodoro")
           ? " edit-panel-expanded"
           : ""
       }`}
@@ -763,6 +784,24 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 [surfaceFields.opacity]: next,
               } as never)
             }
+            onPreviewChange={(next) =>
+              // Mirror the commit's alpha bump, or hovering a colour on
+              // a clear surface previews nothing and the swatches look
+              // dead until you actually click one.
+              previewWidgetSettings(storageKey, {
+                surfaceColor: next,
+                ...(next && surfaceOpacityValue === 0
+                  ? { [surfaceFields.opacity]: 25 }
+                  : {}),
+              } as never)
+            }
+            onPreviewOpacity={(next) =>
+              previewWidgetSettings(storageKey, { [surfaceFields.opacity]: next } as never)
+            }
+            onPreviewTextColor={(next) =>
+              previewWidgetSettings(storageKey, { textColor: next } as never)
+            }
+            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
           />
         </div>
       )}
@@ -794,6 +833,19 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             onOpacityChange={(next) =>
               updateWidgetSettings(storageKey, { rowOpacity: next } as never)
             }
+            onPreviewChange={(next) =>
+              previewWidgetSettings(storageKey, {
+                rowColor: next,
+                ...(next && rowOpacityValue === 0 ? { rowOpacity: 25 } : {}),
+              } as never)
+            }
+            onPreviewOpacity={(next) =>
+              previewWidgetSettings(storageKey, { rowOpacity: next } as never)
+            }
+            onPreviewTextColor={(next) =>
+              previewWidgetSettings(storageKey, { rowTextColor: next } as never)
+            }
+            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
           />
         </div>
       )}
@@ -1161,46 +1213,84 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       )}
 
       {controls?.pomodoroColor && (
-        <Row label={t("widgets.edit.pomodoroColor")}>
-          <div
-            className="edit-panel-swatches"
-            role="radiogroup"
-            aria-label={t("widgets.edit.pomodoroColorAria")}
-          >
-            {/* Leading swatch = theme default, stored as null. */}
-            <button
-              type="button"
-              role="radio"
-              aria-checked={pomodoroCardColor === null}
-              aria-label={t("widgets.edit.pomodoroColorDefaultAria")}
-              className={`edit-panel-swatch${
-                pomodoroCardColor === null ? " is-active" : ""
-              }`}
-              style={{ background: "var(--purple-dark)" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                updateWidgetSettings("pomodoro", { cardColor: null });
-              }}
+        <>
+          {/* Focus and break are separate surfaces: the two modes are
+              meant to read differently at a glance, so one shared
+              colour defeated the point. Each uses the same picker +
+              tuning flyout as every other Background control. */}
+          <div className="edit-panel-slider-row">
+            <span className="edit-panel-row-label">
+              {t("widgets.edit.surfaceStyle")}
+            </span>
+            <ColorPicker
+              color={pomoFocus.color}
+              textColor={pomoFocus.ink}
+              opacity={pomoFocus.opacity}
+              blur={pomoFocus.blur}
+              expanded={surfaceTuneOpen}
+              onExpandChange={setSurfaceTuneOpen}
+              onBlurChange={(v) =>
+                updateWidgetSettings(storageKey, { blur: v } as never)
+              }
+              onChange={(next) =>
+                updateWidgetSettings(storageKey, { cardColor: next } as never)
+              }
+              onTextColorChange={(next) =>
+                updateWidgetSettings(storageKey, { textColor: next } as never)
+              }
+              onOpacityChange={(next) =>
+                updateWidgetSettings(storageKey, { opacity: next } as never)
+              }
+              onPreviewChange={(next) =>
+                previewWidgetSettings(storageKey, { cardColor: next } as never)
+              }
+              onPreviewOpacity={(next) =>
+                previewWidgetSettings(storageKey, { opacity: next } as never)
+              }
+              onPreviewTextColor={(next) =>
+                previewWidgetSettings(storageKey, { textColor: next } as never)
+              }
+              onPreviewClear={() => previewWidgetSettings(storageKey, null)}
             />
-            {POMODORO_CARD_PRESETS.map((hex) => (
-              <button
-                key={hex}
-                type="button"
-                role="radio"
-                aria-checked={pomodoroCardColor === hex}
-                aria-label={`${t("widgets.edit.pomodoroColorAria")} ${hex}`}
-                className={`edit-panel-swatch${
-                  pomodoroCardColor === hex ? " is-active" : ""
-                }`}
-                style={{ background: hex }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateWidgetSettings("pomodoro", { cardColor: hex });
-                }}
-              />
-            ))}
           </div>
-        </Row>
+          <div className="edit-panel-slider-row">
+            <span className="edit-panel-row-label">
+              {t("widgets.edit.pomodoroBreakColor")}
+            </span>
+            <ColorPicker
+              color={pomoBreak.color}
+              textColor={pomoBreak.ink}
+              opacity={pomoBreak.opacity}
+              blur={pomoBreak.blur}
+              expanded={rowTuneOpen}
+              onExpandChange={setRowTuneOpen}
+              onBlurChange={(v) =>
+                updateWidgetSettings(storageKey, { breakBlur: v } as never)
+              }
+              onChange={(next) =>
+                updateWidgetSettings(storageKey, { breakColor: next } as never)
+              }
+              onTextColorChange={(next) =>
+                updateWidgetSettings(storageKey, {
+                  breakTextColor: next,
+                } as never)
+              }
+              onOpacityChange={(next) =>
+                updateWidgetSettings(storageKey, { breakOpacity: next } as never)
+              }
+              onPreviewChange={(next) =>
+                previewWidgetSettings(storageKey, { breakColor: next } as never)
+              }
+              onPreviewOpacity={(next) =>
+                previewWidgetSettings(storageKey, { breakOpacity: next } as never)
+              }
+              onPreviewTextColor={(next) =>
+                previewWidgetSettings(storageKey, { breakTextColor: next } as never)
+              }
+              onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+            />
+          </div>
+        </>
       )}
 
       {controls?.pomodoroSound && pomodoroSound !== "none" && (
@@ -1342,6 +1432,54 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       )}
       </div>
 
+      {surfaceTuneOpen && storageKey === "pomodoro" && (
+        <div className="edit-panel-side">
+          <HighlightTuning
+            onClose={() => setSurfaceTuneOpen(false)}
+            color={pomoFocus.color}
+            textColor={pomoFocus.ink}
+            opacity={pomoFocus.opacity}
+            blur={pomoFocus.blur}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, { blur: v } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, { cardColor: next } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, { textColor: next } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, { opacity: next } as never)
+            }
+          />
+        </div>
+      )}
+
+      {rowTuneOpen && storageKey === "pomodoro" && (
+        <div className="edit-panel-side">
+          <HighlightTuning
+            onClose={() => setRowTuneOpen(false)}
+            color={pomoBreak.color}
+            textColor={pomoBreak.ink}
+            opacity={pomoBreak.opacity}
+            blur={pomoBreak.blur}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, { breakBlur: v } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, { breakColor: next } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, { breakTextColor: next } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, { breakOpacity: next } as never)
+            }
+          />
+        </div>
+      )}
+
       {rowTuneOpen && storageKey === "todo" && (
         <div className="edit-panel-side">
           <HighlightTuning
@@ -1365,6 +1503,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             onOpacityChange={(next) =>
               updateWidgetSettings(storageKey, { rowOpacity: next } as never)
             }
+            onPreviewChange={(next) =>
+              previewWidgetSettings(storageKey, { rowColor: next } as never)
+            }
+            onPreviewOpacity={(next) =>
+              previewWidgetSettings(storageKey, { rowOpacity: next } as never)
+            }
+            onPreviewTextColor={(next) =>
+              previewWidgetSettings(storageKey, { rowTextColor: next } as never)
+            }
+            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
           />
         </div>
       )}
@@ -1400,6 +1548,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 [surfaceFields.opacity]: next,
               } as never)
             }
+            onPreviewChange={(next) =>
+              previewWidgetSettings(storageKey, { surfaceColor: next } as never)
+            }
+            onPreviewOpacity={(next) =>
+              previewWidgetSettings(storageKey, { [surfaceFields.opacity]: next } as never)
+            }
+            onPreviewTextColor={(next) =>
+              previewWidgetSettings(storageKey, { textColor: next } as never)
+            }
+            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
           />
         </div>
       )}

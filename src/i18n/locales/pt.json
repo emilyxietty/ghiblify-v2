@@ -262,7 +262,8 @@
       "highlightTune": "Ajustar destaque",
       "weatherLocationHint": "Sua localização é usada apenas para obter a previsão local - só sai deste dispositivo para o serviço de meteorologia.",
       "guideResize": "Redimensionar",
-      "surfaceHighlights": "Destaques"
+      "surfaceHighlights": "Destaques",
+      "pomodoroBreakColor": "Fundo da pausa"
     },
     "gapps": {
       "menuAria": "Apps do Google",

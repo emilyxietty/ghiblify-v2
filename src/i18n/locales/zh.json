@@ -268,7 +268,8 @@
       "highlightTune": "调整高亮",
       "weatherLocationHint": "您的位置仅用于获取本地天气预报，除天气服务外不会发送到任何地方。",
       "guideResize": "调整大小",
-      "surfaceHighlights": "高亮"
+      "surfaceHighlights": "高亮",
+      "pomodoroBreakColor": "休息背景"
     },
     "gapps": {
       "menuAria": "Google 应用",

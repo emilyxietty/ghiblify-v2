@@ -257,7 +257,8 @@
       "highlightTune": "Ajuster le surlignage",
       "weatherLocationHint": "Votre position sert uniquement à récupérer la météo locale - elle ne quitte cet appareil que vers le service météo.",
       "guideResize": "Redimensionner",
-      "surfaceHighlights": "Surlignages"
+      "surfaceHighlights": "Surlignages",
+      "pomodoroBreakColor": "Fond de la pause"
     },
     "gapps": {
       "menuAria": "Applications Google",

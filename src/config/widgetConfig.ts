@@ -214,11 +214,18 @@ export interface PomodoroSettings {
   /** 0–100 - chime volume. Independent of `opacity`; 0 is silent and
    *  is the same end state as `sound: "none"`. */
   soundVolume: number;
-  /** Focus-mode card base colour. null/absent = the theme's
-   *  --purple-dark. Swatches are deliberately deep tones so the
-   *  card's light text keeps its contrast. Break mode keeps its
-   *  signal-yellow regardless. */
+  /** FOCUS-mode background. null/absent = the theme's --purple-dark. */
   cardColor?: string | null;
+  textColor?: "auto" | "light" | "dark";
+  /** 0-100 wallpaper blur behind the focus card. */
+  blur: number;
+  /** BREAK-mode background, tuned independently: the two modes are
+   *  meant to read differently at a glance, so one shared colour
+   *  defeated the point. null/absent = the built-in signal blue. */
+  breakColor?: string | null;
+  breakOpacity: number;
+  breakBlur: number;
+  breakTextColor?: "auto" | "light" | "dark";
 }
 
 /** Pomodoro card swatches - deep tones only; the card's text is
@@ -625,6 +632,9 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     settings: {
       size: "medium",
       opacity: 100,
+      blur: 0,
+      breakOpacity: 100,
+      breakBlur: 0,
       sound: "musicbox",
       soundVolume: 70,
       cardColor: null,
