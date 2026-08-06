@@ -764,13 +764,22 @@ export const Widget: React.FC<WidgetProps> = ({
   // shared CSS vars on the shell. Non-Frost themes use --widget-opacity
   // for surface alpha; Frost uses --widget-blur for glass intensity.
   // Each is set as a 0–1 fraction.
+  // Quicklinks paints a different surface per mode, so the shell reads
+  // whichever pair belongs to the active one (see QuicklinksSettings).
+  const surfaceKeys =
+    storageKey === "quicklinks" && !widgets.quicklinks.settings.gridMode
+      ? { opacity: "listOpacity", blur: "listBlur" }
+      : { opacity: "opacity", blur: "blur" };
   const opacityFraction =
-    "opacity" in widgetSettings
-      ? Math.max(0, Math.min(1, Number(widgetSettings.opacity) / 100))
+    surfaceKeys.opacity in widgetSettings
+      ? Math.max(
+          0,
+          Math.min(1, Number(widgetSettings[surfaceKeys.opacity]) / 100),
+        )
       : undefined;
   const blurFraction =
-    "blur" in widgetSettings
-      ? Math.max(0, Math.min(1, Number(widgetSettings.blur) / 100))
+    surfaceKeys.blur in widgetSettings
+      ? Math.max(0, Math.min(1, Number(widgetSettings[surfaceKeys.blur]) / 100))
       : undefined;
   // Text highlight - a hex string turns it on, null/absent leaves it
   // off. The shell only publishes the vars; which text nodes actually
@@ -816,7 +825,8 @@ export const Widget: React.FC<WidgetProps> = ({
       }${
         (storageKey === "todo" ||
           storageKey === "weather" ||
-          storageKey === "quicklinks") &&
+          storageKey === "quicklinks" ||
+          storageKey === "googleApps") &&
         resolveSurfaceFrost(
           widgetSettings.frosted as boolean | undefined,
           appearance.theme

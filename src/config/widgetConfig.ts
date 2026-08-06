@@ -153,10 +153,17 @@ export interface QuicklinksSettings {
   height: number;
   gridMode: boolean;
   links: QuicklinkItem[];
-  /** 0–100 - controls the alpha of link tile surfaces (non-Frost). */
+  /** GRID mode surface: 0-100 alpha of the grid's own background. */
   opacity: number;
-  /** 0–100 - Frost blur intensity for tiles. */
+  /** GRID mode wallpaper blur, 0-100. */
   blur: number;
+  /** LIST mode surface: 0-100 alpha of the dropdown popup. Separate
+   *  from `opacity` because the two modes paint different surfaces -
+   *  a floating popup wants a solid backing to stay readable, while
+   *  the grid sits on the page and looks better bare. */
+  listOpacity: number;
+  /** LIST mode wallpaper blur, 0-100. */
+  listBlur: number;
   /** Frosted-glass surface (shell-level wallpaper blur) - same model
    *  as todo/weather. Default false. */
   frosted?: boolean;
@@ -307,7 +314,17 @@ export type BookmarksSettings = Record<string, never>;
 // flag (added in a later chunk).
 export type RightSidebarSettings = Record<string, never>;
 /** Google corner - waffle apps menu + account button. Stateless. */
-export type GoogleAppsSettings = Record<string, never>;
+export interface GoogleAppsSettings {
+  /** 0-100 - alpha of the cluster's surface (non-Frost). */
+  opacity: number;
+  /** 0-100 - Frost blur intensity. */
+  blur: number;
+  /** Explicit surface choice; undefined follows the palette. */
+  frosted?: boolean;
+  frostDark?: boolean;
+  /** Custom tint from the surface chips, as #rrggbb. */
+  surfaceColor?: string | null;
+}
 export interface NotesSettings {
   width: number;
   height: number;
@@ -556,8 +573,10 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       height: 200,
       gridMode: true,
       links: [],
-      opacity: 75,
-      blur: 10,
+      opacity: 0,
+      blur: 0,
+      listOpacity: 95,
+      listBlur: 0,
       // `frosted` intentionally absent - see the todo note.
       surfaceColor: null,
     },
@@ -657,7 +676,14 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // touch from the true corner so it clears the weather widget and
     // the screen edge.
     position: { x: 93, y: 5 },
-    settings: {},
+    // Matches the other surface widgets (todo / quicklinks) so the
+    // chips behave the same way here. Opacity 0 was tried first, to
+    // keep the shipped look bare, but it made every solid chip render
+    // fully transparent - the surface was there and invisible.
+    settings: { opacity: 75, blur: 10 },
+    // todoFrosted = the shared surface-chips row (theme / colours /
+    // glass), the same control todo and quicklinks use.
+    customControls: { todoFrosted: true },
   },
   rightSidebar: {
     name: "Right Sidebar",

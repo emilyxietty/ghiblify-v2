@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../../components/Button/Button";
-import { AddIcon, CancelIcon, DeleteOutlineIcon, EditIcon } from "../../../components/Icons/Icons";
+import { AddIcon, CancelIcon, DeleteOutlineIcon, DragIndicatorIcon, EditIcon } from "../../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -92,6 +92,14 @@ export const QuickLinks: React.FC = () => {
   const urlInputRef = useRef<HTMLInputElement | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  // Which SIDE of the hovered tile the link would land on. Without
+  // this there's no way to drop past the last item: every drop
+  // inserted AT the target index, so the indicator could only ever sit
+  // before a tile and the end of the list was unreachable. Mirrors the
+  // todo list, which solved the same problem. The ref shadows the
+  // state because onDrop fires before React has re-rendered.
+  const [dropPos, setDropPos] = useState<"before" | "after" | null>(null);
+  const dropPosRef = useRef<"before" | "after" | null>(null);
   const [addGridLink, setAddGridLink] = useState(false);
   // Right-click per-tile menu state - when set, ContextMenu opens
   // at (x, y) with edit/delete actions for the targeted link id.
@@ -220,10 +228,19 @@ export const QuickLinks: React.FC = () => {
     });
   };
 
-  const handleDragDrop = (from: number, to: number) => {
+  const handleDragDrop = (
+    from: number,
+    to: number,
+    pos: "before" | "after",
+  ) => {
+    if (from === to) return;
     const updated = [...quicklinksSettings.links];
     const [removed] = updated.splice(from, 1);
-    updated.splice(to, 0, removed);
+    // `to` indexes the ORIGINAL array; removing the dragged item first
+    // shifts everything after it down one.
+    let insert = to > from ? to - 1 : to;
+    if (pos === "after") insert += 1;
+    updated.splice(insert, 0, removed);
     updateWidgetSettings("quicklinks", { links: updated });
   };
 
@@ -242,17 +259,34 @@ export const QuickLinks: React.FC = () => {
           },
           onDragOver: (e: React.DragEvent) => {
             e.preventDefault();
+            // The list stacks vertically and the grid wraps
+            // horizontally, so each measures the axis it actually
+            // reads along.
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pos: "before" | "after" = showGrid
+              ? e.clientX - rect.left < rect.width / 2
+                ? "before"
+                : "after"
+              : e.clientY - rect.top < rect.height / 2
+                ? "before"
+                : "after";
+            dropPosRef.current = pos;
             setDragOverIndex(index);
+            setDropPos(pos);
           },
           onDrop: () => {
             if (draggedIndex === null) return;
-            handleDragDrop(draggedIndex, index);
+            handleDragDrop(draggedIndex, index, dropPosRef.current ?? "before");
+            dropPosRef.current = null;
             setDraggedIndex(null);
             setDragOverIndex(null);
+            setDropPos(null);
           },
           onDragEnd: () => {
+            dropPosRef.current = null;
             setDraggedIndex(null);
             setDragOverIndex(null);
+            setDropPos(null);
           },
         };
 
@@ -453,15 +487,28 @@ export const QuickLinks: React.FC = () => {
   // surfaceColor overrides the theme's --dark-rgb triplet locally.
   const qs = quicklinksSettings as unknown as {
     opacity?: number;
+    listOpacity?: number;
     frosted?: boolean;
     surfaceColor?: string | null;
   };
+  // Each mode paints a different surface (the grid's own background vs
+  // the floating popup), so they carry separate alphas.
+  const surfaceAlpha = showGrid ? (qs.opacity ?? 0) : (qs.listOpacity ?? 75);
   const qlFrosted = resolveSurfaceFrost(qs.frosted, appearance.theme);
   const surfaceStyle: Record<string, string | number> = {
-    "--ql-opacity": qlFrosted ? 0.14 : (qs.opacity ?? 50) / 100,
-    "--input-opacity": qlFrosted ? 0.14 : (qs.opacity ?? 50) / 100,
+    "--ql-opacity": qlFrosted ? 0.14 : surfaceAlpha / 100,
+    // Form fields keep a floor: the add/edit inputs need to read as
+    // inputs even when the surface around them is fully transparent.
+    "--input-opacity": qlFrosted
+      ? 0.14
+      : Math.max(0.35, surfaceAlpha / 100),
     ...(typeof qs.surfaceColor === "string"
       ? {
+          "--ql-surface-rgb": qs.surfaceColor
+            .replace("#", "")
+            .match(/../g)!
+            .map((h) => parseInt(h, 16))
+            .join(", "),
           "--dark-rgb": qs.surfaceColor
             .replace("#", "")
             .match(/../g)!
@@ -490,7 +537,11 @@ export const QuickLinks: React.FC = () => {
                   key={l.id}
                   className={`ql-grid-cell${
                     draggedIndex === index ? " dragging" : ""
-                  }${isDragOver ? " drag-over" : ""}${
+                  }${
+                    isDragOver
+                      ? ` drag-over drop-${dropPos ?? "before"}`
+                      : ""
+                  }${
                     showWidgetEdits ? "" : " draggable"
                   }`}
                   {...dndProps(index)}
@@ -583,30 +634,44 @@ export const QuickLinks: React.FC = () => {
                       key={l.id}
                       className={`quicklinksSettings-item${
                         draggedIndex === index ? " dragging" : ""
-                      }${dragOverIndex === index ? " drag-over" : ""}${
-                        showWidgetEdits ? "" : " draggable"
-                      }`}
-                      {...dndProps(index)}
+                      }${
+                        draggedIndex !== null && dragOverIndex === index
+                          ? ` drag-over drop-${dropPos ?? "before"}`
+                          : ""
+                      }${showWidgetEdits ? "" : " draggable"}`}
+                      onDragOver={dndProps(index).onDragOver}
+                      onDrop={dndProps(index).onDrop}
                       onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setLinkMenu({ id: l.id, x: e.clientX, y: e.clientY });
                       }}
                     >
-                      <Favicon
-                        url={l.url}
-                        size={32}
-                        className="ql-favicon"
-                        fallbackClassName="ql-favicon ql-favicon-fallback"
-                        fallback={l.title.charAt(0).toUpperCase()}
-                      />
                       <a
                         href={normalizeUrl(l.url)}
                         className="quicklinksSettings-link"
                         title={l.url}
                       >
-                        <span className="ql-title">{l.title}</span>
-                        <span className="ql-url">{l.url}</span>
+                        {/* Inside the anchor: the icon is part of the
+                            link's hit area, which is what people aim
+                            for. It used to be a sibling, so clicking it
+                            did nothing. */}
+                        <Favicon
+                          url={l.url}
+                          size={32}
+                          className="ql-favicon"
+                          fallbackClassName="ql-favicon ql-favicon-fallback"
+                          fallback={(l.title.trim() || l.url)
+                            .charAt(0)
+                            .toUpperCase()}
+                        />
+                        {/* One line only. A title is what the user
+                            chose to call the link; with none, the URL
+                            IS the label rather than a second row of
+                            small print under an empty one. */}
+                        <span className="ql-title">
+                          {l.title.trim() || l.url}
+                        </span>
                       </a>
                       <button
                         type="button"
@@ -633,6 +698,14 @@ export const QuickLinks: React.FC = () => {
                       >
                         <CancelIcon fontSize="small" />
                       </button>
+                      <span
+                        className="ql-drag-handle"
+                        aria-hidden="true"
+                        data-tooltip={t("todo.dragHandleTooltip")}
+                        {...dndProps(index)}
+                      >
+                        <DragIndicatorIcon style={{ fontSize: 14 }} />
+                      </span>
                     </li>
                   );
                 })

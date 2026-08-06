@@ -8,6 +8,35 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    /* Optional card behind the cluster, driven by the widget's opacity
+       slider (--widget-opacity is published on the shell). Defaults to
+       0, so the cluster stays bare like Google's own new-tab page
+       until the user asks for a surface. Frost is handled on the shell
+       instead - a backdrop-filter here would sample the empty shell
+       interior rather than the wallpaper. */
+    padding: 6px 8px;
+    /* Matches the shell's radius, not a pill. Frost paints on the
+       shell (it's the backdrop root), so any other radius here made the
+       solid fill a smaller, differently-shaped box than the glass -
+       the two have to describe the same surface. */
+    border-radius: var(--radius-lg);
+    /* --gapps-opacity is resolved in GoogleApps.tsx (it already folds
+       in the frost case), and --dark-rgb carries any custom tint the
+       surface chips wrote. */
+    background: rgba(
+        var(--dark-rgb, 31, 38, 32),
+        min(var(--gapps-opacity, 0), var(--surface-alpha-cap, 1))
+    );
+    /* The shadow scales with the same variable, so it fades in with
+       the surface instead of smudging a bare cluster. */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, calc(var(--gapps-opacity, 0) * 0.32));
+    transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+/* Frosted: the blur lives on the shell, so here we only round the
+   cluster to match and lift it with a shadow. */
+.widget.widget-surface-frost .gapps-widget {
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.32);
 }
 
 .gapps-btn {
@@ -21,8 +50,10 @@
     background: transparent;
     color: #ffffff;
     cursor: pointer;
+    /* Keeps the glyphs legible on a bright photo when the cluster has
+       no surface of its own. */
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
-    transition: background 140ms ease;
+    transition: background 140ms ease, filter 140ms ease;
 }
 
 .gapps-btn:hover,

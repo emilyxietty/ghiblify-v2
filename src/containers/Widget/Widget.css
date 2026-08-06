@@ -93,14 +93,17 @@
     pointer-events: auto;
 }
 
-/* Notes / weather / todo own their full footprint and internal
-   padding, so remove the universal widget-content inset for them.
+/* Notes / weather / todo / quicklinks / googleApps own their full
+   footprint and internal padding, so remove the universal
+   widget-content inset.
    This makes the SHELL box (where frost glass paints) coincide
    exactly with the inner card box (where the weather-mood card and
    todo/notes surfaces paint) - without it, glass backgrounds ran
    15px larger on every side than card backgrounds. */
 .widget[data-widget-key="notes"] .widget-content,
 .widget[data-widget-key="weather"] .widget-content,
+.widget[data-widget-key="googleApps"] .widget-content,
+.widget[data-widget-key="quicklinks"] .widget-content,
 .widget[data-widget-key="todo"] .widget-content {
     padding: 0;
 }
@@ -116,6 +119,18 @@
    look larger than the painted timer surface. */
 .widget[data-widget-key="pomodoro"] .widget-content {
     padding: 0;
+}
+
+/* Quicklinks blur. This MUST live on the shell - a backdrop-filter on
+   the grid wrapper or the list popup would sample the empty shell
+   interior instead of the wallpaper (the same trap the notes/frost
+   rules below document). Scaled by --widget-blur, which Widget.tsx
+   publishes as a 0-1 fraction from whichever blur setting belongs to
+   the active mode, so 0 means genuinely no blur. */
+.widget[data-widget-key="quicklinks"]:not(.widget-surface-frost) {
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px))
+        saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px)) saturate(1.05);
 }
 
 /* Frosted surface (todo, weather - any widget whose settings carry

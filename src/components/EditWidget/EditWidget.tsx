@@ -271,8 +271,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // glass with no surface alpha to tune) and `opacity` everywhere else.
   // Notes always persists this value as opacity: solid paper uses it as
   // alpha, while frosted paper maps it to blur strength in CSS.
-  const sliderField: "blur" | "opacity" =
-    isNotes ? "opacity" : isFrost ? "blur" : "opacity";
+  let sliderField: string = isNotes ? "opacity" : isFrost ? "blur" : "opacity";
+  // Quicklinks stores a separate pair per mode - the grid's own
+  // background and the list popup are different surfaces - so the
+  // slider has to write whichever belongs to the mode on screen.
+  if (
+    storageKey === "quicklinks" &&
+    !(widgetsCommitted.quicklinks.settings as QuicklinksSettings).gridMode
+  ) {
+    sliderField = sliderField === "blur" ? "listBlur" : "listOpacity";
+  }
   let supportsSlider =
     sliderField in (widgetConfig.settings as Record<string, unknown>);
   if (supportsSlider && !isFrost && storageKey === "weather") {

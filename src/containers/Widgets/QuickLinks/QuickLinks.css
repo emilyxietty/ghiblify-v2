@@ -43,6 +43,13 @@
     gap: 10px;
     padding: calc(12px * var(--pad-scale, 1));
     box-sizing: border-box;
+    /* The one surface for the whole widget. Transparent by default -
+       the links read fine straight over the wallpaper, and users who
+       want a card raise the opacity slider. */
+    background: rgba(
+        var(--dark-rgb),
+        min(var(--ql-opacity, 0), var(--surface-alpha-cap, 1))
+    );
     /* Tiles are inset 12px by this padding plus 4px by the scroll
        container, so they use the shell's radius minus 16 (see
        --radius-nested-* in App.css) and stay concentric with it. */
@@ -94,8 +101,32 @@
     opacity: 0.4;
 }
 
-.ql-grid-cell.drag-over {
-    box-shadow: inset 0 0 0 2px var(--ql-focus-ring);
+.ql-grid-cell {
+    position: relative;
+}
+
+/* Grid wraps horizontally, so the insertion line is vertical and sits
+   on the left or right edge of the hovered tile. The old full-ring
+   highlight said "swap with this tile", which isn't what a drop does. */
+.ql-grid-cell.drag-over::before {
+    content: "";
+    position: absolute;
+    top: 6%;
+    bottom: 6%;
+    width: 2.5px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    z-index: 6;
+}
+
+.ql-grid-cell.drag-over.drop-before::before {
+    left: -4px;
+}
+
+.ql-grid-cell.drag-over.drop-after::before {
+    right: -4px;
 }
 
 .ql-grid-link {
@@ -114,26 +145,22 @@
     box-sizing: border-box;
     text-decoration: none;
     border-radius: var(--radius-lg);
-    /* Link tile uses the active palette's --dark-rgb at the alpha set
-       by the per-widget opacity slider (--ql-opacity, 0–1, inline).
-       Text color follows --light, the palette's contrast pair. */
-    background: rgba(
-        var(--dark-rgb),
-        min(var(--ql-opacity, 0.5), var(--surface-alpha-cap, 1))
-    );
+    /* Tiles are transparent: the surface belongs to the CONTAINER now,
+       so one background covers the whole widget in both modes instead
+       of each tile carrying its own slab. Hover paints a light wash so
+       the tile still responds. */
+    background: transparent;
     color: var(--light);
     transition: background 120ms ease;
-    backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
-    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
 }
 
 .ql-grid-link:hover {
+    /* Same tint as the surface, just more of it - the way the todo list
+       does it. A white wash would shift the hue on every palette. */
     background: rgba(
         var(--dark-rgb),
         min(
-            calc(var(--ql-opacity, 0.5) + 0.2),
+            calc(var(--ql-opacity, 0) + 0.18),
             var(--surface-alpha-cap, 1)
         )
     );
@@ -368,14 +395,21 @@
 
 .quicklinksSettings-dropdown {
     min-width: min(420px, 90vw);
-    /* Always genuinely dark - popover content inside (links, inputs, empty
-       state) uses white text, so the surface needs to stay dark on every
-       palette including the light ones (Pastel/Cream/Mint/Bloom/Mono).
-       Don't tie this to theme --dark-rgb (which goes light on those). */
-    background: rgba(20, 22, 26, 0.92);
+    /* One surface for the whole popup, driven by the widget's opacity
+       slider, transparent by default. The shadow scales with it so a
+       transparent popup doesn't cast a slab of shade over the
+       wallpaper. */
+    /* Stays genuinely dark by default rather than following
+       --dark-rgb, which goes light on the light palettes while this
+       popup's contents are white text. A surface chip overrides it via
+       --ql-surface-rgb. */
+    background: rgba(
+        var(--ql-surface-rgb, 20, 22, 26),
+        min(var(--ql-opacity, 0.75), var(--surface-alpha-cap, 1))
+    );
     color: #ffffff;
     border-radius: var(--radius-lg);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, calc(var(--ql-opacity, 0.75) * 0.55));
     padding: 14px;
     box-sizing: border-box;
     z-index: 2001;
@@ -405,8 +439,10 @@
 .quicklinksSettings-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 4px 4px 4px 8px;
+    gap: 8px;
+    /* Thinner: one line of text, so the row only needs enough padding
+       to clear the favicon. */
+    padding: 2px 4px 2px 6px;
     border-radius: var(--radius-md);
     transition: background 120ms ease;
     /* Positioning context for the drop indicator below. */
@@ -421,24 +457,14 @@
     cursor: grabbing;
 }
 
-.quicklinksSettings-item {
-    /* Theme-tinted tile, alpha from per-widget opacity slider, capped
-       by --surface-alpha-cap so glass themes stay translucent. */
-    background: rgba(
-        var(--dark-rgb),
-        min(var(--ql-opacity, 0.5), var(--surface-alpha-cap, 1))
-    );
-    backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
-    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
-}
-
+/* Rows are transparent - the popup owns the surface (see above).
+   Hover deepens that same tint rather than washing a different colour
+   over it, matching the todo list. */
 .quicklinksSettings-item:hover {
     background: rgba(
         var(--dark-rgb),
         min(
-            calc(var(--ql-opacity, 0.5) + 0.2),
+            calc(var(--ql-opacity, 0) + 0.18),
             var(--surface-alpha-cap, 1)
         )
     );
@@ -454,45 +480,84 @@
     opacity: 0.5;
 }
 
-/* Drop indicator. This was an inset box-shadow in a hardcoded Material
-   blue, which ignored the palette and, being inset, got clipped by the
-   tile's own rounding into a stubby bar sitting inside the row. A
-   floating insertion line reads as "the link lands here" instead of
-   "this tile has a border", and it matches the bookmarks panel, which
-   is the same reorder interaction. */
+/* Drag handle, mirroring the todo list: sits at the right end of the
+   row and fades in on hover so it doesn't permanently clutter it.
+   Dragging starts HERE rather than on the row, so a slightly-moved
+   click on the link or its buttons can't turn into a reorder. */
+.ql-drag-handle {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    color: rgba(255, 255, 255, 0.45);
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 160ms ease;
+}
+
+.quicklinksSettings-item:hover .ql-drag-handle,
+.quicklinksSettings-item:focus-within .ql-drag-handle,
+.quicklinksSettings-item.dragging .ql-drag-handle {
+    opacity: 1;
+}
+
+.ql-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Drop-line indicator, same model as the todo list: a bar on the top OR
+   bottom edge of the hovered row depending on which half the cursor is
+   in, so the last position in the list is reachable. (It was an inset
+   box-shadow in a hardcoded Material blue, always at the top, clipped
+   by the tile's own rounding.) */
 .quicklinksSettings-item.drag-over::before {
     content: "";
     position: absolute;
     left: 4px;
     right: 4px;
-    top: -1px;
-    height: 2px;
+    height: 2.5px;
     border-radius: 2px;
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
     pointer-events: none;
+    z-index: 6;
 }
 
+.quicklinksSettings-item.drag-over.drop-before::before {
+    top: -4px;
+}
+
+.quicklinksSettings-item.drag-over.drop-after::before {
+    bottom: -4px;
+}
+
+/* Smaller alongside the thinner single-line row - a 22px icon next to
+   one 13px line left the favicon driving the row height. */
 .ql-favicon {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     background-size: cover;
     background-position: center;
     border-radius: var(--radius-xs);
-    flex: 0 0 22px;
+    flex: 0 0 18px;
     object-fit: contain;
 }
 
 .quicklinksSettings-link {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
+    align-items: center;
+    /* Favicon + label live in here now, so the gap moves off the row. */
+    gap: 8px;
+    /* One line now (title, or the URL when untitled), so the row is a
+       single flex line and the vertical padding drops accordingly. */
+    min-width: 0;
+    flex: 1 1 auto;
     border: none;
     background: transparent;
     color: var(--light);
     text-align: left;
-    padding: 8px 10px;
+    padding: 4px 8px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     flex: 1;
@@ -516,15 +581,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 100%;
-}
-
-.ql-url {
-    font-size: 11px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
+    /* Ellipsis kicks in at whichever bites first: the row's own width,
+       or this ceiling. Long untitled links are URLs, which have no
+       natural wrap point and would otherwise stretch the widget. */
+    max-width: max(100px, 40vw);
+    min-width: 0;
 }
 
 .quicklinksSettings-empty {
@@ -543,15 +604,21 @@
     color: var(--ql-text-muted, color-mix(in srgb, var(--light) 60%, transparent));
     /* Hidden until the row is hovered / keyboard-focused - resting
        rows show just favicon + link. */
+    /* Sized to match the todo list's row buttons so both lists read as
+       the same component. `padding: 6px` around a 20px glyph made these
+       noticeably chunkier than todo's fixed 22px box. */
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    padding: 0;
+    font-size: 16px;
     opacity: 0;
-    transition: opacity 120ms ease;
     cursor: pointer;
-    padding: 6px;
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 120ms ease, color 120ms ease;
+    transition: background 160ms ease, color 160ms ease, opacity 160ms ease;
 }
 
 .quicklinksSettings-delete:hover {

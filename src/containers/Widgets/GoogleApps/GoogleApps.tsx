@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AccountCircleIcon, AppsIcon } from "../../../components/Icons/Icons";
 import { useT } from "../../../i18n/i18n";
+import { resolveSurfaceFrost } from "../../../config/widgetConfig";
+import { useAppContext } from "../../../contexts/AppContext";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import {
   hasPermission,
   requestPermission,
@@ -143,6 +146,8 @@ const AppTile: React.FC<{ name: string; url: string; slug: string }> = ({
 
 export const GoogleApps: React.FC = () => {
   const t = useT();
+  const { settings } = useWidgetSettings("googleApps");
+  const { appearance } = useAppContext();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -195,8 +200,32 @@ export const GoogleApps: React.FC = () => {
     };
   }, [open]);
 
+  // Surface plumbing, mirroring QuickLinks: the chips write
+  // `surfaceColor` as a hex string, but the CSS paints
+  // `rgba(var(--dark-rgb), a)`, so it has to be unpacked into a
+  // triple here. Frost is drawn on the shell, so the solid fill
+  // collapses to a whisper when glass is on rather than stacking two
+  // surfaces.
+  const gFrosted = resolveSurfaceFrost(settings.frosted, appearance.theme);
+  const surfaceStyle: Record<string, string | number> = {
+    "--gapps-opacity": gFrosted ? 0.14 : (settings.opacity ?? 75) / 100,
+    ...(typeof settings.surfaceColor === "string"
+      ? {
+          "--dark-rgb": settings.surfaceColor
+            .replace("#", "")
+            .match(/../g)!
+            .map((h) => parseInt(h, 16))
+            .join(", "),
+        }
+      : {}),
+  };
+
   return (
-    <div ref={rootRef} className="gapps-widget widget-header">
+    <div
+      ref={rootRef}
+      className="gapps-widget widget-header"
+      style={surfaceStyle as React.CSSProperties}
+    >
       <button
         type="button"
         className={`gapps-btn${open ? " is-open" : ""}`}
