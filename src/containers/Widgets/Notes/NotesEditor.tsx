@@ -26,17 +26,21 @@ import {
   $getRoot,
   $getSelection,
   $isRangeSelection,
+  $isTextNode,
   COMMAND_PRIORITY_LOW,
   EditorState,
   ElementFormatType,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
+  INDENT_CONTENT_COMMAND,
+  OUTDENT_CONTENT_COMMAND,
   SELECTION_CHANGE_COMMAND,
   TextFormatType,
 } from "lexical";
 import {
   $isListNode,
   INSERT_CHECK_LIST_COMMAND,
+  INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
   ListItemNode,
   ListNode,
@@ -50,9 +54,18 @@ import {
   HeadingNode,
   QuoteNode,
 } from "@lexical/rich-text";
-import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
 import { AutoLinkPlugin } from "@lexical/react/LexicalAutoLinkPlugin";
 import { ClickableLinkPlugin } from "@lexical/react/LexicalClickableLinkPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
+import {
+  $createHorizontalRuleNode,
+  $isHorizontalRuleNode,
+  HorizontalRuleNode,
+  INSERT_HORIZONTAL_RULE_COMMAND,
+} from "@lexical/react/LexicalHorizontalRuleNode";
+import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 import {
   $getSelectionStyleValueForProperty,
   $patchStyleText,
@@ -74,6 +87,7 @@ import {
   QUOTE,
   STRIKETHROUGH,
   UNORDERED_LIST,
+  type ElementTransformer,
 } from "@lexical/markdown";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
@@ -167,6 +181,7 @@ const $toPlainTextMirror = (): string => {
     .getChildren()
     .forEach((node) => {
       if ($isListNode(node)) walkList(node, 0);
+      else if ($isHorizontalRuleNode(node)) lines.push("---");
       else lines.push(node.getTextContent());
     });
   return lines.join("\n");
@@ -264,10 +279,30 @@ const ExternalSyncPlugin: React.FC<{
 
 // --- Floating toolbar --------------------------------------------------------
 
+// Divider transformer (typing "---" / "***" / "___" on its own line) —
+// @lexical/markdown doesn't ship one because HorizontalRuleNode lives
+// in @lexical/react; this mirrors the playground's.
+const HORIZONTAL_RULE: ElementTransformer = {
+  dependencies: [HorizontalRuleNode],
+  export: (node) => ($isHorizontalRuleNode(node) ? "---" : null),
+  regExp: /^(---|\*\*\*|___)\s?$/,
+  replace: (parentNode, _children, _match, isImport) => {
+    const line = $createHorizontalRuleNode();
+    if (isImport || parentNode.getNextSibling() != null) {
+      parentNode.replace(line);
+    } else {
+      parentNode.insertBefore(line);
+    }
+    line.selectNext();
+  },
+  type: "element",
+};
+
 // Only the markdown transformers that make sense in a sticky note —
 // deliberately no code blocks (would pull @lexical/code) and no
 // image/table syntax.
 const MARKDOWN_TRANSFORMERS = [
+  HORIZONTAL_RULE,
   HEADING,
   QUOTE,
   UNORDERED_LIST,
@@ -347,6 +382,17 @@ const TEXT_COLORS = [
   { key: "palePink", labelKey: "notes.toolbar.colors.palePink", css: "#f3c9d4" },
   { key: "paleBlue", labelKey: "notes.toolbar.colors.paleBlue", css: "#bcd6ef" },
   { key: "paleGreen", labelKey: "notes.toolbar.colors.paleGreen", css: "#c3ddc0" },
+];
+
+// Font-size steps, em-based so they scale with the surface's base size
+// (14px on the canvas note, smaller in dock cells) instead of pinning
+// one absolute px across both. Empty css = the base size (clears the
+// inline style). glyphPx sizes the "A" preview in the menu rows.
+const FONT_SIZES = [
+  { key: "small", css: "0.85em", glyphPx: 10, labelKey: "notes.toolbar.sizes.small" },
+  { key: "normal", css: "", glyphPx: 12, labelKey: "notes.toolbar.sizes.normal" },
+  { key: "large", css: "1.25em", glyphPx: 15, labelKey: "notes.toolbar.sizes.large" },
+  { key: "huge", css: "1.6em", glyphPx: 18, labelKey: "notes.toolbar.sizes.huge" },
 ];
 
 const ALIGN_CYCLE: ("left" | "center" | "right")[] = [
@@ -446,7 +492,94 @@ const CheckGlyph = () => (
   </svg>
 );
 
-type ActiveListType = "bullet" | "check" | null;
+const NumberedGlyph = () => (
+  <svg className="notes-tb-glyph" viewBox="0 0 16 16" aria-hidden>
+    {["1", "2", "3"].map((n, i) => (
+      <text
+        key={n}
+        x="1"
+        y={5.6 + i * 4}
+        fontSize="5.2"
+        fontWeight="700"
+        fill="currentColor"
+      >
+        {n}
+      </text>
+    ))}
+    <path
+      d="M6.5 4h7M6.5 8h7M6.5 12h7"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const IndentGlyph: React.FC<{ out?: boolean }> = ({ out }) => (
+  <svg className="notes-tb-glyph" viewBox="0 0 16 16" aria-hidden>
+    <path
+      d="M2 3h12M8 6.7h6M8 10h6M2 13.3h12"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    {out ? (
+      <path d="M5.6 6.4 2.6 8.35l3 1.95z" fill="currentColor" />
+    ) : (
+      <path d="M2.6 6.4l3 1.95-3 1.95z" fill="currentColor" />
+    )}
+  </svg>
+);
+
+const DividerGlyph = () => (
+  <svg className="notes-tb-glyph" viewBox="0 0 16 16" aria-hidden>
+    <path
+      d="M2 8h12"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+    />
+    <path
+      d="M4 3.5h8M4 12.5h8"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      opacity="0.4"
+    />
+  </svg>
+);
+
+const LinkGlyph = () => (
+  <svg
+    className="notes-tb-glyph"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    aria-hidden
+  >
+    <path d="M6.4 9.6 9.6 6.4" />
+    <path d="M7.3 4.6l1.6-1.6a2.5 2.5 0 0 1 3.5 0l.6.6a2.5 2.5 0 0 1 0 3.5L11.4 8.7" />
+    <path d="M8.7 11.4l-1.6 1.6a2.5 2.5 0 0 1-3.5 0l-.6-.6a2.5 2.5 0 0 1 0-3.5l1.6-1.6" />
+  </svg>
+);
+
+const ClearFormatGlyph = () => (
+  <svg
+    className="notes-tb-glyph"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    aria-hidden
+  >
+    <path d="M3 3.2h8M7 3.2 5.2 12.8" strokeWidth="1.6" />
+    <path d="M10.2 10.2l4 4M14.2 10.2l-4 4" strokeWidth="1.4" />
+  </svg>
+);
+
+type ActiveListType = "bullet" | "check" | "number" | null;
 type ActiveBlockType = "h1" | "h2" | "h3" | "quote" | null;
 
 // Toolbar height + gap: less viewport headroom than this above the
@@ -466,11 +599,21 @@ const FloatingToolbarPlugin: React.FC = () => {
   const [align, setAlign] = useState<ElementFormatType>("left");
   const [markColor, setMarkColor] = useState<string>("");
   const [textColor, setTextColor] = useState<string>("");
-  // One drop-up menu at a time: marker palette, ink colour, or block
-  // type. (Alignment is a cycle button, not a menu.)
-  const [openGroup, setOpenGroup] = useState<"mark" | "ink" | "block" | null>(
-    null,
-  );
+  const [fontSize, setFontSize] = useState<string>("");
+  // URL of the link the caret currently sits in ("" = not in a link),
+  // and the draft being typed in the link popover's input.
+  const [linkUrl, setLinkUrl] = useState<string>("");
+  const [linkDraft, setLinkDraft] = useState<string>("");
+  const [hasSelection, setHasSelection] = useState(false);
+  // One drop-up menu at a time: marker palette, ink colour, font size,
+  // block type, or the link popover. (Alignment is a cycle button.)
+  const [openGroup, setOpenGroup] = useState<
+    "mark" | "ink" | "size" | "block" | "link" | null
+  >(null);
+  // The link popover moves focus INTO the toolbar (its URL input), so
+  // both the blur-hide listener and the focus gate in refresh() need
+  // to recognise the toolbar as "still ours".
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
   // The menus open UPWARD by default (drop-up above the toolbar). When
   // the note sits near the top of the screen that overflows off-screen,
   // so we measure the open menu and flip it below the button instead.
@@ -498,15 +641,15 @@ const FloatingToolbarPlugin: React.FC = () => {
       // the caret's block. Focus is the visibility gate (mirrors the
       // blur-hide listener below).
       const rootEl = editor.getRootElement();
-      if (
-        !$isRangeSelection(selection) ||
-        !rootEl ||
-        document.activeElement !== rootEl
-      ) {
+      const focused =
+        document.activeElement === rootEl ||
+        !!toolbarRef.current?.contains(document.activeElement);
+      if (!$isRangeSelection(selection) || !rootEl || !focused) {
         setPos(null);
         setOpenGroup(null);
         return;
       }
+      setHasSelection(!selection.isCollapsed());
       const next: Record<string, boolean> = {};
       TEXT_FORMATS.forEach(({ format }) => {
         next[format] = selection.hasFormat(format);
@@ -520,9 +663,17 @@ const FloatingToolbarPlugin: React.FC = () => {
         listNode && $isListNode(listNode)
           ? listNode.getListType() === "check"
             ? "check"
-            : "bullet"
+            : listNode.getListType() === "number"
+              ? "number"
+              : "bullet"
           : null,
       );
+      // AutoLinkNode extends LinkNode, so typed links match too.
+      const linkNode = $getNearestNodeOfType(
+        selection.anchor.getNode(),
+        LinkNode,
+      );
+      setLinkUrl(linkNode ? linkNode.getURL() : "");
       const top = selection.anchor.getNode().getTopLevelElement();
       setBlockType(
         $isHeadingNode(top)
@@ -538,12 +689,19 @@ const FloatingToolbarPlugin: React.FC = () => {
       setTextColor(
         $getSelectionStyleValueForProperty(selection, "color", ""),
       );
+      setFontSize(
+        $getSelectionStyleValueForProperty(selection, "font-size", ""),
+      );
       // Anchored to the NOTE, not the selection — a fixed bar above the
       // paper's top edge ("popup at the top"), so it neither chases the
-      // caret around nor covers the line being edited. When the note
-      // touches the top of the screen the bar flips under the top edge
-      // instead of sliding off-screen.
-      const rect = rootEl.getBoundingClientRect();
+      // caret around nor covers the line being edited. The anchor is
+      // the PAPER (.notes-widget), not the contenteditable: the text
+      // area sits ~18% inside the painted border, so anchoring to it
+      // parked the bar on top of the note's decorative edge. When the
+      // note touches the top of the screen the bar flips under the top
+      // edge instead of sliding off-screen.
+      const paperEl = rootEl.closest(".notes-widget") ?? rootEl;
+      const rect = paperEl.getBoundingClientRect();
       const flip = rect.top < TOOLBAR_CLEARANCE_PX;
       setBelow(flip);
       setPos({ x: rect.left + rect.width / 2, y: rect.top });
@@ -572,7 +730,13 @@ const FloatingToolbarPlugin: React.FC = () => {
   // didn't move. Toolbar buttons preventDefault on mousedown so
   // pressing them doesn't count as leaving.
   useEffect(() => {
-    const onBlur = () => setPos(null);
+    // Focus moving into the toolbar (the link popover's input) isn't
+    // "leaving" — the bar stays while the URL is being edited.
+    const onBlur = (e: FocusEvent) => {
+      const to = e.relatedTarget as Node | null;
+      if (to && toolbarRef.current?.contains(to)) return;
+      setPos(null);
+    };
     const onFocus = () => refresh();
     return editor.registerRootListener((rootElement, prevRootElement) => {
       prevRootElement?.removeEventListener("blur", onBlur);
@@ -600,10 +764,12 @@ const FloatingToolbarPlugin: React.FC = () => {
         ? listNode.getListType()
         : null;
     });
-    if (current === (type === "check" ? "check" : "bullet")) {
+    if (current === type) {
       editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
     } else if (type === "check") {
       editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+    } else if (type === "number") {
+      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
     } else {
       editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
     }
@@ -626,6 +792,61 @@ const FloatingToolbarPlugin: React.FC = () => {
       const selection = $getSelection();
       if (!$isRangeSelection(selection)) return;
       $patchStyleText(selection, { color: css === "" ? null : css });
+    });
+  };
+
+  const applyFontSize = (css: string) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
+      $patchStyleText(selection, { "font-size": css === "" ? null : css });
+    });
+  };
+
+  const applyLink = (raw: string) => {
+    const url = raw.trim();
+    if (!url) {
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+    } else {
+      editor.dispatchCommand(
+        TOGGLE_LINK_COMMAND,
+        /^(https?:\/\/|mailto:)/i.test(url) ? url : `https://${url}`,
+      );
+    }
+    setOpenGroup(null);
+    editor.focus();
+  };
+
+  // Strip everything character-level from the selection: toggled
+  // formats (bold/italic/…) and inline styles (colour, highlight,
+  // size). extract() splits the boundary text nodes so only the
+  // selected span is reset. Block-level structure (headings, lists)
+  // is left alone — the block-type menu handles those explicitly.
+  const clearFormatting = () => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
+      if (selection.isCollapsed()) {
+        // Nothing selected: reset the PENDING formats so what's typed
+        // next comes out plain.
+        (
+          ["bold", "italic", "underline", "strikethrough", "highlight"] as const
+        ).forEach((format) => {
+          if (selection.hasFormat(format)) selection.toggleFormat(format);
+        });
+        $patchStyleText(selection, {
+          color: null,
+          "background-color": null,
+          "font-size": null,
+        });
+        return;
+      }
+      selection.extract().forEach((node) => {
+        if ($isTextNode(node)) {
+          node.setFormat(0);
+          node.setStyle("");
+        }
+      });
     });
   };
 
@@ -678,6 +899,7 @@ const FloatingToolbarPlugin: React.FC = () => {
 
   return createPortal(
     <div
+      ref={toolbarRef}
       className={`notes-toolbar${below ? " below" : ""}`}
       style={{ left: pos.x, top: pos.y }}
       role="toolbar"
@@ -806,6 +1028,51 @@ const FloatingToolbarPlugin: React.FC = () => {
       <span className="notes-tb-group">
         <button
           type="button"
+          className={`notes-tb-btn${fontSize ? " active" : ""}`}
+          aria-label={t("notes.toolbar.fontSize")}
+          aria-haspopup="true"
+          aria-expanded={openGroup === "size"}
+          data-tip={t("notes.toolbar.fontSize")}
+          onClick={() => setOpenGroup((g) => (g === "size" ? null : "size"))}
+        >
+          <span className="notes-tb-glyph notes-tb-h">Aa</span>
+        </button>
+        {openGroup === "size" && (
+          <div
+            ref={menuRef}
+            className={`notes-tb-menu${menuBelow ? " below" : ""}`}
+            role="menu"
+          >
+            {FONT_SIZES.map(({ key, css, glyphPx, labelKey }) => {
+              const isActive = fontSize === css;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={isActive}
+                  className={`notes-tb-menu-item${isActive ? " active" : ""}`}
+                  onClick={() => {
+                    applyFontSize(css);
+                    setOpenGroup(null);
+                  }}
+                >
+                  <span
+                    className="notes-tb-glyph notes-tb-a"
+                    style={{ fontSize: glyphPx }}
+                  >
+                    A
+                  </span>
+                  {t(labelKey)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </span>
+      <span className="notes-tb-group">
+        <button
+          type="button"
           className={`notes-tb-btn${blockType ? " active" : ""}`}
           aria-label={t("notes.toolbar.blockType")}
           aria-haspopup="true"
@@ -841,6 +1108,80 @@ const FloatingToolbarPlugin: React.FC = () => {
           </div>
         )}
       </span>
+      <span className="notes-tb-group">
+        {/* Link: disabled with nothing to act on (no selection AND not
+            inside an existing link). With the caret in a link, opens
+            pre-filled for editing; Apply on empty input = unlink. */}
+        <button
+          type="button"
+          className={`notes-tb-btn${linkUrl ? " active" : ""}`}
+          aria-label={t("notes.toolbar.link")}
+          aria-haspopup="true"
+          aria-expanded={openGroup === "link"}
+          data-tip={t("notes.toolbar.link")}
+          disabled={!hasSelection && !linkUrl}
+          onClick={() => {
+            setLinkDraft(linkUrl);
+            setOpenGroup((g) => (g === "link" ? null : "link"));
+          }}
+        >
+          <LinkGlyph />
+        </button>
+        {openGroup === "link" && (
+          <div
+            ref={menuRef}
+            className={`notes-tb-menu notes-tb-link${menuBelow ? " below" : ""}`}
+            role="menu"
+          >
+            <input
+              type="text"
+              className="notes-tb-link-input"
+              value={linkDraft}
+              placeholder={t("notes.toolbar.linkPlaceholder")}
+              autoFocus
+              onChange={(e) => setLinkDraft(e.target.value)}
+              // The toolbar container preventDefaults mousedown to keep
+              // the editor selection alive — the input needs the default
+              // back or it can never take focus.
+              onMouseDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyLink(linkDraft);
+                } else if (e.key === "Escape") {
+                  setOpenGroup(null);
+                  editor.focus();
+                }
+              }}
+              onBlur={(e) => {
+                // Leaving the input for anywhere outside the toolbar or
+                // editor dismisses the bar (the editor's own blur-hide
+                // can't see this — the editor already lost focus when
+                // the input took it).
+                const to = e.relatedTarget as Node | null;
+                const rootEl = editor.getRootElement();
+                if (
+                  to &&
+                  (toolbarRef.current?.contains(to) || rootEl?.contains(to))
+                )
+                  return;
+                setOpenGroup(null);
+                setPos(null);
+              }}
+            />
+            {linkUrl && (
+              <button
+                type="button"
+                role="menuitem"
+                className="notes-tb-menu-item"
+                onClick={() => applyLink("")}
+              >
+                {t("notes.toolbar.linkRemove")}
+              </button>
+            )}
+          </div>
+        )}
+      </span>
       <span className="notes-tb-divider" />
       <button
         type="button"
@@ -854,6 +1195,16 @@ const FloatingToolbarPlugin: React.FC = () => {
       </button>
       <button
         type="button"
+        className={`notes-tb-btn${listType === "number" ? " active" : ""}`}
+        aria-label={t("notes.toolbar.numberedList")}
+        aria-pressed={listType === "number"}
+        data-tip={t("notes.toolbar.numberedList")}
+        onClick={() => toggleList("number")}
+      >
+        <NumberedGlyph />
+      </button>
+      <button
+        type="button"
         className={`notes-tb-btn${listType === "check" ? " active" : ""}`}
         aria-label={t("notes.toolbar.checkList")}
         aria-pressed={listType === "check"}
@@ -861,6 +1212,28 @@ const FloatingToolbarPlugin: React.FC = () => {
         onClick={() => toggleList("check")}
       >
         <CheckGlyph />
+      </button>
+      <button
+        type="button"
+        className="notes-tb-btn"
+        aria-label={t("notes.toolbar.outdent")}
+        data-tip={t("notes.toolbar.outdent")}
+        onClick={() =>
+          editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined)
+        }
+      >
+        <IndentGlyph out />
+      </button>
+      <button
+        type="button"
+        className="notes-tb-btn"
+        aria-label={t("notes.toolbar.indent")}
+        data-tip={t("notes.toolbar.indent")}
+        onClick={() =>
+          editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
+        }
+      >
+        <IndentGlyph />
       </button>
       <span className="notes-tb-divider" />
       {/* Alignment cycles in place: left → center → right → left. The
@@ -876,6 +1249,26 @@ const FloatingToolbarPlugin: React.FC = () => {
         onClick={cycleAlign}
       >
         <AlignGlyph align={alignForGlyph} />
+      </button>
+      <button
+        type="button"
+        className="notes-tb-btn"
+        aria-label={t("notes.toolbar.divider")}
+        data-tip={t("notes.toolbar.divider")}
+        onClick={() =>
+          editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)
+        }
+      >
+        <DividerGlyph />
+      </button>
+      <button
+        type="button"
+        className="notes-tb-btn"
+        aria-label={t("notes.toolbar.clearFormat")}
+        data-tip={t("notes.toolbar.clearFormat")}
+        onClick={clearFormatting}
+      >
+        <ClearFormatGlyph />
       </button>
     </div>,
     document.body,
@@ -917,6 +1310,7 @@ const NotesEditor: React.FC = () => {
         QuoteNode,
         LinkNode,
         AutoLinkNode,
+        HorizontalRuleNode,
       ],
       editorState: buildInitialEditorState(
         settings.richContent,
@@ -927,6 +1321,7 @@ const NotesEditor: React.FC = () => {
         heading: { h1: "ne-h1", h2: "ne-h2", h3: "ne-h3" },
         quote: "ne-quote",
         link: "ne-link",
+        hr: "ne-hr",
         text: {
           bold: "ne-bold",
           italic: "ne-italic",
@@ -973,6 +1368,12 @@ const NotesEditor: React.FC = () => {
       <AutoLinkPlugin matchers={LINK_MATCHERS} />
       {/* Links open on Cmd/Ctrl+click while editing. */}
       <ClickableLinkPlugin />
+      {/* Registers TOGGLE_LINK_COMMAND for the toolbar's link popover. */}
+      <LinkPlugin />
+      {/* Tab / Shift+Tab indent the caret's block (nested lists etc.). */}
+      <TabIndentationPlugin />
+      {/* Registers INSERT_HORIZONTAL_RULE_COMMAND for the divider button. */}
+      <HorizontalRulePlugin />
       {/* Markdown shortcuts fire on TYPING only — stored legacy text
           is never reinterpreted, so a note that literally says
           "# groceries" keeps looking exactly like it always did. */}

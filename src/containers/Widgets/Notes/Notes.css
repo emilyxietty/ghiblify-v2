@@ -217,6 +217,18 @@
     cursor: pointer;
 }
 
+/* Divider — a hand-drawn-feeling rule in the note's ink. Selected
+   state comes from Lexical (it stamps `selected` on the <hr>). */
+.notes-editor .ne-hr {
+    border: none;
+    border-top: 1.5px solid rgba(74, 56, 38, 0.35);
+    margin: 8px 6px;
+}
+
+.notes-editor .ne-hr.selected {
+    border-top-color: rgba(74, 56, 38, 0.7);
+}
+
 /* --- Lists ------------------------------------------------------------ */
 
 .notes-editor .ne-ul,
@@ -290,6 +302,11 @@
     position: fixed;
     transform: translate(-50%, calc(-100% - 8px));
     display: flex;
+    /* Enough controls now that one row would dwarf the 260px note —
+       cap the width and let the bar wrap into two centered rows. */
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 320px;
     align-items: center;
     gap: 2px;
     padding: 4px;
@@ -456,6 +473,30 @@
 
 .notes-tb-menu-item.active {
     background: rgba(74, 56, 38, 0.18);
+}
+
+/* Link popover — a drop-up like the colour menus, but carrying a URL
+   input instead of radio rows. */
+.notes-tb-link {
+    min-width: 180px;
+    gap: 3px;
+}
+
+.notes-tb-link-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 7px;
+    border: 1px solid rgba(74, 56, 38, 0.3);
+    border-radius: 6px;
+    background: #fff8ea;
+    color: #4a3826;
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+}
+
+.notes-tb-link-input:focus-visible {
+    border-color: rgba(74, 56, 38, 0.55);
 }
 
 /* Ink-colour "A" glyph. */
