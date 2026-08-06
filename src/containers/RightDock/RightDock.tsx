@@ -1,5 +1,5 @@
 /**
- * Right Dock — slide-in right rail that hosts widgets, mirroring the
+ * Right Dock - slide-in right rail that hosts widgets, mirroring the
  * bookmarks panel's edge-hover UX. Always mounted at the App root so
  * we can detect when the user toggles the rightSidebar widget on
  * (and show a transient hint callout the same way bookmarks does).
@@ -11,10 +11,10 @@
  *     reaches the right edge, hides again when the cursor moves
  *     clear of the dock. Esc also closes.
  *
- * Membership picker — a footer "Settings" button reveals a small
+ * Membership picker - a footer "Settings" button reveals a small
  * grid of widget icons (mirrors the LeftSidebar widgets row).
  * Clicking each icon toggles `inRightSidebar` for that widget. This
- * is the only place to add/remove dock widgets — keeps the per-
+ * is the only place to add/remove dock widgets - keeps the per-
  * widget right-click menu short and discoverable in one spot.
  */
 
@@ -40,7 +40,7 @@ const DOCK_EDGE_TRIGGER = 10;
 //  - rightSidebar (the dock toggle itself)
 //  - bookmarks (mutually exclusive with the dock at the toggle level)
 //  - greeting + quicklinks + searchbar (their canvas layouts don't
-//    compress cleanly into the dock column — name input wraps
+//    compress cleanly into the dock column - name input wraps
 //    awkwardly, link grid clips, search input gets stubby).
 //  - pomodoro (the timer card has fixed internals + a wide shadow
 //    that don't reflow gracefully into the column; canvas-only).
@@ -109,7 +109,7 @@ export const RightDock: React.FC<RightDockProps> = ({
   // flight, suspend the edge trigger so swinging the cursor past the
   // right edge during a drag can't hijack it with a sidebar reveal.
   // While a right-click context menu is active anywhere, also
-  // suspend auto-close — the menu portal renders outside the dock's
+  // suspend auto-close - the menu portal renders outside the dock's
   // bounds, so moving the cursor onto its items would otherwise
   // close the dock and unmount the menu's owner.
   useEffect(() => {
@@ -126,7 +126,7 @@ export const RightDock: React.FC<RightDockProps> = ({
       if (e.clientX > w - DOCK_EDGE_TRIGGER) setIsOpen(true);
       else if (isOpen && e.clientX < w - dockWidth) {
         setIsOpen(false);
-        // Auto-close the picker when the dock itself closes — keeps
+        // Auto-close the picker when the dock itself closes - keeps
         // the next open clean rather than reopening to a stale picker.
         setPickerOpen(false);
       }
@@ -158,7 +158,7 @@ export const RightDock: React.FC<RightDockProps> = ({
     else el.setAttribute("inert", "");
   }, [isOpen]);
 
-  // Peek-open trigger — fired by AppContext.setWidgetInRightSidebar
+  // Peek-open trigger - fired by AppContext.setWidgetInRightSidebar
   // whenever a widget is routed into the dock. Auto-closes after a
   // short window so the user sees the widget land but the dock
   // doesn't permanently take over the right edge.
@@ -216,7 +216,7 @@ export const RightDock: React.FC<RightDockProps> = ({
               {PICKER_WIDGETS.map(({ key, icon }) => {
                 const active = widgets[key].inRightSidebar;
                 const name = t(`widgets.names.${key}`);
-                // Mirror the LeftSidebar's avatar tile — show the
+                // Mirror the LeftSidebar's avatar tile - show the
                 // chosen avatar's image instead of the generic Face
                 // glyph so the picker reflects the user's selection.
                 let renderedIcon = icon;

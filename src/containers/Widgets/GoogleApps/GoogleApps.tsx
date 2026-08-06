@@ -7,26 +7,26 @@ import {
 } from "../../../utils/chromePermissions";
 import "./GoogleApps.css";
 
-// Google-corner widget — a recreation of the waffle (apps menu) +
+// Google-corner widget - a recreation of the waffle (apps menu) +
 // account button cluster from Google's own new-tab page. The real
 // launcher isn't reachable from an extension (no API, and the
 // account's personalized app list is Google-internal), so this is a
 // curated static grid of the standard Google apps.
 //
 // Icons: Chrome's local `_favicon` cache only knows sites the user
-// has VISITED — never-opened product domains (sheets.google.com…)
+// has VISITED - never-opened product domains (sheets.google.com…)
 // came back as grey globes. Google's public favicon service is the
 // primary source (real product icons, no history required); the
 // local cache is the offline fallback; a neutral dot is the floor.
 //
-// Account button: the "80%" avatar — `identity.email` (no OAuth, no
+// Account button: the "80%" avatar - `identity.email` (no OAuth, no
 // consent screen) gives the signed-in profile's email, rendered as a
 // Google-style letter circle. Signed out / restricted → the classic
 // blank-profile silhouette.
 
 // The full modern waffle set. `slug` names the BUNDLED icon under
 // /assets/google/<slug>.png (downloaded from Google's favicon service
-// at build-authoring time — real product icons, shipped offline).
+// at build-authoring time - real product icons, shipped offline).
 const GOOGLE_APPS: Array<{ name: string; url: string; slug: string }> = [
   { name: "Account", url: "https://myaccount.google.com", slug: "account" },
   { name: "Search", url: "https://www.google.com", slug: "search" },
@@ -56,7 +56,7 @@ const GOOGLE_APPS: Array<{ name: string; url: string; slug: string }> = [
 
 const ACCOUNT_URL = "https://myaccount.google.com";
 
-// Google's letter-avatar palette (approximately) — the email hashes to
+// Google's letter-avatar palette (approximately) - the email hashes to
 // a stable colour so it doesn't reroll every load.
 const LETTER_COLORS = [
   "#7cb342",

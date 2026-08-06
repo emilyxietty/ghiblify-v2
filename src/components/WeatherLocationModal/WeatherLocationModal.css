@@ -1,4 +1,4 @@
-/* Weather location modal — shares the dialog language of the other
+/* Weather location modal - shares the dialog language of the other
    small settings dialogs (backdrop, surface, close button). */
 
 .weather-location-backdrop {
@@ -72,7 +72,7 @@
     font-weight: 600;
 }
 
-/* Where the forecast is coming from right now — the question the dialog
+/* Where the forecast is coming from right now - the question the dialog
    exists to answer, so it sits above the controls that change it. */
 .weather-location-current {
     display: flex;
@@ -106,7 +106,7 @@
     transition: background 140ms ease;
 }
 
-/* "Use my location" — the primary action, dressed as one: accent
+/* "Use my location" - the primary action, dressed as one: accent
    fill, readable ink, a touch of lift on hover. */
 .weather-location-action-primary {
     background: color-mix(

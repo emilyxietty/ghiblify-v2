@@ -12,7 +12,7 @@ import {
  * (newtab) and the toolbar Options popup so a URL or handle change
  * propagates everywhere automatically.
  *
- * `key` is stable for React keys. `handle` is optional — used by
+ * `key` is stable for React keys. `handle` is optional - used by
  * the in-app modal's two-line layout but ignored by the popup's
  * pill list.
  */

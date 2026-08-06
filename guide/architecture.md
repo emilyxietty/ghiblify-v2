@@ -2,7 +2,7 @@
 
 ## State: a single Context, single source of truth
 
-`src/contexts/AppContext.tsx` is the only state container. The widget state shape is uniform — every widget has `{ visible, position, settings }`:
+`src/contexts/AppContext.tsx` is the only state container. The widget state shape is uniform - every widget has `{ visible, position, settings }`:
 
 ```ts
 type WidgetsState = {
@@ -16,13 +16,13 @@ type WidgetsState = {
 
 Plus background filters/selection and the transient `isDragging` flag the `Background` reads to render the snap grid. No Redux, no Zustand.
 
-Settings types (in `src/config/widgetConfig.ts`) deliberately do **not** include `position` or `visible` — those belong to the widget shell, not the widget content.
+Settings types (in `src/config/widgetConfig.ts`) deliberately do **not** include `position` or `visible` - those belong to the widget shell, not the widget content.
 
 ## API
 
 ```ts
 const {
-  widgets, // WidgetsState — read directly
+  widgets, // WidgetsState - read directly
   toggleWidgetVisibility, // (key) => void
   updateWidgetPosition, // (key, pos) => void
   updateWidgetSettings, // <K>(key: K, patch: Partial<settings[K]>) => void
@@ -30,7 +30,7 @@ const {
 } = useAppContext();
 ```
 
-`updateWidgetSettings` is generic — TypeScript narrows the patch type by the key you pass.
+`updateWidgetSettings` is generic - TypeScript narrows the patch type by the key you pass.
 
 ## Persistence: one key, diff-from-defaults
 
@@ -42,7 +42,7 @@ A `useEffect` watches `widgets` and re-persists on every change. There is no per
 
 On context init, if `ghiblify_widgets` doesn't exist, the legacy layout is read once (`widgets_state` blob plus per-key entries: `time_x`, `time_y`, `time_switch`, `time_fontSize`, `info_selectedFields`, `quick_links`, …), built into the new shape, written as `ghiblify_widgets`, and the legacy keys are deleted. Migration runs once per browser profile; subsequent loads only touch the new key.
 
-Anything outside the widgets state — `background_filters`, `background_selection`, `quick_links` user content (no, this is migrated into `widgets.quicklinks.settings.links`), `pomodoro_*` cross-tab keys — keeps its own storage.
+Anything outside the widgets state - `background_filters`, `background_selection`, `quick_links` user content (no, this is migrated into `widgets.quicklinks.settings.links`), `pomodoro_*` cross-tab keys - keeps its own storage.
 
 ## Widget rendering pipeline
 
@@ -57,14 +57,14 @@ App.tsx
                 └── renders the inner widget (Time, Todo, …)
 ```
 
-`Widget.tsx` is the universal wrapper. Individual widgets in `containers/Widgets/` should stay focused on their own logic — drag/resize/persistence is already handled.
+`Widget.tsx` is the universal wrapper. Individual widgets in `containers/Widgets/` should stay focused on their own logic - drag/resize/persistence is already handled.
 
 ## Drag and resize
 
 In `containers/Widget/Widget.tsx`:
 
 - **Drag**: requires `Shift + left-click` on a non-interactive element (inputs, buttons, etc. are excluded). Position updates on `mousemove`; on `mouseup` it snaps to the nearest grid line (2%, 50%, 98% of viewport). Final position is committed to AppContext, which persists it.
-- **Resize**: handle is only visible in edit mode. Behavior depends on what the widget supports — `fontSize` (Time/Date/Info), `width`/`height` (Todo/QuickLinks/SearchBar), or a single `size` (Avatar). The relevant slider/handle dispatches updates to AppContext immediately so the widget reacts in real time.
+- **Resize**: handle is only visible in edit mode. Behavior depends on what the widget supports - `fontSize` (Time/Date/Info), `width`/`height` (Todo/QuickLinks/SearchBar), or a single `size` (Avatar). The relevant slider/handle dispatches updates to AppContext immediately so the widget reacts in real time.
 - **Snap grid overlay**: `Background.tsx` shows the grid only when `isDragging === true`.
 
 Holding Shift outside a drag still toggles a `body.shift-pressed` class so widget outlines appear. See lines ~77-94 of `Widget.tsx`.
@@ -83,7 +83,7 @@ The exit logic is centralized in `useEffect`s in `App.tsx` (lines ~39-62), not i
 
 ## Cross-widget signaling
 
-There isn't any. Widgets read settings from context (`widgets[key].settings`); when `EditWidget` calls `updateWidgetSettings(key, patch)`, the context updates and every consumer re-renders. The old `window.dispatchEvent` / `addEventListener` choreography (`timeSettingsChange`, `quicklinksGridChange`, `avatarSettingsChange`) is gone — it was a workaround for the parallel-state problem that no longer exists.
+There isn't any. Widgets read settings from context (`widgets[key].settings`); when `EditWidget` calls `updateWidgetSettings(key, patch)`, the context updates and every consumer re-renders. The old `window.dispatchEvent` / `addEventListener` choreography (`timeSettingsChange`, `quicklinksGridChange`, `avatarSettingsChange`) is gone - it was a workaround for the parallel-state problem that no longer exists.
 
 ## Pomodoro: leader election
 
@@ -116,6 +116,6 @@ Both files must be in `manifest.json` `web_accessible_resources` or the fetch wi
 - `components/` = stateless, no context use, take props in and emit events out
 - `containers/` = stateful, may use context, may know about layout
 - `hooks/` = side effects and data fetching
-- `config/` = static metadata only — no React, no JSX
+- `config/` = static metadata only - no React, no JSX
 - One folder per component, with co-located `.css`
-- No `index.ts` barrel files — explicit imports only
+- No `index.ts` barrel files - explicit imports only

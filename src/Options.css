@@ -1,5 +1,5 @@
 /* Theme variables come from src/styles/themePalettes.css (extracted
-   from App.css) — Options.css references them directly via `var(...)`
+   from App.css) - Options.css references them directly via `var(...)`
    instead of aliasing through bespoke `--ink` / `--paper` / etc.
    tokens. Whichever `html.theme-<name>` class is currently applied
    (Options.tsx writes it from storage) cascades those vars. */
@@ -10,8 +10,8 @@
 
 html {
     /* `height: 100%` here lets body/root compute % heights against
-       the viewport. We don't constrain body's height itself — see
-       below — only its minimum. */
+       the viewport. We don't constrain body's height itself - see
+       below - only its minimum. */
     height: 100%;
 }
 
@@ -19,7 +19,7 @@ html,
 body {
     margin: 0;
     padding: 0;
-    /* Fill the popup's height — Chrome's popup window sizes to the
+    /* Fill the popup's height - Chrome's popup window sizes to the
        contents otherwise, leaving a short panel with the gradient
        background not extending past the cards.
        Use `min-height: 100%`, NOT `height: 100%`: the latter caps
@@ -53,7 +53,7 @@ body {
 
 /* Carries the height chain from body → page. Without an explicit
    min-height on the root, `.page { min-height: 100% }` would
-   resolve against an auto-height parent and collapse — so the page
+   resolve against an auto-height parent and collapse - so the page
    wouldn't stretch to fill the popup, and the body bg would stop
    short. Flex column so .page can use `flex: 1` and the root grows
    with its content (otherwise content taller than viewport spills
@@ -69,7 +69,7 @@ body {
     /* max-width: 680px; */
     margin: 0 auto;
     padding: 26px 20px 22px;
-    /* `flex: 1` over `min-height: 100%` — root is now a flex column,
+    /* `flex: 1` over `min-height: 100%` - root is now a flex column,
        so flex grow makes the page fill remaining root height
        cleanly (and continues to grow with content past the viewport
        cap). */
@@ -81,7 +81,7 @@ body {
     gap: 16px;
 }
 
-/* Narrow viewports — pop-up width or a phone-sized window. Tighten
+/* Narrow viewports - pop-up width or a phone-sized window. Tighten
    the padding so cards aren't squeezed and the hero icon doesn't
    dominate. */
 @media (max-width: 400px) {
@@ -139,7 +139,7 @@ body {
     text-transform: uppercase;
 }
 
-/* Preferences row — label on the left, control (Dropdown) on the
+/* Preferences row - label on the left, control (Dropdown) on the
    right. Sits inside `.card` like the other sections. */
 .prefs-row {
     display: flex;
@@ -165,7 +165,7 @@ body {
     min-width: 160px;
 }
 
-/* Variant of .prefs-row used by the palette picker — the swatch
+/* Variant of .prefs-row used by the palette picker - the swatch
    grid takes the full row width and the label sits above it, vs.
    the language dropdown which fits on the same line. */
 .prefs-row-stacked {
@@ -174,7 +174,7 @@ body {
     gap: 10px;
 }
 
-/* Theme-aware Dropdown overrides — the Dropdown component's
+/* Theme-aware Dropdown overrides - the Dropdown component's
    `.dropdown-outline-light` variant hardcodes `color: white` and
    `border-color: rgba(255,255,255,*)`, which looked fine on dark
    themes (--light is cream-ish) but stranded the text as white on
@@ -182,7 +182,7 @@ body {
    Light, etc., where --light is dark). Anchor all the toggle +
    menu colors to the active palette's vars so contrast holds on
    every theme. */
-/* Match the LeftSidebar's .language-picker pill — solid --dark
+/* Match the LeftSidebar's .language-picker pill - solid --dark
    surface, --light text, cream-tinted border, and a lift + yellow
    glow on hover. Same shape as `.btn-dark` (which sits next to the
    sidebar's language picker), so the Options popup reads as the
@@ -211,7 +211,7 @@ body {
 }
 
 /* `portal` is set on the prefs dropdowns, so the open menu mounts on
-   document.body — *outside* the `.prefs-dropdown` wrapper. A
+   document.body - *outside* the `.prefs-dropdown` wrapper. A
    descendant selector won't match. The Dropdown component does
    forward its `className` to the menu element itself
    (Dropdown.tsx:137: `className="dropdown-menu ${className}"`),
@@ -235,7 +235,7 @@ body {
     color: var(--light);
 }
 
-/* Theme swatch grid — same visual language as the LeftSidebar's
+/* Theme swatch grid - same visual language as the LeftSidebar's
    palette picker. Each swatch is a circle filled with a conic
    gradient that previews the palette's --dark surface + accent
    colors so picking a theme reads at a glance. The selected
@@ -309,14 +309,14 @@ body {
             var(--blue) 300deg 360deg);
 }
 
-/* Frost popup override — App.css sets `--dark: #ffffff` for frost
+/* Frost popup override - App.css sets `--dark: #ffffff` for frost
    because in the newtab the body shows the Ghibli photo behind a
    transparent glass surface. The Options popup doesn't have a photo
    behind it, so a white --dark + white --light collapses to white-
    on-white. Locally rebind --dark to the dark slate that frost
    already uses for its widget/sidebar tint (`--surface-rgb: 10, 14,
-   20`) so every `var(--dark)` reference in this stylesheet — body
-   bg, card bg, dropdown menu — picks up the dark slate instead.
+   20`) so every `var(--dark)` reference in this stylesheet - body
+   bg, card bg, dropdown menu - picks up the dark slate instead.
    Individual `.theme-swatch.theme-<name>` buttons further down still
    override --dark themselves, so the swatch grid keeps its per-
    theme colors. */
@@ -335,7 +335,7 @@ html.theme-frost {
         0 8px 24px rgba(58, 47, 61, 0.04);
 }
 
-/* Mirrors the LeftSidebar `.left-sidebar h4` heading style — same
+/* Mirrors the LeftSidebar `.left-sidebar h4` heading style - same
    uppercase + tracked-out type and a soft yellow underline accent
    so the Options popup feels like a continuation of the sidebar's
    visual language rather than its own thing. */
@@ -509,7 +509,7 @@ html.theme-frost {
     border-bottom-color: var(--red);
 }
 
-/* Body background — solid surface color from the active palette.
+/* Body background - solid surface color from the active palette.
    `--dark` is the per-theme `body` color in every themePalettes.css
    entry, so the popup picks up the right shade automatically.
    Frost's --dark white is locally remapped to a dark slate via the

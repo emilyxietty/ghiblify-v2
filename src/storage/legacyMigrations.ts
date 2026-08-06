@@ -4,7 +4,7 @@
 // module rewrites the two pieces of user data we want to carry over
 // (todo items + quick links) into the new schemas.
 //
-// Each migration is idempotent — it deletes the legacy entry once
+// Each migration is idempotent - it deletes the legacy entry once
 // successfully read, so subsequent calls are no-ops.
 
 
@@ -24,7 +24,7 @@ const newId = () =>
   Date.now().toString() + Math.random().toString(36).slice(2, 6);
 
 // ---------------------------------------------------------------------------
-// QuickLinks — legacy `localStorage.quickLinks` (NOT chrome.storage).
+// QuickLinks - legacy `localStorage.quickLinks` (NOT chrome.storage).
 // Format: array of HTML strings, each a `<div class="link-item"><a href="…">
 // Title</a>…</div>`. Parse the anchor out of each entry into the new
 // {id, title, url} shape. Sync; safe to call from a useState initializer.
@@ -39,8 +39,8 @@ export const readLegacyQuickLinks = (): NewQuickLink[] | null => {
     // DOMParser is preferred over `div.innerHTML = html` here: even
     // though we only read href/textContent (so injection is harmless),
     // Web Store reviewers flag any innerHTML write as a code-smell.
-    // DOMParser produces an inert document — no scripts run, no
-    // resources fetched — so it's review-friendly and equivalent.
+    // DOMParser produces an inert document - no scripts run, no
+    // resources fetched - so it's review-friendly and equivalent.
     const parser = new DOMParser();
     arr.forEach((html: unknown) => {
       if (typeof html !== "string") return;
@@ -66,7 +66,7 @@ export const clearLegacyQuickLinks = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Todos — legacy `chrome.storage.local.todo_data` (async API).
+// Todos - legacy `chrome.storage.local.todo_data` (async API).
 // Format: a single string with items separated by "×". Items
 // prefixed with "☑" are completed, e.g. "buy milk×☑done item×walk dog×".
 // Trailing separator means we filter empty pieces.
@@ -120,13 +120,13 @@ export const clearLegacyTodos = () => {
 // ---------------------------------------------------------------------------
 // One-shot wipe of every other legacy entry the v1 (jQuery) Ghiblify
 // extension wrote. We keep the user data we want to carry over (todos +
-// quick links — handled separately above) and discard everything else
+// quick links - handled separately above) and discard everything else
 // (per-widget positions, visibility, theme, language, filter sliders,
 // favorites, blacklist, etc.) since the new app stores those in its
 // own schema and the keys would otherwise sit forever in storage,
 // taking up quota and confusing future debugging.
 //
-// Idempotent worker — no self-gate. Gating lives in
+// Idempotent worker - no self-gate. Gating lives in
 // `runOneTimeSetup` (hybridStorage.ts), which now combines this
 // cleanup with the localStorage→chrome.storage migration behind a
 // single `ghiblify_setup_done` flag.
@@ -176,7 +176,7 @@ const LEGACY_KEYS = [
 ];
 
 export const cleanLegacyStorage = () => {
-  // localStorage entries (the v1 quickLinks lived here too — but
+  // localStorage entries (the v1 quickLinks lived here too - but
   // readLegacyQuickLinks already handles that one).
   LEGACY_KEYS.forEach((k) => {
     try {
@@ -186,7 +186,7 @@ export const cleanLegacyStorage = () => {
     }
   });
 
-  // chrome.storage.local entries — the v1 extension wrote everything
+  // chrome.storage.local entries - the v1 extension wrote everything
   // here. Async API; we don't wait on the callback because we don't
   // care about the result.
   const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;

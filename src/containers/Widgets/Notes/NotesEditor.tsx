@@ -100,7 +100,7 @@ import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
 import "./Notes.css";
 
-// Sticky-note widget, Lexical edition — Notion-ish. Bold / italic /
+// Sticky-note widget, Lexical edition - Notion-ish. Bold / italic /
 // underline / strikethrough / highlight text formats, headings,
 // quotes, bullet + ordered + check lists, and auto-linked URLs, with
 // a floating toolbar on text selection (keyboard shortcuts
@@ -108,12 +108,12 @@ import "./Notes.css";
 // shortcuts: "# " heading, "> " quote, "- " bullet, "1. " ordered,
 // "[] " checklist, **bold**, *italic*, ~~strike~~, ==highlight==.
 //
-// Persistence model — designed so pre-Lexical users lose nothing:
-//   richContent — serialized EditorState JSON, the rich source of truth
-//   content     — plaintext mirror kept in lockstep, so a downgraded
+// Persistence model - designed so pre-Lexical users lose nothing:
+//   richContent - serialized EditorState JSON, the rich source of truth
+//   content     - plaintext mirror kept in lockstep, so a downgraded
 //                 build (which only knows `content`) still shows text
 // A legacy note (no richContent) imports `content` line-by-line as
-// literal plain paragraphs — "- " prefixes stay visible dashes, so the
+// literal plain paragraphs - "- " prefixes stay visible dashes, so the
 // note looks EXACTLY as it did in the textarea. Markdown shortcuts
 // only fire on typing, never against stored text.
 //
@@ -127,7 +127,7 @@ import "./Notes.css";
 // --- Initial state -----------------------------------------------------------
 
 /** Import plain text lines as literal paragraphs (exact visual parity
- *  with the old textarea — no markdown reinterpretation). */
+ *  with the old textarea - no markdown reinterpretation). */
 const $importPlainText = (text: string) => {
   const root = $getRoot();
   text.split("\n").forEach((line) => {
@@ -146,14 +146,14 @@ const buildInitialEditorState = (
       JSON.parse(richContent);
       return richContent;
     } catch {
-      // Corrupted blob — fall back to the plaintext mirror below.
+      // Corrupted blob - fall back to the plaintext mirror below.
     }
   }
   return () => $importPlainText(content);
 };
 
-/** Plaintext mirror serializer. NOT $getRoot().getTextContent() —
- *  that separates blocks with DOUBLE newlines, which would inflate
+/** Plaintext mirror serializer. NOT $getRoot().getTextContent() - *  that
+separates blocks with DOUBLE newlines, which would inflate
  *  the mirror with blank lines relative to what the user sees (and
  *  a later re-import of the mirror would show them). One block = one
  *  line; list items render with readable markers so the mirror still
@@ -196,8 +196,8 @@ const $toPlainTextMirror = (): string => {
 // --- Persist plugin ----------------------------------------------------------
 
 interface PersistHandle {
-  /** JSON of the last state we persisted OR applied from outside —
-   *  the loop guard for both directions of sync. */
+  /** JSON of the last state we persisted OR applied from outside - *  the
+  loop guard for both directions of sync. */
   lastSynced: string | null;
 }
 
@@ -222,7 +222,7 @@ const PersistPlugin: React.FC<{
     updateWidgetSettings("notes", { content: text, richContent: json });
   }, [handle, updateWidgetSettings]);
 
-  // Debounced persist — coalesces typing bursts (same cadence the
+  // Debounced persist - coalesces typing bursts (same cadence the
   // textarea had). Unmount flushes so the tail of a burst isn't lost
   // when the tab closes right after typing.
   const onChange = useCallback(
@@ -256,7 +256,7 @@ const ExternalSyncPlugin: React.FC<{
 
   useEffect(() => {
     const incoming = richContent ?? null;
-    // Our own persist echoing back through settings — ignore.
+    // Our own persist echoing back through settings - ignore.
     if (incoming === handle.current.lastSynced) return;
     // Never stomp the caret of the instance the user is typing in;
     // its own state is already the source of the change stream.
@@ -268,10 +268,10 @@ const ExternalSyncPlugin: React.FC<{
         editor.setEditorState(editor.parseEditorState(incoming));
         return;
       } catch {
-        // Corrupted incoming blob — rebuild from the plaintext mirror.
+        // Corrupted incoming blob - rebuild from the plaintext mirror.
       }
     }
-    // No rich payload (Reset All Widgets, legacy write) — re-import
+    // No rich payload (Reset All Widgets, legacy write) - re-import
     // the plaintext mirror.
     editor.update(() => {
       const root = $getRoot();
@@ -285,7 +285,7 @@ const ExternalSyncPlugin: React.FC<{
 
 // --- Floating toolbar --------------------------------------------------------
 
-// Divider transformer (typing "---" / "***" / "___" on its own line) —
+// Divider transformer (typing "---" / "***" / "___" on its own line) -
 // @lexical/markdown doesn't ship one because HorizontalRuleNode lives
 // in @lexical/react; this mirrors the playground's.
 const HORIZONTAL_RULE: ElementTransformer = {
@@ -304,7 +304,7 @@ const HORIZONTAL_RULE: ElementTransformer = {
   type: "element",
 };
 
-// Only the markdown transformers that make sense in a sticky note —
+// Only the markdown transformers that make sense in a sticky note -
 // deliberately no code blocks (would pull @lexical/code) and no
 // image/table syntax.
 const MARKDOWN_TRANSFORMERS = [
@@ -364,7 +364,7 @@ const TEXT_FORMATS: { format: TextFormatType; labelKey: string }[] = [
 
 // Marker palette. Applied as inline background-color via
 // $patchStyleText (Lexical's bitmask `highlight` format is a single
-// binary flag — it can't carry a colour; the ==markdown== shortcut
+// binary flag - it can't carry a colour; the ==markdown== shortcut
 // still produces it and styles as the default yellow via
 // .ne-highlight). Clicking the active colour clears it.
 const HIGHLIGHT_MARKS = [
@@ -374,7 +374,7 @@ const HIGHLIGHT_MARKS = [
   { key: "blue", labelKey: "notes.toolbar.colors.blue", css: "rgba(140, 199, 255, 0.5)" },
 ];
 
-// Ink palette — dark tones stay readable on light paper; light tones
+// Ink palette - dark tones stay readable on light paper; light tones
 // are for dark/frosted paper or coloured swatches. Empty css = the
 // default ink (clears the inline colour).
 const TEXT_COLORS = [
@@ -418,7 +418,7 @@ const FormatGlyph: React.FC<{ format: TextFormatType }> = ({ format }) => {
     case "strikethrough":
       return <span className="notes-tb-glyph notes-tb-s">S</span>;
     default:
-      // highlight — marker tip
+      // highlight - marker tip
       return (
         <svg className="notes-tb-glyph" viewBox="0 0 16 16" aria-hidden>
           <path
@@ -588,7 +588,7 @@ const ClearFormatGlyph = () => (
 type ActiveListType = "bullet" | "check" | "number" | null;
 type ActiveBlockType = "h1" | "h2" | "h3" | "quote" | null;
 
-// Plain paragraph — the "off" row in the list menu.
+// Plain paragraph - the "off" row in the list menu.
 const NoListGlyph = () => (
   <svg className="notes-tb-glyph" viewBox="0 0 16 16" aria-hidden>
     <path
@@ -640,7 +640,7 @@ const FloatingToolbarPlugin: React.FC = () => {
   // Focusing the URL input replaces the document selection, so the
   // browser stops painting the editor's highlight and you lose sight
   // of which words you're linking. These are the client rects of the
-  // range captured at open time, repainted as an overlay — purely
+  // range captured at open time, repainted as an overlay - purely
   // visual, so the note's content and undo history stay untouched.
   const [linkRects, setLinkRects] = useState<DOMRect[]>([]);
   const [hasSelection, setHasSelection] = useState(false);
@@ -672,20 +672,20 @@ const FloatingToolbarPlugin: React.FC = () => {
   }, [openGroup]);
 
   // Dismiss an open drop-up (colour pickers, size, block, list, the
-  // overflow, and the link popover — they all live in `openGroup`) on
+  // overflow, and the link popover - they all live in `openGroup`) on
   // a click anywhere outside it, or on Escape. Picking an item or
   // losing editor focus already closed it, but clicking back into the
   // note, onto the wallpaper, or on a plain toolbar button used to
   // leave the menu hanging open.
   //
   // Two things must NOT close it: clicks on the menu's own rows (the
-  // item's onClick has to run), and clicks on any group trigger —
+  // item's onClick has to run), and clicks on any group trigger -
   // those toggle `openGroup` themselves, so closing here first would
   // make the trigger reopen what the user meant to dismiss.
   //
   // Capture phase, so it still fires when something downstream stops
   // propagation (the link input does, to keep its own focus).
-  // The overlay only belongs to the link popover — drop it whenever
+  // The overlay only belongs to the link popover - drop it whenever
   // that closes, however it closed (Escape, outside click, apply).
   useEffect(() => {
     if (openGroup !== "link") setLinkRects([]);
@@ -712,7 +712,7 @@ const FloatingToolbarPlugin: React.FC = () => {
   const refresh = useCallback(() => {
     editor.getEditorState().read(() => {
       const selection = $getSelection();
-      // A caret alone is enough — the toolbar shows the whole time the
+      // A caret alone is enough - the toolbar shows the whole time the
       // note is being edited, selection or not. Every control works on
       // a collapsed caret: text formats and colours become "pending"
       // and apply to whatever is typed next; block/list/align act on
@@ -786,7 +786,7 @@ const FloatingToolbarPlugin: React.FC = () => {
       setFontSize(
         $getSelectionStyleValueForProperty(selection, "font-size", ""),
       );
-      // Anchored to the NOTE, not the selection — a fixed bar above the
+      // Anchored to the NOTE, not the selection - a fixed bar above the
       // paper's top edge ("popup at the top"), so it neither chases the
       // caret around nor covers the line being edited. The anchor is
       // the PAPER (.notes-widget), not the contenteditable: the text
@@ -825,7 +825,7 @@ const FloatingToolbarPlugin: React.FC = () => {
   // pressing them doesn't count as leaving.
   useEffect(() => {
     // Focus moving into the toolbar (the link popover's input) isn't
-    // "leaving" — the bar stays while the URL is being edited.
+    // "leaving" - the bar stays while the URL is being edited.
     const onBlur = (e: FocusEvent) => {
       const to = e.relatedTarget as Node | null;
       if (to && toolbarRef.current?.contains(to)) return;
@@ -843,7 +843,7 @@ const FloatingToolbarPlugin: React.FC = () => {
   if (!pos) return null;
 
   // Read the CURRENT list state inside the editor rather than
-  // trusting the React state captured at render — a stale `listType`
+  // trusting the React state captured at render - a stale `listType`
   // would re-dispatch INSERT on a list that's already that type,
   // which nests it a level deeper instead of toggling it off.
   const toggleList = (type: Exclude<ActiveListType, null>) => {
@@ -915,7 +915,7 @@ const FloatingToolbarPlugin: React.FC = () => {
   // formats (bold/italic/…) and inline styles (colour, highlight,
   // size). extract() splits the boundary text nodes so only the
   // selected span is reset. Block-level structure (headings, lists)
-  // is left alone — the block-type menu handles those explicitly.
+  // is left alone - the block-type menu handles those explicitly.
   const clearFormatting = () => {
     editor.update(() => {
       const selection = $getSelection();
@@ -1264,7 +1264,7 @@ const FloatingToolbarPlugin: React.FC = () => {
               autoFocus
               onChange={(e) => setLinkDraft(e.target.value)}
               // The toolbar container preventDefaults mousedown to keep
-              // the editor selection alive — the input needs the default
+              // the editor selection alive - the input needs the default
               // back or it can never take focus.
               onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
@@ -1279,7 +1279,7 @@ const FloatingToolbarPlugin: React.FC = () => {
               onBlur={(e) => {
                 // Leaving the input for anywhere outside the toolbar or
                 // editor dismisses the bar (the editor's own blur-hide
-                // can't see this — the editor already lost focus when
+                // can't see this - the editor already lost focus when
                 // the input took it).
                 const to = e.relatedTarget as Node | null;
                 const rootEl = editor.getRootElement();
@@ -1307,7 +1307,7 @@ const FloatingToolbarPlugin: React.FC = () => {
       </span>
       <span className="notes-tb-divider" />
       {/* All three list types behind one button showing the current
-          one — three always-visible toggles dominated the bar for an
+          one - three always-visible toggles dominated the bar for an
           either/or choice. */}
       <span className="notes-tb-group">
         <button
@@ -1344,7 +1344,7 @@ const FloatingToolbarPlugin: React.FC = () => {
                   className={`notes-tb-menu-item${isActive ? " active" : ""}`}
                   onClick={() => {
                     // The menu's "None" row and re-picking the active
-                    // type both mean "off" — toggleList already treats
+                    // type both mean "off" - toggleList already treats
                     // a repeat pick as removal.
                     if (key === null) {
                       if (listType) toggleList(listType);
@@ -1469,7 +1469,7 @@ const FloatingToolbarPlugin: React.FC = () => {
 // chunk arrives, so the note no longer waits on Lexical to paint.
 const NotesEditor: React.FC = () => {
   const t = useT();
-  // Display reads merged settings — `showBorder` flips per surface
+  // Display reads merged settings - `showBorder` flips per surface
   // (dock + canvas can have different border states). Content writes
   // go through updateWidgetSettings (canvas-only) inside
   // PersistPlugin so the typed text stays a single shared note.
@@ -1560,7 +1560,7 @@ const NotesEditor: React.FC = () => {
       <TabIndentationPlugin />
       {/* Registers INSERT_HORIZONTAL_RULE_COMMAND for the divider button. */}
       <HorizontalRulePlugin />
-      {/* Markdown shortcuts fire on TYPING only — stored legacy text
+      {/* Markdown shortcuts fire on TYPING only - stored legacy text
           is never reinterpreted, so a note that literally says
           "# groceries" keeps looking exactly like it always did. */}
       <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />

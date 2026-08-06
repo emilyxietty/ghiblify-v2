@@ -1,5 +1,5 @@
 /**
- * Cursor whimsy — keeps the OS cursor as-is and adds a small particle
+ * Cursor whimsy - keeps the OS cursor as-is and adds a small particle
  * trail beside it. Reads `appearance.cursor` from AppContext.
  *
  *   trail modes (soot, sparkle, petal, bubble, heart, leaf,
@@ -44,7 +44,7 @@ const THROTTLE_BY_MODE: Record<string, number> = {
   heart: 110,
   leaf: 110,
   strawberry: 130,
-  // Dense enough to read as a flock rather than the odd bird — these
+  // Dense enough to read as a flock rather than the odd bird - these
   // arrive in swarms in the film, and a single one every 200ms just
   // looked like a stray.
   shikigami: 60,
@@ -53,7 +53,7 @@ const THROTTLE_BY_MODE: Record<string, number> = {
 };
 
 // Modes that drift downward with gravity (vs the default upward float).
-// Strawberries fall like fruit — gravity feels natural.
+// Strawberries fall like fruit - gravity feels natural.
 const FALLING_MODES = new Set<CursorName>(["petal", "leaf", "strawberry"]);
 
 interface Particle {
@@ -81,7 +81,7 @@ const Trail: React.FC<{ kind: CursorName }> = ({ kind }) => {
       lastSpawnRef.current = now;
       const id = ++idRef.current;
       // Strawberries hug the cursor more tightly than petals/leaves
-      // (they're a heavier "fruit" trail, not airy debris) — half
+      // (they're a heavier "fruit" trail, not airy debris) - half
       // the falling drift keeps the berries near the cursor instead
       // of drifting far below it.
       const driftY =

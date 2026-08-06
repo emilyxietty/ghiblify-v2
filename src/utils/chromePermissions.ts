@@ -8,7 +8,7 @@
  * `geolocation` is deliberately ABSENT from the manifest entirely.
  * Chrome refuses to make it optional (it's on the documented
  * cannot-be-optional list), and it carried the scary "detect your
- * physical location" install warning — so the Weather widget now
+ * physical location" install warning - so the Weather widget now
  * resolves approximate location from the IP via BigDataCloud's
  * keyless client endpoint (a host we already hold), gated by the
  * `weather.useDeviceLocation` app setting. No permission involved.
@@ -29,11 +29,11 @@ import { useCallback, useEffect, useState } from "react";
 export type OptionalPermission =
   | "bookmarks"
   // Voice search. An extension page never gets the browser's mic
-  // prompt — getUserMedia is denied outright unless the extension holds
-  // `audioCapture` — so this grant is the only route to the microphone.
+  // prompt - getUserMedia is denied outright unless the extension holds
+  // `audioCapture` - so this grant is the only route to the microphone.
   | "audioCapture"
   // The Google-corner widget's letter avatar. Carries the "know your
-  // email address" install warning, so it MUST stay optional — adding
+  // email address" install warning, so it MUST stay optional - adding
   // a warning-bearing required permission in an update auto-disables
   // the extension for every existing user until they re-approve.
   | "identity.email";
@@ -44,7 +44,7 @@ const permissionsApi = (): any => {
   return ns?.permissions;
 };
 
-/** Promise wrapper — the API is promise-based in MV3 but falls back to
+/** Promise wrapper - the API is promise-based in MV3 but falls back to
  *  the callback form on older builds. */
 const call = <T,>(
   method: "contains" | "request" | "remove",
@@ -57,7 +57,7 @@ const call = <T,>(
     if (result && typeof result.then === "function") {
       return (result as Promise<boolean>).catch((err: unknown) => {
         // Worth seeing: the usual cause is "This function must be called
-        // during a user gesture", which is invisible otherwise — the
+        // during a user gesture", which is invisible otherwise - the
         // toggle just doesn't move.
         // eslint-disable-next-line no-console
         console.debug(`[permissions] ${method} failed`, value, err);
@@ -86,8 +86,8 @@ const call = <T,>(
 };
 
 /** False outside an extension page (plain `vite preview`, tests). Callers
- *  that gate a feature on a grant should treat "no API" as "don't gate" —
- *  there's nothing to grant and nothing to prompt with. */
+ *  that gate a feature on a grant should treat "no API" as "don't gate" - *
+ * there's nothing to grant and nothing to prompt with. */
 export const permissionsApiAvailable = (): boolean =>
   !!permissionsApi()?.contains;
 

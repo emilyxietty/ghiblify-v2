@@ -15,7 +15,7 @@ import {
   subscribe,
   write as writePersisted,
 } from "./storage/hybridStorage";
-// Theme palette variables — extracted from App.css so the popup
+// Theme palette variables - extracted from App.css so the popup
 // inherits the user's chosen palette without importing the full
 // 1000-line newtab stylesheet (which has body / widget / sidebar
 // rules that conflict with the popup's layout). Just the
@@ -27,7 +27,7 @@ import "./Options.css";
 import "./styles/themePalettes.css";
 
 // Theme names + their human labels. Mirrors `THEME_KEYS` in the
-// LeftSidebar — duplicated rather than imported so the popup
+// LeftSidebar - duplicated rather than imported so the popup
 // bundle doesn't drag in the full sidebar / AppContext graph.
 // Labels come from i18n at render time (`themes.<name>`) so they
 // translate per the user's chosen locale.
@@ -48,7 +48,7 @@ const PALETTE_KEYS = [
 ] as const;
 type PaletteName = (typeof PALETTE_KEYS)[number];
 
-// Mirrors `LIGHT_MODE_THEMES` in AppContext — themes whose paint
+// Mirrors `LIGHT_MODE_THEMES` in AppContext - themes whose paint
 // surfaces are bright, so chrome should render in light mode to
 // match the newtab's vibe. Duplicated rather than imported so we
 // don't drag the entire AppContext module (with its heavy widget
@@ -115,7 +115,7 @@ const useNewtabTheme = (): void => {
 };
 
 /**
- * Options popup — opens from the toolbar action icon. Rendered as a
+ * Options popup - opens from the toolbar action icon. Rendered as a
  * React component so we can grow it into a real settings surface
  * later (e.g., expose newtab preferences here, communicate with the
  * newtab via `chrome.storage`'s onChanged listener).
@@ -125,7 +125,7 @@ const useNewtabTheme = (): void => {
  */
 
 interface ActionLink {
-  /** Translation-key stub — labels look up `options.<key>Label` and
+  /** Translation-key stub - labels look up `options.<key>Label` and
    *  `options.<key>Sub`. Sub may be a literal (emailLabel sub uses
    *  the literal email address). */
   key: string;
@@ -176,7 +176,7 @@ export const Options: React.FC = () => {
   // so the popup chrome matches the vibe of the active palette.
   useNewtabTheme();
 
-  // Locale state — re-renders on locale change (the i18n module
+  // Locale state - re-renders on locale change (the i18n module
   // already subscribes to chrome.storage so cross-page changes
   // propagate). `useT()` re-renders on dictionary swap; we keep
   // our own `locale` state for the Dropdown's `value` prop.
@@ -187,7 +187,7 @@ export const Options: React.FC = () => {
     });
   }, []);
 
-  // Palette state — same pattern as locale.
+  // Palette state - same pattern as locale.
   const [palette, setPalette] = useState<string | undefined>(() => {
     const saved = readSync<AppearanceSnapshot>("ghiblify_appearance", {});
     return saved?.theme;
@@ -338,7 +338,7 @@ export const Options: React.FC = () => {
 
 export default Options;
 
-// Mount — this file is the Vite entry for `options.html`. The Chrome
+// Mount - this file is the Vite entry for `options.html`. The Chrome
 // extension popup is its own document with its own JS bundle;
 // shared modules (React, the Icons module) get code-split by Vite
 // into a common chunk so they don't double-ship with the newtab

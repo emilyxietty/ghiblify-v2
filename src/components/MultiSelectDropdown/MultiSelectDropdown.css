@@ -39,7 +39,7 @@
 
 /* Match the right-click ContextMenu submenu look exactly so the two
    menus feel like one system. Sizing, padding, font, glass treatment,
-   row hover — all aligned with .ctx-menu / .ctx-menu-row. */
+   row hover - all aligned with .ctx-menu / .ctx-menu-row. */
 .multi-select-menu {
     position: absolute;
     top: calc(100% + 4px);
@@ -109,7 +109,7 @@
     outline: none;
 }
 
-/* Leading check slot — mirrors .ctx-menu-icon. Reserved on every row
+/* Leading check slot - mirrors .ctx-menu-icon. Reserved on every row
    (even unselected) so labels line up vertically. The check glyph
    itself only paints when the option is selected. */
 .multi-select-check {

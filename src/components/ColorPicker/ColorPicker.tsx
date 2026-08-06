@@ -21,9 +21,9 @@ const VIEWPORT_MARGIN = 8;
 interface PanelProps {
   /** Current colour, or null when the highlight is off. */
   color: string | null;
-  /** Ink on top of the highlight — "auto" derives it from the colour. */
+  /** Ink on top of the highlight - "auto" derives it from the colour. */
   textColor: HighlightTextColor;
-  /** 0–100 — how solid the bar is. */
+  /** 0–100 - how solid the bar is. */
   opacity: number;
   onChange: (next: string | null) => void;
   onTextColorChange: (next: HighlightTextColor) => void;
@@ -32,12 +32,12 @@ interface PanelProps {
   onPreviewTextColor?: (next: HighlightTextColor) => void;
   onPreviewOpacity?: (next: number) => void;
   onPreviewClear?: () => void;
-  /** 0–100 — backdrop blur behind the highlight pill. Blur is a
+  /** 0–100 - backdrop blur behind the highlight pill. Blur is a
    *  property of ANY colour (0 = solid, >0 = frosted glass in that
    *  colour), not a separate highlight type. */
   blur?: number;
   onBlurChange?: (v: number) => void;
-  /** Whether the edit panel's tuning column is expanded — the strip's
+  /** Whether the edit panel's tuning column is expanded - the strip's
    *  chevron reflects and drives it (state lives in EditWidget).
    *  Explicit target value, NOT a toggle: idempotent under double-
    *  fired clicks. */
@@ -51,7 +51,7 @@ interface PanelProps {
  * Split out from the trigger so the same UI serves both surfaces: a
  * dropdown under a button in the edit overlay, and a floating panel
  * opened from the right-click menu. Those used to be different controls
- * for the same setting — a swatch grid in one, a list of hex strings in
+ * for the same setting - a swatch grid in one, a list of hex strings in
  * the other.
  */
 export const ColorPickerPanel: React.FC<PanelProps> = ({
@@ -195,8 +195,7 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
           </div>
 
           {/* Auto reads the colour's luminance, which is the right call
-              for clear lights and darks but a coin flip for mid-tones —
-              so the choice is offered rather than assumed. */}
+              for clear lights and darks but a coin flip for mid-tones - so the choice is offered rather than assumed. */}
           <span className="color-picker-label">
             {t("widgets.edit.highlightTextColor")}
           </span>
@@ -237,7 +236,7 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
 };
 
 interface PopoverProps extends PanelProps {
-  /** Viewport point to open next to — a click position, or a trigger's
+  /** Viewport point to open next to - a click position, or a trigger's
    *  rect. */
   anchor: { x: number; y: number; height?: number };
   onClose: () => void;
@@ -248,7 +247,7 @@ interface PopoverProps extends PanelProps {
  *
  * Portalled to <body> and positioned in viewport coordinates. Both
  * matter: rendered in place it sat inside `.widget-opacity-control`,
- * whose own z-index opens a stacking context — so no z-index on the
+ * whose own z-index opens a stacking context - so no z-index on the
  * panel could lift it above the sibling buttons, and the widget's
  * overflow clipped whatever was left.
  */
@@ -321,13 +320,13 @@ export const ColorPickerPopover: React.FC<PopoverProps> = ({
 };
 /** Inline swatch strip for the widget edit overlay: off + the six
  *  curated presets + custom-palette pencil + a chevron that expands
- *  the edit panel's tuning column (opacity / blur / ink — see
+ *  the edit panel's tuning column (opacity / blur / ink - see
  *  HighlightTuning, rendered by EditWidget as a second panel column
  *  rather than a floating overlay, so it never overlaps content and
  *  dismisses with the panel). */
 export const ColorPicker: React.FC<PanelProps> = (props) => {
   const t = useT();
-  // FIXED chip set — a variable count made the row wrap raggedly.
+  // FIXED chip set - a variable count made the row wrap raggedly.
   // Recents are deliberately absent; custom/recent colours live one
   // click away behind the pencil (OS palette).
   const inlinePresets = HIGHLIGHT_PRESETS;
@@ -360,7 +359,7 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
           data-tooltip={hex.toUpperCase()}
           onMouseEnter={() => props.onPreviewChange?.(hex)}
           onMouseLeave={props.onPreviewClear}
-          // Committing a colour auto-expands the tuning column — the
+          // Committing a colour auto-expands the tuning column - the
           // controls appear the moment they become relevant.
           onClick={() => {
             pushRecentColor(hex);
@@ -371,7 +370,7 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
       ))}
 
 
-      {/* Chevron — expands the panel's tuning column. Only shown
+      {/* Chevron - expands the panel's tuning column. Only shown
           while CLOSED (and only with a colour to tune): once open,
           the column's own ✕ is the close affordance, so no flipped
           chevron sits around overlapping the divider. */}
@@ -394,7 +393,7 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
   );
 };
 
-/** The tuning column — live "Aa" demo of the current pill, opacity,
+/** The tuning column - live "Aa" demo of the current pill, opacity,
  *  blur, ink. Rendered by EditWidget inside the panel's expandable
  *  right column (see .edit-panel-side). */
 export const HighlightTuning: React.FC<PanelProps & { onClose?: () => void }> = (

@@ -6,7 +6,7 @@
 }
 
 .time {
-    /* Intentionally constant — Time stays white regardless of theme so
+    /* Intentionally constant - Time stays white regardless of theme so
        it always reads against the photo background. Shadow alpha
        multiplies by --text-shadow-strength (default 1.0); the user
        can tune it via EditWidget. */
@@ -37,7 +37,7 @@
     user-select: none;
 }
 
-/* Single source of truth for the hand/tick/pin shadows — each rule
+/* Single source of truth for the hand/tick/pin shadows - each rule
    below references this via filter: drop-shadow(...). Alpha scales
    with --text-shadow-strength so the EditWidget slider keeps working
    in analog mode the same way it does in digital mode. */
@@ -49,12 +49,12 @@
 }
 
 /* The .widget shell is `position: fixed`, which makes it the backdrop
-   root for its descendants — backdrop-filter on a child can only blur
+   root for its descendants - backdrop-filter on a child can only blur
    pixels INSIDE the widget (i.e. nothing). The shell itself IS its own
    backdrop root and CAN blur the viewport, though, so we hoist the
    frost onto the shell (scoped via :has(.time-analog) so only the
    analog mode gets the treatment). Same pattern Frost uses on Todo /
-   SearchBar / Weather widgets — see the comment in App.css. */
+   SearchBar / Weather widgets - see the comment in App.css. */
 .widget[data-widget-key="time"]:has(.time-analog) {
     border-radius: 50%;
     backdrop-filter: blur(6px) saturate(110%);
@@ -62,7 +62,7 @@
 }
 
 /* Strip the standard widget padding in analog mode so the dial fills
-   the shell exactly — otherwise the circular backdrop-filter area
+   the shell exactly - otherwise the circular backdrop-filter area
    extends past the SVG edge. The frost variant repeats it with enough
    specificity to beat the generic frost pill-padding rule in
    Widget.css regardless of bundle order. */
@@ -75,7 +75,7 @@
 }
 
 .time-analog-face {
-    /* Pure frosted glass — fully transparent, no stroke. The circular
+    /* Pure frosted glass - fully transparent, no stroke. The circular
        backdrop-filter on the widget shell defines the edge on its own. */
     fill: transparent;
     stroke: none;
@@ -112,7 +112,7 @@
    takes the highlight tint (colour × opacity via --text-highlight),
    and the hands / ticks / pin take the ink var so Auto/Light/Dark
    applies. The shell publishes both vars whenever a highlight is on,
-   in either mode — these rules just give analog something to paint.
+   in either mode - these rules just give analog something to paint.
    --------------------------------------------------------------------------- */
 .widget.has-text-highlight .time-analog-face {
     fill: var(--text-highlight);
@@ -138,8 +138,7 @@
 /* Frosted highlight in analog mode: the user's Blur slider drives the
    dial's glass instead of the fixed 6px ambience. Extra specificity
    (attr + :has) so this wins over both the base analog frost rule and
-   the generic .highlight-frost shell rule regardless of bundle order —
-   and keeps the circular clip rather than the pill radius. */
+   the generic .highlight-frost shell rule regardless of bundle order - and keeps the circular clip rather than the pill radius. */
 /* Analog opts out of the rectangular shell pill in EVERY highlight
    state: the dial's face circle carries the tint, so the shell stays
    transparent and circular (the generic rules tint the shell for

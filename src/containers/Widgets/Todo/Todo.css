@@ -18,7 +18,7 @@
     --todo-border: color-mix(in srgb, var(--light) 22%, transparent);
     /* Checkmark / accent uses --green (defined per-palette) so the
        Todo doesn't read as the same warm yellow used for decorative
-       headings and pulses elsewhere — green reads better as a
+       headings and pulses elsewhere - green reads better as a
        "completed" affordance. */
     --todo-accent: var(--green, #5e8a4f);
     --todo-danger: #ff8a8a;
@@ -31,7 +31,7 @@
     height: auto;
 }
 
-/* Frost-specific Todo overrides — text and border tokens that
+/* Frost-specific Todo overrides - text and border tokens that
    AREN'T derived from the global --surface-rgb token. The surface
    itself is handled automatically via --surface-rgb (set to a
    fixed dark slate in `.theme-frost` in App.css), so we don't
@@ -57,7 +57,7 @@
     /* reserve larger space for absolute header so inline popovers don't overlap when expanded */
 }
 
-/* remove manual padding reservation — header will be sticky and remain in flow */
+/* remove manual padding reservation - header will be sticky and remain in flow */
 
 .todo-input-wrapper {
     position: relative;
@@ -152,7 +152,7 @@
        (which is a flex column sized to the widget's chosen height).
        The previous `max-height: 240px` capped the list at ~5 items
        even when the user dragged the widget tall enough to fit
-       more — `flex: 1 1 auto; min-height: 0` lets the scrollable
+       more - `flex: 1 1 auto; min-height: 0` lets the scrollable
        region expand to whatever's left after the input bar. */
     flex: 1 1 auto;
     min-height: 0;
@@ -299,7 +299,7 @@
     transition: opacity 200ms ease;
 }
 
-/* Animated strikethrough — a pseudo-element that scales horizontally
+/* Animated strikethrough - a pseudo-element that scales horizontally
    from left to right, instead of CSS `text-decoration` which can't
    transition. */
 .todo-text-inner {
@@ -363,7 +363,7 @@
     color: var(--todo-danger);
 }
 
-/* Drop-line indicator — a 2px bar at the top OR bottom edge of the
+/* Drop-line indicator - a 2px bar at the top OR bottom edge of the
    hover-target item, depending on where the cursor is in the item.
    Lets the user drop AFTER the last item (the bar appears below the
    target) instead of always inserting before it. */
@@ -388,7 +388,7 @@
     bottom: -4px;
 }
 
-/* Drag handle — sits inside the item card on the right, just past
+/* Drag handle - sits inside the item card on the right, just past
    the delete button. Fades in on hover so it doesn't permanently
    clutter the row. */
 .todo-drag-handle {
@@ -427,7 +427,7 @@
     cursor: not-allowed;
 }
 
-/* Inline edit affordance — a small pencil that fades in on hover.
+/* Inline edit affordance - a small pencil that fades in on hover.
    The whole text span is still click-to-edit, but the pencil makes
    that affordance discoverable. */
 .todo-edit-btn {
@@ -456,10 +456,10 @@
     color: var(--todo-text);
 }
 
-/* Hide-completed is now an edit-mode setting on the widget itself —
-   no inline button. See EditWidget.tsx + widgetConfig.ts. */
+/* Hide-completed is now an edit-mode setting on the widget itself - no
+   inline button. See EditWidget.tsx + widgetConfig.ts. */
 
-/* Enter animation — slides in from above with a brief fade. Only
+/* Enter animation - slides in from above with a brief fade. Only
    plays for items added since mount (Todo.tsx tracks `enteringIds`),
    so the saved list doesn't cascade-in on every page load. */
 .todo-item.entering {
@@ -477,7 +477,7 @@
     }
 }
 
-/* Leave animation — a tiny "poof": pop slightly bigger, then shrink,
+/* Leave animation - a tiny "poof": pop slightly bigger, then shrink,
    fade, drift up, and tilt off. Feels celebratory without being
    over-the-top. The item stays mounted for REMOVE_ANIM_MS in Todo.tsx
    so this can finish before unmount; keep that constant in sync with
@@ -504,7 +504,7 @@
     }
 }
 
-/* Complete animation — fires once when an item transitions from
+/* Complete animation - fires once when an item transitions from
    unchecked to checked (Todo.tsx tracks `completingIds` and applies
    the .completing class for ~480ms). A gentle vertical pop on the
    row content + a bouncy scale-in on the newly-drawn checkmark
@@ -528,7 +528,7 @@
     }
 }
 
-/* Checkmark bounce-in — the inline SVG is conditionally rendered
+/* Checkmark bounce-in - the inline SVG is conditionally rendered
    when `todo.checked` is true, so it mounts at the moment the user
    completes the task and the animation plays exactly once per
    toggle-on. Re-checking after un-checking remounts and re-runs. */
@@ -573,10 +573,10 @@
 } */
 
 /* (dark-mode .todo-item-content background is set above with the
-   slider-driven formula — leaving this stub so the rule isn't silently
+   slider-driven formula - leaving this stub so the rule isn't silently
    re-introduced from elsewhere) */
 
-/* Dark-mode toggle — checkbox + add button now use the theme-aware base
+/* Dark-mode toggle - checkbox + add button now use the theme-aware base
    styles above and inherit naturally; per-mode overrides removed. */
 
 

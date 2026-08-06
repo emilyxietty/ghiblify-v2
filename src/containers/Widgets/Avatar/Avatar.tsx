@@ -10,7 +10,7 @@ interface AvatarProps {
 
 export const Avatar: React.FC<AvatarProps> = () => {
   // Reads canvas settings on canvas, dock-merged settings in the
-  // dock — so each surface keeps its own selectedAvatar.
+  // dock - so each surface keeps its own selectedAvatar.
   const { settings } = useWidgetSettings("avatar");
   const { selectedAvatar: avatar, size: avatarSizeRef } = settings;
   // settings.size is reference-px (1920 baseline); scale to current-
@@ -39,7 +39,7 @@ export const Avatar: React.FC<AvatarProps> = () => {
             title={avatarData.source}
           />
 
-          {/* Credit chip. Single rendering — CSS reveals it both on
+          {/* Credit chip. Single rendering - CSS reveals it both on
               Shift hold AND in edit mode, so the same DOM element
               shows in both contexts (no overlap, no duplicates). */}
           <div className="avatar-credit">

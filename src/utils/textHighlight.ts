@@ -8,7 +8,7 @@
  * colour" or vice versa.
  *
  * The recents list is shared across widgets and lives in its own
- * localStorage key rather than in widget settings — it's a property of
+ * localStorage key rather than in widget settings - it's a property of
  * the person, not of the widget.
  */
 
@@ -18,7 +18,7 @@ const MAX_RECENTS = 5;
 /** Fired after the recents list changes so open pickers re-render. */
 export const RECENT_COLORS_EVENT = "ghiblify:recent-colors:change";
 
-/** One swatch per colour a person would actually name — curated as a
+/** One swatch per colour a person would actually name - curated as a
  *  soft watercolor set that harmonizes with the Ghibli wallpapers
  *  (the old list mixed harsh saturated web-blue/red/orange with
  *  pastels and read as clashing). Anything between these lives behind
@@ -29,7 +29,7 @@ export const HIGHLIGHT_PRESETS = [
   "#f2a7c3", // blossom pink
   "#9bc495", // sage green
   "#8ec5e8", // sky blue
-  "#1a1a1a", // ink black (soft, not pure #000 — plays nicer with alpha)
+  "#1a1a1a", // ink black (soft, not pure #000 - plays nicer with alpha)
 ] as const;
 
 /** How the text on top of a highlight is coloured. "auto" derives it
@@ -82,8 +82,8 @@ export const normalizeHex = (input: string): string | null => {
 /**
  * Pick a legible foreground for a highlight.
  *
- * Relative luminance (the WCAG formula, minus the gamma expansion —
- * close enough for a binary light/dark decision) against a 0.6
+ * Relative luminance (the WCAG formula, minus the gamma expansion - * close
+ * enough for a binary light/dark decision) against a 0.6
  * threshold: pale highlighters get ink text, saturated or dark ones
  * keep the white the widgets already use.
  */
@@ -98,7 +98,7 @@ export const foregroundFor = (hex: string): string => {
 
 /** Presets retired from HIGHLIGHT_PRESETS (Aug 2026 palette recut).
  *  Residue of these in a user's stored recents keeps the removed
- *  swatch alive in the strip — scrub them at read time. A colour
+ *  swatch alive in the strip - scrub them at read time. A colour
  *  freshly picked from the OS palette re-enters recents normally,
  *  because the scrub-and-rewrite below only runs against what's
  *  already stored. */
@@ -115,7 +115,7 @@ export const readRecentColors = (): string[] => {
       .filter((v): v is string => !!v && !RETIRED_PRESETS.includes(v))
       .slice(0, MAX_RECENTS);
     // One-time scrub: persist the cleaned list so the retired swatches
-    // don't linger in storage (and future picks aren't filtered —
+    // don't linger in storage (and future picks aren't filtered -
     // pushRecentColor writes fresh entries that bypass this).
     if (cleaned.length !== parsed.length) {
       try {

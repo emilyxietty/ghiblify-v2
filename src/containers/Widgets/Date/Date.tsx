@@ -21,7 +21,7 @@ export const DateDisplay: React.FC = () => {
   const dateSettings = widgets.date.settings;
   // Subscribe to locale changes so the formatted date re-renders
   // when the user picks a new language. We don't actually need the
-  // `t` return value — the subscription's the point.
+  // `t` return value - the subscription's the point.
   useT();
   const [currentDate, setCurrentDate] = useState(new Date());
 

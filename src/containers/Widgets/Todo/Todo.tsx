@@ -38,7 +38,7 @@ const COMPLETE_ANIM_MS = 480;
 // folds any old "todo_data" value into the new key on first read.
 const STORAGE_KEY = "ghiblify_todo";
 
-// Debounced persist — coalesces typing bursts on the inline edit
+// Debounced persist - coalesces typing bursts on the inline edit
 // input so the storage layer doesn't take a write per keystroke.
 // Module-scoped because the timer needs to survive remounts (the
 // user tapping out of edit mode and back in shouldn't drop a pending
@@ -109,7 +109,7 @@ export const Todo: React.FC = () => {
   // Items mid-leave animation. Removed from `todos` only after
   // REMOVE_ANIM_MS so the CSS can finish playing.
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
-  // Items added since mount — only newly-added items get the slide-in
+  // Items added since mount - only newly-added items get the slide-in
   // animation, otherwise every page load would cascade-in the entire
   // saved list.
   const [enteringIds, setEnteringIds] = useState<Set<string>>(new Set());
@@ -159,7 +159,7 @@ export const Todo: React.FC = () => {
       setTodos(savedTodos);
       return;
     }
-    // No modern todos stored — try to pull from the previous
+    // No modern todos stored - try to pull from the previous
     // (jQuery) Ghiblify extension's chrome.storage.local["todo_data"]
     // (a "×"-separated string with optional "☑" prefix per item).
     // Cleared from chrome.storage on success so it's idempotent.
@@ -267,7 +267,7 @@ export const Todo: React.FC = () => {
   };
 
   // Leaving edit mode with empty text means the user erased the
-  // todo's content — there's no clickable surface left to re-enter
+  // todo's content - there's no clickable surface left to re-enter
   // edit mode (the .todo-text span has no content), so the item
   // would be stranded. Treat empty-on-leave as "I want this gone"
   // and auto-delete instead.
@@ -327,7 +327,7 @@ export const Todo: React.FC = () => {
     setTodos((prev) => {
       // Work in VISIBLE order (incomplete-first, completed-last) so
       // drop positions match what the user actually sees. Previously
-      // we used `prev` directly, which is storage order — dragging a
+      // we used `prev` directly, which is storage order - dragging a
       // completed item visually after an incomplete one would land it
       // in the wrong spot in storage.
       const visible = prev
@@ -385,7 +385,7 @@ export const Todo: React.FC = () => {
         )
           ? 0.14
           : ((todoSettings as any).opacity ?? 50) / 100,
-        // Custom surface tint — override the theme's --surface-rgb
+        // Custom surface tint - override the theme's --surface-rgb
         // with the chosen hex as an "r, g, b" triplet.
         ...(typeof (todoSettings as any).surfaceColor === "string"
           ? {
@@ -509,7 +509,7 @@ export const Todo: React.FC = () => {
                   }
                 >
                   {todo.checked && (
-                    /* Inline thick-stroke check — Material's filled
+                    /* Inline thick-stroke check - Material's filled
                        CheckIcon (used elsewhere) has lots of viewBox
                        padding and reads as a thin glyph in this small
                        box. A stroke-rendered polyline with rounded
@@ -577,13 +577,13 @@ export const Todo: React.FC = () => {
                   // never accidentally start a drag (a slightly-moved
                   // mousedown on a draggable parent counts as drag-
                   // start, which made the widget feel finicky).
-                  // Completed tasks are not draggable — they always sort
+                  // Completed tasks are not draggable - they always sort
                   // to the bottom anyway, so reordering them is a no-op
                   // that the user shouldn't even attempt.
                   draggable={!todo.checked}
                   onDragStart={(e) => {
                     // Shift on the handle means the user is dragging
-                    // the whole widget — bail so the widget-shell
+                    // the whole widget - bail so the widget-shell
                     // handler wins.
                     if (e.shiftKey) {
                       e.preventDefault();

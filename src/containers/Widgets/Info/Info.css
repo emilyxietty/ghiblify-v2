@@ -8,7 +8,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* Intentionally constant — Info stays white regardless of theme so
+    /* Intentionally constant - Info stays white regardless of theme so
        it always reads against the photo background, matching Time/Date.
        Shadow alpha scales with --text-shadow-strength (default 1.0,
        user-configurable via EditWidget slider + right-click submenu). */

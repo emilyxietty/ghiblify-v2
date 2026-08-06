@@ -10,7 +10,7 @@ src/containers/Widgets/<Name>/
 └── <Name>.css     # co-located styles, BEM-lite class names
 ```
 
-The widget receives no drag/resize props — `Widget.tsx` handles that. It does receive whatever settings come from AppContext (font size, dimensions, dark mode, etc.) so it can render at the right scale.
+The widget receives no drag/resize props - `Widget.tsx` handles that. It does receive whatever settings come from AppContext (font size, dimensions, dark mode, etc.) so it can render at the right scale.
 
 ## Widget config entry
 
@@ -40,7 +40,7 @@ In `widgetConfig.ts`, each widget has the shape:
 - Presence of `fontSize`/`width`/`height`/`size` on the config = the widget is resizable along that axis (the resize handle picks the right one).
 - Presence of a `customControls` key = the corresponding `EditWidget` control appears. Don't add a control the widget doesn't actually consume.
 
-The map type `WidgetConfigsType` is `{ [K in WidgetKey]: WidgetConfig<K> }` — adding/removing a key from `WIDGET_KEYS` is a type-level change that ripples through the context.
+The map type `WidgetConfigsType` is `{ [K in WidgetKey]: WidgetConfig<K> }` - adding/removing a key from `WIDGET_KEYS` is a type-level change that ripples through the context.
 
 ## Adding a new widget
 
@@ -55,16 +55,16 @@ The map type `WidgetConfigsType` is `{ [K in WidgetKey]: WidgetConfig<K> }` — 
    ```
    Read-only widgets stop here. Widgets that need to mutate their own settings call `updateWidgetSettings("foo", patch)`.
 3. **Render it** in `App.tsx`, gated by `widgets.foo.visible`, wrapped in `<Widget storageKey="foo">`.
-4. **Add the sidebar toggle** in `src/containers/LeftSidebar/LeftSidebar.tsx` — one `<Button>` calling `toggleWidgetVisibility("foo")`.
+4. **Add the sidebar toggle** in `src/containers/LeftSidebar/LeftSidebar.tsx` - one `<Button>` calling `toggleWidgetVisibility("foo")`.
 5. **Verify**: load the unpacked extension, toggle on, drag, edit, reload, confirm persistence in the `ghiblify_widgets` localStorage entry.
 
-No AppContext changes required — the generic `updateWidgetSettings` and the `WidgetsState` shape pick up the new key automatically.
+No AppContext changes required - the generic `updateWidgetSettings` and the `WidgetsState` shape pick up the new key automatically.
 
 User content (todo items, link lists) lives in widget settings now too (e.g. `widgets.quicklinks.settings.links`). If you have something that genuinely doesn't belong (cross-tab pomodoro state, etc.), use a separate localStorage key.
 
 ## Reusing controls in EditWidget
 
-If your widget needs a toggle/picker that already exists (font size, dark mode, time format, infoFields, avatar selector, grid mode), set the corresponding `customControls` flag and you're done — `EditWidget` renders it automatically.
+If your widget needs a toggle/picker that already exists (font size, dark mode, time format, infoFields, avatar selector, grid mode), set the corresponding `customControls` flag and you're done - `EditWidget` renders it automatically.
 
 If you need a brand-new control type, add it to `EditWidget.tsx` behind a new `customControls` key. Use the **custom event pattern** to signal the widget rather than threading callbacks through `Widget`:
 
@@ -82,13 +82,13 @@ useEffect(() => {
 
 ## Modifying an existing widget
 
-- Drag/resize/position behavior lives in `Widget.tsx` — touch carefully; it affects every widget.
+- Drag/resize/position behavior lives in `Widget.tsx` - touch carefully; it affects every widget.
 - Widget-internal state (e.g. todo items, quick link entries) is local to the widget file plus its own localStorage key. AppContext does not own it.
 - Snap points are defined in `Widget.tsx` (2%, 50%, 98%). Changing them changes layout for all widgets.
 
 ## Things to keep consistent
 
-- Position is `{ x, y }` in viewport percent — never px.
-- `transform: translate(-50%, 0)` on the widget root — center on X, top-anchor on Y.
+- Position is `{ x, y }` in viewport percent - never px.
+- `transform: translate(-50%, 0)` on the widget root - center on X, top-anchor on Y.
 - Widget headers should be deterministic in height regardless of content state, since position is anchored at the top.
 - Storage keys are lowercase and short (`time`, `todo`, `quicklinks`).

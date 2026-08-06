@@ -2,7 +2,7 @@
    A single rounded pill: magnifier on the left, input, then clear /
    mic / lens on the right, with the suggestion list dropping out of the
    same surface so the two read as one control (the pill squares off its
-   bottom corners while the list is open — same trick Google uses).
+   bottom corners while the list is open - same trick Google uses).
 
    Surface alpha comes from --sb-opacity, set inline by SearchBar.tsx
    from the widget's opacity setting. */
@@ -20,14 +20,13 @@
     padding: 0 14px;
     box-sizing: border-box;
     /* Height comes from the widget setting (reference px, scaled by
-       viewport) but never drops below 46 real px — under that the icon
+       viewport) but never drops below 46 real px - under that the icon
        buttons crowd the pill's edges. */
     min-height: max(46px, var(--sb-min-height, 46px));
     /* Follows the corner setting, via the same token as every other
        text control. --radius-pill would have been 999px on BOTH
        Rounded and Soft, leaving two of the three settings looking
-       identical here; --radius-control gives three distinct steps —
-       a soft rectangle, a rounded bar, and a full capsule at Soft. */
+       identical here; --radius-control gives three distinct steps - a soft rectangle, a rounded bar, and a full capsule at Soft. */
     border-radius: var(--radius-control, var(--radius-pill));
     border: 1px solid rgba(255, 255, 255, 0.25);
     background: rgba(255, 255, 255, var(--sb-opacity, 0.9));
@@ -103,10 +102,10 @@
     color: #34a853;
 }
 
-/* While the mic is live, the button pulses — the only feedback that
+/* While the mic is live, the button pulses - the only feedback that
    the page is listening, since there's no other visible state change
    until words arrive. */
-/* Permission denied — brief red shake so the click visibly did
+/* Permission denied - brief red shake so the click visibly did
    something; clicking again re-prompts. */
 .searchbar-mic.is-denied {
     color: var(--red, #d54a3e);
@@ -131,7 +130,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    /* Permission denied — brief red shake so the click visibly did
+    /* Permission denied - brief red shake so the click visibly did
    something; clicking again re-prompts. */
 .searchbar-mic.is-denied {
     color: var(--red, #d54a3e);
@@ -167,7 +166,7 @@
     flex-shrink: 0;
 }
 
-/* Clear sits at the same weight as the input's own text — it acts on
+/* Clear sits at the same weight as the input's own text - it acts on
    what you typed, so it shouldn't read as fainter than it. */
 .searchbar-clear {
     color: rgba(24, 24, 24, 0.75);
@@ -185,7 +184,7 @@
     color: #ffffff;
 }
 
-/* Go button. Filled rather than ghosted like its neighbours — it's the
+/* Go button. Filled rather than ghosted like its neighbours - it's the
    one control in the pill that commits, and it only exists while
    there's a query, so it can afford to be loud. */
 .searchbar-go {
@@ -284,7 +283,7 @@
     white-space: nowrap;
 }
 
-/* The completion is bolded, the part you typed isn't — so the eye
+/* The completion is bolded, the part you typed isn't - so the eye
    lands on what each row would *add*. */
 .searchbar-suggestion-text b {
     font-weight: 600;
@@ -321,7 +320,7 @@
     background: rgba(232, 234, 237, 0.1);
 }
 
-/* Hide the browser-native clear button and validation tick — we render
+/* Hide the browser-native clear button and validation tick - we render
    our own clear affordance. */
 .searchbar input::-webkit-search-cancel-button,
 .searchbar input::-webkit-search-decoration {
@@ -331,7 +330,7 @@
 }
 
 /* A history row carries a remove affordance that only shows on hover /
-   while the row is keyboard-active — it shouldn't compete with the
+   while the row is keyboard-active - it shouldn't compete with the
    suggestion text at rest. */
 .searchbar-suggestion {
     position: relative;

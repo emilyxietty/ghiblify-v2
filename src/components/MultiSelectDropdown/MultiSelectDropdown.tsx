@@ -15,7 +15,7 @@ interface MultiSelectDropdownProps {
   placeholder?: string;
   buttonText?: string;
   /** Render the menu into <body> at fixed coordinates. Needed inside
-   *  scrolling or transformed containers — in the widget edit panel the
+   *  scrolling or transformed containers - in the widget edit panel the
    *  in-flow menu was clipped by the panel's own overflow. */
   portal?: boolean;
 }

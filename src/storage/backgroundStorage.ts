@@ -1,19 +1,19 @@
 // Single combined entry for everything that customizes the rotating
 // photo background:
-//   favorites — URLs always kept in the rotation pool
-//   blacklist — URLs that should never appear
-//   selection — which movies the user has enabled / disabled
-//   filters   — blur / brightness / contrast / saturation sliders
+//   favorites - URLs always kept in the rotation pool
+//   blacklist - URLs that should never appear
+//   selection - which movies the user has enabled / disabled
+//   filters   - blur / brightness / contrast / saturation sliders
 //
 // All four used to live in their own keys (background_selection,
 // background_filters, ghiblify_favorites, ghiblify_blacklist) which
 // muddled the namespace and meant four separate migrations every
 // time the shape changed. Now everything lives inside
 // `ghiblify_background` and migrates from the four legacy keys on
-// first load (idempotent — runs once per page load and is a no-op
+// first load (idempotent - runs once per page load and is a no-op
 // once cleaned up).
 //
-// Persistence flows through hybridStorage — chrome.storage.local is
+// Persistence flows through hybridStorage - chrome.storage.local is
 // the source of truth, with a localStorage mirror for synchronous
 // first-paint reads. See ../storage/hybridStorage.ts.
 
@@ -106,7 +106,7 @@ const tryParseFilters = (raw: string | null): BackgroundFilters | null => {
 const migrateLegacy = () => {
   try {
     if (localStorage.getItem(KEY)) {
-      // Already migrated — sweep up any legacy stragglers.
+      // Already migrated - sweep up any legacy stragglers.
       LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
       return;
     }

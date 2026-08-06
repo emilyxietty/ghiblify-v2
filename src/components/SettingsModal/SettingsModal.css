@@ -1,4 +1,4 @@
-/* App Settings modal — permissions, a raw localStorage inspector, and
+/* App Settings modal - permissions, a raw localStorage inspector, and
    the reset. Shares the visual language of ReportModal /
    WidgetSettingsModal (backdrop, dialog surface, close button); the
    dialog is taller and scrolls internally because the storage list is
@@ -118,7 +118,7 @@
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
     /* PermissionRow renders as a real <button> (the click gesture must
        reach permissions.request()), and buttons do NOT inherit color /
-       font — the UA paints them black buttontext. Explicit inherits
+       font - the UA paints them black buttontext. Explicit inherits
        keep the button rows identical to the <label> rows. */
     color: inherit;
     font-family: inherit;
@@ -424,7 +424,7 @@
     align-self: auto;
 }
 
-/* Stored-data block inside a section — visually subordinate to the
+/* Stored-data block inside a section - visually subordinate to the
    toggles above it, so a section reads as "here's the setting, and
    here's the data behind it". */
 .settings-storage {
@@ -457,7 +457,7 @@
     color: var(--light-muted);
 }
 
-/* Segmented control — three mutually-exclusive choices in the space a
+/* Segmented control - three mutually-exclusive choices in the space a
    switch would take. */
 .settings-segmented {
     display: flex;
@@ -490,7 +490,7 @@
 }
 
 /* The permission rows are buttons rather than labels (see
-   PermissionRow), so the switch needs its own on-state class — there's
+   PermissionRow), so the switch needs its own on-state class - there's
    no :checked input to key off. */
 button.settings-toggle-row {
     width: 100%;

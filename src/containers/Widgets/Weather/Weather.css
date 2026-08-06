@@ -1,8 +1,8 @@
-/* Weather widget — no background panel, no dark/light mode. Text and
+/* Weather widget - no background panel, no dark/light mode. Text and
    icons are always white with a soft halo so they read on any photo. */
 
 /* The shell's frost slab (.widget-surface-frost) and the mood card
-   paint on DIFFERENT boxes — shell vs .weather-widget. As an
+   paint on DIFFERENT boxes - shell vs .weather-widget. As an
    inline-flex child, .weather-widget sat on the content wrapper's
    text baseline, leaving a phantom line-height strut below it that
    inflated the shell (and thus the frost slab) past the card's box.
@@ -37,7 +37,7 @@
    weather code or day/night flips on a long-open new tab. */
 .weather-widget.weather-card-on {
     /* Match the outer .widget shell's --radius-lg so the gradient
-       reaches the same rounded corners as the widget outline — no
+       reaches the same rounded corners as the widget outline - no
        photo bleeds through at the corners. */
     border-radius: var(--radius-lg);
     /* Forecast cells sit flush inside this padding, so they take the
@@ -49,7 +49,7 @@
     box-shadow:
         0 12px 32px rgba(20, 28, 48, 0.28),
         inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    /* Default fallback gradient — used when no mood is set yet
+    /* Default fallback gradient - used when no mood is set yet
        (e.g. before the first fetch resolves). */
     background: linear-gradient(
         165deg,
@@ -63,7 +63,7 @@
 
 /* --- Per-mood gradients --------------------------------------------------- */
 
-/* Clear sky — bright morning blue → warm sunlight */
+/* Clear sky - bright morning blue → warm sunlight */
 .weather-widget.weather-card-on[data-weather-mood="clear-day"] {
     background: linear-gradient(
         165deg,
@@ -73,7 +73,7 @@
     );
 }
 
-/* Clear night — deep navy → indigo with a hint of moonlight */
+/* Clear night - deep navy → indigo with a hint of moonlight */
 .weather-widget.weather-card-on[data-weather-mood="clear-night"] {
     background: linear-gradient(
         165deg,
@@ -83,7 +83,7 @@
     );
 }
 
-/* Partly cloudy day — softer blue with peach undertone */
+/* Partly cloudy day - softer blue with peach undertone */
 .weather-widget.weather-card-on[data-weather-mood="p-cloudy-day"] {
     background: linear-gradient(
         165deg,
@@ -93,7 +93,7 @@
     );
 }
 
-/* Partly cloudy night — slate with a violet wash */
+/* Partly cloudy night - slate with a violet wash */
 .weather-widget.weather-card-on[data-weather-mood="p-cloudy-night"] {
     background: linear-gradient(
         165deg,
@@ -102,7 +102,7 @@
     );
 }
 
-/* Overcast day — pale blue-grey, low saturation */
+/* Overcast day - pale blue-grey, low saturation */
 .weather-widget.weather-card-on[data-weather-mood="cloudy-day"] {
     background: linear-gradient(
         165deg,
@@ -111,7 +111,7 @@
     );
 }
 
-/* Overcast night — deeper slate */
+/* Overcast night - deeper slate */
 .weather-widget.weather-card-on[data-weather-mood="cloudy-night"] {
     background: linear-gradient(
         165deg,
@@ -120,7 +120,7 @@
     );
 }
 
-/* Rain day — wet stone, cool blue-grey */
+/* Rain day - wet stone, cool blue-grey */
 .weather-widget.weather-card-on[data-weather-mood="rain-day"] {
     background: linear-gradient(
         165deg,
@@ -129,7 +129,7 @@
     );
 }
 
-/* Rain night — almost black-blue */
+/* Rain night - almost black-blue */
 .weather-widget.weather-card-on[data-weather-mood="rain-night"] {
     background: linear-gradient(
         165deg,
@@ -138,7 +138,7 @@
     );
 }
 
-/* Snow day — pale icy blue → cool lavender → soft pink */
+/* Snow day - pale icy blue → cool lavender → soft pink */
 .weather-widget.weather-card-on[data-weather-mood="snow-day"] {
     background: linear-gradient(
         165deg,
@@ -148,7 +148,7 @@
     );
 }
 
-/* Snow night — deeper icy violet */
+/* Snow night - deeper icy violet */
 .weather-widget.weather-card-on[data-weather-mood="snow-night"] {
     background: linear-gradient(
         165deg,
@@ -157,7 +157,7 @@
     );
 }
 
-/* Fog — muted warm grey, no day/night variant (fog dims time-of-day cues) */
+/* Fog - muted warm grey, no day/night variant (fog dims time-of-day cues) */
 .weather-widget.weather-card-on[data-weather-mood="fog"] {
     background: linear-gradient(
         165deg,
@@ -166,7 +166,7 @@
     );
 }
 
-/* Thunder — dramatic indigo + violet, hint of warm flash */
+/* Thunder - dramatic indigo + violet, hint of warm flash */
 .weather-widget.weather-card-on[data-weather-mood="thunder"] {
     background: linear-gradient(
         165deg,
@@ -204,7 +204,7 @@
 }
 
 
-/* Meteocons SVG icons render as <img>. They're not text — strip the
+/* Meteocons SVG icons render as <img>. They're not text - strip the
    universal text-shadow override (it would only affect alt text), and
    use filter:drop-shadow so the icon halos cleanly on busy photos. */
 .weather-icon,
@@ -230,7 +230,7 @@
     gap: 14px;
 }
 
-/* Current-conditions icon — Meteocons SVG rendered as <img>. */
+/* Current-conditions icon - Meteocons SVG rendered as <img>. */
 .weather-icon {
     width: 56px;
     height: 56px;
@@ -300,7 +300,7 @@
     opacity: 0.85;
 }
 
-/* Forecast strip icon — smaller Meteocons SVG. */
+/* Forecast strip icon - smaller Meteocons SVG. */
 .weather-strip-icon {
     width: 28px;
     height: 28px;
@@ -325,14 +325,14 @@
     text-align: center;
     font-size: 12.5px;
     padding: 8px 4px;
-    /* The widget is width:max-content — without a cap, a sentence
+    /* The widget is width:max-content - without a cap, a sentence
        renders as one enormous unwrapped line. This keeps the state
        card-sized and lets the text wrap inside it. */
     max-width: 200px;
     white-space: normal;
     /* Same white-with-halo ink every other weather element uses.
        Nothing here set a colour, so the state inherited the page's
-       base ink — black on most themes — while the rest of the widget
+       base ink - black on most themes - while the rest of the widget
        painted white. */
     color: #ffffff;
     text-shadow:
@@ -357,7 +357,7 @@
     font-weight: 600;
 }
 
-/* Error state stacks its message over a recovery button — geolocation
+/* Error state stacks its message over a recovery button - geolocation
    is an optional permission, so "denied" is a state the user can act on
    from right here instead of hunting through chrome://extensions. */
 .weather-error {
@@ -381,7 +381,7 @@
     background: color-mix(in srgb, currentColor 22%, transparent);
 }
 
-/* Loading state — a skeleton mirroring the real widget's layout
+/* Loading state - a skeleton mirroring the real widget's layout
    (now / hourly / daily blocks the user has enabled). The skeleton
    uses shimmery placeholder bars for text fields, and reserves a
    circular spot for each icon where the spinner spins. Keeps the
@@ -496,7 +496,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Daily forecast — rows, not columns
+   Daily forecast - rows, not columns
    ---------------------------------------------------------------------------
    A row per day with a range bar, following Apple's Weather and
    Google's forecast card. Rendering days as another horizontal strip
@@ -530,7 +530,7 @@
 }
 
 /* --light is the palette's on-dark ink, so it's guaranteed to contrast
-   with the --dark-rgb tint behind it across all 14 palettes — the same
+   with the --dark-rgb tint behind it across all 14 palettes - the same
    pairing .weather-strip-cell uses. The halo the rest of the widget
    carries isn't needed on a surface, so it's dropped here. */
 .weather-days,
@@ -541,7 +541,7 @@
 
 .weather-day-row {
     display: grid;
-    /* day | icon | low | range | high — fixed columns so the numbers
+    /* day | icon | low | range | high - fixed columns so the numbers
        line up vertically down the list, which is the whole point of
        rows over columns. */
     grid-template-columns: 2.6em 1.6em 2.4em 1fr 2.4em;
@@ -620,7 +620,7 @@
    When `WeatherSettings.iconsOnly` is on, the widget root gets a
    `.weather-icons-only` class. Every text element (temperature,
    condition, feels-like, hour / weekday labels, hi/lo temps) is
-   visually hidden — the icons themselves stay. Hidden via
+   visually hidden - the icons themselves stay. Hidden via
    `display: none` rather than `visibility: hidden` so the strip
    cells collapse around their icons (no gaps where text used to be).
    --------------------------------------------------------------------------- */
@@ -635,7 +635,7 @@
 }
 
 /* With the labels and bars gone, the daily list collapses to a row of
-   icons — the same shape the hourly strip takes in this mode. The
+   icons - the same shape the hourly strip takes in this mode. The
    surface goes with them: a wide empty panel behind a few icons reads
    as a bug. */
 .weather-widget.weather-icons-only .weather-days {

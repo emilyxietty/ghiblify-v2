@@ -32,21 +32,21 @@ export interface TimeSettings {
   textShadow: number;
   /** When true, render a round analog dial (hour/minute/second hands)
    *  instead of the digital readout. is24Hour is ignored in analog
-   *  mode — the dial always shows 12 numerals. */
+   *  mode - the dial always shows 12 numerals. */
   analog: boolean;
   highlightColor: HighlightColor;
   /** Ink on top of the highlight. "auto" picks from the highlight's
    *  luminance; light/dark are the user overruling that. */
   highlightTextColor: HighlightTextColor;
-  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+  /** 0–100 - how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
-  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+  /** Frosted-glass mode for the highlight bar - adds a backdrop blur
    *  behind the text so the wallpaper diffuses through the tint.
    *  Composes with colour + opacity (drop opacity low for near-pure
    *  glass). Absent/false = classic solid highlighter. */
   highlightFrost?: boolean;
-  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  /** 0–100 - backdrop blur strength for a frosted highlight. */
   highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
@@ -63,15 +63,15 @@ export interface DateSettings {
   /** Ink on top of the highlight. "auto" picks from the highlight's
    *  luminance; light/dark are the user overruling that. */
   highlightTextColor: HighlightTextColor;
-  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+  /** 0–100 - how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
-  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+  /** Frosted-glass mode for the highlight bar - adds a backdrop blur
    *  behind the text so the wallpaper diffuses through the tint.
    *  Composes with colour + opacity (drop opacity low for near-pure
    *  glass). Absent/false = classic solid highlighter. */
   highlightFrost?: boolean;
-  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  /** 0–100 - backdrop blur strength for a frosted highlight. */
   highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
@@ -85,15 +85,15 @@ export interface GreetingSettings {
   /** Ink on top of the highlight. "auto" picks from the highlight's
    *  luminance; light/dark are the user overruling that. */
   highlightTextColor: HighlightTextColor;
-  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+  /** 0–100 - how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
-  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+  /** Frosted-glass mode for the highlight bar - adds a backdrop blur
    *  behind the text so the wallpaper diffuses through the tint.
    *  Composes with colour + opacity (drop opacity low for near-pure
    *  glass). Absent/false = classic solid highlighter. */
   highlightFrost?: boolean;
-  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  /** 0–100 - backdrop blur strength for a frosted highlight. */
   highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
@@ -107,15 +107,15 @@ export interface InfoSettings {
   /** Ink on top of the highlight. "auto" picks from the highlight's
    *  luminance; light/dark are the user overruling that. */
   highlightTextColor: HighlightTextColor;
-  /** 0–100 — how solid the highlight bar is. Kept apart from the colour
+  /** 0–100 - how solid the highlight bar is. Kept apart from the colour
    *  so picking a new swatch doesn't reset it. */
   highlightOpacity: number;
-  /** Frosted-glass mode for the highlight bar — adds a backdrop blur
+  /** Frosted-glass mode for the highlight bar - adds a backdrop blur
    *  behind the text so the wallpaper diffuses through the tint.
    *  Composes with colour + opacity (drop opacity low for near-pure
    *  glass). Absent/false = classic solid highlighter. */
   highlightFrost?: boolean;
-  /** 0–100 — backdrop blur strength for a frosted highlight. */
+  /** 0–100 - backdrop blur strength for a frosted highlight. */
   highlightBlur?: number;
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
@@ -125,22 +125,22 @@ export interface TodoSettings {
   width: number;
   height: number;
   collapsed: boolean;
-  /** 0–100 — controls the alpha of the surface tint on non-Frost
+  /** 0–100 - controls the alpha of the surface tint on non-Frost
    *  themes. Default 75. */
   opacity: number;
-  /** 0–100 — controls Frost glass blur intensity. Independent from
+  /** 0–100 - controls Frost glass blur intensity. Independent from
    *  opacity so each can have its own ergonomic default. Default 25. */
   blur: number;
-  /** Frosted-glass surface on any theme — shell-level wallpaper blur
+  /** Frosted-glass surface on any theme - shell-level wallpaper blur
    *  with near-transparent item cards (same glass the sticky note
    *  offers via its paper swatches). Default false. */
   frosted?: boolean;
-  /** Dark ("smoked") variant of the frosted glass — same blur with a
+  /** Dark ("smoked") variant of the frosted glass - same blur with a
    *  dark tint on the shell. Only meaningful while `frosted` is true.
    *  Default false (light glass). */
   frostDark?: boolean;
   /** Surface tint. null/absent = the theme's --surface-rgb. Deep-tone
-   *  presets only (todo text is var(--light)) — same palette as the
+   *  presets only (todo text is var(--light)) - same palette as the
    *  pomodoro card. */
   surfaceColor?: string | null;
 }
@@ -153,29 +153,29 @@ export interface QuicklinksSettings {
   height: number;
   gridMode: boolean;
   links: QuicklinkItem[];
-  /** 0–100 — controls the alpha of link tile surfaces (non-Frost). */
+  /** 0–100 - controls the alpha of link tile surfaces (non-Frost). */
   opacity: number;
-  /** 0–100 — Frost blur intensity for tiles. */
+  /** 0–100 - Frost blur intensity for tiles. */
   blur: number;
-  /** Frosted-glass surface (shell-level wallpaper blur) — same model
+  /** Frosted-glass surface (shell-level wallpaper blur) - same model
    *  as todo/weather. Default false. */
   frosted?: boolean;
   /** Dark ("smoked") glass variant; only meaningful while frosted. */
   frostDark?: boolean;
-  /** Surface tint override — an "r, g, b"-able hex. null/absent = the
+  /** Surface tint override - an "r, g, b"-able hex. null/absent = the
    *  theme's --dark-rgb. Deep tones only (tile text is var(--light)). */
   surfaceColor?: string | null;
 }
 export interface SearchBarSettings {
   width: number;
   height: number;
-  /** 0–100 — controls the alpha of input + button surface (non-Frost). */
+  /** 0–100 - controls the alpha of input + button surface (non-Frost). */
   opacity: number;
-  /** 0–100 — Frost blur intensity. */
+  /** 0–100 - Frost blur intensity. */
   blur: number;
 }
 // Pomodoro owns its own localStorage for the timer state + leader
-// election. The settings here are just the visual chrome — size
+// election. The settings here are just the visual chrome - size
 // preset (small / medium / large) and opacity. The card snaps
 // to one of three preset footprints rather than free-resizing,
 // so each size has its own dedicated layout (small hides text
@@ -184,12 +184,12 @@ export type PomodoroSize = "small" | "medium" | "large";
 
 export interface PomodoroSettings {
   size: PomodoroSize;
-  /** 0–100 — surface alpha, drives the card's background opacity. */
+  /** 0–100 - surface alpha, drives the card's background opacity. */
   opacity: number;
   /** Chime played when a focus or break period runs out. Synthesised
-   *  at playback time — see `utils/pomodoroChime.ts`. "none" is silent. */
+   *  at playback time - see `utils/pomodoroChime.ts`. "none" is silent. */
   sound: PomodoroSoundKey;
-  /** 0–100 — chime volume. Independent of `opacity`; 0 is silent and
+  /** 0–100 - chime volume. Independent of `opacity`; 0 is silent and
    *  is the same end state as `sound: "none"`. */
   soundVolume: number;
   /** Focus-mode card base colour. null/absent = the theme's
@@ -199,7 +199,7 @@ export interface PomodoroSettings {
   cardColor?: string | null;
 }
 
-/** Pomodoro card swatches — deep tones only; the card's text is
+/** Pomodoro card swatches - deep tones only; the card's text is
  *  var(--light) and must stay readable on every pick. Default (theme
  *  purple) renders as its own leading swatch, stored as null. */
 export const POMODORO_CARD_PRESETS = [
@@ -213,8 +213,8 @@ export const POMODORO_CARD_PRESETS = [
  * How much forecast the widget shows.
  *
  * This is one scale, not three independent switches: each step is a
- * superset of the one before it. The previous model — a checkbox each
- * for now / hourly / daily, plus a separate "icons only" toggle — could
+ * superset of the one before it. The previous model - a checkbox each
+ * for now / hourly / daily, plus a separate "icons only" toggle - could
  * express states nobody wants (daily without hourly) and one that
  * doesn't render at all, which is why it needed a "keep at least one
  * on" rule and a disabled-checkbox state to police itself. A scale has
@@ -260,23 +260,23 @@ export const resolveWeatherDetail = (
 export interface WeatherSettings {
   /** "C" = Celsius, "F" = Fahrenheit. */
   unit: "C" | "F";
-  /** How much forecast to show — see WEATHER_DETAILS. */
+  /** How much forecast to show - see WEATHER_DETAILS. */
   detail: WeatherDetail;
-  /** 0–100 — alpha of the hourly/daily forecast cell backgrounds
+  /** 0–100 - alpha of the hourly/daily forecast cell backgrounds
    *  (non-Frost). The widget itself stays transparent; only the cells
    *  use this. */
   opacity: number;
-  /** 0–100 — Frost blur intensity for the widget shell. */
+  /** 0–100 - Frost blur intensity for the widget shell. */
   blur: number;
-  /** Frosted-glass surface on any theme — shell-level wallpaper blur
+  /** Frosted-glass surface on any theme - shell-level wallpaper blur
    *  with near-transparent cells (same glass as todo/notes). Default
    *  false. */
   frosted?: boolean;
-  /** Dark ("smoked") variant of the frosted glass — same blur with a
+  /** Dark ("smoked") variant of the frosted glass - same blur with a
    *  dark tint on the shell. Only meaningful while `frosted` is true.
    *  Default false (light glass). */
   frostDark?: boolean;
-  /** "animated" = Meteocons SMIL-animated SVG (default — sun glints,
+  /** "animated" = Meteocons SMIL-animated SVG (default - sun glints,
    *  rain falls). "still" = single-frame static variant for users who
    *  prefer no motion (or to save battery). */
   iconStyle: "animated" | "still";
@@ -292,7 +292,7 @@ export interface WeatherSettings {
   manualPlace: ManualPlace | null;
   /** Whether the widget may ask the device where it is. Chrome won't
    *  let `geolocation` be an optional permission, so this app-level
-   *  switch — not a Chrome grant — is what the privacy toggle controls:
+   *  switch - not a Chrome grant - is what the privacy toggle controls:
    *  off means the API is never called. */
   useDeviceLocation: boolean;
 }
@@ -301,12 +301,12 @@ export interface WeatherSettings {
 // and the sidebar toggle row can include it. Settings and position are
 // unused.
 export type BookmarksSettings = Record<string, never>;
-// Right Sidebar is a meta-widget — toggling it on enables a persistent
+// Right Sidebar is a meta-widget - toggling it on enables a persistent
 // right-side dock that hosts other widgets. Position and settings are
 // unused; the dock contents come from each widget's `inRightSidebar`
 // flag (added in a later chunk).
 export type RightSidebarSettings = Record<string, never>;
-/** Google corner — waffle apps menu + account button. Stateless. */
+/** Google corner - waffle apps menu + account button. Stateless. */
 export type GoogleAppsSettings = Record<string, never>;
 export interface NotesSettings {
   width: number;
@@ -318,7 +318,7 @@ export interface NotesSettings {
    *  import from it. Never read for display when `richContent`
    *  parses. */
   content: string;
-  /** Serialized Lexical EditorState JSON — the rich source of truth
+  /** Serialized Lexical EditorState JSON - the rich source of truth
    *  (bold / highlight / checklists). Absent on legacy notes; the
    *  editor then imports `content` line-by-line as literal plain
    *  paragraphs so old notes render exactly as they did in the
@@ -334,7 +334,7 @@ export interface NotesSettings {
   /** Remove the paper fill entirely. Border art remains independently
    *  controlled by showBorder. */
   paperNone?: boolean;
-  /** Frosted-glass paper — the tint goes translucent and the wallpaper
+  /** Frosted-glass paper - the tint goes translucent and the wallpaper
    *  blurs through the note. Default false (solid paper). */
   paperFrost?: boolean;
   /** Paper intensity (0–100). Drives the generic --widget-opacity
@@ -382,7 +382,7 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
 
 /** Surface-frost resolution. An EXPLICIT user choice (true/false,
  *  written by the surface chips) always wins; untouched (undefined)
- *  follows the palette — the Frost theme defaults frost-capable
+ *  follows the palette - the Frost theme defaults frost-capable
  *  widgets to glass, every other theme to solid. Render-time only:
  *  switching themes never rewrites anyone's stored settings. */
 export const resolveSurfaceFrost = (
@@ -406,7 +406,7 @@ export interface CustomControls {
   gridMode?: boolean;
   darkMode?: boolean;
   weatherUnit?: boolean;
-  /** Detail scale — replaces the old sections + icons-only pair. */
+  /** Detail scale - replaces the old sections + icons-only pair. */
   weatherDetail?: boolean;
   /** Card + icon animation, as one visual group. */
   weatherStyle?: boolean;
@@ -425,7 +425,7 @@ export interface CustomControls {
   pomodoroColor?: boolean;
 }
 
-/** Sticky-note paper swatches — the classic pad colours. First entry
+/** Sticky-note paper swatches - the classic pad colours. First entry
  *  is the shipped cream default (stored as null so pre-feature blobs
  *  and "never touched it" mean the same thing). */
 export const NOTE_PAPER_PRESETS = [
@@ -446,7 +446,7 @@ export interface WidgetConfig<K extends WidgetKey> {
   height?: ResizeBound;
   size?: ResizeBound;
   customControls?: CustomControls;
-  /** When true, width and height are tied during drag-resize — both
+  /** When true, width and height are tied during drag-resize - both
    *  follow the larger of the two dimensions so the widget always
    *  stays square. (Used by Notes so the cardborder.svg never
    *  letterboxes.) */
@@ -558,7 +558,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       links: [],
       opacity: 75,
       blur: 10,
-      // `frosted` intentionally absent — see the todo note.
+      // `frosted` intentionally absent - see the todo note.
       surfaceColor: null,
     },
     width: { min: 200, max: 600, step: 100 },
@@ -572,7 +572,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     settings: { width: 550, height: 64, opacity: 75, blur: 10 },
     width: { min: 200, max: 800, step: 25 },
     // These are reference px against a 1920-wide viewport, so they
-    // render smaller on a laptop — 64 lands at ~48 real px on a 1440
+    // render smaller on a laptop - 64 lands at ~48 real px on a 1440
     // screen, which is the Google pill's height. The floor was 20 back
     // when this was a thin input; the pill carries 34px icon buttons.
     height: { min: 48, max: 96, step: 4 },
@@ -587,7 +587,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       soundVolume: 70,
       cardColor: null,
     },
-    // No width/height ResizeBound — Pomodoro snaps to small /
+    // No width/height ResizeBound - Pomodoro snaps to small /
     // medium / large via the right-click size radio (or the
     // EditWidget overlay) rather than free-resize, so each preset
     // has its own crafted layout.
@@ -599,7 +599,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   bookmarks: {
     name: "Bookmarks",
-    // Position unused — bookmarks renders as a right-side panel, not a
+    // Position unused - bookmarks renders as a right-side panel, not a
     // positioned tile. Visible defaults to false so existing users don't
     // suddenly get a new panel.
     position: { x: 50, y: 50 },
@@ -617,9 +617,9 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       showCard: false,
       manualPlace: null,
       useDeviceLocation: true,
-      // `frosted` intentionally absent — see the todo note.
+      // `frosted` intentionally absent - see the todo note.
     },
-    // No width/height ResizeBound — widget auto-sizes to content.
+    // No width/height ResizeBound - widget auto-sizes to content.
     customControls: {
       weatherUnit: true,
       weatherDetail: true,
@@ -653,7 +653,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   googleApps: {
     name: "Google apps",
-    // Top-right region, mirroring Google's own NTP cluster — inset a
+    // Top-right region, mirroring Google's own NTP cluster - inset a
     // touch from the true corner so it clears the weather widget and
     // the screen edge.
     position: { x: 93, y: 5 },
@@ -661,7 +661,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   rightSidebar: {
     name: "Right Sidebar",
-    // Position unused — the right sidebar is a fixed-position dock,
+    // Position unused - the right sidebar is a fixed-position dock,
     // not a positioned tile. Visibility drives the dock surface; the
     // dock's contents are routed there by each widget's
     // inRightSidebar flag (introduced in a later chunk).

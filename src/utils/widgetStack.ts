@@ -7,10 +7,10 @@ import { isWidgetKey, type WidgetKey } from "../config/widgetConfig";
  * bound and eventually collides with the chrome layers at 2000+), we
  * keep the RELATIVE ORDER of recently-raised widgets, bottom → top.
  * A widget's z-index is BASE + its position in that order, so the
- * whole band stays within [BASE, BASE + widget count] forever — the
+ * whole band stays within [BASE, BASE + widget count] forever - the
  * list is a permutation, not a counter.
  *
- * Persisted so the stack survives reloads — a new tab opens with the
+ * Persisted so the stack survives reloads - a new tab opens with the
  * same widget on top that you left on top.
  */
 
@@ -31,7 +31,7 @@ const loadOrder = (): readonly WidgetKey[] => {
   }
 };
 
-// Bottom → top. Widgets never clicked aren't in the list — they sit at
+// Bottom → top. Widgets never clicked aren't in the list - they sit at
 // BASE, below everything that has been raised.
 let order: readonly WidgetKey[] = loadOrder();
 const listeners = new Set<() => void>();
@@ -42,7 +42,7 @@ export function bringWidgetToFront(key: WidgetKey): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
   } catch {
-    // Storage full / unavailable — stacking still works for the session.
+    // Storage full / unavailable - stacking still works for the session.
   }
   listeners.forEach((l) => l());
 }

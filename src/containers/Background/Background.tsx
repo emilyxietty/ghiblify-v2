@@ -83,7 +83,7 @@ export const Background: React.FC<BackgroundProps> = ({
 
   return (
     <div className="background">
-      {/* No onContextMenu here — right-click on the empty background
+      {/* No onContextMenu here - right-click on the empty background
           area falls through to Chrome's native menu (back / forward
           / reload / save image / inspect). Widgets still get our
           custom menu via their own onContextMenu (which calls

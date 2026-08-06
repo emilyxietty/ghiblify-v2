@@ -1,4 +1,4 @@
-/* Report-issue modal — same visual language as the welcome modal but
+/* Report-issue modal - same visual language as the welcome modal but
    smaller. Backdrop click and Esc both close. */
 
 .report-backdrop {
@@ -140,7 +140,7 @@
     background: color-mix(in srgb, var(--light) 14%, transparent);
 }
 
-/* Discord invite card — secondary path. Reads as a clickable tile
+/* Discord invite card - secondary path. Reads as a clickable tile
    (border + hover lift) so it doesn't blend into the surrounding
    text. The chat icon hints at "chat with me" rather than "email
    me". */

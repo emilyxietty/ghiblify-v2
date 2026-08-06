@@ -1,4 +1,4 @@
-/* Greeting widget — plain text over the photo, white with a soft halo
+/* Greeting widget - plain text over the photo, white with a soft halo
    so it reads against any background. The name segment is a button
    that turns into an inline input on click. */
 
@@ -42,7 +42,7 @@
 .greeting-name {
     background: transparent;
     border: none;
-    /* No persistent underline — the name reads as plain text. The
+    /* No persistent underline - the name reads as plain text. The
        underline only appears on hover/focus to signal it's editable. */
     border-bottom: 2px solid transparent;
     cursor: pointer;
@@ -57,7 +57,7 @@
     outline: none;
 }
 
-/* Empty button still needs a visible affordance — keep a subtle
+/* Empty button still needs a visible affordance - keep a subtle
    dashed underline + a clickable target width. */
 .greeting-name-empty {
     display: inline-block;

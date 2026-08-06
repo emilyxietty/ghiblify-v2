@@ -1,4 +1,4 @@
-/* Highlight colour picker — a chip-bearing trigger in the widget edit
+/* Highlight colour picker - a chip-bearing trigger in the widget edit
    strip plus a drop panel with recents, presets and a free-form hex
    field. Surface treatment matches WeatherLocationPicker so the edit
    overlay's popovers read as one family. */
@@ -6,7 +6,7 @@
 .color-picker {
     position: relative;
     /* One fixed row of nine chips, evenly distributed across the full
-       panel width — a deterministic count never wraps, so the strip
+       panel width - a deterministic count never wraps, so the strip
        always reads as a designed unit rather than a ragged grid. */
     display: flex;
     align-items: center;
@@ -38,7 +38,7 @@
     box-shadow: 0 0 0 2px var(--light);
 }
 
-/* Live demo bar at the top of the hovercard — renders "Aa" in the
+/* Live demo bar at the top of the hovercard - renders "Aa" in the
    resolved ink on the colour being hovered/committed at the current
    opacity, so sweeping the strip previews the pill inside the card
    as well as on the widget itself. */
@@ -56,12 +56,12 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Fine-tuning hovercard — opacity / blur / ink float above the strip
+   Fine-tuning hovercard - opacity / blur / ink float above the strip
    on hover or keyboard focus, instead of claiming permanent rows in
    the edit panel. The bridge's padding keeps the hover unbroken while
    the cursor travels from strip to card.
    --------------------------------------------------------------------------- */
-/* Portaled to <body> and positioned above the strip in fixed coords —
+/* Portaled to <body> and positioned above the strip in fixed coords -
    inside the strip it was clipped by the edit panel's overflow.
    Open/close is JS-managed hover with a 100ms grace timer (see
    ColorPicker.tsx), so leaving genuinely closes it. */
@@ -71,7 +71,7 @@
     box-sizing: border-box;
 }
 
-/* Chevron — expands the edit panel's tuning column. Chip-sized to
+/* Chevron - expands the edit panel's tuning column. Chip-sized to
    sit in the strip; dimmed when no colour is active (nothing to
    tune); flips to point back while open. */
 .color-picker-expand {
@@ -120,7 +120,7 @@
     padding: 10px 12px;
     /* Fully opaque, matching the edit panel's surface exactly (same
        --surface-rgb token, alpha 1 instead of the panel's 0.96) so
-       the card reads as part of the same chrome — not a translucent
+       the card reads as part of the same chrome - not a translucent
        layer floating over widget content. */
     background: rgb(var(--surface-rgb, 31, 38, 32));
     border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
@@ -235,7 +235,7 @@
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-/* "Off" reads as an empty slot rather than as a colour — a diagonal
+/* "Off" reads as an empty slot rather than as a colour - a diagonal
    slash through a transparent chip. */
 .color-picker-chip.is-empty {
     background:
@@ -249,11 +249,11 @@
 }
 
 .color-picker-panel {
-    /* Position comes from JS (fixed, viewport coords) — the panel is
+    /* Position comes from JS (fixed, viewport coords) - the panel is
        portalled to <body> so it can't be trapped by the stacking
        context or overflow of whatever opened it. */
     /* Opens from the edit panel AND from the right-click menu, so it
-       has to clear both — the shared portal tier does. */
+       has to clear both - the shared portal tier does. */
     z-index: var(--z-portal);
     width: 196px;
     padding: 10px;
@@ -384,8 +384,8 @@
     border-color: color-mix(in srgb, var(--red) 60%, transparent);
 }
 
-/* White / black ink choice. The two swatch buttons preview themselves —
-   the same words in the same colour they'd produce. */
+/* White / black ink choice. The two swatch buttons preview themselves - the
+   same words in the same colour they'd produce. */
 .color-picker-text-modes {
     display: flex;
     gap: 6px;
@@ -407,8 +407,8 @@
     border-color: var(--light);
 }
 
-/* Opacity steps preview themselves — same colour, the alpha each would
-   apply — so the choice is visible rather than numeric. */
+/* Opacity steps preview themselves - same colour, the alpha each would
+   apply - so the choice is visible rather than numeric. */
 .color-picker-opacity {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -434,8 +434,8 @@
 }
 
 
-/* Inside the narrow side column, rows STACK (label above control) —
-   the label-left layout that works at panel width piles controls on
+/* Inside the narrow side column, rows STACK (label above control) - the
+   label-left layout that works at panel width piles controls on
    top of each other at ~150px. */
 .highlight-tuning .color-picker-hovercard-row {
     flex-direction: column;

@@ -86,7 +86,7 @@ const useChromeBookmarks = (active: boolean) => {
           key: "bookmarks.errorLoad",
           message: (err as Error).message ?? "unknown",
         });
-        // Helpful for debugging — also log to console.
+        // Helpful for debugging - also log to console.
         // eslint-disable-next-line no-console
         console.error("[RightSidebar] bookmarks error:", err);
       }
@@ -152,7 +152,7 @@ const moveBookmark = (id: string, parentId: string, index?: number) => {
     if (index !== undefined && index >= 0) dest.index = index;
     chromeNs.bookmarks.move(id, dest);
   } catch {
-    /* ignore — onChanged listener will refresh on success */
+    /* ignore - onChanged listener will refresh on success */
   }
 };
 
@@ -276,11 +276,11 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
     return node.children.filter((c) => matches(c, filter));
   }, [node.children, filter, filtering]);
 
-  // Drop INTO this folder — append the dragged bookmark to the end.
+  // Drop INTO this folder - append the dragged bookmark to the end.
   // stopPropagation is critical: drag events bubble, so a drop on a
   // nested folder would otherwise also fire every ancestor folder's
   // handleFolderDrop, and the outermost ancestor's moveBookmark call
-  // would win — bookmarks always landing in the root-level folder
+  // would win - bookmarks always landing in the root-level folder
   // regardless of where you actually dropped.
   const handleFolderDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -294,7 +294,7 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
     drag.endDrag();
   };
 
-  // Drop ON a child link — insert at the link's position with
+  // Drop ON a child link - insert at the link's position with
   // before/after offset. Reads from refs so the latest hover is
   // always correct even before React commits the dragOver render.
   const handleChildDrop = (childId: string) => {
@@ -405,7 +405,7 @@ interface BookmarkLinkProps {
   node: BookmarkNode;
   draggable: boolean;
   onDrop: () => void;
-  /** Folder nesting level — used to indent the link tile so it lines
+  /** Folder nesting level - used to indent the link tile so it lines
    *  up under its sibling folders' chevrons (which already use
    *  `paddingLeft: 8 + depth * 28`). */
   depth: number;
@@ -465,7 +465,7 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
         // stopPropagation so the parent folder's onDragOver doesn't
         // overwrite this link's hover state with hoverFolder. Without
         // it, hover.kind ends up "folder" and handleChildDrop bails
-        // (it requires hover.kind === "link") — same-folder reorders
+        // (it requires hover.kind === "link") - same-folder reorders
         // silently fall through to the parent's handleFolderDrop which
         // appends to the end instead of inserting at position.
         e.stopPropagation();
@@ -506,7 +506,7 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
           if (drag.draggedId) e.preventDefault();
         }}
         // Bind contextmenu on the <a> directly. Relying on bubble-up
-        // to the parent <li> isn't reliable for link elements —
+        // to the parent <li> isn't reliable for link elements -
         // Chrome can show its native link menu (Open in New Tab, …)
         // before React's synthetic event preventDefault takes effect.
         onContextMenu={(e) => {
@@ -551,7 +551,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const sidebarRef = useRef<HTMLElement | null>(null);
-  // `bookmarks` is an optional permission — the panel can be enabled
+  // `bookmarks` is an optional permission - the panel can be enabled
   // without it, so ask for the tree only once the grant is in hand and
   // otherwise show the prompt below. `granted === null` means "still
   // checking", which renders as loading rather than as a prompt flash.
@@ -611,14 +611,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
-  // Cmd/Ctrl+B toggles the bookmarks panel — mirrors the Cmd/Ctrl+K
+  // Cmd/Ctrl+B toggles the bookmarks panel - mirrors the Cmd/Ctrl+K
   // sidebar shortcut on the left. Only active when bookmarks widget
   // is enabled, otherwise pressing the combo would have no visible
   // effect.
   useEffect(() => {
     if (!visible) return;
     const handler = (e: KeyboardEvent) => {
-      // Not while typing somewhere editable — Cmd+B in the Notes
+      // Not while typing somewhere editable - Cmd+B in the Notes
       // editor is "bold", not "toggle bookmarks".
       if (isEditableTarget(e.target)) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {

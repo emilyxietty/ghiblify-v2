@@ -29,7 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   ...props
 }) => {
-  // Only treat as icon-only when there are no text children — otherwise
+  // Only treat as icon-only when there are no text children - otherwise
   // .btn-icon's uniform padding + no-border override makes text look
   // off-center inside the button.
   const isIconOnly = !!icon && !children;

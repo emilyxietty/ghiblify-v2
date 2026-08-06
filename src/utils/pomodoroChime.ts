@@ -8,8 +8,8 @@
  * extension), and timbre/volume stay tunable from settings without
  * re-encoding anything.
  *
- * The palette leans on struck-idiophone timbres — music box, bell,
- * kalimba, wind chime — over pentatonic intervals, which is the
+ * The palette leans on struck-idiophone timbres - music box, bell,
+ * kalimba, wind chime - over pentatonic intervals, which is the
  * register the films' scores live in. Names match the characters
  * already used for the widget's break GIFs so the picker reads as one
  * set.
@@ -41,7 +41,7 @@ export const isPomodoroSoundKey = (v: unknown): v is PomodoroSoundKey =>
 interface Partial {
   /** Frequency as a multiple of the note's fundamental. Non-integer
    *  ratios are what make a bell read as metal rather than as an
-   *  organ — real bells are inharmonic. */
+   *  organ - real bells are inharmonic. */
   ratio: number;
   /** Peak gain relative to the voice's own gain. */
   gain: number;
@@ -55,7 +55,7 @@ interface Timbre {
 }
 
 const TIMBRES: Record<string, Timbre> = {
-  // Long, glassy, clearly inharmonic — a struck bell.
+  // Long, glassy, clearly inharmonic - a struck bell.
   bell: {
     wave: "sine",
     partials: [
@@ -73,7 +73,7 @@ const TIMBRES: Record<string, Timbre> = {
       { ratio: 6.1, gain: 0.07, decay: 0.35 },
     ],
   },
-  // Warm and round with almost no overtone — a thumb piano.
+  // Warm and round with almost no overtone - a thumb piano.
   kalimba: {
     wave: "sine",
     partials: [
@@ -81,7 +81,7 @@ const TIMBRES: Record<string, Timbre> = {
       { ratio: 2.0, gain: 0.14, decay: 0.4 },
     ],
   },
-  // Blunt and quick — struck wood, barely any ring.
+  // Blunt and quick - struck wood, barely any ring.
   wood: {
     wave: "sine",
     partials: [
@@ -105,7 +105,7 @@ interface Preset {
   notes: Note[];
 }
 
-// Pentatonic figures — no semitone clashes, so they stay consonant
+// Pentatonic figures - no semitone clashes, so they stay consonant
 // however they overlap as the tails ring into each other.
 const PRESETS: Record<Exclude<PomodoroSoundKey, "none">, Preset> = {
   // Rising major triad, unhurried. The default.
@@ -117,7 +117,7 @@ const PRESETS: Record<Exclude<PomodoroSoundKey, "none">, Preset> = {
       { semitone: 22, at: 0.3, gain: 0.9 }, // G6
     ],
   },
-  // Quick, light, slightly mischievous — high and clipped.
+  // Quick, light, slightly mischievous - high and clipped.
   sootsprite: {
     timbre: "wood",
     notes: [
@@ -127,7 +127,7 @@ const PRESETS: Record<Exclude<PomodoroSoundKey, "none">, Preset> = {
       { semitone: 26, at: 0.3, gain: 0.5 },
     ],
   },
-  // Low, warm and rounded — the softest of the set.
+  // Low, warm and rounded - the softest of the set.
   catbus: {
     timbre: "kalimba",
     notes: [
@@ -147,7 +147,7 @@ const PRESETS: Record<Exclude<PomodoroSoundKey, "none">, Preset> = {
       { semitone: 24, at: 0.7, gain: 0.3 },
     ],
   },
-  // Two hollow knocks, then a tone — the tree-spirit head-rattle.
+  // Two hollow knocks, then a tone - the tree-spirit head-rattle.
   kodama: {
     timbre: "wood",
     notes: [
@@ -176,7 +176,7 @@ const getCtx = (): AudioContext | null => {
     window.AudioContext ||
     (window as unknown as { webkitAudioContext?: typeof AudioContext })
       .webkitAudioContext;
-  if (!Ctor) return null; // No Web Audio — chimes degrade to silence.
+  if (!Ctor) return null; // No Web Audio - chimes degrade to silence.
   try {
     ctx = new Ctor();
   } catch {
@@ -193,7 +193,7 @@ const getCtx = (): AudioContext | null => {
  * pomodoro fires 25 minutes after the click that started it, long past
  * the transient-activation window, so we create and unsuspend the
  * context *during* the click instead. Once running, it stays running
- * and the later chime plays. Cheap and idempotent — safe to call on
+ * and the later chime plays. Cheap and idempotent - safe to call on
  * every start/preview.
  */
 export const primePomodoroAudio = (): void => {
@@ -250,7 +250,7 @@ export const playPomodoroChime = (
   const preset = PRESETS[sound as Exclude<PomodoroSoundKey, "none">];
   if (!preset) return;
 
-  // Clamp defensively — settings come from localStorage and may have
+  // Clamp defensively - settings come from localStorage and may have
   // been hand-edited or carried over from an older shape.
   const vol = Math.min(100, Math.max(0, Number(volume)));
   if (!Number.isFinite(vol) || vol === 0) return;
@@ -262,7 +262,7 @@ export const playPomodoroChime = (
   const master = c.createGain();
   // Square-law taper: linear gain reads as very loud across the top of
   // the slider, so square it for a more even-feeling sweep. The 0.28
-  // ceiling keeps a full-volume chime gentle — this is a focus timer,
+  // ceiling keeps a full-volume chime gentle - this is a focus timer,
   // not an alarm clock.
   const scaled = (vol / 100) ** 2 * 0.28;
   master.gain.value = scaled;

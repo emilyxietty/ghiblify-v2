@@ -1,6 +1,6 @@
 /* Default vars (was :root in App.css) */
 :root {
-    /* Text — same across themes (themes can override if they want) */
+    /* Text - same across themes (themes can override if they want) */
     --light: rgba(240, 227, 196, 0.95);
     --light-muted: rgba(240, 227, 196, 0.6);
 
@@ -17,7 +17,7 @@
     --sidebar-bg: rgba(31, 38, 32, 0.86);
     --sidebar-card: rgba(20, 26, 22, 0.55);
 
-    /* Focus ring — soft pink, palette-agnostic. Reads as "active"
+    /* Focus ring - soft pink, palette-agnostic. Reads as "active"
        on every backdrop without competing with the warm palette
        accents (which use --yellow). Light/dark/frost themes
        override below for contrast reasons. */
@@ -30,12 +30,12 @@
     /* Border-radius scale. Use these instead of ad-hoc px values so
        the corner softness reads as a coherent system across widgets,
        inputs, popovers, and modals.
-         xs — micro: scrollbar thumbs, tiny chips
-         sm — small detail: kbd, tooltip, base button
-         md — inputs, link tiles, small image surfaces
-         lg — widget shells, popovers, dropdown menus
-         xl — modals, large container surfaces
-         pill — pill buttons, segments, nav arrows
+         xs - micro: scrollbar thumbs, tiny chips
+         sm - small detail: kbd, tooltip, base button
+         md - inputs, link tiles, small image surfaces
+         lg - widget shells, popovers, dropdown menus
+         xl - modals, large container surfaces
+         pill - pill buttons, segments, nav arrows
 
        Every step derives from --radius-unit, so the whole system moves
        together when the user picks a corner style (Settings →
@@ -51,11 +51,11 @@
 
     /* Concentric corners. A surface sitting flush inside another, with
        `--nest-inset` of padding between them, needs its own radius to
-       be the outer one MINUS that inset — otherwise the two curves run
+       be the outer one MINUS that inset - otherwise the two curves run
        at different rates and the gap between them visibly pinches at
        the corners. Containers set --nest-inset; children use these.
        Floored at 0 so a tight inset can't produce a negative radius. */
-    /* Interactive controls — inputs, add-buttons, pills. One step
+    /* Interactive controls - inputs, add-buttons, pills. One step
        rounder than a surface, so at "Soft" a 38px-tall input reads as a
        capsule while a card stays a card. */
     --radius-control: var(--radius-lg);
@@ -67,7 +67,7 @@
     --pad-scale: 1;
 
     /* Corner rounding for the text-highlight bar. Expressed in em so it
-       tracks the font size — the same px radius that reads as "rounded"
+       tracks the font size - the same px radius that reads as "rounded"
        on 16px Info text is invisible behind a 200px clock. */
     --text-highlight-radius: 0.16em;
 
@@ -90,8 +90,8 @@
        to read through, regardless of where the user puts the slider. */
     --surface-alpha-cap: 1;
 
-    /* Surface RGB triple for widget cards / modals / tooltips —
-       anything that paints `rgba(<this>, alpha)` as its background.
+    /* Surface RGB triple for widget cards / modals / tooltips - anything
+       that paints `rgba(<this>, alpha)` as its background.
        Defaults to the active palette's --dark-rgb so widgets pick
        up the palette tint on most themes.
        The Frost theme remaps --dark-rgb to white (because Frost is
@@ -106,33 +106,33 @@
     /* Z-index tiers. Use these instead of ad-hoc values so layers
        compose predictably. Existing in-stacking-context values
        (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
-       fine as raw numbers — these tokens cover the cross-component
+       fine as raw numbers - these tokens cover the cross-component
        layers that previously used arms-race values like 10M / 20T. */
     --z-edit-overlay: 10000;          /* dim covering sidebars + widgets in edit mode */
     --z-edit-overlay-content: 10001;  /* widget content that must poke above the dim */
     --z-edit-panel-base: 90000;
-    /* widget edit panels — they stack among themselves (see the counter
+    /* widget edit panels - they stack among themselves (see the counter
        in EditWidget.tsx) but stay under every floating layer, so a menu
        opened FROM a panel always paints above it */
     --z-portal: 100100;               /* body-portaled context menus + dropdowns (above modals at 100002) */
     --z-resize-handle: 100200;        /* always-on-top corner grip */
     --z-tutorial-pulse: 100201;       /* tutorial-only pulse above the handle */
-    --z-tooltip: 100300;              /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) — highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
+    --z-tooltip: 100300;              /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) - highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
 
     /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
-       pills, callouts — anything that's NOT a widget surface and
+       pills, callouts - anything that's NOT a widget surface and
        needs to read consistently against any photo or palette.
        These are deliberately theme-INDEPENDENT (no theme overrides
        them). The existing `--dark` / `--light` are intentionally
        remapped per theme (e.g. Frost makes `--dark` white because
        the widget glass layer adds darkness over it), which broke
        any chrome consumer expecting `--dark` to actually be dark.
-       Migrate new chrome to these tokens — no Frost override
+       Migrate new chrome to these tokens - no Frost override
        needed.
-         --ui-chrome-bg        — solid-feeling dark surface
-         --ui-chrome-bg-hover  — slightly lighter on hover
-         --ui-chrome-fg        — readable text
-         --ui-chrome-border    — subtle 1px outline */
+         --ui-chrome-bg        - solid-feeling dark surface
+         --ui-chrome-bg-hover  - slightly lighter on hover
+         --ui-chrome-fg        - readable text
+         --ui-chrome-border    - subtle 1px outline */
     --ui-chrome-bg: rgba(20, 26, 32, 0.78);
     --ui-chrome-bg-hover: rgba(20, 26, 32, 0.9);
     --ui-chrome-fg: rgba(255, 255, 255, 0.96);
@@ -162,8 +162,8 @@
     --cream: #fdf2ee;
     --cream-rgb: 253, 242, 238;
     --red: #e85d8a;
-    /* purple-dark / red-dark are used as Pomodoro card backgrounds —
-       on this LIGHT theme they need to be LIGHT so dark text reads. */
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds - on
+       this LIGHT theme they need to be LIGHT so dark text reads. */
     --red-dark: #f5c4d2;
     --blue: #7aa3b8;
     --blue-muted: rgba(122, 163, 184, 0.6);
@@ -171,7 +171,7 @@
     --green: #6ab075;
     --rose: #f08aaa;
     --purple-dark: #e8d4dc;
-    /* Inverted text — deep plum on the light pink/green surfaces. */
+    /* Inverted text - deep plum on the light pink/green surfaces. */
     --light: rgba(74, 38, 50, 0.95);
     --light-muted: rgba(74, 38, 50, 0.6);
     --text-shadow-color: rgba(253, 242, 238, 0.85);
@@ -191,7 +191,7 @@
     --dark-muted: rgba(42, 58, 92, 0.7);
     --cream: #ecedf0;
     --cream-rgb: 236, 237, 240;
-    /* Silver accents — desaturated so they read as Sophie's hair
+    /* Silver accents - desaturated so they read as Sophie's hair
        rather than chrome. */
     --red: #d4d6dc;
     --red-dark: #8a8d97;
@@ -315,7 +315,7 @@
     --dark-muted: rgba(244, 210, 220, 0.7);
     --cream: #fff0f6;
     --cream-rgb: 255, 240, 246;
-    /* Pink and green are co-stars — both bumped to a punchier pastel
+    /* Pink and green are co-stars - both bumped to a punchier pastel
        saturation so neither washes out. */
     --red: #f55a92;
     --red-dark: #c22c6e;
@@ -325,7 +325,7 @@
     --green: #6cd070;
     --rose: #ff85ad;
     --purple-dark: #a884c0;
-    /* Inverted text — dark plum on the light pink/green surfaces */
+    /* Inverted text - dark plum on the light pink/green surfaces */
     --light: rgba(70, 32, 52, 0.95);
     --light-muted: rgba(70, 32, 52, 0.6);
     --text-shadow-color: rgba(255, 240, 246, 0.85);
@@ -356,7 +356,7 @@
     --green: #88c8a8;
     --rose: #ffb8d4;
     --purple-dark: #b89cd8;
-    /* Inverted text — dark on light surfaces */
+    /* Inverted text - dark on light surfaces */
     --light: rgba(60, 36, 70, 0.95);
     --light-muted: rgba(60, 36, 70, 0.6);
     --text-shadow-color: rgba(255, 240, 250, 0.85);
@@ -378,7 +378,7 @@
     --cream: #fafafa;
     --cream-rgb: 250, 250, 250;
     --red: #555555;
-    /* purple-dark / red-dark are used as Pomodoro card backgrounds — on
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds - on
        this LIGHT theme they need to be LIGHT so the dark text reads. */
     --red-dark: #d8c8c8;
     --blue: #444444;
@@ -387,7 +387,7 @@
     --green: #5a5a5a;
     --rose: #888888;
     --purple-dark: #d8d4dc;
-    /* Inverted text — dark on light surfaces */
+    /* Inverted text - dark on light surfaces */
     --light: rgba(24, 24, 24, 0.95);
     --light-muted: rgba(24, 24, 24, 0.6);
     --text-shadow-color: rgba(250, 250, 250, 0.85);
@@ -434,7 +434,7 @@
     --green: #a8c8b0;
     --rose: #d8b8c4;
     --purple-dark: #c8c0d8;
-    /* White text — the Frost glass keeps the Ghibli photo visible
+    /* White text - the Frost glass keeps the Ghibli photo visible
        behind every surface, so light text + a soft dark halo reads
        cleanest regardless of which film is showing. */
     --light: rgba(255, 255, 255, 0.96);
@@ -450,7 +450,7 @@
     --surface-alpha-cap: 0.22;
     /* Pin the surface tint to a fixed dark slate so widget cards,
        modals, tooltips, dock chrome, etc. all read as Frost's dark
-       glass automatically — no per-component .theme-frost override
+       glass automatically - no per-component .theme-frost override
        needed. (Without this, cards using `rgba(var(--surface-rgb),…)`
        would inherit the white --dark-rgb above and disappear.) */
     --surface-rgb: 10, 14, 20;

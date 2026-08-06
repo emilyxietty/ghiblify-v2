@@ -5,7 +5,7 @@
 - One folder per component, named PascalCase: `Button/Button.tsx` + `Button/Button.css`
 - `containers/` for stateful + layout-aware code; `components/` for stateless UI
 - `hooks/` for data fetching and side effects, camelCase filenames (`useBackground.ts`)
-- `config/` for static data only — no React, no JSX
+- `config/` for static data only - no React, no JSX
 - No barrel `index.ts` files. Always import the concrete file.
 
 ## TypeScript
@@ -21,13 +21,13 @@
 - Functional components only.
 - Hooks: `useState`, `useEffect`, `useContext`, `useRef`, plus the custom hooks in `hooks/`.
 - Use `useAppContext()` to read/update global state. Don't pass AppContext values down through props if a child can read context directly.
-- Effects that touch `localStorage`, `window`, or `document` are normal — this is a Chrome extension running in a browser-only context. No SSR concerns.
+- Effects that touch `localStorage`, `window`, or `document` are normal - this is a Chrome extension running in a browser-only context. No SSR concerns.
 
 ## Styling
 
 - Plain CSS, co-located with the component.
 - Classes are BEM-lite (`.widget`, `.widget-header`, `.widget-content`).
-- Theme is set via CSS custom properties in `src/App.css` — Ghibli palette (warm reds, sky blues, soft yellows). Reference vars from there rather than hardcoding colors.
+- Theme is set via CSS custom properties in `src/App.css` - Ghibli palette (warm reds, sky blues, soft yellows). Reference vars from there rather than hardcoding colors.
 - Units:
   - Layout: percent
   - Widget positioning: `vw` for X, `vh` for Y
@@ -45,7 +45,7 @@
   ```ts
   import { ReactComponent as Icon } from "./icon.svg";
   ```
-  `titleProp` is enabled — pass `title="..."` for accessibility.
+  `titleProp` is enabled - pass `title="..."` for accessibility.
 - MUI icons:
   ```ts
   import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
@@ -54,7 +54,7 @@
 ## Storage keys
 
 - Modern blob: `widgets_state` (single JSON, only diffs from defaults).
-- Legacy per-key naming: `<widget>_<field>` — examples: `time_x`, `time_y`, `time_switch`, `todo_fontSize`, `quicklinks_data`.
+- Legacy per-key naming: `<widget>_<field>` - examples: `time_x`, `time_y`, `time_switch`, `todo_fontSize`, `quicklinks_data`.
 - Per-widget data (todos, quicklinks): use `<widget>_data`.
 - Always write both modern and legacy when updating settings managed by AppContext.
 

@@ -7,14 +7,14 @@ import "./ContextMenu.css";
 // A right-click menu used by widgets and the background. Supports
 // flat actions, mutually-exclusive radios (single-pick), checkboxes
 // (multi-select), and cascading submenus that open on hover. The
-// component is positioning-only — closing is the parent's
+// component is positioning-only - closing is the parent's
 // responsibility (we expose onClose for outside-click / Escape).
 export type ContextMenuItem =
   | {
       type: "action";
       label: string;
       onClick: () => void;
-      // Optional leading icon — replaces the empty icon slot on
+      // Optional leading icon - replaces the empty icon slot on
       // action rows. Selected radios/checks always show their own
       // marker so they ignore this.
       icon?: React.ReactNode;
@@ -33,7 +33,7 @@ export type ContextMenuItem =
       label: string;
       selected: boolean;
       onClick: () => void;
-      /** Optional colour chip rendered before the label — used by the
+      /** Optional colour chip rendered before the label - used by the
        *  highlight picker, where the colour *is* the option and a hex
        *  string alone tells the user nothing. */
       swatch?: string;
@@ -169,8 +169,8 @@ const Items: React.FC<{
   // Closing a cascade instantly on mouseleave makes it nearly
   // unusable: the pointer has to cross a few pixels of dead space to
   // reach the submenu, and any diagonal path across a neighbouring row
-  // slams it shut. A short grace period on leave — cancelled the moment
-  // the pointer lands back on the row or inside the submenu — is what
+  // slams it shut. A short grace period on leave - cancelled the moment
+  // the pointer lands back on the row or inside the submenu - is what
   // native menus do.
   const closeTimer = useRef<number | null>(null);
   const cancelClose = () => {

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
  * height, size) is now interpreted as "pixels at a 1920px-wide
  * reference viewport." When rendered, we multiply by the live
  * viewport-width ratio so the widget looks proportionally the same
- * on any screen — matching the position system, which already stores
+ * on any screen - matching the position system, which already stores
  * x/y as vw/vh percentages.
  *
  * Storage stays a plain number; only the interpretation changes.
@@ -17,14 +17,14 @@ import { useEffect, useState } from "react";
  * `toScreenPx`.
  *
  * Slider min/max bounds (declared in widgetConfig) are also
- * reference-px values — `useScaledRange` converts them to current-
+ * reference-px values - `useScaledRange` converts them to current-
  * viewport bounds for display.
  */
 
 export const REFERENCE_VIEWPORT_WIDTH = 1920;
 
 /* Runtime toggle for the whole proportional-scaling system. When off,
-   toScreenPx / toReferencePx pass through unchanged — widget sizes
+   toScreenPx / toReferencePx pass through unchanged - widget sizes
    are taken at face value (the stored "pixel" number) regardless of
    viewport. Users opt out via the LeftSidebar's Widget Settings
    modal; AppContext mirrors `appearance.proportionalScaling` into
@@ -85,7 +85,7 @@ export const useViewportWidth = (): number => {
  */
 export const useScaledPx = (refPx: number): number => {
   const w = useViewportWidth();
-  // Subscribe to runtime toggle changes — without this, flipping
+  // Subscribe to runtime toggle changes - without this, flipping
   // `proportionalEnabled` would update the module flag but components
   // already mounted wouldn't recompute their sizes until something
   // else triggered a render. We don't care about the value here,

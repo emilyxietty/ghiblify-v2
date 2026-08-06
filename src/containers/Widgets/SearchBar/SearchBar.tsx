@@ -21,7 +21,7 @@ import "./SearchBar.css";
 
 const SUGGEST_DEBOUNCE_MS = 120;
 
-/** Reference-px floor for the pill — matches the `height` bound in
+/** Reference-px floor for the pill - matches the `height` bound in
  *  widgetConfig, and overrides shorter values stored by older builds.
  *  CSS applies a second, absolute floor in real px (see
  *  `.searchbar`), because reference px shrink on smaller viewports. */
@@ -70,7 +70,7 @@ const SearchBar: React.FC = () => {
     // chrome.search.query() routes through the user's chosen default
     // search engine. Chrome Web Store policy for a new-tab extension
     // requires respecting that choice rather than hardcoding a provider
-    // — which is why suggestions coming from Google (below) never
+    // - which is why suggestions coming from Google (below) never
     // decide where the search actually goes.
     const ns = chromeNs();
     if (ns?.search?.query) {
@@ -103,7 +103,7 @@ const SearchBar: React.FC = () => {
         // Offline, or the host permission for suggestqueries.google.com
         // isn't active yet (the extension has to be reloaded after a
         // manifest change). Local history below still populates the
-        // dropdown, so the failure is quiet — but logged, because
+        // dropdown, so the failure is quiet - but logged, because
         // "no suggestions" is otherwise indistinguishable from
         // "the endpoint returned nothing".
         if ((err as Error)?.name !== "AbortError") {
@@ -143,11 +143,11 @@ const SearchBar: React.FC = () => {
     // getUserMedia is denied outright. Requesting it here keeps the
     // user gesture on the stack, which chrome.permissions.request
     // requires. Then getUserMedia itself, which is what actually opens
-    // the device — speech recognition won't start otherwise.
+    // the device - speech recognition won't start otherwise.
     const granted = await requestPermission("audioCapture");
     if (!granted) {
       // Visible feedback instead of a silent no-op: flash the mic as
-      // denied for a beat. Clicking again re-prompts — the permission
+      // denied for a beat. Clicking again re-prompts - the permission
       // request always rides the click gesture.
       setMicDenied(true);
       window.setTimeout(() => setMicDenied(false), 1600);
@@ -215,7 +215,7 @@ const SearchBar: React.FC = () => {
 
   // History first, then remote completions with any duplicate of a
   // history row dropped. An empty but focused field shows recent
-  // searches on their own — same as the omnibox.
+  // searches on their own - same as the omnibox.
   const historyRows = matchHistory(history, query);
   const rows: Array<{ kind: "history" | "suggest"; value: string }> = [
     ...historyRows.map((value) => ({ kind: "history" as const, value })),
@@ -251,7 +251,7 @@ const SearchBar: React.FC = () => {
         className={`searchbar${showSuggestions ? " has-suggestions" : ""}`}
         role="search"
         // Passed as a var rather than as `minHeight` so the stylesheet
-        // can floor it — an inline min-height would win outright and a
+        // can floor it - an inline min-height would win outright and a
         // scaled-down value could leave the pill squashed.
         style={{ ["--sb-min-height" as any]: `${height}px` }}
       >
@@ -297,7 +297,7 @@ const SearchBar: React.FC = () => {
         )}
 
         {/* The trailing controls travel as one cluster with a tighter
-            gap of their own — with everything on the form's gap, the
+            gap of their own - with everything on the form's gap, the
             divider added its spacing on both sides and the clear button
             drifted away from the rest. */}
         <span className="searchbar-actions">
@@ -331,7 +331,7 @@ const SearchBar: React.FC = () => {
           <CenterFocusStrongIcon style={{ fontSize: 20 }} />
         </button>
 
-        {/* Go button — only once there's something to search for. It's
+        {/* Go button - only once there's something to search for. It's
             redundant with Enter, but a visible target is what people
             reach for with the mouse, and it appearing as you type is
             its own hint that the field is live. */}
@@ -410,8 +410,7 @@ const SearchBar: React.FC = () => {
       </form>
 
       {/* Search-by-image. The picked file is submitted straight to
-          Google Lens as a normal multipart form post in a new tab —
-          the file never passes through this extension, and there's no
+          Google Lens as a normal multipart form post in a new tab - the file never passes through this extension, and there's no
           upload endpoint of our own to keep. */}
       <form
         ref={lensFormRef}

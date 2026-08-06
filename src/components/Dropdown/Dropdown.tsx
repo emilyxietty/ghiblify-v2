@@ -5,8 +5,8 @@ import "./Dropdown.css";
 
 export interface DropdownOption {
   value: string;
-  /** A node, not just a string, so an option can preview what it does —
-   *  a font name rendered in its own family, a chip drawn at its own
+  /** A node, not just a string, so an option can preview what it does - *
+  a font name rendered in its own family, a chip drawn at its own
    *  corner radius. */
   label: React.ReactNode;
   icon?: React.ReactNode;

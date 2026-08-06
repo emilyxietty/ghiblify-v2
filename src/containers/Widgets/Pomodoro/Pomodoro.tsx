@@ -28,7 +28,7 @@ const POMODORO_IMAGES = [
 // Single-key persistence + cross-tab sync.
 // One JSON blob in localStorage replaces the 8 individual pomodoro_*
 // keys this component used to scatter. The `storage` event still fires
-// across tabs whenever the blob is rewritten — followers diff against
+// across tabs whenever the blob is rewritten - followers diff against
 // the previous value to apply granular updates.
 // ---------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ interface PomodoroBlob {
   leader: string | null;
   isRunning: boolean;
   isBreak: boolean;
-  /** Concentration mode — persisted so cross-tab sync mirrors entry/
+  /** Concentration mode - persisted so cross-tab sync mirrors entry/
    *  exit, but defensively cleared on mount (see init effect below). */
   focusMode: boolean;
   pomodoroSeconds: number;
@@ -131,7 +131,7 @@ const Pomodoro: React.FC = () => {
   const t = useT();
   // State for timer input value
   const [inputValue, setInputValue] = useState<string>("");
-  // Concentration / focus mode — hides everything else and centers
+  // Concentration / focus mode - hides everything else and centers
   // the pomodoro widget. Toggled via a button on the widget; Esc
   // exits. Persisted to localStorage so opening a new tab while
   // focus mode is on keeps the user in focus across tabs.
@@ -195,7 +195,7 @@ const Pomodoro: React.FC = () => {
   }>({ sound: "musicbox", volume: 70 });
   // Guards against a double chime. The 0-crossing is detected inside a
   // setState updater, and React invokes updaters twice under StrictMode
-  // in development — so the flag makes the call idempotent per run and
+  // in development - so the flag makes the call idempotent per run and
   // startTimer/resetTimer re-arm it.
   const chimeArmedRef = useRef(true);
 
@@ -272,7 +272,7 @@ const Pomodoro: React.FC = () => {
       } catch {
         return;
       }
-      // Leader assignment — react when a different tab claims/releases.
+      // Leader assignment - react when a different tab claims/releases.
       setIsLeader(next.leader === tabId);
       // Followers mirror the leader's countdown.
       if (next.leader !== tabId) {
@@ -318,7 +318,7 @@ const Pomodoro: React.FC = () => {
   const startTimer = () => {
     // Open the audio context while this click is still on the stack.
     // Chrome requires user activation to start audio, and the chime is
-    // 25 minutes away — far outside the activation window — so the
+    // 25 minutes away - far outside the activation window - so the
     // context has to be unsuspended here rather than at playback.
     primePomodoroAudio();
     chimeArmedRef.current = true;
@@ -343,7 +343,7 @@ const Pomodoro: React.FC = () => {
             clearInterval(intervalRef.current!);
             intervalRef.current = null;
             // Only the leader tab runs this interval, so the chime
-            // sounds once no matter how many new tabs are open —
+            // sounds once no matter how many new tabs are open -
             // followers just mirror the countdown via `storage`.
             fireChime();
             setIsRunning(false);
@@ -433,7 +433,7 @@ const Pomodoro: React.FC = () => {
 
   const minutesLeft = Math.floor(getCurrentSecondsLeft() / 60);
 
-  // Progress bar — driven entirely by the locally-mirrored *State
+  // Progress bar - driven entirely by the locally-mirrored *State
   // values, which the storage event keeps in sync across tabs.
   const totalSeconds = isBreak
     ? breakOriginalSecondsState
@@ -459,7 +459,7 @@ const Pomodoro: React.FC = () => {
   // When Pomodoro unmounts because the user HID the widget, clear
   // focus mode so the body class doesn't get stuck with no Pomodoro
   // to dismiss it from. But when unmount is part of a tab close
-  // (beforeunload fired first), leave the persisted flag alone — we
+  // (beforeunload fired first), leave the persisted flag alone - we
   // want focus mode to carry over to the next new-tab so the user
   // stays focused across tabs.
   useEffect(() => {
@@ -513,8 +513,8 @@ const Pomodoro: React.FC = () => {
     }
   }, [isRunning, isBreak, pomodoroSecondsLeft, breakSecondsLeft]);
 
-  // Pomodoro snaps to one of three discrete size presets — small,
-  // medium, large — picked from the right-click menu or the edit
+  // Pomodoro snaps to one of three discrete size presets - small,
+  // medium, large - picked from the right-click menu or the edit
   // overlay. Each preset has its own crafted layout
   // (see Pomodoro.css `.size-small` etc.), so we don't expose a
   // free-resize handle.
@@ -525,7 +525,7 @@ const Pomodoro: React.FC = () => {
   const { size, opacity, sound, soundVolume, cardColor } =
     widgets.pomodoro.settings;
 
-  // Keep the countdown effect's view of the chime settings current —
+  // Keep the countdown effect's view of the chime settings current -
   // see chimeSettingsRef above. Validated on the way in because stored
   // settings can predate this feature (undefined) or carry a sound key
   // that no longer exists.
@@ -536,7 +536,7 @@ const Pomodoro: React.FC = () => {
     };
   }, [sound, soundVolume]);
   // Cast through string so legacy stored values from before the rename
-  // ("compact" / "regular") still match — the type system sees only the
+  // ("compact" / "regular") still match - the type system sees only the
   // new union, but storage may carry the old labels.
   // Anything that isn't a known current size collapses to "medium" so
   // the default experience is medium for both fresh users (config
@@ -554,7 +554,7 @@ const Pomodoro: React.FC = () => {
   const dims = SIZE_DIMS[normalizedSize];
 
   // Focus mode forces a single static, near-fullscreen layout regardless
-  // of the size preset — the overrides live in Pomodoro.css under
+  // of the size preset - the overrides live in Pomodoro.css under
   // `body.pomodoro-focus`, so we must NOT emit the size-* class or the
   // inline width/height (inline styles would beat the focus stylesheet
   // since they have higher CSS priority than non-!important rules).
@@ -563,7 +563,7 @@ const Pomodoro: React.FC = () => {
       className={`pomodoro-widget widget-header${
         focusMode ? "" : ` size-${normalizedSize}`
       }${isBreak ? " break-mode" : ""}${
-        // A user-picked card colour applies to BOTH modes — the
+        // A user-picked card colour applies to BOTH modes - the
         // break-mode surface recolor rules skip .custom-card, so the
         // card keeps the chosen colour (and its light text) during
         // breaks. The break progress-bar gradient stays as the mode
@@ -576,7 +576,7 @@ const Pomodoro: React.FC = () => {
           : { width: `${dims.width}px`, height: `${dims.height}px` }),
         ["--pomodoro-opacity" as string]:
           (typeof opacity === "number" ? opacity : 100) / 100,
-        // Custom focus-card base colour — CSS falls back to the
+        // Custom focus-card base colour - CSS falls back to the
         // theme's --purple-dark when unset.
         ...(typeof cardColor === "string"
           ? { ["--pomodoro-card" as string]: cardColor }

@@ -9,7 +9,7 @@ import { useOnline } from "./useOnline";
  *   - A manual city the user picked (Weather settings → Location). This
  *     wins whenever it's set, and needs no permission at all.
  *   - Otherwise `navigator.geolocation`. The new tab page is a regular
- *     HTML context — chrome.geolocation / offscreen documents are only
+ *     HTML context - chrome.geolocation / offscreen documents are only
  *     needed when calling from a service worker. `geolocation` is an
  *     *optional* permission, so the hook checks the grant first and
  *     reports "permission-denied" without touching the API when it's
@@ -27,8 +27,8 @@ import { useOnline } from "./useOnline";
  */
 
 // Single combined weather cache. One JSON blob holds:
-//   place — coords (24h TTL) + reverse-geocoded label (7d TTL)
-//   api   — Open-Meteo response (10min TTL)
+//   place - coords (24h TTL) + reverse-geocoded label (7d TTL)
+//   api   - Open-Meteo response (10min TTL)
 // Each part keeps its own timestamp inside the blob so the TTLs
 // stay independent.
 const WEATHER_CACHE_KEY = "ghiblify_weather";
@@ -73,7 +73,7 @@ export interface WeatherData {
 
 // Combined coords + reverse-geocoded label cache.
 // `coordsAt` and `labelAt` are tracked separately so each can expire
-// on its own TTL — the label outlives the coords by a long way.
+// on its own TTL - the label outlives the coords by a long way.
 interface CachedPlace {
   lat: number;
   lon: number;
@@ -81,7 +81,7 @@ interface CachedPlace {
   label?: string;
   labelAt?: number;
   /** True when these coords came from a city the user picked by hand.
-   *  Geolocation must ignore such an entry — otherwise switching back
+   *  Geolocation must ignore such an entry - otherwise switching back
    *  to "use my location" would keep serving the manual city until the
    *  24h coords TTL ran out. */
   manual?: boolean;
@@ -190,7 +190,7 @@ migrateLegacyCaches();
  *
  * Called when the user revokes location access: the coords cache has a
  * 24h TTL, so without this the widget would keep serving the last known
- * position long after permission was handed back — which looks exactly
+ * position long after permission was handed back - which looks exactly
  * like the revoke didn't work.
  */
 export const clearWeatherLocation = (): void => {
@@ -198,14 +198,14 @@ export const clearWeatherLocation = (): void => {
 };
 
 /**
- * IP-based approximate location — city-level, which is exactly the
+ * IP-based approximate location - city-level, which is exactly the
  * precision a weather forecast needs.
  *
  * This replaced `navigator.geolocation`: the GPS route required the
  * `geolocation` manifest permission (it can't be optional, and it's
  * the scary "detect your physical location" install warning), while
  * BigDataCloud's keyless client endpoint resolves the caller's IP on
- * a host we already hold for reverse geocoding — no permission, no
+ * a host we already hold for reverse geocoding - no permission, no
  * prompt, no new data exposure (that host already saw the IP on every
  * reverse-geocode call). Bonus: the response carries the city name,
  * so the place label comes free with the coords.
@@ -280,7 +280,7 @@ const getCoords = async (
   }
   // The user can switch device location off entirely (Settings →
   // Permissions). Chrome's `geolocation` permission can't be revoked at
-  // runtime — it's install-time only — so this app-level flag is what
+  // runtime - it's install-time only - so this app-level flag is what
   // actually stops the call, and reporting it as denied gives the
   // widget something actionable to render.
   if (!allowDevice) {
@@ -324,7 +324,7 @@ const fetchLocationLabel = async (
       json.principalSubdivision ||
       json.countryName ||
       `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-    // Merge into the existing place entry rather than overwriting —
+    // Merge into the existing place entry rather than overwriting -
     // keeps the most recent coords + their `coordsAt` intact.
     writePlace({
       lat,
@@ -411,7 +411,7 @@ const fetchOpenMeteo = async (
 };
 
 /**
- * @param unit        °C / °F — refetched rather than converted client-side.
+ * @param unit        °C / °F - refetched rather than converted client-side.
  * @param manual      A user-picked city, or null to use device location.
  * @param allowDevice Whether device location may be used at all.
  */
@@ -428,7 +428,7 @@ export const useWeather = (
   const online = useOnline();
 
   /** Drop the cached response and refetch now. The place cache is left
-   *  alone — the point is fresh conditions, not a fresh geolocation
+   *  alone - the point is fresh conditions, not a fresh geolocation
    *  prompt. */
   const refresh = useCallback(() => {
     const blob = readBlob();
@@ -437,7 +437,7 @@ export const useWeather = (
   }, []);
 
   // Objects are re-created every render, so depend on the primitive
-  // fields rather than on `manual` itself — otherwise the effect would
+  // fields rather than on `manual` itself - otherwise the effect would
   // refetch on every parent render.
   const manualKey = manual ? `${manual.lat},${manual.lon},${manual.name}` : "";
 
@@ -445,7 +445,7 @@ export const useWeather = (
     let cancelled = false;
     setError(null);
 
-    // Offline short-circuit — Open-Meteo + BigDataCloud are both
+    // Offline short-circuit - Open-Meteo + BigDataCloud are both
     // remote, so without network there's no useful weather to show.
     // Surface "offline" so the widget can render N/A instead of a
     // generic fetch-error message.
@@ -500,7 +500,7 @@ export const useWeather = (
     return () => {
       cancelled = true;
     };
-    // `manual` is read inside but deliberately not a dep — it's a fresh
+    // `manual` is read inside but deliberately not a dep - it's a fresh
     // object every render. `manualKey` carries its identity instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unit, online, manualKey, nonce, allowDevice]);

@@ -1,10 +1,10 @@
 /* ===========================================================================
-   Notes — blank note with a custom border SVG behind it
+   Notes - blank note with a custom border SVG behind it
    ===========================================================================
    Visual: a clean rectangle that uses /assets/notes/cardborder.svg as
    the background image, sized to fit the widget. The textarea sits
    on top with no extra chrome (no tape, no rule lines, no
-   watercolor wash — just paper + handwriting).
+   watercolor wash - just paper + handwriting).
    =========================================================================== */
 
 .notes-widget {
@@ -12,7 +12,7 @@
     box-sizing: border-box;
     /* Generous padding so the textarea text sits well INSIDE the
        painted border and doesn't crowd the decorative edge.
-       Percentages (of the note's own width — the .widget shell is
+       Percentages (of the note's own width - the .widget shell is
        max-content, so the containing block matches the note; in the
        dock the cell width matches too) so the clearance scales with
        the painted border, which `background-size: contain` scales
@@ -23,7 +23,7 @@
        inside) the rectangle reads as paper. --note-paper is set inline
        by Notes.tsx when the user picks a non-default swatch.
        --widget-opacity (0–1, published on the .widget shell) scales
-       ONLY the paper alpha — the ink lives on .notes-textarea and is
+       ONLY the paper alpha - the ink lives on .notes-textarea and is
        untouched, so lowering opacity fades the paper without dimming
        the handwriting. Defaults to 1 so the shipped look is unchanged. */
     background-color: color-mix(
@@ -32,13 +32,13 @@
         transparent
     );
     /* NOTE: the canvas Widget shell auto-applies text-align by widget
-       position (.widget-align-right .widget-content>* at x>60% — and
+       position (.widget-align-right .widget-content>* at x>60% - and
        the notes default position is x=80). That selector targets THIS
-       element with higher specificity, so don't fight it here — the
+       element with higher specificity, so don't fight it here - the
        pin-to-start lives on .notes-editor-shell below, which the
        positional rule doesn't reach. */
     background-image: url("/assets/notes/cardborder.svg");
-    /* `contain` preserves the SVG's natural square ratio — never
+    /* `contain` preserves the SVG's natural square ratio - never
        stretched. If the user resizes to a non-square footprint, the
        cream background fills the letterboxed gaps. */
     background-size: contain;
@@ -47,13 +47,13 @@
     /* Rounded corners on the cream backing so the card reads as a
        soft-cornered piece of paper rather than a hard rectangle.
        The SVG's painted corners sit on top of this. Follows the corner
-       setting like every other surface — 16px was the old fixed value,
+       setting like every other surface - 16px was the old fixed value,
        which --radius-xl matches exactly at the Rounded default. */
     border-radius: var(--radius-xl);
     overflow: hidden;
 }
 
-/* Border-off variant — drop the cardborder.svg layer and tighten
+/* Border-off variant - drop the cardborder.svg layer and tighten
    the padding (no painted edge to clear). The cream backing stays
    so the note still reads as paper. */
 .notes-widget.no-border {
@@ -66,13 +66,13 @@
     background-color: transparent;
 }
 
-/* Frosted paper — glass: the wallpaper blurred through the note's
+/* Frosted paper - glass: the wallpaper blurred through the note's
    footprint, with a whisper of paper tint (8%) so the glass reads as
    a surface even over smooth wallpaper areas where pure blur is
    imperceptible.
    The actual `backdrop-filter` lives on the .widget shell
    (.widget.widget-notes-frost in Widget.css) because the shell is the
-   fixed-position backdrop root — a filter on this descendant samples
+   fixed-position backdrop root - a filter on this descendant samples
    the empty shell interior, not the wallpaper. Here we only carry the
    tint. The decorative border remains a foreground layer when selected,
    so it stays crisp while only the wallpaper behind the note is blurred. */
@@ -84,13 +84,13 @@
     );
 }
 
-/* Positioning context for the absolute placeholder overlay — and the
+/* Positioning context for the absolute placeholder overlay - and the
    alignment pin. The widget shell's positional auto-align
    (.widget-align-right .widget-content>*) paints text-align: right
    onto .notes-widget with specificity no .notes-* selector should try
    to outgun; an EXPLICIT declaration one level down beats the
    inherited value no matter the specificity. The old <textarea> got
-   this for free (form controls don't inherit text-align) — a
+   this for free (form controls don't inherit text-align) - a
    contenteditable div doesn't. Per-paragraph alignment from the
    toolbar still wins: Lexical writes it as inline style on the
    block. */
@@ -120,7 +120,7 @@
     outline: none;
     resize: none;
     /* Inherit the same system sans the rest of the app uses (set on
-       <body> in App.css) — no handwritten override here. */
+       <body> in App.css) - no handwritten override here. */
     font-family: inherit;
     font-size: 14px;
     line-height: 1.5;
@@ -139,7 +139,7 @@
     user-select: none;
 }
 
-/* Pre-editor content preview — the plaintext mirror shown inside the
+/* Pre-editor content preview - the plaintext mirror shown inside the
    Suspense fallback while the Lexical chunk loads. Newlines in the
    mirror are real \n characters, so pre-wrap reproduces the layout. */
 .notes-static-preview {
@@ -217,7 +217,7 @@
     cursor: pointer;
 }
 
-/* Divider — a hand-drawn-feeling rule in the note's ink. Selected
+/* Divider - a hand-drawn-feeling rule in the note's ink. Selected
    state comes from Lexical (it stamps `selected` on the <hr>). */
 .notes-editor .ne-hr {
     border: none;
@@ -245,7 +245,7 @@
     list-style: none;
 }
 
-/* Checklist items — Lexical's CheckListPlugin toggles items when the
+/* Checklist items - Lexical's CheckListPlugin toggles items when the
    marker area (the left padding) is clicked. */
 .notes-editor .ne-li-unchecked,
 .notes-editor .ne-li-checked {
@@ -342,7 +342,7 @@
     position: relative;
 }
 
-/* Instant hover descriptions — every toolbar button carries its
+/* Instant hover descriptions - every toolbar button carries its
    label in data-tip (native title had the sluggish OS delay). */
 .notes-toolbar [data-tip]::after {
     content: attr(data-tip);
@@ -489,7 +489,7 @@
     z-index: 2999;
 }
 
-/* Overflow "···" — the glyph box is text, so centre it like the
+/* Overflow "···" - the glyph box is text, so centre it like the
    lettered glyphs rather than the SVG ones. */
 .notes-tb-more {
     display: inline-flex;
@@ -502,7 +502,7 @@
     line-height: 0.7;
 }
 
-/* Link popover — a drop-up like the colour menus, but carrying a URL
+/* Link popover - a drop-up like the colour menus, but carrying a URL
    input instead of radio rows. */
 .notes-tb-link {
     min-width: 180px;
@@ -535,7 +535,7 @@
 
 /* In the ink picker MENU only, sit each "A" on a neutral chip so a
    near-white ink is still visible against the light menu surface.
-   Scoped to the menu — the collapsed toolbar button keeps its bare
+   Scoped to the menu - the collapsed toolbar button keeps its bare
    glyph (it shows the active ink tint directly). */
 .notes-tb-menu-item .notes-tb-a {
     display: inline-flex;

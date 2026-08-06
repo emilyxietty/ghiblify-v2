@@ -3,7 +3,7 @@
  *
  * Open-Meteo's geocoding API is the natural pairing with the forecast
  * API already in use: same provider, no key, and it returns the exact
- * lat/lon the forecast endpoint wants — no second reverse-geocode hop
+ * lat/lon the forecast endpoint wants - no second reverse-geocode hop
  * to name the place, because the search result *is* the name.
  */
 
@@ -17,7 +17,7 @@ export interface ManualPlace {
 }
 
 export interface GeoResult extends ManualPlace {
-  /** Stable id for React keys — Open-Meteo's own record id. */
+  /** Stable id for React keys - Open-Meteo's own record id. */
   id: number;
 }
 
@@ -34,7 +34,7 @@ const labelFor = (r: {
 /**
  * Search cities by name.
  *
- * @param query  Free text — at least 2 characters, else no request.
+ * @param query  Free text - at least 2 characters, else no request.
  * @param signal Abort signal so a fast typist doesn't race stale results.
  */
 export const searchPlaces = async (

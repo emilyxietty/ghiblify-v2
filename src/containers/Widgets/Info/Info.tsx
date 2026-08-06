@@ -19,7 +19,7 @@ export const Info: React.FC<InfoProps> = ({
   quote,
 }) => {
   // Reads canvas settings on canvas, dock-merged settings in the
-  // dock — so the user can show different fields in each surface
+  // dock - so the user can show different fields in each surface
   // (e.g. just title + quote on the canvas, full breakdown in the
   // dock) without forking the component.
   const { settings } = useWidgetSettings("info");

@@ -4,7 +4,7 @@
  * Chrome's own omnibox mixes remote suggestions with what you've
  * searched before; reading the *browser's* history would need the
  * `history` permission, which is far too broad for a dropdown. So the
- * widget keeps its own list of what was searched from this new tab —
+ * widget keeps its own list of what was searched from this new tab - *
  * nothing leaves the machine, and it works offline, which the remote
  * suggestions don't.
  */

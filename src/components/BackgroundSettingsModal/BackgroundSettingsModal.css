@@ -1,5 +1,5 @@
 /* ===========================================================================
-   Background Settings Modal — theme-aware, polished
+   Background Settings Modal - theme-aware, polished
    =========================================================================== */
 
 .background-modal-overlay {
@@ -12,7 +12,7 @@
     align-items: center;
     justify-content: center;
     /* Above the welcome modal backdrop (6000) and the sidebar's
-       spotlight z-index (6500) — the picker is a focused modal and
+       spotlight z-index (6500) - the picker is a focused modal and
        must always sit on top of any other surface that can be open
        behind it (sidebar, guide, etc.). */
     z-index: 100002;
@@ -160,7 +160,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Movie list item — card-like row, expanding
+   Movie list item - card-like row, expanding
    --------------------------------------------------------------------------- */
 
 .background-toggle {
@@ -349,7 +349,7 @@
     outline-offset: 2px;
 }
 
-/* Heart on each thumbnail — sits in the top-left corner, mirroring
+/* Heart on each thumbnail - sits in the top-left corner, mirroring
    the trash button which sits in the top-right. Always visible when
    the image is favorited (so users can spot favorites at a glance),
    otherwise reveal-on-hover like the trash. */
@@ -402,7 +402,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Favorites entry — pinned to the top of the list. Selectable like a
+   Favorites entry - pinned to the top of the list. Selectable like a
    movie (checkbox toggles inclusion in rotation). Expanded contents
    show each favorited thumbnail with a per-image unfavorite button.
    --------------------------------------------------------------------------- */
@@ -413,7 +413,7 @@
     margin-left: 4px;
 }
 
-/* Small info icon next to the Favorites title — hover reveals the
+/* Small info icon next to the Favorites title - hover reveals the
    tooltip explaining that favorites always rotate. The span is the
    hover target (TooltipPortal listens at the [data-tooltip] level).
    Inline-flex centers the inline-mounted SVG vertically with the
@@ -514,7 +514,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Deleted entry — sits inline at the bottom of the movie list as an
+   Deleted entry - sits inline at the bottom of the movie list as an
    expandable <details>. No enable/disable checkbox; expanded contents
    show every deleted thumbnail with a per-image restore button.
    --------------------------------------------------------------------------- */
@@ -550,7 +550,7 @@
 }
 
 .background-modal .deleted-grid .deleted-thumb {
-    /* Visually mark deleted state — desaturated and dimmed. Inherits
+    /* Visually mark deleted state - desaturated and dimmed. Inherits
        the base `.summary-thumb` size from the existing rule. */
     filter: grayscale(0.6) brightness(0.7);
     transition: filter 160ms ease;

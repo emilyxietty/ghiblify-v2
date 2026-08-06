@@ -27,7 +27,7 @@ const chromeFavicon = (pageUrl: string, size: number): string | null => {
  *
  * Chrome's `_favicon` cache is keyed by the *exact* URL, and it only has
  * pages the user has actually visited. That's why "tiktok.com" comes up
- * blank while "www.tiktok.com" works — they're two different keys, and
+ * blank while "www.tiktok.com" works - they're two different keys, and
  * only the one Chrome has seen is in the cache. So: try what was typed,
  * then the same host with (or without) `www.`, then a remote lookup by
  * hostname, which needs no local history at all.
@@ -54,7 +54,7 @@ export const faviconCandidates = (rawUrl: string, size = 64): string[] => {
     // the deep link that was pasted.
     push(chromeFavicon(`${parsed.origin}/`, size));
   } catch {
-    /* unparseable — the chrome entry above is all we have */
+    /* unparseable - the chrome entry above is all we have */
   }
 
   if (host) {
@@ -71,7 +71,7 @@ interface FaviconProps {
   url: string;
   size?: number;
   className?: string;
-  /** Rendered when every source fails — usually the site's initial. */
+  /** Rendered when every source fails - usually the site's initial. */
   fallback?: React.ReactNode;
   fallbackClassName?: string;
 }
@@ -93,7 +93,7 @@ export const Favicon: React.FC<FaviconProps> = ({
   const candidates = faviconCandidates(url, size);
   const [idx, setIdx] = useState(0);
 
-  // A new URL restarts the chain — otherwise an exhausted index from the
+  // A new URL restarts the chain - otherwise an exhausted index from the
   // previous link would render this one as the fallback forever.
   useEffect(() => {
     setIdx(0);

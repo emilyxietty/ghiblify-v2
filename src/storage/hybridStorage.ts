@@ -11,7 +11,7 @@
  * ## Why hybrid?
  *
  * `chrome.storage.*` is async-only. The new-tab page is a paint-
- * critical surface — restoring widget layout / theme / language needs
+ * critical surface - restoring widget layout / theme / language needs
  * to happen during React's initial state setup so the page paints
  * with the user's saved state, not defaults that flash + flicker.
  * Synchronous reads from a `localStorage` mirror solve that, while
@@ -20,9 +20,9 @@
  *
  * ## Tiers
  *
- * - `sync`  — small, portable (locale, appearance). 100 KB total
+ * - `sync`  - small, portable (locale, appearance). 100 KB total
  *   / 8 KB per item / 1800 writes per hour.
- * - `local` — bigger blobs that don't need to follow you across
+ * - `local` - bigger blobs that don't need to follow you across
  *   devices (widget settings, todos, background prefs, install
  *   flags). ~10 MB.
  *
@@ -32,13 +32,13 @@
  *
  * ## API surface
  *
- *   readSync(key, fallback)  — instant read from the mirror
- *   write(key, value)        — write to BOTH (mirror sync, chrome async)
- *   remove(key)              — remove from BOTH
- *   subscribe(key, fn)       — fires on any chrome.storage change
+ *   readSync(key, fallback)  - instant read from the mirror
+ *   write(key, value)        - write to BOTH (mirror sync, chrome async)
+ *   remove(key)              - remove from BOTH
+ *   subscribe(key, fn)       - fires on any chrome.storage change
  *                              for that key (this tab, sibling tab,
  *                              or remote sync from another device)
- *   migrateOnce()            — one-time copy of pre-hybrid
+ *   migrateOnce()            - one-time copy of pre-hybrid
  *                              localStorage values into chrome.storage
  *
  * Values are arbitrary JSON-serializable data. The mirror stringifies;
@@ -49,11 +49,11 @@ type Area = "sync" | "local";
 
 // Registry of every key managed by this layer + which chrome.storage
 // area owns its source-of-truth. Adding a new persistent key? Add it
-// here and use the API below — DO NOT call localStorage directly for
+// here and use the API below - DO NOT call localStorage directly for
 // these keys. Pomodoro and weather caches are intentionally NOT here
 // (they stay on plain localStorage; see their files).
 export const HYBRID_KEYS: Record<string, Area> = {
-  // Tiny portable preferences — sync across the user's devices.
+  // Tiny portable preferences - sync across the user's devices.
   ghiblify_locale: "sync",
   ghiblify_appearance: "sync",
   // Larger blobs that don't need to follow the user across devices.
@@ -65,7 +65,7 @@ export const HYBRID_KEYS: Record<string, Area> = {
   ghiblify_guide_seen: "local",
 };
 
-// Single combined gate for ALL one-time setup work — both v1 (jQuery)
+// Single combined gate for ALL one-time setup work - both v1 (jQuery)
 // data cleanup AND the localStorage→chrome.storage migration. Replaces
 // the previous pair of flags (`ghiblify_legacy_cleaned`,
 // `ghiblify_hybrid_migrated`); see runOneTimeSetup below.
@@ -103,7 +103,7 @@ const writeMirror = (key: string, value: unknown): void => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* quota exceeded / private mode — ignore */
+    /* quota exceeded / private mode - ignore */
   }
 };
 
@@ -127,7 +127,7 @@ export const readSync = <T>(key: string, fallback: T): T =>
 
 /**
  * Write to BOTH localStorage (sync, instant) and chrome.storage
- * (async, source of truth). Fire-and-forget — chrome.storage
+ * (async, source of truth). Fire-and-forget - chrome.storage
  * failures fall back to the mirror.
  */
 export const write = (key: string, value: unknown): void => {
@@ -137,7 +137,7 @@ export const write = (key: string, value: unknown): void => {
   try {
     chromeNs.storage[area].set({ [key]: value });
   } catch {
-    /* ignore — mirror still holds it */
+    /* ignore - mirror still holds it */
   }
 };
 
@@ -202,7 +202,7 @@ if (hasChromeStorage) {
 
 // --- One-time setup ---------------------------------------------------------
 
-// Internal worker — copy any existing localStorage values for
+// Internal worker - copy any existing localStorage values for
 // registered keys into chrome.storage. Idempotent; safe to call
 // multiple times (the only effect of a re-run is rewriting the same
 // values, which is harmless). Caller is responsible for gating.
@@ -244,8 +244,8 @@ const performHybridMigration = async (): Promise<void> => {
 /**
  * Single combined entry point for all one-time install work:
  *   1. Drain v1 (jQuery) Ghiblify storage entries that the new app
- *      no longer reads (cleanup callback supplied by the caller —
- *      avoids a circular import with legacyMigrations).
+ *      no longer reads (cleanup callback supplied by the caller - *
+ * avoids a circular import with legacyMigrations).
  *   2. Copy any existing localStorage values for registered keys
  *      into chrome.storage so cross-device sync starts working
  *      and the `storage` permission justification matches reality.
@@ -271,7 +271,7 @@ export const runOneTimeSetup = async (
   try {
     cleanLegacy();
   } catch {
-    /* ignore — workers are themselves idempotent and try-wrapped */
+    /* ignore - workers are themselves idempotent and try-wrapped */
   }
 
   await performHybridMigration();
@@ -294,20 +294,20 @@ export const runOneTimeSetup = async (
 };
 
 /**
- * Boot-time mirror recovery — the fix for "my settings reset
+ * Boot-time mirror recovery - the fix for "my settings reset
  * themselves".
  *
  * The localStorage mirror is NOT durable: Chrome wipes an extension's
  * localStorage when the user clears browsing data (and under storage
  * pressure), while chrome.storage survives. Since the app boots
  * synchronously from the mirror alone, a wiped mirror meant booting
- * into defaults — and the first persisted change (including automatic
+ * into defaults - and the first persisted change (including automatic
  * ones) then overwrote the user's REAL data in chrome.storage.
  * Quick links, todos, positions: all gone.
  *
  * This scans every registered key: where the mirror is missing a key
  * that chrome.storage still has, the mirror is restored from
- * chrome.storage. Returns true if anything was restored — the caller
+ * chrome.storage. Returns true if anything was restored - the caller
  * should reload the page so the whole synchronous init path re-runs
  * against the recovered mirror.
  */
@@ -320,7 +320,7 @@ export const restoreMirrorFromChrome = async (): Promise<boolean> => {
     try {
       mirrored = localStorage.getItem(key);
     } catch {
-      return false; // storage unavailable — nothing sensible to do
+      return false; // storage unavailable - nothing sensible to do
     }
     if (mirrored == null) keysByArea[area].push(key);
   }
@@ -389,7 +389,7 @@ export interface StoredEntry {
   key: string;
   value: string;
   bytes: number;
-  /** True when the key is mirrored into chrome.storage — deleting it
+  /** True when the key is mirrored into chrome.storage - deleting it
    *  needs `remove()` rather than a bare localStorage.removeItem. */
   hybrid: boolean;
 }
@@ -411,7 +411,7 @@ export const listStoredEntries = (): StoredEntry[] => {
       });
     }
   } catch {
-    /* private mode / disabled storage — nothing to show */
+    /* private mode / disabled storage - nothing to show */
   }
   return out.sort((a, b) => b.bytes - a.bytes);
 };

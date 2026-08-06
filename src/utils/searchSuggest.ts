@@ -3,8 +3,8 @@
  *
  * Google's suggest endpoint is the same one Chrome's own omnibox uses.
  * It sends no CORS headers, so this only works from an extension page
- * with `https://suggestqueries.google.com/*` in host_permissions —
- * which is why there's no graceful web fallback here: outside the
+ * with `https://suggestqueries.google.com/*` in host_permissions - * which
+ * is why there's no graceful web fallback here: outside the
  * extension the fetch simply fails and the caller shows no dropdown.
  *
  * Note what this does *not* do: it doesn't decide where the search

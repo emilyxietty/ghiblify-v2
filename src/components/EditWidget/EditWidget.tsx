@@ -40,7 +40,7 @@ interface EditWidgetProps {
   showWidgetEdits: boolean;
   isResizing: boolean;
   storageKey?: string;
-  /** The widget being edited — the panel measures it to sit alongside. */
+  /** The widget being edited - the panel measures it to sit alongside. */
   anchorEl?: HTMLElement | null;
 }
 
@@ -59,13 +59,13 @@ const VIEWPORT_MARGIN = 12;
  * Panel stacking + placement, shared across every open panel.
  *
  * With several widgets in edit mode at once the panels overlap, so the
- * one you touched last has to come forward — a fixed z-index would
+ * one you touched last has to come forward - a fixed z-index would
  * leave whichever mounted last permanently on top.
  *
  * The counter sits in its own band below --z-portal, the tier every
  * portalled dropdown / colour picker / menu uses. It only ever climbs,
  * so without a ceiling a long session of clicks would eventually lift a
- * panel above the very menus that open *from* it — which is exactly how
+ * panel above the very menus that open *from* it - which is exactly how
  * the detail dropdown ended up rendering behind the panel.
  *
  * Positions are remembered per widget for the life of the page, so
@@ -91,7 +91,7 @@ const Row: React.FC<{ label: string; children: React.ReactNode }> = ({
   </div>
 );
 
-/** A full-width slider row — label and value share the top line. */
+/** A full-width slider row - label and value share the top line. */
 const SliderRow: React.FC<{
   id: string;
   label: string;
@@ -131,7 +131,7 @@ const SliderRow: React.FC<{
  * Sits *beside* the widget rather than on top of it, as a stack of
  * labelled rows. The previous overlay covered the thing being edited
  * and laid its controls out as one flat row of bare buttons and
- * dropdowns — readable at three controls, unreadable at Weather's six,
+ * dropdowns - readable at three controls, unreadable at Weather's six,
  * and it grew horizontally every time a setting was added. Rows grow
  * downward, name what they change, and leave the widget visible while
  * you change it.
@@ -162,7 +162,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     () => (storageKey ? movedPanels.get(storageKey) ?? null : null)
   );
   const [z, setZ] = useState(nextPanelZ);
-  // Once the user has dragged a panel, it stays where they put it —
+  // Once the user has dragged a panel, it stays where they put it -
   // auto-placement would otherwise snap it back to the widget's side on
   // the next reflow.
   const [isCustomPlaced, setIsCustomPlaced] = useState(
@@ -170,7 +170,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   );
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
   // Whether the tuning column (opacity / blur / ink) is expanded out
-  // the panel's right side — toggled by the strip's chevron.
+  // the panel's right side - toggled by the strip's chevron.
   const [highlightTuneOpen, setHighlightTuneOpen] = useState(false);
 
   useEffect(() => {
@@ -289,7 +289,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
   const supportsTextShadow =
     "textShadow" in (widgetConfig.settings as Record<string, unknown>);
-  // `??` not `||` — `||` would snap back to 100 when dragged to 0.
+  // `??` not `||` - `||` would snap back to 100 when dragged to 0.
   const textShadowValue = Math.round(
     typeof settings.textShadow === "number" ? settings.textShadow : 100
   );
@@ -378,7 +378,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       : "medium";
   })();
 
-  /** Segmented control — for two or three short, mutually-exclusive
+  /** Segmented control - for two or three short, mutually-exclusive
    *  options where a dropdown would hide the alternatives. */
   const segmented = <T extends string>(
     ariaLabel: string,
@@ -446,7 +446,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         previewFreezeRef.current = false;
         previewWidgetSettings(storageKey, null);
       }}
-      // Any press inside the panel raises it — clicking a control on a
+      // Any press inside the panel raises it - clicking a control on a
       // half-covered panel should bring the whole thing forward, not
       // just work blind.
       onMouseDown={(e) => {
@@ -751,7 +751,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       )}
 
       {controls?.notesShowBorder && (
-        // Short "Border: Show | Hide" — the previous full "Show
+        // Short "Border: Show | Hide" - the previous full "Show
         // border" strings in both the label AND the segments made the
         // row wider than the panel, so the control painted over the
         // label.
@@ -801,7 +801,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               }
             />
             {NOTE_PAPER_PRESETS.map((hex, i) => {
-              // Slot 0 is the shipped cream — stored as null so
+              // Slot 0 is the shipped cream - stored as null so
               // pre-feature blobs and an explicit default pick are
               // the same state.
               const value = i === 0 ? null : hex;
@@ -837,7 +837,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 />
               );
             })}
-            {/* Frosted glass is just another paper — picking it wins
+            {/* Frosted glass is just another paper - picking it wins
                 over any colour swatch. */}
             <button
               type="button"
@@ -908,7 +908,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             aria-label={t("widgets.edit.weatherLocationAria")}
             onClick={(e) => {
               e.stopPropagation();
-              // Same modal the right-click menu opens — one place to
+              // Same modal the right-click menu opens - one place to
               // change location instead of two different pickers.
               window.dispatchEvent(
                 new CustomEvent("ghiblify:weather:choose-city")
@@ -963,7 +963,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       {controls?.weatherStyle && (
         <>
           {/* The plain/card style pair moved into the four-way
-              Background row below — one control owns the surface. */}
+              Background row below - one control owns the surface. */}
           <Row label={t("widgets.edit.weatherAnimatedIcons")}>
             {segmented(
               t("widgets.edit.weatherAnimatedIcons"),
@@ -1014,7 +1014,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       {controls?.pomodoroSound && (
         <Row label={t("widgets.edit.pomodoroSoundLabel")}>
           {/* Picking a sound plays it. That's the obvious preview
-              affordance, and it doubles as the audio unlock — this
+              affordance, and it doubles as the audio unlock - this
               click is a real user gesture, so the context starts here
               rather than failing silently when the timer ends half an
               hour later. */}
@@ -1092,7 +1092,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           onChange={(v) =>
             updateWidgetSettings("pomodoro", { soundVolume: v })
           }
-          // Preview on release, not on change — sampling every drag
+          // Preview on release, not on change - sampling every drag
           // tick would fire a chime per pixel of travel.
           onCommit={() => {
             primePomodoroAudio();
@@ -1102,7 +1102,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       )}
 
       {supportsHighlight && (
-        // Stacked layout (label above, full-width swatch grid below) —
+        // Stacked layout (label above, full-width swatch grid below) -
         // ~10 chips beside a side label was an unreadable squeeze.
         <div className="edit-panel-slider-row">
           <span className="edit-panel-row-label">
@@ -1124,7 +1124,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 highlightFrost: v > 0,
               } as never)
             }
-            // Colour changes leave blur alone — a frosted pill stays
+            // Colour changes leave blur alone - a frosted pill stays
             // frosted when you re-tint it.
             onChange={(next) =>
               updateWidgetSettings(storageKey, {

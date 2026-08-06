@@ -24,11 +24,11 @@ interface WeatherLocationModalProps {
  * Where the weather comes from.
  *
  * A modal rather than a panel inside the widget: the widget is small,
- * often docked, and a search field with six results doesn't fit in it —
+ * often docked, and a search field with six results doesn't fit in it - *
  * the old popover ended up scrolling inside a 200px card.
  *
  * Two ways to answer "where am I?":
- *   - Auto — `navigator.geolocation`, which needs the optional
+ *   - Auto - `navigator.geolocation`, which needs the optional
  *     `geolocation` permission. The button here is what requests it.
  *   - A city typed by name, resolved through Open-Meteo's geocoder. That
  *     path needs no permission at all, which is the point: someone who
@@ -133,7 +133,7 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
   };
 
   // Portalled to <body>: this renders from inside the Weather widget,
-  // whose shell carries a `transform` — and a transformed ancestor makes
+  // whose shell carries a `transform` - and a transformed ancestor makes
   // `position: fixed` resolve against that element instead of the
   // viewport, so the backdrop covered the widget rather than the page.
   return createPortal(

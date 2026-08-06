@@ -2,7 +2,7 @@
    color triple at the alpha set inline via --input-opacity (driven by
    each parent widget's opacity slider). Text always uses --light, which
    every palette defines as the contrast-safe text color for its own
-   --dark surface — so readability is guaranteed across all 14 themes. */
+   --dark surface - so readability is guaranteed across all 14 themes. */
 .custom-input {
     width: 100%;
     padding: 12px 36px 12px 10px;

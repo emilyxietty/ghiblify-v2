@@ -1,5 +1,5 @@
 /* ===========================================================================
-   Pomodoro — themed, modern card
+   Pomodoro - themed, modern card
    =========================================================================== */
 
 .pomodoro-widget {
@@ -31,7 +31,7 @@
         0 0 0 1px rgba(0, 0, 0, 0.08) inset;
     color: var(--light);
     /* Two floors: the padding scale for the corner setting, and the
-       card's own radius — content sitting inside a 32px curve needs to
+       card's own radius - content sitting inside a 32px curve needs to
        start further in than content inside a 16px one, or it crowds the
        arc at the corners. max() takes whichever is larger. */
     padding: max(calc(22px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.7))
@@ -47,7 +47,7 @@
     /* Backdrop blur kept independent from --pomodoro-opacity so the
        card stays distinguishable from the photo background even at
        0 alpha. Fixed at 30px (the full top of the visually-useful
-       0–30 range) — chosen over a slider because users wanted a
+       0–30 range) - chosen over a slider because users wanted a
        single dependable frosted-glass read across themes, and the
        max value reads as cleanly diffused without dropping into
        smear territory. */
@@ -63,17 +63,17 @@
 /* Break mode = cute warm-yellow card so it reads as "ok, take a
    breather" rather than the urgent red of focus mode. Hardcoded
    bright yellow (no var(--yellow)) so the contrast against the dark
-   text stays the same across every palette — Frost in particular
+   text stays the same across every palette - Frost in particular
    binds --yellow to a desaturated tan that, when mixed, dropped the
    contrast against the dark text below readable.
 
-   :not(.custom-card) on every break-mode surface rule — when the
+   :not(.custom-card) on every break-mode surface rule - when the
    user picked a card colour it applies to BOTH modes, so break keeps
    the custom surface (and focus-mode's light text) instead of
    swapping to the blue card + dark ink. */
 .pomodoro-widget.break-mode:not(.custom-card) {
     /* Drive the alpha directly with rgba(...) so --pomodoro-opacity is
-       used as a literal alpha channel — no calc, no color-mix wrapper.
+       used as a literal alpha channel - no calc, no color-mix wrapper.
        (The previous color-mix(in srgb, #9bc8db calc(var * 100%),
        transparent) form silently failed to update on some browsers
        when the shorthand `background:` was used with a single
@@ -103,7 +103,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Mode switch — pill-style segmented control
+   Mode switch - pill-style segmented control
    --------------------------------------------------------------------------- */
 
 .pomodoro-switch-header {
@@ -164,7 +164,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Size presets — Pomodoro snaps to one of three sizes (small /
+   Size presets - Pomodoro snaps to one of three sizes (small /
    medium / large) picked from the right-click menu or the
    EditWidget overlay. The default `.pomodoro-widget` styling above
    is tuned for the LARGE preset (300×340); medium + small override
@@ -172,7 +172,7 @@
    discrete design, not a fluid resize.
    --------------------------------------------------------------------------- */
 
-/* Small (160×200) — pocket-clock footprint. Icon-only controls
+/* Small (160×200) - pocket-clock footprint. Icon-only controls
    (text labels hide), tightest spacing, smaller everything. */
 .pomodoro-widget.size-small {
     padding: max(calc(8px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.45))
@@ -210,7 +210,7 @@
     font-size: 9px;
 }
 
-/* Compact controls — icon-only. The text labels inside each Button
+/* Compact controls - icon-only. The text labels inside each Button
    (the "Play" / "Pause" word) hide so the row fits comfortably. */
 .pomodoro-widget.size-small .controls {
     gap: 4px;
@@ -234,7 +234,7 @@
     height: 3px;
 }
 
-/* Medium (220×260) — between small and large. Still icon-only on
+/* Medium (220×260) - between small and large. Still icon-only on
    controls so the row doesn't wrap on a 220-wide card; reduced
    padding + tighter type. */
 .pomodoro-widget.size-medium {
@@ -290,7 +290,7 @@
     height: 4px;
 }
 
-/* Large (300×340) — uses the default .pomodoro-widget styling above
+/* Large (300×340) - uses the default .pomodoro-widget styling above
    (no overrides needed). Slight tweak: cap the timer-image so cqw
    doesn't push it bigger than the card design intends. */
 .pomodoro-widget.size-large .timer-image {
@@ -302,7 +302,7 @@
    --------------------------------------------------------------------------- */
 
 .timer-display {
-    /* Fluid digits — scale between 48 and 96px based on the widget's
+    /* Fluid digits - scale between 48 and 96px based on the widget's
        width (cqw is 1% of the container's inline size). At the 240px
        minimum width that's ~58px; at 520px max it's ~96px, so the
        "12:34" reads big-but-readable across the full resize range. */
@@ -424,7 +424,7 @@
     cursor: not-allowed;
 }
 
-/* Icon-only variant — square-ish padding for buttons without label text. */
+/* Icon-only variant - square-ish padding for buttons without label text. */
 .pomodoro-control-btn-icon {
     padding: 8px 10px !important;
     gap: 0 !important;
@@ -474,7 +474,7 @@
    Pomodoro card.
    =========================================================================== */
 
-/* Soft dimming scrim over the photo background. NO blur — the photo
+/* Soft dimming scrim over the photo background. NO blur - the photo
    should stay crisp, just darkened so the timer reads. Sits at z-index
    800 in the body stacking context so it covers the photo (z-index 0)
    but stays below the lifted .background-content (see below). */
@@ -488,7 +488,7 @@ body.pomodoro-focus::before {
     animation: pomodoro-focus-scrim-in 240ms ease both;
 }
 
-/* Callout banner at the top — only shown briefly on entry then fades.
+/* Callout banner at the top - only shown briefly on entry then fades.
    The user just needs the cue once; after that it's just clutter. */
 body.pomodoro-focus::after {
     content: "Press Esc to exit focus mode";
@@ -530,7 +530,7 @@ body.pomodoro-focus::after {
 }
 
 /* .background-content normally has z-index: 10, which is below the scrim
-   (800) at the body stacking-context level — that's why Pomodoro looked
+   (800) at the body stacking-context level - that's why Pomodoro looked
    darkened (the scrim was painting over the widget content layer). Lift
    the entire content layer above the scrim in focus mode so the widget
    stays crisp and only the photo behind it gets the dim wash. */
@@ -593,7 +593,7 @@ body.pomodoro-focus .widget[data-widget-key="pomodoro"] {
     }
 }
 
-/* In focus mode the card chrome falls away — Pomodoro becomes pure
+/* In focus mode the card chrome falls away - Pomodoro becomes pure
    typography floating over the dim scrim, scaled near-full-screen.
    Both color states (focus + break) explicitly drop their card
    surfaces so the timer reads as floating text on the scrim. */
@@ -654,7 +654,7 @@ body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn svg {
 }
 
 body.pomodoro-focus .pomodoro-widget .timer-display {
-    /* Responsive — clamps so it scales from comfortably big on small
+    /* Responsive - clamps so it scales from comfortably big on small
        windows up to massive on a desktop monitor. */
     font-size: clamp(7rem, 22vw, 18rem);
     line-height: 0.95;
@@ -693,7 +693,7 @@ body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2 {
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
 
-/* Mode switch — translucent black pill instead of theme-colored. */
+/* Mode switch - translucent black pill instead of theme-colored. */
 body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header {
     background: rgba(0, 0, 0, 0.4) !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
@@ -703,7 +703,7 @@ body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2.active-mode {
     background: rgba(255, 255, 255, 0.22) !important;
 }
 
-/* Control buttons — larger translucent black pills. */
+/* Control buttons - larger translucent black pills. */
 body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn {
     background: rgba(0, 0, 0, 0.4) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -724,12 +724,12 @@ body.pomodoro-focus .pomodoro-widget .controls {
     gap: 18px;
 }
 
-/* Timer image — bigger when present. */
+/* Timer image - bigger when present. */
 body.pomodoro-focus .pomodoro-widget .timer-image {
     max-height: clamp(80px, 12vh, 160px);
 }
 
-/* Progress bar — taller in focus mode. */
+/* Progress bar - taller in focus mode. */
 body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar-container {
     height: 10px !important;
     max-width: 720px;
@@ -737,7 +737,7 @@ body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar-container {
     margin: 0 auto !important;
 }
 
-/* Progress bar — white track + white fill so it stays neutral. */
+/* Progress bar - white track + white fill so it stays neutral. */
 body.pomodoro-focus .pomodoro-widget .pomodoro-progress-bar-container {
     background: rgba(255, 255, 255, 0.18) !important;
 }

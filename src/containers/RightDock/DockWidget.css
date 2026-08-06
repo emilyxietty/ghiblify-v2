@@ -1,8 +1,8 @@
-/* DockWidget — vertical-stack tile inside the right dock. Sizes to
+/* DockWidget - vertical-stack tile inside the right dock. Sizes to
    the dock column width and to its content's natural height.
    Heavy use of !important here to override inline styles that the
    canvas Widget / individual widget components apply (fontSize,
-   width, height, position) — they're all keyed to canvas
+   width, height, position) - they're all keyed to canvas
    coordinates and would burst out of the dock column otherwise. */
 
 .dock-widget {
@@ -10,30 +10,30 @@
     box-sizing: border-box;
     position: relative;
     border-radius: 18px;
-    /* Transparent by default — widgets that paint their own surface
+    /* Transparent by default - widgets that paint their own surface
        (Notes' cream paper, Weather's card, Todo's container) read
        cleanly, and naked widgets (Time, Date, Greeting, Info,
        Avatar) sit straight on the photo. The optional global
        "Show backgrounds" toggle in the dock picker footer adds a
-       glass card to the naked widgets — see the
+       glass card to the naked widgets - see the
        `body.dock-show-bg` rule below. Notes / Weather / Todo are
        intentionally excluded so we never get dark text on a dark
        glass card. */
     background: transparent;
     /* Stack inner content vertically and let each widget fill the
-       column. Right-alignment is applied per-widget below — applying
+       column. Right-alignment is applied per-widget below - applying
        it here cascaded into card widgets and pushed their internal
        flex/text content against the column edge. */
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    /* Drag-and-drop reorder — see DockWidget.tsx. */
+    /* Drag-and-drop reorder - see DockWidget.tsx. */
     cursor: grab;
 }
 
-/* Optional glass card behind "naked" dock widgets — only when the
+/* Optional glass card behind "naked" dock widgets - only when the
    user enables the global "Show backgrounds" toggle in the dock
-   footer. Excludes Notes (cream paper card with dark text — would
+   footer. Excludes Notes (cream paper card with dark text - would
    become unreadable behind a dark glass), Weather (its showCard
    toggle handles its own surface), and Todo (already has its own
    container chrome). */
@@ -67,7 +67,7 @@ body.dock-show-bg .dock-widget-avatar {
     opacity: 0.4;
 }
 
-/* Drop-target indicator — a colored line on the side the dropped
+/* Drop-target indicator - a colored line on the side the dropped
    widget will land. Above the target = drop-before; below = drop-
    after. Uses outline so it doesn't shift layout when toggling. */
 .dock-widget.drop-before::before,
@@ -93,8 +93,7 @@ body.dock-show-bg .dock-widget-avatar {
 }
 
 /* Widgets with built-in chrome (Notes' cream paper, Weather's
-   showCard, Todo's container) keep their own surfaces in the dock —
-   the wrapper `.dock-widget` is transparent by default, and the
+   showCard, Todo's container) keep their own surfaces in the dock - the wrapper `.dock-widget` is transparent by default, and the
    optional global card surface only applies to naked widgets
    (Time / Date / Greeting / Info / Avatar) via the
    `body.dock-show-bg` rule above. So Notes shows its cream paper
@@ -103,7 +102,7 @@ body.dock-show-bg .dock-widget-avatar {
 
 .dock-widget,
 .dock-widget * {
-    /* Hard cap — nothing inside a docked widget can exceed the
+    /* Hard cap - nothing inside a docked widget can exceed the
        column. Stops Quicklinks' 600px width and Searchbar's 550px
        from bursting out of the 360px dock. */
     max-width: 100% !important;
@@ -116,7 +115,7 @@ body.dock-show-bg .dock-widget-avatar {
 
 /* The canvas Widget wrapper carries `position: absolute`, free
    coordinates (left/top), and a transform translate. None of that
-   makes sense in the dock's vertical flow — reset to relative,
+   makes sense in the dock's vertical flow - reset to relative,
    natural-flow, full-column-width. */
 .dock-widget .widget {
     position: relative !important;
@@ -132,10 +131,10 @@ body.dock-show-bg .dock-widget-avatar {
    Each widget hard-codes its own style.fontSize / style.width /
    style.height from settings. Override the most disruptive cases so
    they fit the dock column at a reasonable size. The user's stored
-   settings are preserved — they apply on the canvas instance; the
+   settings are preserved - they apply on the canvas instance; the
    dock just renders the widget at dock-friendly dimensions. */
 
-/* Time — canvas default is 200px font; cap to a dock-friendly size.
+/* Time - canvas default is 200px font; cap to a dock-friendly size.
    Full-width dock cell at 56px is comfortable; half-width (~150px
    inner width) needs to drop to ~32px or "12:34 PM" overflows. */
 .dock-widget .time-container {
@@ -161,7 +160,7 @@ body.dock-show-bg .dock-widget-avatar {
     font-size: 10px !important;
 }
 
-/* Date — its container is `align-items: center` by default. Flip
+/* Date - its container is `align-items: center` by default. Flip
    to flex-end + right text so the date sits flush to the right
    edge of the dock column / half-cell. */
 .dock-widget .date-container {
@@ -175,7 +174,7 @@ body.dock-show-bg .dock-widget-avatar {
     text-align: right !important;
 }
 
-/* Info — defaults to center-aligned flex column with center text;
+/* Info - defaults to center-aligned flex column with center text;
    the items themselves are also center-aligned via .info-item.
    Override all three so the film info reads right-aligned. */
 .dock-widget .info-container,
@@ -191,7 +190,7 @@ body.dock-show-bg .dock-widget-avatar {
     text-align: right !important;
 }
 
-/* Notes in a half-width dock cell — drop the textarea font from
+/* Notes in a half-width dock cell - drop the textarea font from
    14px to 12px so the cream paper doesn't overflow with too few
    words per line. Full-width Notes keeps the canvas size. */
 .dock-widget-half .notes-textarea {
@@ -199,7 +198,7 @@ body.dock-show-bg .dock-widget-avatar {
     line-height: 1.4 !important;
 }
 
-/* Notes — its inline width/height pin a square footprint that's
+/* Notes - its inline width/height pin a square footprint that's
    often larger than the dock column. Drop both so the textarea
    fills its dock cell. */
 .dock-widget .notes-widget {
@@ -208,7 +207,7 @@ body.dock-show-bg .dock-widget-avatar {
     aspect-ratio: 1 / 1;
 }
 
-/* Todo — fill the column width and grow with content up to half the
+/* Todo - fill the column width and grow with content up to half the
    viewport height. The internal `.todo-list` scrolls when content
    exceeds the cap. The Todo root class is `.todo-container` (not
    `-widget`); both are kept here in case markup changes. */
@@ -217,7 +216,7 @@ body.dock-show-bg .dock-widget-avatar {
     width: 100% !important;
     height: auto !important;
     max-height: 50vh !important;
-    /* Override stored canvas width — Todo writes
+    /* Override stored canvas width - Todo writes
        `widgets.todo.settings.width/height` to inline styles for the
        canvas drag-resize feature. The dock ignores those. */
     min-width: 0 !important;
@@ -233,7 +232,7 @@ body.dock-show-bg .dock-widget-avatar {
     min-height: 0 !important;
 }
 
-/* Avatar — cap the image to a sensible thumbnail and pin the
+/* Avatar - cap the image to a sensible thumbnail and pin the
    container to the right edge so the image sits flush-right. */
 .dock-widget .avatar-image,
 .dock-widget .avatar-container img {
@@ -246,7 +245,7 @@ body.dock-show-bg .dock-widget-avatar {
     text-align: right !important;
 }
 
-/* Weather — let the card and its strips fill the dock cell. The
+/* Weather - let the card and its strips fill the dock cell. The
    widget's own `.weather-widget` has padding + showCard styling
    that's already self-contained, so we just need to stretch the
    width when full, and tighten typography in a half-cell so "now"
@@ -289,7 +288,7 @@ body.dock-show-bg .dock-widget-avatar {
     flex: 0 0 40px !important;
 }
 
-/* Half-width cells are ~150px wide — there isn't room for icon +
+/* Half-width cells are ~150px wide - there isn't room for icon +
    text side-by-side without truncating the condition string. Stack
    them vertically (icon over text) so each row gets the full cell
    width. align-items: flex-start keeps the column right-aligned via
@@ -341,7 +340,7 @@ body.dock-show-bg .dock-widget-avatar {
 }
 
 /* Hide the canvas widget's edit chrome (resize handle, edit pencil)
-   inside the dock — sizing is dock-controlled, not user-tunable
+   inside the dock - sizing is dock-controlled, not user-tunable
    here. */
 .dock-widget .resize-handle,
 .dock-widget .widget-edit-button,

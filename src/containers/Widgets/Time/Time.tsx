@@ -53,7 +53,7 @@ export const Time: React.FC = () => {
     .trim();
   const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
 
-  // CSS custom property — multiplied into every text-shadow alpha in
+  // CSS custom property - multiplied into every text-shadow alpha in
   // Time.css. settings.textShadow is 0-200 (% of base); divide by 100
   // to get the multiplier.
   const shadowStyle = {
@@ -72,7 +72,7 @@ export const Time: React.FC = () => {
     const h = currentTime.getHours() % 12;
     const m = currentTime.getMinutes();
     const s = currentTime.getSeconds();
-    // 30° per hour, 6° per minute — plus a continuous offset so the
+    // 30° per hour, 6° per minute - plus a continuous offset so the
     // hour and minute hands creep smoothly between ticks instead of
     // snapping. No second hand by design (calmer Ghibli vibe).
     const hourAngle = h * 30 + m * 0.5;
@@ -87,10 +87,10 @@ export const Time: React.FC = () => {
           aria-label={timeDigits}
           role="img"
         >
-          {/* Frosted face — fully transparent fill; the wrapper's
+          {/* Frosted face - fully transparent fill; the wrapper's
               backdrop-filter blurs the wallpaper behind it. */}
           <circle cx="50" cy="50" r="48" className="time-analog-face" />
-          {/* Twelve numeral dots — chunky cardinal dots at 12/3/6/9
+          {/* Twelve numeral dots - chunky cardinal dots at 12/3/6/9
               and smaller ones in between, like little soot sprite eyes. */}
           {Array.from({ length: 12 }).map((_, i) => {
             const angle = (i * 30 * Math.PI) / 180;

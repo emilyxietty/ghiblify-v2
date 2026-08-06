@@ -1,4 +1,4 @@
-/** True when an event originated inside an editable surface — an
+/** True when an event originated inside an editable surface - an
  *  input, textarea, select, or any contenteditable (the Notes Lexical
  *  editor). Document-level shortcut listeners (Cmd+B bookmarks,
  *  Cmd+K sidebar) must ignore these, or they hijack standard editing

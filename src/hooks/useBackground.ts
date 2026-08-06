@@ -53,7 +53,7 @@ interface MovieMetadataData {
 
 // URLs that failed to load this session. A rotation pick is verified
 // with a real image fetch before it's painted; failures land here and
-// are skipped on re-picks. Session-scoped ON PURPOSE — a favorite
+// are skipped on re-picks. Session-scoped ON PURPOSE - a favorite
 // that 404s might be a transient host hiccup, so we never silently
 // delete it from the user's stored favorites; it just sits out until
 // the next full page load gives it another chance.
@@ -78,7 +78,7 @@ export const useBackground = () => {
   const online = useOnline();
 
   useEffect(() => {
-    // Offline short-circuit — every URL in background.json is
+    // Offline short-circuit - every URL in background.json is
     // remote (Tumblr/Pinterest/Tenor/etc.), so without network we'd
     // sit on a black screen. Pick a random bundled fallback and
     // surface its matching film title so the Info widget populates
@@ -116,7 +116,7 @@ export const useBackground = () => {
             (backgroundSelection && backgroundSelection[s.title]) ?? true,
         );
 
-        // No fallback to "all sources" when allowedSources is empty —
+        // No fallback to "all sources" when allowedSources is empty -
         // that would silently re-enable every movie when the user only
         // wants favorites in the rotation. If both allowedSources AND
         // favorites are empty, the self-heal block below catches the
@@ -149,7 +149,7 @@ export const useBackground = () => {
           });
         });
 
-        // Favorites are always eligible — they're a personal opt-in
+        // Favorites are always eligible - they're a personal opt-in
         // pool that the user can't deselect. Add any favorited URLs
         // that aren't already in the pool from a regular source.
         readFavorites().forEach((link) => {
@@ -163,7 +163,7 @@ export const useBackground = () => {
           console.log(
             "useBackground: no candidate links with metadata found, falling back to default",
           );
-          // Self-heal — when the pool is empty (no enabled movies AND
+          // Self-heal - when the pool is empty (no enabled movies AND
           // no favorites), auto-enable the first available source so
           // the user is never stranded with nothing to rotate. Picks
           // the first source that has metadata + at least one
@@ -176,7 +176,7 @@ export const useBackground = () => {
           if (firstAvailableSource) {
             updateBackgroundSelection(firstAvailableSource.title, true);
             // The selection change will retrigger this effect, so we
-            // can return early — the next pass will populate the pool.
+            // can return early - the next pass will populate the pool.
           }
           // If default is blacklisted too, try to find any non-blacklisted link
           if (!blacklistSet.has(bgData.default.link)) {
@@ -225,15 +225,15 @@ export const useBackground = () => {
         };
 
         // Dead-URL protection, OPTIMISTIC edition. The first version
-        // AWAITED a full image download before painting anything —
+        // AWAITED a full image download before painting anything -
         // which fixed black tabs from rotten favorites but made every
         // tab measurably slower (the old behavior painted the CSS
         // background progressively as bytes streamed). Now: paint the
         // pick immediately, verify in the background, and only when
-        // the verify FAILS mark the URL dead and re-run selection —
+        // the verify FAILS mark the URL dead and re-run selection -
         // the rare bad pick shows the pre-paint wallpaper for a beat
         // longer, the common good pick costs nothing.
-        // NO reset-to-allLinks when the filtered pool empties — that
+        // NO reset-to-allLinks when the filtered pool empties - that
         // would make the verify-fail → re-run cycle loop forever on an
         // all-dead pool. Empty means "fall back to a bundled asset".
         const pool = allLinks.filter((c) => !deadUrls.has(c.link));
@@ -252,7 +252,7 @@ export const useBackground = () => {
         void preloadImage(selected.link).then((ok) => {
           if (ok) return;
           deadUrls.add(selected.link);
-          // Re-run the whole selection — deadUrls now excludes this
+          // Re-run the whole selection - deadUrls now excludes this
           // pick, and if everything is dead the empty-pool branch
           // above lands on a bundled fallback. background.json is a
           // local extension file, so the re-run is effectively free.
@@ -275,8 +275,8 @@ export const useBackground = () => {
         );
 
         // Resolve metadata. When the pick came from the favorites
-        // pool the sourceTitle is the sentinel "__favorites__" — not
-        // a real metadata key — so look up the actual originating
+        // pool the sourceTitle is the sentinel "__favorites__" - not
+        // a real metadata key - so look up the actual originating
         // film by scanning bgData.sources for the URL. Falls back to
         // a blank filmTitle if the favorite doesn't belong to any
         // tracked source (e.g., a one-off URL the user hearted from
@@ -303,7 +303,7 @@ export const useBackground = () => {
 
     loadBackground();
 
-    // Re-run selection when the blacklist changes — the current image
+    // Re-run selection when the blacklist changes - the current image
     // may have been removed and we need a replacement. Favorites
     // changes are intentionally NOT a trigger: favoriting is a passive
     // bookmark and shouldn't shuffle the displayed photo. New
@@ -345,7 +345,7 @@ export const useBackground = () => {
     try {
       localStorage.setItem("ghiblify:lastBg", currentBackground);
     } catch {
-      /* ignore — quota exceeded / private context */
+      /* ignore - quota exceeded / private context */
     }
   }, [currentBackground]);
 

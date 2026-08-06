@@ -1,5 +1,5 @@
 /* ===========================================================================
-   ContextMenu — shared right-click dropdown used by widgets and the
+   ContextMenu - shared right-click dropdown used by widgets and the
    background. Portal'd to <body>, so positioning is purely viewport-
    relative (no ancestor transforms can shift it).
    =========================================================================== */
@@ -72,7 +72,7 @@
 }
 
 .ctx-menu-row.ctx-menu-info {
-    /* Non-interactive — no hover state, dimmer text, no pointer. */
+    /* Non-interactive - no hover state, dimmer text, no pointer. */
     cursor: default;
     opacity: 0.75;
     background: transparent;
@@ -91,7 +91,7 @@
     background: transparent;
 }
 
-/* Leading icon slot — always reserved (even for action items) so
+/* Leading icon slot - always reserved (even for action items) so
    labels line up vertically across rows of mixed types. */
 .ctx-menu-icon {
     display: inline-flex;
@@ -133,12 +133,12 @@
     flex-shrink: 0;
 }
 
-/* Submenu — pops out to one side of its parent row, matching the
+/* Submenu - pops out to one side of its parent row, matching the
    parent menu's styling exactly. The small horizontal overlap is
    intentional so the cursor can travel from row → submenu without
    slipping through a gap (which would dismiss it via mouseleave).
    Both side (left/right) and top offset are computed by SubmenuRow
-   based on viewport room — the side picks a class, the top is
+   based on viewport room - the side picks a class, the top is
    applied inline. */
 .ctx-menu-submenu {
     position: absolute;
@@ -153,7 +153,7 @@
     right: calc(100% + 2px);
 }
 
-/* Hover bridge — an invisible strip spanning the gap between the parent
+/* Hover bridge - an invisible strip spanning the gap between the parent
    row and the cascade. The submenu is a DOM child of the row, so as long
    as the pointer stays over *something* in that subtree the row never
    fires mouseleave; without the bridge, the 2px gap counts as leaving
@@ -187,7 +187,7 @@
 }
 
 /* When a checkbox row carries its own icon, that icon takes the shared
-   leading slot — so icons line up down the menu — and the tick moves
+   leading slot - so icons line up down the menu - and the tick moves
    here, to the trailing edge. */
 .ctx-menu-trailing-check {
     margin-left: auto;

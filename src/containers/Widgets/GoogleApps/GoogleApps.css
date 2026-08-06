@@ -1,5 +1,5 @@
 /* ===========================================================================
-   Google corner — waffle (apps grid) + account button, mirroring the
+   Google corner - waffle (apps grid) + account button, mirroring the
    cluster on Google's own new-tab page.
    =========================================================================== */
 
@@ -35,7 +35,7 @@
     text-decoration: none;
 }
 
-/* Letter avatar — Google's signed-in look: initial on a stable
+/* Letter avatar - Google's signed-in look: initial on a stable
    per-email colour. */
 .gapps-letter {
     width: 28px;
@@ -50,7 +50,7 @@
 }
 
 
-/* The apps grid — a rounded card dropping from the cluster's right
+/* The apps grid - a rounded card dropping from the cluster's right
    edge, like the real launcher. Solid surface (matches the edit-panel
    family) so tiles read over any wallpaper. */
 .gapps-panel {

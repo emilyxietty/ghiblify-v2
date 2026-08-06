@@ -61,7 +61,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Empty-state — shown when a widget has nothing customizable. The
+/* Empty-state - shown when a widget has nothing customizable. The
    overlay still lays over the widget (so it's clear you've entered
    edit mode for it), but the only contents are a centered hint. */
 .widget-overlay-empty-message {
@@ -128,7 +128,7 @@
     pointer-events: auto !important;
 }
 
-/* Pomodoro size segmented pill — three short-label buttons grouped
+/* Pomodoro size segmented pill - three short-label buttons grouped
    tight so the row reads as a single S/M/L selector. */
 .widget-pomodoro-size {
     display: inline-flex;
@@ -151,7 +151,7 @@
        this container hosts (Sections / Fields multi-select) can float
        over the slider when it extends downward. The container itself
        lives at the top of the overlay so the bumped z doesn't cover
-       anything else — only its open dropdowns would overlap. */
+       anything else - only its open dropdowns would overlap. */
     z-index: 30;
 }
 
@@ -160,11 +160,11 @@
    ---------------------------------------------------------------------------
    The row mixes three control families with mismatched intrinsic
    heights / widths:
-     - <Button size="small" .btn-text-toggle>  — pill toggle (Card,
+     - <Button size="small" .btn-text-toggle>  - pill toggle (Card,
        Icons only, °F/°C, S/M/L)
-     - <Dropdown size="small" outline-light>   — single-select pill
+     - <Dropdown size="small" outline-light>   - single-select pill
        (Icon style)
-     - <MultiSelectDropdown>                   — multi-pick pill
+     - <MultiSelectDropdown>                   - multi-pick pill
        (Sections, Fields)
    Without these resets, the wrapping <div> around each Dropdown
    lets the base `.dropdown { width: 100% }` rule expand the toggle
@@ -205,7 +205,7 @@
    `.dropdown-outline-light` look used by the Icon style / Unit
    Dropdowns next to it. Stock styling is a solid black pill with
    12px bold text; the regular Dropdowns are transparent with a
-   30% white border + medium 14px text — visually two different
+   30% white border + medium 14px text - visually two different
    pill families in the same row. Scoped to `.widget-controls-container`
    so the bespoke MultiSelectDropdown look stays intact wherever
    else it's used (filters, multi-pick fields, etc.). */
@@ -241,7 +241,7 @@
     padding: 6px 12px;
 }
 
-/* Pomodoro segmented group nested inside — its segments are
+/* Pomodoro segmented group nested inside - its segments are
    .btn-text-toggle too, so they pick up the rules above. Just
    make sure the wrapper itself takes the same row height. */
 .widget-controls-container .widget-pomodoro-size {
@@ -286,7 +286,7 @@
     border-right-color: white;
 }
 
-/* Highlight sits in the same panel as the text-shadow slider — both
+/* Highlight sits in the same panel as the text-shadow slider - both
    control how the text itself reads, so they share one surface with no
    gap between them. */
 .widget-highlight-row {
@@ -303,7 +303,7 @@
    ---------------------------------------------------------------------------
    Sits beside the widget (portalled, fixed, positioned in JS) instead of
    covering it. Rows stack, so the panel grows downward as settings are
-   added rather than sideways — and the widget stays visible while it's
+   added rather than sideways - and the widget stays visible while it's
    being changed. */
 
 .edit-panel {
@@ -355,7 +355,7 @@
     gap: 10px;
     min-height: 28px;
     /* A control that can't shrink (nowrap segment buttons) drops to
-       its own line instead of painting over the label — long
+       its own line instead of painting over the label - long
        localized strings made label + control exceed the panel width. */
     flex-wrap: wrap;
 }
@@ -437,7 +437,7 @@
     background: var(--light);
 }
 
-/* Expanded state: the tuning column slides out the right side — the
+/* Expanded state: the tuning column slides out the right side - the
    panel itself grows instead of floating anything over content. */
 .edit-panel-expanded {
     width: 460px;
@@ -508,7 +508,7 @@
     background: color-mix(in srgb, var(--light) 14%, transparent);
 }
 
-/* Paper colour swatches — small round chips, active one ringed. */
+/* Paper colour swatches - small round chips, active one ringed. */
 .edit-panel-swatches {
     display: flex;
     align-items: center;
@@ -545,7 +545,7 @@
         color-mix(in srgb, var(--light) 8%, transparent);
 }
 
-/* Frosted-glass paper swatch — translucent stripes read as "glass"
+/* Frosted-glass paper swatch - translucent stripes read as "glass"
    next to the solid colour chips. */
 .edit-panel-swatch-frost {
     background: repeating-linear-gradient(
@@ -555,7 +555,7 @@
     );
 }
 
-/* Smoked-glass variant — same stripes, dark. */
+/* Smoked-glass variant - same stripes, dark. */
 .edit-panel-swatch-frost-dark {
     background: repeating-linear-gradient(
         45deg,
@@ -564,7 +564,7 @@
     );
 }
 
-/* "Clear" (no surface) — diagonal slash over nothing. */
+/* "Clear" (no surface) - diagonal slash over nothing. */
 .edit-panel-swatch-clear {
     background: linear-gradient(
         to top right,
@@ -580,7 +580,7 @@
     background: rgb(var(--surface-rgb, 31, 38, 32));
 }
 
-/* Weather-mood card chip — sky-to-sun wash. */
+/* Weather-mood card chip - sky-to-sun wash. */
 .edit-panel-swatch-weather {
     background: linear-gradient(135deg, #7ec3e8 0%, #b8dcf0 55%, #f5d98a 100%);
 }
@@ -666,7 +666,7 @@
     color: var(--light-muted);
 }
 
-/* The title doubles as the drag handle — the panels overlap once a few
+/* The title doubles as the drag handle - the panels overlap once a few
    widgets are in edit mode, so each one has to be movable. */
 .edit-panel-title {
     display: flex;

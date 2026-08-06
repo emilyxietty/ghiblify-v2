@@ -40,7 +40,7 @@
 }
 
 .background-loading {
-    /* Transparent — `newtab.html`'s inline pre-mount script paints
+    /* Transparent - `newtab.html`'s inline pre-mount script paints
        the previous wallpaper (or the chihiro043 splash on first
        load ever) on <body> before React mounts. While useBackground
        picks the real image asynchronously, we let that pre-paint

@@ -1,4 +1,4 @@
-/* Portal-rendered tooltip — rendered via createPortal at <body>, so it
+/* Portal-rendered tooltip - rendered via createPortal at <body>, so it
    escapes any ancestor overflow:hidden/auto and any clipping container.
    Positioned via fixed coordinates computed from the target's bounding
    rect (see TooltipPortal.tsx). */

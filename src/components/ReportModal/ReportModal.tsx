@@ -42,7 +42,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      /* ignore — clipboard may be blocked in some contexts */
+      /* ignore - clipboard may be blocked in some contexts */
     }
   };
 
@@ -101,7 +101,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
           </Button>
         </div>
 
-        {/* Secondary path — chatty users prefer Discord over email
+        {/* Secondary path - chatty users prefer Discord over email
             for "I noticed this", "what about a feature for...", etc.
             Sits below the email block as an alternative, separated
             by a thin divider so the dialog reads as

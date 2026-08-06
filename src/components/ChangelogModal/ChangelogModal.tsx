@@ -1,5 +1,5 @@
 /**
- * Changelog modal — opens from the version button at the bottom of
+ * Changelog modal - opens from the version button at the bottom of
  * the LeftSidebar. Rather than maintaining release notes inside the
  * extension code (which would mean a new build + CWS review for every
  * "what's new" tweak), we point users at the Discord where the latest

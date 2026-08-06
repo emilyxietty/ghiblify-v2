@@ -8,14 +8,14 @@ import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useWeather, WeatherDaily } from "../../../hooks/useWeather";
 import { useT } from "../../../i18n/i18n";
 import { isManualPlace } from "../../../utils/geocoding";
-// Lazy — the picker is a dialog most sessions never open.
+// Lazy - the picker is a dialog most sessions never open.
 const WeatherLocationModal = lazy(
   () => import("../../../components/WeatherLocationModal/WeatherLocationModal")
 );
 import "./Weather.css";
 
 // Map a WMO weather code → a Meteocons SVG filename (without extension).
-// Meteocons by Bas Milius (https://bas.dev/work/meteocons) — MIT licensed.
+// Meteocons by Bas Milius (https://bas.dev/work/meteocons) - MIT licensed.
 // Helpers `codeToIconName` and `iconUrl` live in `./weatherIcons.ts`
 // (separate file so LeftSidebar's live weather chip can use them
 // without dragging the whole Weather widget body into the main
@@ -62,7 +62,7 @@ const Weather: React.FC = () => {
   const isHalfInDock =
     inDock && widgets.weather.dockWidth === "half";
   // Per-surface render overrides on top of the merged settings.
-  // Stored settings are never mutated here — these only affect the
+  // Stored settings are never mutated here - these only affect the
   // current render so the canvas / full-width instance keeps its
   // own state untouched.
   //   - Half-width dock: forecast strips would wrap, so the detail
@@ -96,7 +96,7 @@ const Weather: React.FC = () => {
       window.removeEventListener("ghiblify:weather:refresh", handler);
   }, [refresh]);
 
-  // "Choose a city" opens the modal. Only the canvas instance listens —
+  // "Choose a city" opens the modal. Only the canvas instance listens -
   // the dock renders a second Weather, and both answering would stack
   // two identical dialogs.
   const [locationOpen, setLocationOpen] = useState(false);
@@ -116,8 +116,8 @@ const Weather: React.FC = () => {
   const sections = sectionsForDetail(detail);
   const iconsOnly = detail === "icon";
 
-  // Both forecast strips are the same three-row cell — label, icon,
-  // temperature — so they share one renderer instead of two near-copies.
+  // Both forecast strips are the same three-row cell - label, icon,
+  // temperature - so they share one renderer instead of two near-copies.
   // A row without a `code` renders the placeholder icon, which is what
   // lets the loading state reuse this shape rather than duplicate it.
   interface StripRow {
@@ -207,7 +207,7 @@ const Weather: React.FC = () => {
                 }}
               />
               {/* Today also carries a dot for the temperature right
-                  now — the one day where "where in the range are we?"
+                  now - the one day where "where in the range are we?"
                   has an answer. */}
               {i === 0 && data && (
                 <span
@@ -263,7 +263,7 @@ const Weather: React.FC = () => {
               {t("weather.feelsLike", {
                 temp: `${data.current.apparent}${unitSuffix}`,
               })}
-              {/* Today's range next to the current reading — the first
+              {/* Today's range next to the current reading - the first
                   thing both Apple and Google put under the condition,
                   and it answers "is it going to get colder?" without
                   opening the daily list. */}
@@ -314,7 +314,7 @@ const Weather: React.FC = () => {
       ? moodFor(data.current.weatherCode, data.current.isDay)
       : undefined;
 
-  // One body per state, chosen once — rather than four sibling blocks
+  // One body per state, chosen once - rather than four sibling blocks
   // each re-testing `!loading && error && …` and each opening its own
   // wrapper.
   let body: React.ReactNode;
@@ -359,7 +359,7 @@ const Weather: React.FC = () => {
       </div>
     );
   } else if (error) {
-    // Location-off is a normal state, not a failure — greet it with an
+    // Location-off is a normal state, not a failure - greet it with an
     // invitation (turn location on, or pick a city) rather than error
     // language. Both actions recover in place.
     const isPermission =

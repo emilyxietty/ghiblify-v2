@@ -1,5 +1,5 @@
 /**
- * Tiny i18n layer — no external deps. Strings live in /src/i18n/locales/<code>.json
+ * Tiny i18n layer - no external deps. Strings live in /src/i18n/locales/<code>.json
  * keyed by dotted path. `t("sidebar.headings.widgets")` resolves to the matching
  * leaf string. `t("widgets.toggle.show", { name: "Time" })` interpolates {{name}}.
  *
@@ -12,7 +12,7 @@
  * which strings haven't been translated yet).
  */
 
-// English is the fallback baseline — always present so any missing
+// English is the fallback baseline - always present so any missing
 // translation in another locale falls through to a real string. The
 // other 12 locales are loaded lazily on demand via dynamic import so
 // they DON'T ship in the initial JS bundle. Vite splits each
@@ -106,13 +106,13 @@ const readPersistedLocale = (): string => {
 let currentLocale: string = readPersistedLocale();
 const listeners = new Set<() => void>();
 
-// Boot — kick off the saved locale's load (no-op for en, fire and
+// Boot - kick off the saved locale's load (no-op for en, fire and
 // forget for everything else). Until the chunk arrives, lookups
 // fall back to en so the first paint is never blank.
 if (currentLocale !== "en") ensureLoaded(currentLocale);
 
 // Note: <html lang> is intentionally NOT mutated when the user
-// switches locale — the page markup stays English-tagged regardless,
+// switches locale - the page markup stays English-tagged regardless,
 // which keeps Chrome's "translate this page" prompt and other
 // browser-language heuristics consistent.
 
@@ -125,13 +125,13 @@ export function setLocale(locale: string): void {
   writePersisted(STORAGE_KEY, locale);
   // Fire listeners now so the picker UI flips immediately. The
   // strings might still be in English for a beat while the chunk
-  // loads — `ensureLoaded` fires a second notify on resolve so the
+  // loads - `ensureLoaded` fires a second notify on resolve so the
   // UI re-renders with the proper translations.
   listeners.forEach((l) => l());
   if (locale !== "en") ensureLoaded(locale);
 }
 
-// Cross-device sync — when chrome.storage.sync delivers a remote
+// Cross-device sync - when chrome.storage.sync delivers a remote
 // locale update from another Chrome install, switch to it without
 // requiring a reload. Skip if the value is already what we have.
 subscribePersisted(STORAGE_KEY, (next) => {

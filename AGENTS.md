@@ -22,14 +22,16 @@ Guidance for AI assistants working in this repo. Read this first; consult `guide
 ## Commands
 
 ```bash
-npm run dev      # vite build --watch — rebuilds dist/ on change
+npm run dev      # vite build --watch - rebuilds dist/ on change
 npm run build    # one-shot production build
 npm run preview  # serve dist/
 ```
 
 There are no tests, no linter, and no formatter configured. Don't add CI tooling unless asked.
 
-**After making changes, always rebuild** (`pnpm build`) so `dist/` reflects them — the unpacked extension loads from `dist/`, and a stale build means the change is invisible in the browser.
+**After making changes, always rebuild** (`pnpm build`) so `dist/` reflects
+them - the unpacked extension loads from `dist/`, and a stale build means
+the change is invisible in the browser.
 
 To load the extension: `chrome://extensions` → Developer mode → Load unpacked → select `dist/`.
 
@@ -38,7 +40,7 @@ To load the extension: `chrome://extensions` → Developer mode → Load unpacke
 ```
 src/
 ├── index.tsx, App.tsx, App.css       # entry, root, global theme vars
-├── contexts/AppContext.tsx            # THE state hub — read this before editing widgets
+├── contexts/AppContext.tsx            # THE state hub - read this before editing widgets
 ├── config/
 │   ├── widgetConfig.ts                # widget registry: defaults, constraints, controls
 │   ├── avatarConfig.ts                # Ghibli character avatars
@@ -66,12 +68,12 @@ src/
 
 You usually touch four files:
 
-1. `src/config/widgetConfig.ts` — define the settings type, add to `WidgetSettingsMap`, `WIDGET_KEYS`, and `WIDGET_CONFIGS` (defaults, position, sliders, custom controls)
-2. `src/containers/Widgets/<Name>/<Name>.tsx` — the widget itself; reads `widgets[key].settings` from `useAppContext()`
-3. `src/containers/LeftSidebar/LeftSidebar.tsx` — visibility toggle
-4. `src/App.tsx` — conditional render (`<Widget storageKey="<key>" visible={widgets.<key>.visible}><Foo /></Widget>`)
+1. `src/config/widgetConfig.ts` - define the settings type, add to `WidgetSettingsMap`, `WIDGET_KEYS`, and `WIDGET_CONFIGS` (defaults, position, sliders, custom controls)
+2. `src/containers/Widgets/<Name>/<Name>.tsx` - the widget itself; reads `widgets[key].settings` from `useAppContext()`
+3. `src/containers/LeftSidebar/LeftSidebar.tsx` - visibility toggle
+4. `src/App.tsx` - conditional render (`<Widget storageKey="<key>" visible={widgets.<key>.visible}><Foo /></Widget>`)
 
-`AppContext.tsx` does not need to change — the `WidgetsState` and `updateWidgetSettings<K>` generics pick up the new key. If the widget should default to hidden, add it to `HIDDEN_BY_DEFAULT` in `AppContext.tsx`.
+`AppContext.tsx` does not need to change - the `WidgetsState` and `updateWidgetSettings<K>` generics pick up the new key. If the widget should default to hidden, add it to `HIDDEN_BY_DEFAULT` in `AppContext.tsx`.
 
 Exception: `bookmarks` lives in `WIDGET_KEYS` for visibility/sidebar plumbing but renders inside `RightSidebar` rather than via `<Widget>`. Its `position` is unused.
 
@@ -79,13 +81,13 @@ See `guide/widgets.md` for the full walkthrough.
 
 ## Critical conventions (don't violate without reason)
 
-- **Positioning**: widgets use `left: Xvw; top: Yvh; transform: translate(-50%, 0)` — X is center-anchored, Y is top-anchored. Don't change this; it keeps the header stable when widget content resizes.
+- **Positioning**: widgets use `left: Xvw; top: Yvh; transform: translate(-50%, 0)` - X is center-anchored, Y is top-anchored. Don't change this; it keeps the header stable when widget content resizes.
 - **Edit-mode trigger**: hold Shift to see widget outlines; Shift+click+drag to move. Resize handles only appear in edit mode.
-- **Drag Mode** (`dragMode` in `AppContext`) is a separate sticky mode toggled from the sidebar — left-click+drag without Shift, stays on until "Done." Mutually exclusive with edit mode. Don't conflate the two when wiring drag handlers.
-- **Themes & palette**: 13 themes in `THEME_NAMES` plus a `highContrast` flag, all in `AppContext`. `<html>` gets `theme-<name>`, `palette-light`/`palette-dark`, and `high-contrast` classes. Style widget surfaces against CSS variables — don't hard-code colors. Legacy theme names are remapped via `LEGACY_THEME_RENAMES`.
-- **Persistence**: one localStorage key, `ghiblify_widgets`, holding only diffs from defaults. Note that `visible` is diffed against the per-widget default (most default to true; `HIDDEN_BY_DEFAULT` widgets — searchbar, quicklinks, avatar, pomodoro, notes — default to false). A one-time migration from the legacy per-key layout runs on first load (see `guide/architecture.md`).
+- **Drag Mode** (`dragMode` in `AppContext`) is a separate sticky mode toggled from the sidebar - left-click+drag without Shift, stays on until "Done." Mutually exclusive with edit mode. Don't conflate the two when wiring drag handlers.
+- **Themes & palette**: 13 themes in `THEME_NAMES` plus a `highContrast` flag, all in `AppContext`. `<html>` gets `theme-<name>`, `palette-light`/`palette-dark`, and `high-contrast` classes. Style widget surfaces against CSS variables - don't hard-code colors. Legacy theme names are remapped via `LEGACY_THEME_RENAMES`.
+- **Persistence**: one localStorage key, `ghiblify_widgets`, holding only diffs from defaults. Note that `visible` is diffed against the per-widget default (most default to true; `HIDDEN_BY_DEFAULT` widgets - searchbar, quicklinks, avatar, pomodoro, notes - default to false). A one-time migration from the legacy per-key layout runs on first load (see `guide/architecture.md`).
 - **Auto-sized / fixed widgets**: `weather` has no width/height bounds (auto-sizes to content). `notes` uses `squareLock: true` with a fixed 260×260 footprint so the cardborder.svg sits flush. Don't add resize handles to either.
-- **State flow**: `EditWidget` and widgets read/write through `useAppContext()`. There's no `window.dispatchEvent` event bus — the context drives re-renders.
+- **State flow**: `EditWidget` and widgets read/write through `useAppContext()`. There's no `window.dispatchEvent` event bus - the context drives re-renders.
 - **Pomodoro uses leader election** across tabs via `localStorage` + `storage` events. One tab owns the interval; others mirror. Don't naively `setInterval` in the widget.
 - **No barrel files** (`index.ts` re-exports). Import the concrete file: `import Button from "../../components/Button/Button.tsx"`.
 - **Background JSON** is loaded via `chrome.runtime.getURL(...)`, not `import`. Files must be listed in `manifest.json` `web_accessible_resources`.
@@ -94,7 +96,7 @@ See `guide/widgets.md` for the full walkthrough.
 
 - Functional components only, `React.FC<Props>` with an explicit `Props` interface.
 - Co-located CSS file per component, BEM-lite class names (`.widget`, `.widget-header`).
-- TypeScript strict — fix types, don't `any` your way out.
+- TypeScript strict - fix types, don't `any` your way out.
 - Default to no comments. The code already does the talking.
 - No emojis in code or commits.
 
@@ -107,16 +109,16 @@ Conventional-commit prefixes are in use: `feat(scope):`, `fix(scope):`, `chore(s
 There's no test suite. Verification = run `npm run dev`, reload the unpacked extension, open a new tab, and click through:
 
 1. Toggle the widget on from the left sidebar
-2. Shift+drag to reposition — confirm snap behavior
+2. Shift+drag to reposition - confirm snap behavior
 3. Enter edit mode, exercise every control in `EditWidget`
-4. Reload the tab — confirm state restored from localStorage
-5. Open a second tab — confirm pomodoro stays in sync if relevant
+4. Reload the tab - confirm state restored from localStorage
+5. Open a second tab - confirm pomodoro stays in sync if relevant
 
 If you can't verify in a browser, say so explicitly.
 
 ## Deeper reading
 
-- `guide/architecture.md` — AppContext, dual persistence, leader election, custom events
-- `guide/widgets.md` — anatomy of a widget; how to add a new one
-- `guide/conventions.md` — file layout, naming, styling, CSS variables
-- `guide/gotchas.md` — non-obvious behaviors and traps
+- `guide/architecture.md` - AppContext, dual persistence, leader election, custom events
+- `guide/widgets.md` - anatomy of a widget; how to add a new one
+- `guide/conventions.md` - file layout, naming, styling, CSS variables
+- `guide/gotchas.md` - non-obvious behaviors and traps

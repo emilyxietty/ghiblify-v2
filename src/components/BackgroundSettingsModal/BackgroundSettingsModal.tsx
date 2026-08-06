@@ -22,7 +22,7 @@ interface BackgroundSettingsModalProps {
 // component) so its function identity stays stable across parent
 // re-renders. Defining a memoized component inside another component
 // gives it a fresh identity on every render, which causes React to
-// unmount + remount the children — wiping the per-item `open` state.
+// unmount + remount the children - wiping the per-item `open` state.
 // That manifested as the dropdowns auto-collapsing every time the
 // user hearted, unhearted, or deleted a thumbnail.
 type BackgroundListItemProps = {
@@ -31,7 +31,7 @@ type BackgroundListItemProps = {
   enabled: boolean;
   available: boolean;
   links: string[];
-  /** Pre-blacklist total — the source's full link count. Shown
+  /** Pre-blacklist total - the source's full link count. Shown
    *  alongside `links.length` in the summary so the user can see
    *  how many they've trashed (e.g., "47 / 50"). */
   totalLinks: number;
@@ -87,7 +87,7 @@ const BackgroundListItem: React.FC<BackgroundListItemProps> = React.memo(
             checked={enabled}
             disabled={!available || !!disableLast}
             // stopPropagation so the click never reaches <summary>'s
-            // onClick — that handler calls preventDefault() to block
+            // onClick - that handler calls preventDefault() to block
             // the native <details> toggle, but bubbled preventDefault
             // also kills the checkbox's own toggle, leaving the
             // selected state stuck.
@@ -261,7 +261,7 @@ export const BackgroundSettingsModal: React.FC<
 
   const deselectAll = () => {
     // Favorites are always-on (no checkbox), so when the user has any
-    // we can safely turn off every movie — favorites carry the
+    // we can safely turn off every movie - favorites carry the
     // rotation alone. Otherwise fall back to keeping the first movie.
     if (favorites.size > 0) {
       movies.forEach((m) => updateBackgroundSelection(m.key, false));
@@ -323,7 +323,7 @@ export const BackgroundSettingsModal: React.FC<
     window.dispatchEvent(ev);
   }, []);
 
-  // Favorites state — persisted in the shared ghiblify_background
+  // Favorites state - persisted in the shared ghiblify_background
   // blob. Mutations broadcast `ghiblify:favorites:change` so the
   // sidebar heart button + useBackground stay in sync.
   const [favorites, setFavorites] = React.useState<Set<string>>(
@@ -429,7 +429,7 @@ export const BackgroundSettingsModal: React.FC<
                 return enabled && available;
               });
               // Favorites is always on (locked), so it counts toward
-              // "have at least one source" — meaning when favorites
+              // "have at least one source" - meaning when favorites
               // exist, deselecting every movie is allowed.
               const hasFavorites = favorites.size > 0;
               const enabledCount =
@@ -481,7 +481,7 @@ export const BackgroundSettingsModal: React.FC<
         <div className="modal-body">
           <div className="sidebar-section background-settings">
             <div className="background-list">
-              {/* Favorites entry — pinned to the top. Selectable like a
+              {/* Favorites entry - pinned to the top. Selectable like a
                   movie (checkbox enables/disables it in the rotation
                   pool); expanded view shows each favorited image with a
                   per-image unfavorite button. Hidden when no favorites. */}
@@ -574,7 +574,7 @@ export const BackgroundSettingsModal: React.FC<
                 }, 0);
                 // Favorites carries the rotation on its own when
                 // populated, so it counts toward the "have at least
-                // one source" floor — meaning the user can fully
+                // one source" floor - meaning the user can fully
                 // deselect every movie without hitting the disableLast
                 // lock.
                 const enabledSelectableCount =
@@ -627,7 +627,7 @@ export const BackgroundSettingsModal: React.FC<
                 });
               })()}
 
-              {/* Deleted entry — sits at the bottom of the movie list
+              {/* Deleted entry - sits at the bottom of the movie list
                   styled like any other expandable item, but with no
                   enable/disable checkbox. Expanding shows the deleted
                   thumbnails with per-image restore buttons. Hidden

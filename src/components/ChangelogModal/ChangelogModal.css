@@ -1,4 +1,4 @@
-/* Changelog modal — same visual language as ReportModal so the two
+/* Changelog modal - same visual language as ReportModal so the two
    sidebar-spawned dialogs feel like siblings. Backdrop dim/blur,
    centered card, rounded close button in the corner. */
 
@@ -85,7 +85,7 @@
     color: var(--light-muted);
 }
 
-/* Discord CTA card — the in-app changelog points users at the
+/* Discord CTA card - the in-app changelog points users at the
    Discord for live release notes instead of carrying a list in code.
    Styled to match .report-discord-card so the two sidebar dialogs
    feel like siblings. */

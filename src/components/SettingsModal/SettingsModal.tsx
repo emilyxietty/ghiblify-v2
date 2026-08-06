@@ -41,7 +41,7 @@ interface SettingsModalProps {
  *
  * Every key the extension writes is claimed by exactly one group in the
  * "all" view (anything unrecognised falls into `other`), so the list is
- * a complete picture of what's on disk rather than a curated subset —
+ * a complete picture of what's on disk rather than a curated subset - *
  * that's the whole point of an inspector. Scoped dialogs additionally
  * show keys they merely *read*: cursor lives inside `ghiblify_appearance`,
  * so the cursor section lists that key too.
@@ -111,13 +111,13 @@ const PermissionRow: React.FC<{
   return (
     // A <button>, not a checkbox inside a <label>. Clicking a label
     // forwards a synthetic click to the input, and Chrome doesn't treat
-    // that as the user gesture `permissions.request()` demands — the
+    // that as the user gesture `permissions.request()` demands - the
     // call fails and the switch silently refuses to move. A direct
     // click handler on a real button keeps the gesture intact.
     <button
       type="button"
       role="switch"
-      // `granted === null` is "still checking" — render as off rather
+      // `granted === null` is "still checking" - render as off rather
       // than flipping the switch under the user a beat later.
       aria-checked={granted === true}
       className="settings-toggle-row"
@@ -161,7 +161,7 @@ const ToggleRow: React.FC<{
   </label>
 );
 
-/** Row of mutually-exclusive choices — label + description on the left,
+/** Row of mutually-exclusive choices - label + description on the left,
  *  a segmented control on the right. */
 const SegmentedRow: React.FC<{
   label: string;
@@ -198,7 +198,7 @@ const SegmentedRow: React.FC<{
  * Destructive action button.
  *
  * Everything that deletes goes through a real confirmation dialog
- * rather than an inline "are you sure?" row — an inline prompt is easy
+ * rather than an inline "are you sure?" row - an inline prompt is easy
  * to hit twice by accident when the second click lands where the first
  * one did.
  */
@@ -353,7 +353,7 @@ const StorageBlock: React.FC<{
 };
 
 /**
- * App Settings — the one place where saved state can be inspected,
+ * App Settings - the one place where saved state can be inspected,
  * toggled and thrown away.
  *
  * The storage list is deliberately raw (real keys, real sizes, real
@@ -429,7 +429,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       ...(byId.other ?? []),
       ...visibleEntries.filter((e) => !claimed.has(e.key)),
     ];
-    // Cursor has no key of its own — it lives inside the appearance
+    // Cursor has no key of its own - it lives inside the appearance
     // blob, so its section points at that same row.
     byId.cursor = visibleEntries.filter((e) => e.key === "ghiblify_appearance");
     return byId;
@@ -440,7 +440,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const showAll = section === "all";
 
   const deleteEntry = (entry: StoredEntry) => {
-    // Hybrid keys live in chrome.storage too — removing only the
+    // Hybrid keys live in chrome.storage too - removing only the
     // localStorage mirror would be undone on the next sync tick.
     if (entry.hybrid) hybridRemove(entry.key);
     else {

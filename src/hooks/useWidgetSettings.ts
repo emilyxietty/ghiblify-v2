@@ -1,11 +1,11 @@
 /**
- * useWidgetSettings(key) — returns the effective settings for a
+ * useWidgetSettings(key) - returns the effective settings for a
  * widget at the current rendering surface (canvas or dock), and a
  * setter that writes back to the right surface.
  *
  *   surface = canvas → settings (the user's saved canvas config)
  *   surface = dock   → settings merged with dockSettings
- *                      (overrides only — anything not set in
+ *                      (overrides only - anything not set in
  *                      dockSettings falls through to canvas)
  *
  * Writes:

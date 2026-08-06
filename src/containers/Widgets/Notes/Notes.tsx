@@ -9,7 +9,7 @@ import "./Notes.css";
 // editor is code-split into NotesEditor and lazy-loaded inside, with a
 // static placeholder as the Suspense fallback. Previously the whole
 // widget was one lazy chunk gated behind `fallback={null}`, so nothing
-// showed at all until Lexical downloaded — hence the slow pop-in.
+// showed at all until Lexical downloaded - hence the slow pop-in.
 const NotesEditor = lazy(() => import("./NotesEditor"));
 
 export const Notes: React.FC = () => {
@@ -39,7 +39,7 @@ export const Notes: React.FC = () => {
         fallback={
           <div className="notes-editor-shell">
             {/* While the editor chunk loads, show the note's CONTENT
-                (plaintext mirror), not the placeholder — otherwise a
+                (plaintext mirror), not the placeholder - otherwise a
                 populated note flashes "Jot something down…" on every
                 new tab before the text pops back in. Placeholder only
                 for genuinely empty notes. */}
