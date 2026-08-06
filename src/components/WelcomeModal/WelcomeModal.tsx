@@ -3,11 +3,7 @@ import { BackgroundSettingsModal } from "../BackgroundSettingsModal/BackgroundSe
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import { ChevronRightIcon, CloseIcon, EditIcon, FormatQuoteIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../Icons/Icons";
 import { AccessTimeFilledIcon, BookmarksIcon, CalendarTodayIcon, CheckBoxIcon, ChevronLeftIcon, EmojiEmotionsIcon, LinkIcon, TimerIcon, VerticalSplitIcon } from "../Icons/Icons";
-import {
-  TimeSettings,
-  WidgetKey,
-  getWidgetConfig,
-} from "../../config/widgetConfig";
+import { WidgetKey } from "../../config/widgetConfig";
 import { THEME_NAMES, ThemeName, useAppContext } from "../../contexts/AppContext";
 import { LANGUAGES, getLocale, setLocale, useT } from "../../i18n/i18n";
 import { Dropdown } from "../Dropdown/Dropdown";
@@ -18,10 +14,12 @@ const Key: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 // Each slide refers to keys under `welcome.slides.<id>` in the locale dict.
-// Interactive slides (widgets / palette / adjustTime / background) embed the
-// real controls so changes persist immediately, while spotlight slides also
+// Interactive slides (widgets / palette / background) embed the real
+// controls so changes persist immediately, while spotlight slides also
 // pulse the equivalent area in the sidebar so the user learns where the
-// control lives long-term.
+// control lives long-term. adjustTime is a spotlight rather than an
+// embed: it puts the real widget into edit mode and glows its actual
+// chrome, so the user practises on the control they'll use later.
 const SLIDE_IDS = [
   "welcome",
   "findGuide",
@@ -29,7 +27,6 @@ const SLIDE_IDS = [
   "palette",
   "adjustTime",
   "drag",
-  "rightClick",
   "background",
   "shortcuts",
 ] as const;
@@ -71,7 +68,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     toggleWidgetVisibility,
     appearance,
     updateAppearance,
-    updateWidgetSettings,
     setEditingWidgetKey,
   } = useAppContext();
   const [index, setIndex] = useState(0);
@@ -106,6 +102,17 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     return () => setSidebarSpotlight(null);
   }, [open, index, setSidebarSpotlight]);
 
+  // Marks the whole guide session, so CSS can lift any widget edit
+  // panel opened during the tour above the guide dialog (see the
+  // --z-tutorial-panel note in App.css). Separate from the per-slide
+  // class below because right-clicking a widget to edit it is
+  // possible on every slide, not just adjustTime.
+  useEffect(() => {
+    if (!open) return;
+    document.body.classList.add("guide-open");
+    return () => document.body.classList.remove("guide-open");
+  }, [open]);
+
   // Drop the Time widget into edit mode while the adjustTime slide is
   // showing, so the user sees the widget's actual edit-mode chrome
   // (resize handle + EditWidget overlay) on the page above the dialog.
@@ -123,31 +130,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
       document.body.classList.remove("tutorial-adjust-time");
     };
   }, [open, index, setEditingWidgetKey]);
-
-  // On the "right-click for quick actions" slide, programmatically
-  // open the Time widget's context menu so the user can see it as a
-  // live demo. Widget.tsx listens for these custom events.
-  useEffect(() => {
-    if (!open) return;
-    if (SLIDE_IDS[index] !== "rightClick") return;
-    // Defer one frame so the cornered modal layout is committed
-    // first, otherwise the widget's bounding rect could be stale.
-    const raf = window.requestAnimationFrame(() => {
-      window.dispatchEvent(
-        new CustomEvent("ghiblify:open-context-menu", {
-          detail: { key: "time" },
-        })
-      );
-    });
-    return () => {
-      window.cancelAnimationFrame(raf);
-      window.dispatchEvent(
-        new CustomEvent("ghiblify:close-context-menu", {
-          detail: { key: "time" },
-        })
-      );
-    };
-  }, [open, index]);
 
   const go = useCallback(
     (next: number) => {
@@ -294,70 +276,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     </div>
   );
 
-  const renderAdjustTimeTutorial = () => {
-    const time = widgets.time.settings as TimeSettings;
-    const cfg = getWidgetConfig("time");
-    const bound = cfg.fontSize!;
-    return (
-      <div className="welcome-adjust-time">
-        <div className="welcome-adjust-row">
-          <div
-            className="welcome-format-toggle"
-            role="radiogroup"
-            aria-label={t("welcome.slides.adjustTime.fontSizeLabel")}
-          >
-            <button
-              type="button"
-              role="radio"
-              aria-checked={!time.is24Hour}
-              className={`welcome-format-btn${
-                !time.is24Hour ? " is-selected" : ""
-              }`}
-              onClick={() =>
-                updateWidgetSettings("time", { is24Hour: false })
-              }
-            >
-              {t("welcome.slides.adjustTime.format12")}
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={time.is24Hour}
-              className={`welcome-format-btn${
-                time.is24Hour ? " is-selected" : ""
-              }`}
-              onClick={() =>
-                updateWidgetSettings("time", { is24Hour: true })
-              }
-            >
-              {t("welcome.slides.adjustTime.format24")}
-            </button>
-          </div>
-        </div>
-        <label className="welcome-slider-row">
-          <span className="welcome-slider-label">
-            <span>{t("welcome.slides.adjustTime.fontSizeLabel")}</span>
-            <span>{time.fontSize}px</span>
-          </span>
-          <input
-            id="welcome-time-fontsize"
-            type="range"
-            min={bound.min}
-            max={bound.max}
-            step={bound.step}
-            value={time.fontSize}
-            onChange={(e) =>
-              updateWidgetSettings("time", {
-                fontSize: parseInt(e.target.value),
-              })
-            }
-            className="welcome-slider"
-          />
-        </label>
-      </div>
-    );
-  };
-
   const renderBackgroundTutorial = () => (
     <div className="welcome-bg-actions">
       <button
@@ -439,7 +357,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         return (
           <>
             <p>{t("welcome.slides.adjustTime.body1")}</p>
-            {renderAdjustTimeTutorial()}
             <p>
               {t("welcome.slides.adjustTime.body2Pre")}
               <Key>d</Key>
@@ -461,13 +378,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             <p className="welcome-hint">{t("welcome.slides.drag.hint")}</p>
           </>
         );
-      case "rightClick":
-        return (
-          <>
-            <p>{t("welcome.slides.rightClick.body1")}</p>
-            <p>{t("welcome.slides.rightClick.body2")}</p>
-          </>
-        );
       case "background":
         return (
           <>
@@ -485,12 +395,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
                 <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>
               </span>
               <span>{t("welcome.slides.shortcuts.openSidebar")}</span>
-            </li>
-            <li>
-              <span className="welcome-shortcut-keys">
-                <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>B</Key>
-              </span>
-              <span>{t("welcome.slides.shortcuts.openBookmarks")}</span>
             </li>
             <li>
               <span className="welcome-shortcut-keys">
@@ -532,12 +436,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     }
   };
 
-  // adjustTime, drag, and rightClick still need their slide-specific
-  // styling hooks. Keep these flags so the right-click backdrop can
-  // duck under the demo ContextMenu (z=5500).
+  // Slide-specific styling hooks.
   const isAdjustTime = slideId === "adjustTime";
   const isDragSlide = slideId === "drag";
-  const isRightClickSlide = slideId === "rightClick";
   const isPaletteSlide = slideId === "palette";
   const isBackgroundSlide = slideId === "background";
   // Every slide now uses the cornered (bottom-right) layout so the
@@ -561,8 +462,8 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
       className={`welcome-backdrop${
         isCorneredMode ? " is-cornered-mode" : ""
       }${isPassthrough ? " is-passthrough" : ""}${
-        isRightClickSlide ? " is-right-click-spotlight" : ""
-      }${slideId === "welcome" ? " is-welcome-slide" : ""}`}
+        slideId === "welcome" ? " is-welcome-slide" : ""
+      }`}
     >
       <div
         ref={dialogRef}

@@ -25,11 +25,13 @@ import {
   $createTextNode,
   $getRoot,
   $getSelection,
+  $isElementNode,
   $isRangeSelection,
   $isTextNode,
   COMMAND_PRIORITY_LOW,
   EditorState,
   ElementFormatType,
+  ElementNode,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   INDENT_CONTENT_COMMAND,
@@ -71,7 +73,11 @@ import {
   $patchStyleText,
   $setBlocksType,
 } from "@lexical/selection";
-import { $getNearestNodeOfType, mergeRegister } from "@lexical/utils";
+import {
+  $findMatchingParent,
+  $getNearestNodeOfType,
+  mergeRegister,
+} from "@lexical/utils";
 import {
   BOLD_ITALIC_STAR,
   BOLD_ITALIC_UNDERSCORE,
@@ -582,6 +588,33 @@ const ClearFormatGlyph = () => (
 type ActiveListType = "bullet" | "check" | "number" | null;
 type ActiveBlockType = "h1" | "h2" | "h3" | "quote" | null;
 
+// Plain paragraph — the "off" row in the list menu.
+const NoListGlyph = () => (
+  <svg className="notes-tb-glyph" viewBox="0 0 16 16" aria-hidden>
+    <path
+      d="M2 4h12M2 8h12M2 12h8"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const LIST_OPTIONS: {
+  Glyph: React.FC;
+  key: ActiveListType;
+  labelKey: string;
+}[] = [
+  { key: null, labelKey: "notes.toolbar.listNone", Glyph: NoListGlyph },
+  { key: "bullet", labelKey: "notes.toolbar.bulletList", Glyph: BulletGlyph },
+  {
+    key: "number",
+    labelKey: "notes.toolbar.numberedList",
+    Glyph: NumberedGlyph,
+  },
+  { key: "check", labelKey: "notes.toolbar.checkList", Glyph: CheckGlyph },
+];
+
 // Toolbar height + gap: less viewport headroom than this above the
 // note and the bar flips below the note's top edge instead.
 const TOOLBAR_CLEARANCE_PX = 48;
@@ -604,11 +637,18 @@ const FloatingToolbarPlugin: React.FC = () => {
   // and the draft being typed in the link popover's input.
   const [linkUrl, setLinkUrl] = useState<string>("");
   const [linkDraft, setLinkDraft] = useState<string>("");
+  // Focusing the URL input replaces the document selection, so the
+  // browser stops painting the editor's highlight and you lose sight
+  // of which words you're linking. These are the client rects of the
+  // range captured at open time, repainted as an overlay — purely
+  // visual, so the note's content and undo history stay untouched.
+  const [linkRects, setLinkRects] = useState<DOMRect[]>([]);
   const [hasSelection, setHasSelection] = useState(false);
+  const [canOutdent, setCanOutdent] = useState(false);
   // One drop-up menu at a time: marker palette, ink colour, font size,
   // block type, or the link popover. (Alignment is a cycle button.)
   const [openGroup, setOpenGroup] = useState<
-    "mark" | "ink" | "size" | "block" | "link" | null
+    "mark" | "ink" | "size" | "block" | "link" | "list" | "more" | null
   >(null);
   // The link popover moves focus INTO the toolbar (its URL input), so
   // both the blur-hide listener and the focus gate in refresh() need
@@ -629,6 +669,44 @@ const FloatingToolbarPlugin: React.FC = () => {
     // Measured in the default drop-up position; if its top clears the
     // viewport, drop it down instead.
     setMenuBelow(el.getBoundingClientRect().top < 8);
+  }, [openGroup]);
+
+  // Dismiss an open drop-up (colour pickers, size, block, list, the
+  // overflow, and the link popover — they all live in `openGroup`) on
+  // a click anywhere outside it, or on Escape. Picking an item or
+  // losing editor focus already closed it, but clicking back into the
+  // note, onto the wallpaper, or on a plain toolbar button used to
+  // leave the menu hanging open.
+  //
+  // Two things must NOT close it: clicks on the menu's own rows (the
+  // item's onClick has to run), and clicks on any group trigger —
+  // those toggle `openGroup` themselves, so closing here first would
+  // make the trigger reopen what the user meant to dismiss.
+  //
+  // Capture phase, so it still fires when something downstream stops
+  // propagation (the link input does, to keep its own focus).
+  // The overlay only belongs to the link popover — drop it whenever
+  // that closes, however it closed (Escape, outside click, apply).
+  useEffect(() => {
+    if (openGroup !== "link") setLinkRects([]);
+  }, [openGroup]);
+
+  useEffect(() => {
+    if (!openGroup) return;
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.(".notes-tb-menu, .notes-tb-group")) return;
+      setOpenGroup(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenGroup(null);
+    };
+    document.addEventListener("mousedown", onDown, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [openGroup]);
 
   const refresh = useCallback(() => {
@@ -667,6 +745,22 @@ const FloatingToolbarPlugin: React.FC = () => {
               ? "number"
               : "bullet"
           : null,
+      );
+      // Outdent is a no-op unless some affected block is actually
+      // indented. Mirrors $handleIndentAndOutdent's block selection
+      // (nearest non-inline element ancestor, indentable only) so the
+      // disabled state can't disagree with what the command would do.
+      const seenBlocks = new Set<string>();
+      setCanOutdent(
+        selection.getNodes().some((node) => {
+          const block = $findMatchingParent(
+            node,
+            (n): n is ElementNode => $isElementNode(n) && !n.isInline(),
+          );
+          if (!block || seenBlocks.has(block.getKey())) return false;
+          seenBlocks.add(block.getKey());
+          return block.canIndent() && block.getIndent() > 0;
+        }),
       );
       // AutoLinkNode extends LinkNode, so typed links match too.
       const linkNode = $getNearestNodeOfType(
@@ -898,10 +992,27 @@ const FloatingToolbarPlugin: React.FC = () => {
   ];
 
   return createPortal(
-    <div
-      ref={toolbarRef}
-      className={`notes-toolbar${below ? " below" : ""}`}
-      style={{ left: pos.x, top: pos.y }}
+    <>
+      {/* Stand-in for the native selection highlight while the URL
+          input holds focus. Viewport coords, so these are fixed-
+          positioned like the toolbar itself. */}
+      {linkRects.map((r, i) => (
+        <div
+          key={i}
+          className="notes-link-selection"
+          aria-hidden
+          style={{
+            left: r.left,
+            top: r.top,
+            width: r.width,
+            height: r.height,
+          }}
+        />
+      ))}
+      <div
+        ref={toolbarRef}
+        className={`notes-toolbar${below ? " below" : ""}`}
+        style={{ left: pos.x, top: pos.y }}
       role="toolbar"
       aria-label={t("notes.toolbar.ariaLabel")}
       // Keep the editor selection alive while clicking buttons.
@@ -1121,8 +1232,20 @@ const FloatingToolbarPlugin: React.FC = () => {
           data-tip={t("notes.toolbar.link")}
           disabled={!hasSelection && !linkUrl}
           onClick={() => {
+            const opening = openGroup !== "link";
             setLinkDraft(linkUrl);
-            setOpenGroup((g) => (g === "link" ? null : "link"));
+            // Captured here, before the input's autoFocus moves focus
+            // and the live selection is gone. The toolbar's mousedown
+            // preventDefault is what keeps it intact this long.
+            if (opening) {
+              const native = window.getSelection();
+              setLinkRects(
+                native && native.rangeCount > 0 && !native.isCollapsed
+                  ? Array.from(native.getRangeAt(0).getClientRects())
+                  : [],
+              );
+            }
+            setOpenGroup(opening ? "link" : null);
           }}
         >
           <LinkGlyph />
@@ -1183,94 +1306,157 @@ const FloatingToolbarPlugin: React.FC = () => {
         )}
       </span>
       <span className="notes-tb-divider" />
-      <button
-        type="button"
-        className={`notes-tb-btn${listType === "bullet" ? " active" : ""}`}
-        aria-label={t("notes.toolbar.bulletList")}
-        aria-pressed={listType === "bullet"}
-        data-tip={t("notes.toolbar.bulletList")}
-        onClick={() => toggleList("bullet")}
-      >
-        <BulletGlyph />
-      </button>
-      <button
-        type="button"
-        className={`notes-tb-btn${listType === "number" ? " active" : ""}`}
-        aria-label={t("notes.toolbar.numberedList")}
-        aria-pressed={listType === "number"}
-        data-tip={t("notes.toolbar.numberedList")}
-        onClick={() => toggleList("number")}
-      >
-        <NumberedGlyph />
-      </button>
-      <button
-        type="button"
-        className={`notes-tb-btn${listType === "check" ? " active" : ""}`}
-        aria-label={t("notes.toolbar.checkList")}
-        aria-pressed={listType === "check"}
-        data-tip={t("notes.toolbar.checkList")}
-        onClick={() => toggleList("check")}
-      >
-        <CheckGlyph />
-      </button>
-      <button
-        type="button"
-        className="notes-tb-btn"
-        aria-label={t("notes.toolbar.outdent")}
-        data-tip={t("notes.toolbar.outdent")}
-        onClick={() =>
-          editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined)
-        }
-      >
-        <IndentGlyph out />
-      </button>
-      <button
-        type="button"
-        className="notes-tb-btn"
-        aria-label={t("notes.toolbar.indent")}
-        data-tip={t("notes.toolbar.indent")}
-        onClick={() =>
-          editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
-        }
-      >
-        <IndentGlyph />
-      </button>
+      {/* All three list types behind one button showing the current
+          one — three always-visible toggles dominated the bar for an
+          either/or choice. */}
+      <span className="notes-tb-group">
+        <button
+          type="button"
+          className={`notes-tb-btn${listType ? " active" : ""}`}
+          aria-label={t("notes.toolbar.list")}
+          aria-haspopup="true"
+          aria-expanded={openGroup === "list"}
+          data-tip={t("notes.toolbar.list")}
+          onClick={() => setOpenGroup((g) => (g === "list" ? null : "list"))}
+        >
+          {listType === "number" ? (
+            <NumberedGlyph />
+          ) : listType === "check" ? (
+            <CheckGlyph />
+          ) : (
+            <BulletGlyph />
+          )}
+        </button>
+        {openGroup === "list" && (
+          <div
+            ref={menuRef}
+            className={`notes-tb-menu${menuBelow ? " below" : ""}`}
+            role="menu"
+          >
+            {LIST_OPTIONS.map(({ key, labelKey, Glyph }) => {
+              const isActive = listType === key;
+              return (
+                <button
+                  key={key ?? "none"}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={isActive}
+                  className={`notes-tb-menu-item${isActive ? " active" : ""}`}
+                  onClick={() => {
+                    // The menu's "None" row and re-picking the active
+                    // type both mean "off" — toggleList already treats
+                    // a repeat pick as removal.
+                    if (key === null) {
+                      if (listType) toggleList(listType);
+                    } else {
+                      toggleList(key);
+                    }
+                    setOpenGroup(null);
+                  }}
+                >
+                  <Glyph />
+                  {t(labelKey)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </span>
+      {/* Indent controls and alignment swap by context rather than
+          both sitting there half-disabled: list items indent (and
+          Lexical won't align them anyway), everything else aligns. */}
+      {listType !== null ? (
+        <>
+          <button
+            type="button"
+            className="notes-tb-btn"
+            aria-label={t("notes.toolbar.outdent")}
+            data-tip={t("notes.toolbar.outdent")}
+            disabled={!canOutdent}
+            onClick={() =>
+              editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined)
+            }
+          >
+            <IndentGlyph out />
+          </button>
+          <button
+            type="button"
+            className="notes-tb-btn"
+            aria-label={t("notes.toolbar.indent")}
+            data-tip={t("notes.toolbar.indent")}
+            onClick={() =>
+              editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
+            }
+          >
+            <IndentGlyph />
+          </button>
+        </>
+      ) : (
+        /* Alignment cycles in place: left → center → right → left. The
+           glyph always shows the CURRENT alignment. */
+        <button
+          type="button"
+          className="notes-tb-btn"
+          aria-label={t("notes.toolbar.align")}
+          data-tip={t("notes.toolbar.align")}
+          onClick={cycleAlign}
+        >
+          <AlignGlyph align={alignForGlyph} />
+        </button>
+      )}
       <span className="notes-tb-divider" />
-      {/* Alignment cycles in place: left → center → right → left. The
-          glyph always shows the CURRENT alignment. Disabled inside a
-          list — bullet / checklist items are left-aligned by design and
-          Lexical doesn't align list items anyway. */}
-      <button
-        type="button"
-        className="notes-tb-btn"
-        aria-label={t("notes.toolbar.align")}
-        data-tip={t("notes.toolbar.align")}
-        disabled={listType !== null}
-        onClick={cycleAlign}
-      >
-        <AlignGlyph align={alignForGlyph} />
-      </button>
-      <button
-        type="button"
-        className="notes-tb-btn"
-        aria-label={t("notes.toolbar.divider")}
-        data-tip={t("notes.toolbar.divider")}
-        onClick={() =>
-          editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)
-        }
-      >
-        <DividerGlyph />
-      </button>
-      <button
-        type="button"
-        className="notes-tb-btn"
-        aria-label={t("notes.toolbar.clearFormat")}
-        data-tip={t("notes.toolbar.clearFormat")}
-        onClick={clearFormatting}
-      >
-        <ClearFormatGlyph />
-      </button>
-    </div>,
+      {/* Occasional actions live behind the overflow so the main row
+          stays short. */}
+      <span className="notes-tb-group">
+        <button
+          type="button"
+          className="notes-tb-btn"
+          aria-label={t("notes.toolbar.more")}
+          aria-haspopup="true"
+          aria-expanded={openGroup === "more"}
+          data-tip={t("notes.toolbar.more")}
+          onClick={() => setOpenGroup((g) => (g === "more" ? null : "more"))}
+        >
+          <span className="notes-tb-glyph notes-tb-more">···</span>
+        </button>
+        {openGroup === "more" && (
+          <div
+            ref={menuRef}
+            className={`notes-tb-menu${menuBelow ? " below" : ""}`}
+            role="menu"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="notes-tb-menu-item"
+              onClick={() => {
+                editor.dispatchCommand(
+                  INSERT_HORIZONTAL_RULE_COMMAND,
+                  undefined,
+                );
+                setOpenGroup(null);
+              }}
+            >
+              <DividerGlyph />
+              {t("notes.toolbar.divider")}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="notes-tb-menu-item"
+              onClick={() => {
+                clearFormatting();
+                setOpenGroup(null);
+              }}
+            >
+              <ClearFormatGlyph />
+              {t("notes.toolbar.clearFormat")}
+            </button>
+          </div>
+        )}
+      </span>
+      </div>
+    </>,
     document.body,
   );
 };

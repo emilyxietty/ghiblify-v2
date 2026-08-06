@@ -99,12 +99,24 @@ export const TooltipPortal: React.FC = () => {
     // it sits on — no mouseout fires because the element disappears
     // rather than the cursor leaving it). Without this the tooltip
     // would orphan and stay on screen until the next pointer move.
+    //
+    // Detached is not the only way a trigger can go away: closing a
+    // popover can leave the element in the tree but collapsed or
+    // display:none'd, which fires no mouseout either. A zero-sized
+    // box covers both that and `visibility: hidden`.
+    const isGone = (el: HTMLElement) => {
+      if (!document.body.contains(el)) return true;
+      const rect = el.getBoundingClientRect();
+      return rect.width === 0 && rect.height === 0;
+    };
     const removalObserver = new MutationObserver(() => {
-      if (currentTarget && !document.body.contains(currentTarget)) {
-        hide();
-      }
+      if (currentTarget && isGone(currentTarget)) hide();
     });
     removalObserver.observe(document.body, {
+      // class/style too, so a popover that hides its contents rather
+      // than unmounting them still retires the tooltip.
+      attributeFilter: ["class", "style", "hidden"],
+      attributes: true,
       childList: true,
       subtree: true,
     });

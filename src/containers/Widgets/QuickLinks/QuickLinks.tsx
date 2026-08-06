@@ -174,6 +174,16 @@ export const QuickLinks: React.FC = () => {
     };
   }, [addGridLink, isEditing]);
 
+  // The per-link right-click menu renders as a SIBLING of the list
+  // dropdown (it has to — a ContextMenu inside the popover would be
+  // clipped by it), so closing the dropdown left the menu floating
+  // over the page on its own. Tie its lifetime to the parent.
+  // Editing mode is exempt: there the list renders inline and is
+  // always present, so `anchorEl` is null even while it's on screen.
+  useEffect(() => {
+    if (!isEditing && !anchorEl) setLinkMenu(null);
+  }, [anchorEl, isEditing]);
+
   const addLink = () => {
     if (!url.trim()) return;
     if (editingLinkId) {

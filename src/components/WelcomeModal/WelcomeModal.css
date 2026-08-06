@@ -63,23 +63,6 @@
     pointer-events: auto;
 }
 
-/* Right-click slide spotlight — keep the cornered + passthrough
-   behavior, but bring back the dim/blur backdrop so the demo
-   context menu pops against a darkened scene (instead of
-   competing with the bare photo). Drop the backdrop's z-index
-   below the ContextMenu portal (which sits at 5500) so the menu
-   reads clearly *above* the dim instead of being covered by it.
-   The cornered dialog lives in the opposite corner from the
-   context menu, so this stacking change doesn't cause overlap. */
-.welcome-backdrop.is-cornered-mode.is-right-click-spotlight {
-    z-index: 5400;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: background 220ms ease, backdrop-filter 220ms ease,
-        -webkit-backdrop-filter 220ms ease;
-}
-
 /* Welcome slide — the very first guide step (title + language picker
    + intro copy). Brings back the dim/blur on top of the cornered
    layout so the title moment reads as a landing screen against a
@@ -615,99 +598,6 @@
         );
 }
 
-/* Adjust-time tutorial — 12/24 toggle + font-size slider */
-.welcome-adjust-time {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 14px;
-    background: color-mix(in srgb, var(--light) 5%, transparent);
-    border: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
-    border-radius: var(--radius-md);
-}
-
-.welcome-adjust-row {
-    display: flex;
-    justify-content: center;
-}
-
-.welcome-format-toggle {
-    display: inline-flex;
-    background: color-mix(in srgb, var(--light) 8%, transparent);
-    border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
-    border-radius: var(--radius-pill);
-    padding: 3px;
-}
-
-.welcome-format-btn {
-    padding: 6px 16px;
-    background: transparent;
-    color: color-mix(in srgb, var(--light) 70%, transparent);
-    border: none;
-    border-radius: var(--radius-pill);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 140ms ease, color 140ms ease;
-}
-
-.welcome-format-btn:hover {
-    color: var(--light);
-}
-
-.welcome-format-btn.is-selected {
-    background: color-mix(in srgb, var(--green) 88%, transparent);
-    color: var(--dark);
-}
-
-.welcome-format-btn:focus-visible {
-    outline: 2px solid var(--focus-ring, rgba(233, 179, 48, 0.9));
-    outline-offset: 2px;
-}
-
-.welcome-slider-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.welcome-slider-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: color-mix(in srgb, var(--light) 80%, transparent);
-}
-
-.welcome-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 4px;
-    background: color-mix(in srgb, var(--light) 18%, transparent);
-    border-radius: 2px;
-    cursor: pointer;
-}
-
-.welcome-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    background: var(--yellow, #e9b330);
-    border: 2px solid var(--dark);
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.welcome-slider::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    background: var(--yellow, #e9b330);
-    border: 2px solid var(--dark);
-    border-radius: 50%;
-    cursor: pointer;
-}
-
 /* Background tutorial actions — heart, trash, open-picker. */
 .welcome-bg-actions {
     display: flex;
@@ -791,6 +681,52 @@ body.tutorial-adjust-time
     .widget-resize-handle {
     animation: tutorial-time-pulse 1.6s ease-in-out infinite;
     z-index: var(--z-tutorial-pulse);
+}
+
+/* The left-edge grab handle gets the same treatment — it's the other
+   thing the slide is asking the user to try. Only box-shadow and
+   scale animate, so the handle's `margin: auto 0` centring is left
+   intact (same caution as the resize handle above). */
+body.tutorial-adjust-time
+    .widget[data-widget-key="time"]
+    .widget-drag-handle {
+    animation: tutorial-time-pulse 1.6s ease-in-out infinite;
+    z-index: var(--z-tutorial-pulse);
+}
+
+/* The edit-mode outline itself glows, so the widget reads as "this is
+   the thing that's selected" rather than the user having to infer it
+   from a thin static ring. Deliberately NO transform here: scaling the
+   shell would fight the drag/resize maths, which reads geometry
+   straight off the element. */
+body.tutorial-adjust-time .widget[data-widget-key="time"].edit-mode {
+    animation: tutorial-time-outline 1.6s ease-in-out infinite;
+}
+
+@keyframes tutorial-time-outline {
+    0%,
+    100% {
+        outline-color: color-mix(in srgb, var(--yellow) 80%, transparent);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 45%, transparent);
+    }
+    50% {
+        outline-color: var(--yellow);
+        box-shadow: 0 0 22px 6px color-mix(in srgb, var(--yellow) 40%, transparent);
+    }
+}
+
+/* --- Guide stacking -------------------------------------------------
+   Both of these override INLINE z-index values (the widget shell's
+   click-to-front stacking, and EditWidget's panel counter), so
+   !important is load-bearing rather than lazy. Scoped to the guide's
+   body classes, so the moment the tour closes both revert to their
+   normal bands. */
+body.guide-open .edit-panel {
+    z-index: var(--z-tutorial-panel) !important;
+}
+
+body.tutorial-adjust-time .widget[data-widget-key="time"] {
+    z-index: var(--z-tutorial-widget) !important;
 }
 
 @keyframes tutorial-time-pulse {

@@ -129,6 +129,13 @@
     /* widget edit panels — they stack among themselves (see the counter
        in EditWidget.tsx) but stay under every floating layer, so a menu
        opened FROM a panel always paints above it */
+    --z-tutorial-widget: 100050;
+    /* guide-only: lifts the widget being demoed, and the edit panel it
+       opens, above the guide dialog (100002). The panel's own counter
+       tops out at 99000, so during the guide it would otherwise paint
+       BEHIND the very box telling you to use it. Kept under --z-portal
+       so menus opened from the panel still stack above it. */
+    --z-tutorial-panel: 100051;
     --z-portal: 100100;
     /* body-portaled context menus + dropdowns (above modals at 100002) */
     --z-resize-handle: 100200;

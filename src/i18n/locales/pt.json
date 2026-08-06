@@ -390,6 +390,9 @@
       "textColor": "Cor do texto",
       "fontSize": "Tamanho da letra",
       "numberedList": "Lista numerada",
+      "list": "Lista",
+      "listNone": "Sem lista",
+      "more": "Mais",
       "indent": "Aumentar recuo",
       "outdent": "Diminuir recuo",
       "divider": "Divisor",
@@ -576,29 +579,16 @@
       "adjustTime": {
         "title": "Personalize widgets",
         "body1": "Cada widget tem seus próprios controles. O widget de Hora acima está em modo edição — alterne 12/24 h e arraste o controle deslizante para o tamanho.",
-        "body2Pre": "Três formas de editar: Modo edição na barra lateral, ",
-        "body2Post": " + clique no lápis ao passar o cursor, ou clique direito → Editar widget.",
-        "format12": "12 horas",
-        "format24": "24 horas",
-        "fontSizeLabel": "Tamanho do relógio"
+        "body2Pre": "Duas formas de editar qualquer widget: clique com o botão direito nele, ou segure ",
+        "body2Post": " (ou Shift) e clique no lápis que aparece ao passar o cursor."
       },
       "drag": {
         "title": "Mova os widgets",
         "body1Pre": "Mantenha ",
         "body1Post": " e arraste o widget de Hora para reposicioná-lo. Os widgets se ajustam à grade.",
-        "body2": "Para reorganizar por mais tempo, ative o Modo arrastar na barra superior do Modo edição (ou clique direito em qualquer widget → Arrastar). Todos os widgets continuam arrastáveis até você clicar em Concluído.",
+        "body2": "Quando um widget está em modo de edição, aparece uma alça na borda esquerda — arraste-a para movê-lo sem segurar nenhuma tecla.",
         "hint": "O cursor se transforma em uma mão de arrastar enquanto você mantém D ou Shift, ou quando o modo de arrastar está ativo — esse é o sinal.",
         "body1Sep": " ou "
-      },
-      "rightClick": {
-        "title": "Clique direito para ações rápidas",
-        "body1": "Clique direito em qualquer widget para um menu de ações — Editar, Arrastar, Ocultar, mais atalhos específicos (12/24 h em Hora, °C/°F em Clima, etc.).",
-        "body2": "Submenus abrem em cascata para opções de seleção múltipla. Clique direito no fundo vazio mostra o menu nativo do Chrome."
-      },
-      "appearance": {
-        "title": "Temas e aparência",
-        "body1": "A seção Aparência tem várias paletas. Escolha uma e toda a UI se repinta.",
-        "body2": "O controle deslizante de fundo tinge as superfícies internas. Alto contraste leva tudo a um mínimo legível."
       },
       "background": {
         "title": "Cure as fotos",
@@ -610,7 +600,6 @@
       "shortcuts": {
         "title": "Atalhos de teclado",
         "openSidebar": "Abrir ou fechar a barra lateral",
-        "openBookmarks": "Abrir ou fechar o painel de favoritos",
         "moveWidget": "Mover um widget",
         "editWidget": "Editar um widget (segure D ou Shift e clique no lápis)",
         "escape": "Fechar barra lateral, popovers, modo edição ou este guia",

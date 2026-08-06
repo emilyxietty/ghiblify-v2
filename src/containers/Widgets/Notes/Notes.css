@@ -302,11 +302,13 @@
     position: fixed;
     transform: translate(-50%, calc(-100% - 8px));
     display: flex;
-    /* Enough controls now that one row would dwarf the 260px note —
-       cap the width and let the bar wrap into two centered rows. */
+    /* Pick-one-of-N groups (list, colours, size, block) and the
+       occasional actions (divider, clear) collapse into menus, so the
+       row fits on one line; wrap stays as a safety net for long
+       translations of the tooltips' host buttons. */
     flex-wrap: wrap;
     justify-content: center;
-    max-width: 320px;
+    max-width: 360px;
     align-items: center;
     gap: 2px;
     padding: 4px;
@@ -473,6 +475,31 @@
 
 .notes-tb-menu-item.active {
     background: rgba(74, 56, 38, 0.18);
+}
+
+/* Painted stand-in for the native selection while the link popover's
+   input holds focus (the browser drops the real highlight the moment
+   the editor loses focus). Sits under the toolbar and ignores the
+   pointer so it can't intercept a click. */
+.notes-link-selection {
+    position: fixed;
+    pointer-events: none;
+    background: rgba(93, 148, 214, 0.35);
+    border-radius: 2px;
+    z-index: 2999;
+}
+
+/* Overflow "···" — the glyph box is text, so centre it like the
+   lettered glyphs rather than the SVG ones. */
+.notes-tb-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 0.7;
 }
 
 /* Link popover — a drop-up like the colour menus, but carrying a URL

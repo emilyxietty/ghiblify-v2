@@ -314,7 +314,7 @@ const AppContent: React.FC = () => {
           <QuickLinks />
         </Widget>
         {/* Force the Time widget mounted while the welcome guide is
-            running so the adjustTime / drag / rightClick demo slides
+            running so the adjustTime / drag demo slides
             always have a Time widget to point at, even if the user
             hid it via the sidebar toggles. Reverts to the user's
             choice as soon as the guide closes. */}

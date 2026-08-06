@@ -385,6 +385,9 @@
       "textColor": "Couleur du texte",
       "fontSize": "Taille du texte",
       "numberedList": "Liste numérotée",
+      "list": "Liste",
+      "listNone": "Aucune liste",
+      "more": "Plus",
       "indent": "Augmenter le retrait",
       "outdent": "Diminuer le retrait",
       "divider": "Séparateur",
@@ -572,29 +575,16 @@
       "adjustTime": {
         "title": "Personnalisez les widgets",
         "body1": "Chaque widget a ses propres contrôles. Le widget Heure ci-dessus est en mode édition — basculez 12/24 h et glissez le curseur pour la taille.",
-        "body2Pre": "Trois façons d'éditer : Mode édition dans la barre latérale, ",
-        "body2Post": " + clic sur le crayon au survol, ou clic droit → Modifier le widget.",
-        "format12": "12 heures",
-        "format24": "24 heures",
-        "fontSizeLabel": "Taille de l'horloge"
+        "body2Pre": "Deux façons de modifier un widget : faites un clic droit dessus, ou maintenez ",
+        "body2Post": " (ou Maj) et cliquez sur le crayon qui apparaît au survol."
       },
       "drag": {
         "title": "Déplacez les widgets",
         "body1Pre": "Maintenez ",
         "body1Post": " et glissez le widget Heure pour le repositionner. Les widgets s'alignent sur la grille.",
-        "body2": "Pour des réagencements plus longs, activez le Mode déplacement depuis la barre supérieure du Mode édition (ou clic droit sur un widget → Déplacer). Chaque widget reste déplaçable jusqu'à ce que vous cliquiez sur Terminé.",
+        "body2": "Lorsqu'un widget est en mode édition, une poignée apparaît sur son bord gauche — faites-la glisser pour le déplacer sans maintenir de touche.",
         "hint": "Le curseur devient une main de glissement lorsque vous maintenez D ou Maj, ou que le mode glissement est activé — c'est votre repère.",
         "body1Sep": " ou "
-      },
-      "rightClick": {
-        "title": "Clic droit pour des actions rapides",
-        "body1": "Cliquez avec le bouton droit sur un widget pour un menu d'actions rapides — Modifier, Déplacer, Masquer, plus des raccourcis spécifiques (12/24 h pour Heure, °C/°F pour Météo, etc.).",
-        "body2": "Les sous-menus s'ouvrent en cascade pour les options à choix multiples. Le clic droit sur l'arrière-plan vide affiche le menu natif de Chrome."
-      },
-      "appearance": {
-        "title": "Thèmes et apparence",
-        "body1": "La section Apparence propose de nombreuses palettes. Choisissez-en une et toute l'UI se reteinte.",
-        "body2": "Le curseur d'arrière-plan teinte les surfaces internes. Le contraste élevé force tout à un minimum lisible."
       },
       "background": {
         "title": "Sélectionnez les photos",
@@ -606,7 +596,6 @@
       "shortcuts": {
         "title": "Raccourcis clavier",
         "openSidebar": "Ouvrir ou fermer la barre latérale",
-        "openBookmarks": "Ouvrir ou fermer le panneau marque-pages",
         "moveWidget": "Déplacer un widget",
         "editWidget": "Modifier un widget (maintenez D ou Maj, cliquez sur le crayon)",
         "escape": "Fermer la barre latérale, popovers, mode édition ou ce guide",

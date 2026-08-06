@@ -405,6 +405,9 @@
       "textColor": "Text colour",
       "fontSize": "Font size",
       "numberedList": "Numbered list",
+      "list": "List",
+      "listNone": "No list",
+      "more": "More",
       "indent": "Increase indent",
       "outdent": "Decrease indent",
       "divider": "Divider",
@@ -592,29 +595,16 @@
       "adjustTime": {
         "title": "Customize widgets",
         "body1": "Every widget has its own controls. The Time widget above is now in edit mode — flip between 12 / 24-hour, and drag the slider to size the clock.",
-        "body2Pre": "Three ways to edit any widget: click Edit Mode in the sidebar, hold ",
-        "body2Post": " + click the pencil that appears on hover, or right-click the widget and pick Edit widget.",
-        "format12": "12-hour",
-        "format24": "24-hour",
-        "fontSizeLabel": "Clock size"
+        "body2Pre": "Two ways to edit any widget: right-click it, or hold ",
+        "body2Post": " (or Shift) and click the pencil that appears on hover."
       },
       "drag": {
         "title": "Move widgets around",
         "body1Pre": "Hold ",
         "body1Sep": " or ",
         "body1Post": " and click-drag the Time widget above to reposition it. Widgets snap to grid lines (left edge, center, right edge) so they stay tidy.",
-        "body2": "For longer rearranging, toggle Drag Mode from Edit Mode's top bar (or right-click any widget → Drag widget). Every widget stays draggable until you click Done.",
+        "body2": "While a widget is in edit mode, a grab handle appears on its left edge — drag that to move it without holding any key.",
         "hint": "The cursor turns into a grab hand while D or Shift is held or Drag Mode is on — that's your cue."
-      },
-      "rightClick": {
-        "title": "Right-click for quick actions",
-        "body1": "Right-click any widget for a menu of quick actions — Edit widget, Drag widget, Hide widget, plus shortcuts specific to that widget (12/24-hour for Time, °C/°F for Weather, sections, fields, grid/list, and so on).",
-        "body2": "Submenus open as cascading panels for multi-select options (Weather sections, Info fields). Right-clicking the empty background area gives you Chrome's native menu (back, reload, save image, inspect)."
-      },
-      "appearance": {
-        "title": "Themes & appearance",
-        "body1": "The Appearance section has many palettes to pick from. Pick one and the entire UI retints.",
-        "body2": "The Widget background slider tints the inner surfaces (Todo rows, SearchBar input, QuickLinks tiles). High contrast forces everything to a readable minimum."
       },
       "background": {
         "title": "Curate the photos",
@@ -626,7 +616,6 @@
       "shortcuts": {
         "title": "Keyboard shortcuts",
         "openSidebar": "Open or close the sidebar",
-        "openBookmarks": "Open or close the bookmarks panel",
         "moveWidget": "Move a widget around",
         "editWidget": "Edit a single widget (hold D or Shift, click the pencil)",
         "escape": "Close the sidebar, popovers, edit mode, or this guide",
