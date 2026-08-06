@@ -636,6 +636,27 @@ const loadInitialWidgets = (): WidgetsState => {
       writePersisted(STORAGE_KEY, blob);
     }
 
+    // Schema-v4: the text widgets' highlight now defaults to 50%
+    // rather than fully solid. Anyone who already picked a highlight
+    // colour but never touched the opacity has nothing stored, so they
+    // would silently see their pill go half-transparent. Pin the old
+    // value for them; widgets with no colour set have no pill to
+    // change, so they're left alone and pick up the new default.
+    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 4) {
+      for (const key of ["time", "date", "greeting", "info"] as const) {
+        const st = blob[key]?.settings;
+        if (
+          st &&
+          typeof st.highlightColor === "string" &&
+          st.highlightOpacity === undefined
+        ) {
+          st.highlightOpacity = 100;
+        }
+      }
+      writePersisted(SCHEMA_VERSION_KEY, 4);
+      writePersisted(STORAGE_KEY, blob);
+    }
+
     for (const key of WIDGET_KEYS) {
       const entry = defaults[key];
       const stored = blob[key];
@@ -666,7 +687,7 @@ const loadInitialWidgets = (): WidgetsState => {
     // authored at the 1920 reference baseline, so mark the schema
     // as migrated so the migration block above never runs for new
     // users.
-    writePersisted(SCHEMA_VERSION_KEY, 3);
+    writePersisted(SCHEMA_VERSION_KEY, 4);
   }
 
   // No modern blob - migrate from legacy (no-op if no legacy keys exist)

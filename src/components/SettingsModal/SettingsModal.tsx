@@ -377,6 +377,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setDockShowBackgrounds,
     resetAllWidgets,
     resetRightSidebar,
+    setEditingWidgetKey,
     widgets,
     updateWidgetSettings,
   } = useAppContext();
@@ -546,13 +547,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <DangerButton
                 label={t("settings.resetWidgets")}
                 onClick={() =>
-                  confirm(t("settings.resetWidgets"), t("settings.resetWidgetsConfirm"), resetAllWidgets)
+                  // Close after resetting: the panel is describing
+                  // state that no longer exists, and any widget edit
+                  // panel left open is anchored to a widget that just
+                  // moved back to its default position.
+                  confirm(
+                    t("settings.resetWidgets"),
+                    t("settings.resetWidgetsConfirm"),
+                    () => {
+                      resetAllWidgets();
+                      setEditingWidgetKey(null);
+                      onClose();
+                    }
+                  )
                 }
               />
               <DangerButton
                 label={t("settings.resetDock")}
                 onClick={() =>
-                  confirm(t("settings.resetDock"), t("settings.resetDockConfirm"), resetRightSidebar)
+                  confirm(
+                    t("settings.resetDock"),
+                    t("settings.resetDockConfirm"),
+                    () => {
+                      resetRightSidebar();
+                      setEditingWidgetKey(null);
+                      onClose();
+                    }
+                  )
                 }
               />
             </div>

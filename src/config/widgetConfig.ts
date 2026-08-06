@@ -502,7 +502,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       analog: false,
       highlightColor: null,
       highlightTextColor: "auto",
-      highlightOpacity: 100,
+      highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
     },
@@ -517,7 +517,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       textShadow: 100,
       highlightColor: null,
       highlightTextColor: "auto",
-      highlightOpacity: 100,
+      highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
     },
@@ -532,7 +532,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       textShadow: 100,
       highlightColor: null,
       highlightTextColor: "auto",
-      highlightOpacity: 100,
+      highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
     },
@@ -553,7 +553,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       textShadow: 100,
       highlightColor: null,
       highlightTextColor: "auto",
-      highlightOpacity: 100,
+      highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
     },
@@ -619,7 +619,9 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   pomodoro: {
     name: "Pomodoro",
-    position: { x: 86.83040935672514, y: 57.429153924566776 },
+    // Right edge, vertically centred - same anchoring maths as notes,
+    // against the medium card's ~290px height.
+    position: { x: 88, y: 37 },
     settings: {
       size: "medium",
       opacity: 100,
@@ -670,7 +672,10 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   },
   notes: {
     name: "Notes",
-    position: { x: 80, y: 30 },
+    // Left edge, vertically centred. x is the widget's CENTRE (the
+    // shell is translate(-50%, 0)) and y is its TOP, so the y sits half
+    // the note's height (260px, ~24vh) above the 50% line.
+    position: { x: 12, y: 38 },
     // Square footprint so the cardborder.svg (square) sits flush
     // against the widget's edges with no letterboxing cream gap
     // around it. squareLock ties the two axes during drag-resize so
