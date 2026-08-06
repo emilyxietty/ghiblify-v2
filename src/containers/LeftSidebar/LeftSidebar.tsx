@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
-// Lazy — these dialogs only render when the user clicks their trigger,
+// Lazy - these dialogs only render when the user clicks their trigger,
 // so each becomes its own chunk fetched on first open. They eagerly
 // shipped ~1700 LOC of JSX/logic with the initial bundle before this.
 const BackgroundSettingsModal = lazy(() =>
@@ -80,7 +80,7 @@ const FONT_PREVIEW: Record<FontName, { label: string; family: string }> = {
   },
 };
 
-// Theme keys — labels come from i18n at render time so they translate.
+// Theme keys - labels come from i18n at render time so they translate.
 const THEME_KEYS: ThemeName[] = [
   "ghibli",
   "spirited",
@@ -112,13 +112,18 @@ const WIDGET_TOGGLES: Array<{
   { key: "weather", icon: <WbSunnyIcon /> },
   { key: "notes", icon: <StickyNote2Icon /> },
   { key: "googleApps", icon: <AppsIcon /> },
-  // Edge-panel toggles live at the end, side-by-side. They're
-  // mutually exclusive (both occupy the right edge); grouping them
-  // last reads as "the right-edge picker" instead of being scattered
-  // mid-grid.
-  { key: "bookmarks", icon: <BookmarksIcon /> },
-  { key: "rightSidebar", icon: <VerticalSplitIcon /> },
+  // NOTE: bookmarks + rightSidebar are deliberately absent - they
+  // share the right edge, so a single combined tile at the end of the
+  // grid owns both (see EDGE_PANEL_KEYS below).
 ];
+
+/** The two panels that compete for the right edge. Only one can be on
+ *  at a time, but rather than showing two toggles and greying one out
+ *  ("disable X first to enable Y" - the app asking the user to solve
+ *  its own layout constraint), one tile represents the edge and a
+ *  picker chooses which panel occupies it. */
+const EDGE_PANEL_KEYS = ["bookmarks", "rightSidebar"] as const;
+type EdgePanelKey = (typeof EDGE_PANEL_KEYS)[number];
 
 const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
   blur: "px",
@@ -140,6 +145,10 @@ export const LeftSidebar: React.FC = () => {
   } | null>(null);
   const [menuPermGranted, setMenuPermGranted] = useState<boolean | null>(
     null
+  );
+  // Anchor for the right-edge panel picker (bookmarks vs dock).
+  const [edgeMenu, setEdgeMenu] = useState<{ x: number; y: number } | null>(
+    null,
   );
   const {
     widgets,
@@ -174,7 +183,7 @@ export const LeftSidebar: React.FC = () => {
     );
   };
 
-  // Favorites — read on mount, refresh whenever any consumer broadcasts
+  // Favorites - read on mount, refresh whenever any consumer broadcasts
   // a change. Heart button toggles membership for the current
   // background and dispatches `ghiblify:favorites:change` so the
   // settings modal + useBackground stay in sync.
@@ -198,7 +207,7 @@ export const LeftSidebar: React.FC = () => {
     window.dispatchEvent(new CustomEvent("ghiblify:favorites:change"));
   };
 
-  // Live weather icon for the toggle — mirrors whatever Meteocons
+  // Live weather icon for the toggle - mirrors whatever Meteocons
   // glyph is currently showing in the Weather widget. The hook is
   // already cached, so calling it from the sidebar doesn't trigger a
   // second API request.
@@ -232,14 +241,20 @@ export const LeftSidebar: React.FC = () => {
 
   // Welcome-modal tour: keep the sidebar force-open for the entire
   // duration of the guide. Tracking just `sidebarSpotlight` wasn't
-  // enough — going from one non-spotlit slide to another (e.g.
+  // enough - going from one non-spotlit slide to another (e.g.
   // adjustTime → drag, both spotlight=null) didn't change the value,
   // so the open-on-spotlight effect didn't re-fire. Combined with the
   // mouse-move auto-close handler below, that left the sidebar shut
   // and unreachable when navigating back through the guide.
+  // "welcome" is the opening slide: the guide is up but the sidebar
+  // must stay shut so the landing screen is the only lit thing on
+  // screen. It slides in from the next slide onward.
+  const guideWantsSidebar =
+    (showGuide || !!sidebarSpotlight) && sidebarSpotlight !== "welcome";
   useEffect(() => {
-    if (showGuide || sidebarSpotlight) setIsOpen(true);
-  }, [showGuide, sidebarSpotlight]);
+    if (guideWantsSidebar) setIsOpen(true);
+    else if (sidebarSpotlight === "welcome") setIsOpen(false);
+  }, [guideWantsSidebar, sidebarSpotlight]);
   const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -253,13 +268,58 @@ export const LeftSidebar: React.FC = () => {
   // Force the palette collapsible open while the welcome guide is
   // spotlighting the "palette" step so swatches are visible without
   // the user having to expand it. We don't force it closed afterward
-  // — once the user has it open, leave it open.
-  const paletteDetailsRef = useRef<HTMLDetailsElement | null>(null);
+  // - once the user has it open, leave it open.
+  // The Appearance slide talks about palette, font AND corners, so
+  // open every collapsible in the section rather than just the
+  // palette one - otherwise two of the three things the slide names
+  // are still folded away behind a summary.
+  // The guide demos this menu on the "Edit widgets" slide - it's one
+  // of the three routes into editing a widget, and the least
+  // discoverable, so the tour opens it for real rather than just
+  // describing it. Positioned off the toggle's own rect since there's
+  // no cursor to read coordinates from.
   useEffect(() => {
-    if (sidebarSpotlight === "palette" && paletteDetailsRef.current) {
-      paletteDetailsRef.current.open = true;
-    }
-  }, [sidebarSpotlight]);
+    const onOpen = (e: Event) => {
+      const key = (e as CustomEvent).detail?.key as WidgetKey | undefined;
+      if (!key) return;
+      const btn = sidebarRef.current?.querySelector<HTMLElement>(
+        `[data-widget-toggle="${key}"]`,
+      );
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      setMenuPermGranted(null);
+      setToggleMenu({ key, x: r.right + 6, y: r.bottom + 4 });
+    };
+    const onClose = () => setToggleMenu(null);
+    window.addEventListener("ghiblify:open-toggle-menu", onOpen);
+    window.addEventListener("ghiblify:close-toggle-menu", onClose);
+    return () => {
+      window.removeEventListener("ghiblify:open-toggle-menu", onOpen);
+      window.removeEventListener("ghiblify:close-toggle-menu", onClose);
+    };
+  }, []);
+
+  // Each guide slide gets a clean sidebar: the collapsibles belonging
+  // to the spotlit section open, and every other one folds away.
+  // Previously panels only ever opened, so by the time the tour
+  // reached Backgrounds the palette, font, corner and cursor pickers
+  // were all still expanded and the highlighted button was pushed off
+  // screen behind them.
+  const appearanceSectionRef = useRef<HTMLElement | null>(null);
+  // Runs on every slide change for the whole tour, not just the
+  // spotlit ones - otherwise stepping off Appearance onto a slide with
+  // no spotlight left the palette / font / corner pickers hanging open
+  // for the rest of the guide.
+  useEffect(() => {
+    if (!showGuide && !sidebarSpotlight) return;
+    const section =
+      sidebarSpotlight === "palette" ? appearanceSectionRef.current : null;
+    sidebarRef.current
+      ?.querySelectorAll<HTMLDetailsElement>("details.filter-collapsible")
+      .forEach((d) => {
+        d.open = !!section && section.contains(d);
+      });
+  }, [showGuide, sidebarSpotlight]);
 
   // Mirror the spotlight state onto the body so the welcome modal's
   // CSS can push its dialog clear of the force-opened sidebar on
@@ -274,7 +334,7 @@ export const LeftSidebar: React.FC = () => {
 
   // Edge-hover open + outside close (mouse UX preserved). While the
   // welcome guide is open the auto-close branch is skipped so the
-  // sidebar stays put for the spotlight tour — the user shouldn't
+  // sidebar stays put for the spotlight tour - the user shouldn't
   // have to chase it after every accidental mouse drift. While the
   // user is dragging a widget, both branches are skipped so the
   // sidebar can't pop open mid-drag (cursor swinging past the
@@ -296,7 +356,7 @@ export const LeftSidebar: React.FC = () => {
   // entry point now that the visible trigger button is gone). Escape closes.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Same guard as the bookmarks Cmd+B — don't hijack combos from
+      // Same guard as the bookmarks Cmd+B - don't hijack combos from
       // an editable surface (Notes editor, search inputs).
       if (isEditableTarget(e.target)) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -388,7 +448,7 @@ export const LeftSidebar: React.FC = () => {
         id="settings-sidebar"
         ref={sidebarRef}
         className={`left-sidebar ${isOpen ? "open" : ""}${
-          showGuide || sidebarSpotlight ? " sidebar-spotlight" : ""
+          guideWantsSidebar ? " sidebar-spotlight" : ""
         }${sidebarSpotlight ? ` spotlight-${sidebarSpotlight}` : ""}`}
         aria-label={t("sidebar.ariaLabel")}
         // Drive the visible width from the same SIDEBAR_WIDTH
@@ -397,7 +457,7 @@ export const LeftSidebar: React.FC = () => {
         style={{ ["--sidebar-width" as any]: `${SIDEBAR_WIDTH}px` }}
       >
         <div className="sidebar-content">
-          {/* Pinned header — Guide / My Socials / Buy Me a Coffee
+          {/* Pinned header - Guide / My Socials / Buy Me a Coffee
               stay visible at the top of the sidebar even when the
               sections below scroll on a short viewport. Same pattern
               as the .sidebar-footer at the bottom. */}
@@ -432,7 +492,7 @@ export const LeftSidebar: React.FC = () => {
             </Button>
           </div>
 
-          {/* Scrolling middle — sections between the top button band and
+          {/* Scrolling middle - sections between the top button band and
               the bottom button band scroll independently. The header
               and footer divs sit outside this wrapper as flex
               siblings so they stay fixed at top/bottom of the
@@ -465,69 +525,74 @@ export const LeftSidebar: React.FC = () => {
                 // Weather toggle gets a live Meteocons icon matching
                 // current conditions, instead of the static sun fallback.
                 const renderedIcon = key === "weather" ? liveWeatherIcon : icon;
-                // Bookmarks and Right Sidebar both occupy the right
-                // edge — they're mutually exclusive. While one is on,
-                // disable the other's toggle and show a tooltip
-                // explaining why so the affordance isn't a mystery.
-                let blockedBy: WidgetKey | null = null;
-                if (key === "rightSidebar" && widgets.bookmarks.visible)
-                  blockedBy = "bookmarks";
-                else if (key === "bookmarks" && widgets.rightSidebar.visible)
-                  blockedBy = "rightSidebar";
-                const blockedTooltip = blockedBy
-                  ? t("widgets.tooltip.disabledBy", {
-                      other: t(`widgets.names.${blockedBy}`),
-                      this: name,
-                    })
-                  : null;
                 return (
                   <Button
                     key={key}
-                    className={`widget-icon${visible ? " active" : ""}${
-                      blockedBy ? " widget-icon-blocked" : ""
-                    }`}
+                    data-widget-toggle={key}
+                    className={`widget-icon${visible ? " active" : ""}`}
                     icon={renderedIcon}
                     size="medium"
                     variant="transparent"
-                    onClick={() => {
-                      // Keep the button enabled (so the tooltip
-                      // mouseover handler still fires) but no-op the
-                      // click while blocked. Tooltip explains why.
-                      if (blockedBy) return;
-                      toggleWidgetVisibility(key);
-                    }}
+                    onClick={() => toggleWidgetVisibility(key)}
                     // Right-click = quick-actions dropdown for this
                     // widget (edit / show-hide / permissions).
                     onContextMenu={(e: React.MouseEvent) => {
                       e.preventDefault();
-                      if (blockedBy) return;
                       setMenuPermGranted(null);
                       const perm =
-                        key === "bookmarks"
-                          ? "bookmarks"
-                          : key === "searchbar"
-                            ? "audioCapture"
-                            : null;
+                        key === "searchbar" ? "audioCapture" : null;
                       if (perm) {
                         void hasPermission(perm).then(setMenuPermGranted);
                       }
                       setToggleMenu({ key, x: e.clientX, y: e.clientY });
                     }}
-                    aria-label={
-                      blockedTooltip ??
-                      t(
-                        visible
-                          ? "widgets.tooltip.hide"
-                          : "widgets.tooltip.show",
-                        { name },
-                      )
-                    }
+                    aria-label={t(
+                      visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
+                      { name },
+                    )}
                     aria-pressed={visible}
-                    aria-disabled={!!blockedBy}
-                    data-tooltip={blockedTooltip ?? name}
+                    data-tooltip={name}
                   />
                 );
               })}
+              {(() => {
+                // One tile for the right edge. Reads as "on" whenever
+                // EITHER panel is showing, and clicking it opens a
+                // radio picker rather than blindly toggling, since
+                // "on" is ambiguous between two panels.
+                const active = EDGE_PANEL_KEYS.find(
+                  (k) => widgets[k].visible,
+                );
+                const label = t("sidebar.edgePanel.label");
+                return (
+                  <Button
+                    data-widget-toggle="rightSidebar"
+                    className={`widget-icon${active ? " active" : ""}`}
+                    icon={
+                      active === "bookmarks" ? (
+                        <BookmarksIcon />
+                      ) : (
+                        <VerticalSplitIcon />
+                      )
+                    }
+                    size="medium"
+                    variant="transparent"
+                    onClick={(e: React.MouseEvent) => {
+                      const r = (
+                        e.currentTarget as HTMLElement
+                      ).getBoundingClientRect();
+                      setEdgeMenu({ x: r.left, y: r.bottom + 4 });
+                    }}
+                    aria-haspopup="menu"
+                    aria-expanded={!!edgeMenu}
+                    aria-pressed={!!active}
+                    aria-label={label}
+                    data-tooltip={
+                      active ? t(`widgets.names.${active}`) : label
+                    }
+                  />
+                );
+              })()}
               <Button
                 className={`widget-icon avatar-with-overlay${
                   widgets.avatar.visible ? " active" : ""
@@ -561,7 +626,8 @@ export const LeftSidebar: React.FC = () => {
           </section>
 
           <section
-            className="sidebar-section"
+            ref={appearanceSectionRef}
+            className="sidebar-section appearance-section"
             aria-labelledby="appearance-heading"
           >
             <div className="section-heading-row">
@@ -576,7 +642,7 @@ export const LeftSidebar: React.FC = () => {
                 <SettingsIcon style={{ fontSize: 16 }} />
               </button>
             </div>
-            <details className="filter-collapsible" ref={paletteDetailsRef}>
+            <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
                 <span>{t("sidebar.filters.heading")}</span>
                 <span className="collapsible-preview" aria-hidden="true">
@@ -636,7 +702,7 @@ export const LeftSidebar: React.FC = () => {
                 </div>
               </div>
             </details>
-            {/* Font picker — each option is rendered IN that font so the
+            {/* Font picker - each option is rendered IN that font so the
                 swatch list doubles as a live preview. Sits below the
                 palette as a sibling collapsible inside Appearance. */}
             {/* Font and Corners are full-width collapsibles like the
@@ -1006,7 +1072,7 @@ export const LeftSidebar: React.FC = () => {
           </section>
           </div>
 
-          {/* Bottom button group — sits as a flex sibling of the
+          {/* Bottom button group - sits as a flex sibling of the
               scrolling middle so it stays fixed at the sidebar
               bottom regardless of scroll position. */}
           <div className="sidebar-footer">
@@ -1035,7 +1101,7 @@ export const LeftSidebar: React.FC = () => {
                 {t("sidebar.buttons.rate")}
               </Button>
               {/* Permissions, the storage inspector and the master
-                  reset — everything that acts on saved data rather
+                  reset - everything that acts on saved data rather
                   than on a single widget. */}
               <Button
                 variant="dark"
@@ -1062,7 +1128,7 @@ export const LeftSidebar: React.FC = () => {
               />
             </div>
 
-            {/* Version chip — clickable, opens the changelog modal which
+            {/* Version chip - clickable, opens the changelog modal which
                 now points users at the Discord for release notes. Pulls
                 the version straight from the manifest at runtime so the
                 chip can never drift from what actually shipped. */}
@@ -1164,6 +1230,43 @@ export const LeftSidebar: React.FC = () => {
             />
           );
         })()}
+      {edgeMenu && (
+        <ContextMenu
+          position={edgeMenu}
+          onClose={() => setEdgeMenu(null)}
+          items={[
+            // Radio rows, so the either/or nature is visible rather
+            // than implied by one option greying the other out.
+            ...EDGE_PANEL_KEYS.map((k) => ({
+              type: "radio" as const,
+              label: t(`widgets.names.${k}`),
+              selected: widgets[k].visible,
+              onClick: () => {
+                // Turning one on turns the other off - the whole point
+                // of the tile. Re-picking the active one is a no-op;
+                // "Off" below is how you clear the edge.
+                EDGE_PANEL_KEYS.forEach((other) => {
+                  if (widgets[other].visible !== (other === k))
+                    toggleWidgetVisibility(other);
+                });
+                setEdgeMenu(null);
+              },
+            })),
+            { type: "separator" as const },
+            {
+              type: "radio" as const,
+              label: t("sidebar.edgePanel.off"),
+              selected: !EDGE_PANEL_KEYS.some((k) => widgets[k].visible),
+              onClick: () => {
+                EDGE_PANEL_KEYS.forEach((k) => {
+                  if (widgets[k].visible) toggleWidgetVisibility(k);
+                });
+                setEdgeMenu(null);
+              },
+            },
+          ]}
+        />
+      )}
       <Suspense fallback={null}>
         {showBackgroundSettings && (
           <BackgroundSettingsModal

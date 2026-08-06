@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { BackgroundSettingsModal } from "../BackgroundSettingsModal/BackgroundSettingsModal";
-import { AVATAR_OPTIONS } from "../../config/avatarConfig";
-import { ChevronRightIcon, CloseIcon, EditIcon, FormatQuoteIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon } from "../Icons/Icons";
-import { AccessTimeFilledIcon, BookmarksIcon, CalendarTodayIcon, CheckBoxIcon, ChevronLeftIcon, EmojiEmotionsIcon, LinkIcon, TimerIcon, VerticalSplitIcon } from "../Icons/Icons";
-import { WidgetKey } from "../../config/widgetConfig";
-import { THEME_NAMES, ThemeName, useAppContext } from "../../contexts/AppContext";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  EditIcon,
+} from "../Icons/Icons";
+import { useAppContext } from "../../contexts/AppContext";
 import { LANGUAGES, getLocale, setLocale, useT } from "../../i18n/i18n";
 import { Dropdown } from "../Dropdown/Dropdown";
 import "./WelcomeModal.css";
@@ -14,12 +15,11 @@ const Key: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 // Each slide refers to keys under `welcome.slides.<id>` in the locale dict.
-// Interactive slides (widgets / palette / background) embed the real
-// controls so changes persist immediately, while spotlight slides also
-// pulse the equivalent area in the sidebar so the user learns where the
-// control lives long-term. adjustTime is a spotlight rather than an
-// embed: it puts the real widget into edit mode and glows its actual
-// chrome, so the user practises on the control they'll use later.
+// Every slide is a SPOTLIGHT: it points at the real control - pulsing
+// the sidebar region, or putting a widget into edit mode and glowing
+// its actual chrome - rather than embedding a copy of it. Embedded
+// duplicates taught a control that doesn't exist outside the tour, and
+// drifted from the real one as it changed.
 const SLIDE_IDS = [
   "welcome",
   "findGuide",
@@ -33,28 +33,6 @@ const SLIDE_IDS = [
 
 type SlideId = (typeof SLIDE_IDS)[number];
 
-// Mirror LeftSidebar's WIDGET_TOGGLES (minus avatar — that one has
-// its own special tile rendered below this grid because the icon is
-// the live avatar image, not a static glyph). Keep this list in
-// sync whenever a new widget toggle is added on the left sidebar.
-const WIDGET_TUTORIAL_TOGGLES: Array<{
-  key: WidgetKey;
-  icon: React.ReactElement;
-}> = [
-  { key: "time", icon: <AccessTimeFilledIcon /> },
-  { key: "date", icon: <CalendarTodayIcon /> },
-  { key: "greeting", icon: <EmojiEmotionsIcon /> },
-  { key: "info", icon: <FormatQuoteIcon /> },
-  { key: "todo", icon: <CheckBoxIcon /> },
-  { key: "quicklinks", icon: <LinkIcon /> },
-  { key: "searchbar", icon: <SearchIcon /> },
-  { key: "pomodoro", icon: <TimerIcon /> },
-  { key: "weather", icon: <WbSunnyIcon /> },
-  { key: "notes", icon: <StickyNote2Icon /> },
-  { key: "bookmarks", icon: <BookmarksIcon /> },
-  { key: "rightSidebar", icon: <VerticalSplitIcon /> },
-];
-
 interface WelcomeModalProps {
   open: boolean;
   onClose: () => void;
@@ -64,15 +42,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
   const t = useT();
   const {
     setSidebarSpotlight,
-    widgets,
-    toggleWidgetVisibility,
-    appearance,
-    updateAppearance,
     setEditingWidgetKey,
   } = useAppContext();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
-  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -88,7 +61,11 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
       return;
     }
     const slide = SLIDE_IDS[index];
-    if (slide === "findGuide") {
+    if (slide === "welcome") {
+      // Not a highlight target - this value tells the sidebar to stay
+      // shut for the opening slide.
+      setSidebarSpotlight("welcome");
+    } else if (slide === "findGuide") {
       setSidebarSpotlight("guide");
     } else if (slide === "widgets") {
       setSidebarSpotlight("widgets");
@@ -118,14 +95,27 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
   // (resize handle + EditWidget overlay) on the page above the dialog.
   // Cleanup runs when the slide changes or the modal closes.
   // Also flips a body class so CSS can pulse the 12/24h toggle and
-  // the resize handle on the Time widget — pure visual cue that lives
+  // the resize handle on the Time widget - pure visual cue that lives
   // alongside the existing sidebar spotlight rules.
   useEffect(() => {
     if (!open) return;
     if (SLIDE_IDS[index] !== "adjustTime") return;
     setEditingWidgetKey("time");
     document.body.classList.add("tutorial-adjust-time");
+    // Also open the sidebar toggle's right-click menu for Time - the
+    // third route into editing a widget, and the one nobody discovers
+    // on their own. Deferred a frame so the sidebar has finished
+    // sliding in and the toggle's rect is final.
+    const raf = window.requestAnimationFrame(() => {
+      window.dispatchEvent(
+        new CustomEvent("ghiblify:open-toggle-menu", {
+          detail: { key: "time" },
+        }),
+      );
+    });
     return () => {
+      window.cancelAnimationFrame(raf);
+      window.dispatchEvent(new CustomEvent("ghiblify:close-toggle-menu"));
       setEditingWidgetKey(null);
       document.body.classList.remove("tutorial-adjust-time");
     };
@@ -166,127 +156,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
   const title = t(`welcome.slides.${slideId}.title`);
   const isFirst = index === 0;
   const isLast = index === SLIDE_IDS.length - 1;
-
-  const renderWidgetTutorial = () => {
-    return (
-      <div
-        className="welcome-widget-grid"
-        role="group"
-        aria-label={t("welcome.slides.widgets.title")}
-      >
-        {WIDGET_TUTORIAL_TOGGLES.map(({ key, icon }) => {
-          const visible = widgets[key].visible;
-          const name = t(`widgets.names.${key}`);
-          // Mirror LeftSidebar's mutual-exclusion gating: bookmarks
-          // and the right sidebar both occupy the right edge, so
-          // only one can be on at a time. The disabled toggle keeps
-          // its tooltip explaining why ("Disable X first to enable
-          // {{this}}"), matching the LeftSidebar UX.
-          let blockedBy: WidgetKey | null = null;
-          if (key === "rightSidebar" && widgets.bookmarks.visible)
-            blockedBy = "bookmarks";
-          else if (key === "bookmarks" && widgets.rightSidebar.visible)
-            blockedBy = "rightSidebar";
-          const blockedTooltip = blockedBy
-            ? t("widgets.tooltip.disabledBy", {
-                other: t(`widgets.names.${blockedBy}`),
-                this: name,
-              })
-            : null;
-          return (
-            <button
-              key={key}
-              type="button"
-              className={`welcome-widget-toggle${visible ? " is-active" : ""}${
-                blockedBy ? " is-blocked" : ""
-              }`}
-              onClick={() => {
-                if (blockedBy) return;
-                toggleWidgetVisibility(key);
-              }}
-              aria-pressed={visible}
-              aria-disabled={!!blockedBy}
-              aria-label={
-                blockedTooltip ??
-                t(
-                  visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
-                  { name }
-                )
-              }
-              data-tooltip={blockedTooltip ?? name}
-            >
-              <span className="welcome-widget-toggle-icon">{icon}</span>
-              <span className="welcome-widget-toggle-label">{name}</span>
-            </button>
-          );
-        })}
-        {(() => {
-          const visible = widgets.avatar.visible;
-          const avatarData = AVATAR_OPTIONS.find(
-            (a) => a.value === widgets.avatar.settings.selectedAvatar
-          );
-          const name = t("widgets.names.avatar");
-          return (
-            <button
-              type="button"
-              className={`welcome-widget-toggle${visible ? " is-active" : ""}`}
-              onClick={() => toggleWidgetVisibility("avatar")}
-              aria-pressed={visible}
-              aria-label={t(
-                visible ? "widgets.tooltip.hide" : "widgets.tooltip.show",
-                { name }
-              )}
-              data-tooltip={name}
-            >
-              <span className="welcome-widget-toggle-icon">
-                {avatarData ? <img src={avatarData.src} alt="" /> : "A"}
-              </span>
-              <span className="welcome-widget-toggle-label">{name}</span>
-            </button>
-          );
-        })()}
-      </div>
-    );
-  };
-
-  const renderPaletteTutorial = () => (
-    <div
-      className="welcome-theme-swatches"
-      role="radiogroup"
-      aria-label={t("welcome.slides.palette.title")}
-    >
-      {THEME_NAMES.map((name: ThemeName) => {
-        const selected = appearance.theme === name;
-        const label = t(`themes.${name}`);
-        return (
-          <button
-            key={name}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            aria-label={label}
-            data-tooltip={label}
-            className={`welcome-theme-swatch theme-${name}${
-              selected ? " is-selected" : ""
-            }`}
-            onClick={() => updateAppearance({ theme: name })}
-          />
-        );
-      })}
-    </div>
-  );
-
-  const renderBackgroundTutorial = () => (
-    <div className="welcome-bg-actions">
-      <button
-        type="button"
-        className="welcome-bg-btn welcome-bg-btn-primary"
-        onClick={() => setShowBackgroundPicker(true)}
-      >
-        {t("welcome.slides.background.open")}
-      </button>
-    </div>
-  );
 
   const renderBody = () => {
     switch (slideId) {
@@ -337,7 +206,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         return (
           <>
             <p>{t("welcome.slides.widgets.body1")}</p>
-            {renderWidgetTutorial()}
             <p className="welcome-hint">
               {t("welcome.slides.widgets.body2Pre")}
               <Key>Cmd</Key>/<Key>Ctrl</Key>+<Key>K</Key>
@@ -349,7 +217,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         return (
           <>
             <p>{t("welcome.slides.palette.body1")}</p>
-            {renderPaletteTutorial()}
+            <p>{t("welcome.slides.palette.body2")}</p>
             <p className="welcome-hint">{t("welcome.slides.palette.hint")}</p>
           </>
         );
@@ -383,7 +251,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
           <>
             <p>{t("welcome.slides.background.body1")}</p>
             <p>{t("welcome.slides.background.body2")}</p>
-            {renderBackgroundTutorial()}
             <p className="welcome-hint">{t("welcome.slides.background.hint")}</p>
           </>
         );
@@ -449,7 +316,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
   // widget demo, palette pulse) while the guide stays put.
   const isCorneredMode = true;
   const isPassthrough = true;
-  // Suppress unused warnings — these are kept for slide-specific
+  // Suppress unused warnings - these are kept for slide-specific
   // styling hooks even though they no longer gate cornered mode.
   void isAdjustTime;
   void isDragSlide;
@@ -530,7 +397,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
           ) : (
             <button
               type="button"
-              // Pulses until the first advance — on the opening slide
+              // Pulses until the first advance - on the opening slide
               // there's nothing else asking to be clicked, and people
               // were sitting on it waiting for something to happen.
               className={`welcome-nav-btn${index === 0 ? " is-pulsing" : ""}`}
@@ -556,15 +423,6 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
       <CloseIcon style={{ fontSize: 13 }} />
       {t("welcome.exitButton")}
     </button>
-    {/* Rendered as a sibling (not a child) of the welcome-backdrop so
-        that pointer-events: none on the backdrop during passthrough
-        slides doesn't cascade into the picker and make it un-clickable. */}
-    {showBackgroundPicker && (
-      <BackgroundSettingsModal
-        showBackgroundSettings={showBackgroundPicker}
-        setShowBackgroundSettings={setShowBackgroundPicker}
-      />
-    )}
     </>
   );
 };

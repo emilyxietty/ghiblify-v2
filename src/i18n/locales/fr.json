@@ -14,7 +14,7 @@
   },
   "changelog": {
     "title": "Nouveautés",
-    "intro": "Les mises à jour arrivent vite — rejoignez le Discord pour voir les nouveautés et discuter avec la communauté.",
+    "intro": "Les mises à jour arrivent vite - rejoignez le Discord pour voir les nouveautés et discuter avec la communauté.",
     "joinButton": "Rejoindre le Discord",
     "openTooltip": "Voir les changements récents",
     "openAria": "Voir le journal des modifications (version actuelle v{{version}})"
@@ -57,11 +57,6 @@
       "rate": "Noter",
       "rateAria": "Noter Ghiblify sur le Chrome Web Store",
       "languageAria": "Choisir la langue",
-      "dragMode": "Mode déplacement",
-      "dragModeDone": "Terminé",
-      "dragModeAria": "Activer le mode déplacement",
-      "dragModeOnAria": "Quitter le mode déplacement",
-      "modeToggleAria": "Basculer entre Édition et Déplacement",
       "editWidgets": "Mode édition",
       "resetAllWidgets": "Réinitialiser les widgets",
       "resetFilters": "Réinitialiser les paramètres d'arrière-plan",
@@ -90,13 +85,17 @@
       "brightness": "Luminosité",
       "contrast": "Contraste",
       "parallax": "Effet parallaxe",
-      "parallaxTooltip": "La photo de fond se déplace légèrement quand vous bougez le curseur, ajoutant une douce sensation de profondeur — comme si le premier plan flottait devant une scène un peu plus éloignée."
+      "parallaxTooltip": "La photo de fond se déplace légèrement quand vous bougez le curseur, ajoutant une douce sensation de profondeur - comme si le premier plan flottait devant une scène un peu plus éloignée."
+    },
+    "edgePanel": {
+      "label": "Panneau de droite",
+      "off": "Désactivé"
     }
   },
   "rightDock": {
     "emptyTitle": "Barre latérale droite",
     "emptyHint": "Cliquez sur le bouton Paramètres ci-dessous pour choisir les widgets à afficher ici. Ils peuvent vivre dans la barre latérale et sur le canevas en même temps.",
-    "callout": "Barre latérale droite — survolez le bord droit pour l'ouvrir",
+    "callout": "Barre latérale droite - survolez le bord droit pour l'ouvrir",
     "settingsLabel": "Paramètres",
     "pickerLabel": "Choisissez les widgets à afficher dans la barre latérale droite",
     "showBackgroundsLabel": "Afficher les arrière-plans",
@@ -120,8 +119,7 @@
     },
     "tooltip": {
       "show": "Afficher le widget {{name}}",
-      "hide": "Masquer le widget {{name}}",
-      "disabledBy": "Désactivez d'abord {{other}} pour activer {{this}}"
+      "hide": "Masquer le widget {{name}}"
     },
     "contextMenu": {
       "edit": "Modifier {{name}}",
@@ -257,7 +255,8 @@
       "styleClear": "Transparent",
       "styleWeather": "Météo",
       "highlightTune": "Ajuster le surlignage",
-      "weatherLocationHint": "Votre position sert uniquement à récupérer la météo locale — elle ne quitte cet appareil que vers le service météo."
+      "weatherLocationHint": "Votre position sert uniquement à récupérer la météo locale - elle ne quitte cet appareil que vers le service météo.",
+      "guideResize": "Redimensionner"
     },
     "gapps": {
       "menuAria": "Applications Google",
@@ -297,7 +296,7 @@
     "imageAria": "Recherche par image",
     "imageTooltip": "Recherche par image",
     "removeHistoryAria": "Retirer « {{query}} » des recherches récentes",
-    "voiceDenied": "Accès au micro refusé — cliquez pour réessayer"
+    "voiceDenied": "Accès au micro refusé - cliquez pour réessayer"
   },
   "quicklinks": {
     "trigger": "Liens",
@@ -349,7 +348,7 @@
     "searchAria": "Rechercher dans les marque-pages",
     "loading": "Chargement…",
     "empty": "Aucun marque-page pour l'instant.",
-    "callout": "Panneau marque-pages — survolez le bord droit",
+    "callout": "Panneau marque-pages - survolez le bord droit",
     "errorNoChrome": "Cette page n'est pas exécutée comme une extension Chrome. Ouvrez l'onglet dans l'extension installée.",
     "errorNoBookmarks": "chrome.bookmarks est indisponible. Vérifiez la permission ou réinstallez l'extension.",
     "errorBookmarksApi": "Erreur marque-pages : {{message}}",
@@ -469,7 +468,7 @@
     "enableLocation": "Utiliser ma position",
     "retry": "Réessayer",
     "today": "Aujourd'hui",
-    "locationOff": "Aucun lieu défini — utilisez le vôtre ou choisissez une ville ☁️",
+    "locationOff": "Aucun lieu défini - utilisez le vôtre ou choisissez une ville ☁️",
     "chooseCity": "Choisir une ville"
   },
   "socials": {
@@ -537,8 +536,8 @@
     }
   },
   "callouts": {
-    "shiftDrag": "Les widgets sont maintenant déplaçables — cliquez-glissez pour bouger",
-    "focusMode": "Échap pour quitter le mode concentration"
+    "focusMode": "Échap pour quitter le mode concentration",
+    "widgetDraggable": "{{name}} est maintenant déplaçable - cliquez et faites glisser"
   },
   "welcome": {
     "previousAria": "Diapositive précédente",
@@ -556,42 +555,42 @@
       },
       "findGuide": {
         "title": "Vous pouvez revenir à ce guide à tout moment",
-        "body1Pre": "Survolez le bord gauche de l'écran — ou appuyez sur ",
-        "body1Post": " — pour ouvrir la barre latérale. Le bouton Guide en haut relance ce tour. Repérez le bouton qui clignote.",
+        "body1Pre": "Survolez le bord gauche de l'écran - ou appuyez sur ",
+        "body1Post": " - pour ouvrir la barre latérale. Le bouton Guide en haut relance ce tour. Repérez le bouton qui clignote.",
         "hint": "La barre latérale est ouverte derrière cette boîte de dialogue pour que vous voyiez où la trouver."
       },
       "widgets": {
         "title": "Choisissez vos widgets",
         "body1": "Touchez n'importe quelle icône pour l'afficher ou la masquer. Les widgets actifs brillent avec la couleur d'accent de la palette.",
-        "body2Pre": "Ces mêmes interrupteurs vivent dans la barre latérale — survolez le bord gauche ou appuyez sur ",
+        "body2Pre": "Ces mêmes interrupteurs vivent dans la barre latérale - survolez le bord gauche ou appuyez sur ",
         "body2Post": " pour les retrouver plus tard.",
         "tryItNow": "Essayez maintenant !"
       },
       "palette": {
-        "title": "Choisissez une palette",
-        "body1": "Cliquez sur un échantillon pour reteinter toute l'UI. Les palettes claires inversent texte et surfaces ; la palette Givre donne un aspect verre.",
-        "hint": "Vous pouvez changer de palette depuis la section Apparence de la barre latérale."
+        "title": "Ajuster l'apparence",
+        "body1": "Cliquez sur une pastille pour reteinter toute l'interface. Les palettes claires inversent le texte et les surfaces ; la palette Frost donne à chaque widget un effet de verre.",
+        "hint": "Palette, police et coins se trouvent dans la section Apparence de la barre latérale, modifiables à tout moment.",
+        "body2": "La même section contient Police et Coins : choisissez la typographie de toute la page et l'arrondi de chaque surface. Les trois sont dépliées dans la barre latérale."
       },
       "adjustTime": {
-        "title": "Personnalisez les widgets",
-        "body1": "Chaque widget a ses propres contrôles. Le widget Heure ci-dessus est en mode édition — basculez 12/24 h et glissez le curseur pour la taille.",
-        "body2Pre": "Deux façons de modifier un widget : faites un clic droit dessus, ou maintenez ",
-        "body2Post": " (ou Maj) et cliquez sur le crayon qui apparaît au survol."
+        "title": "Modifier les widgets",
+        "body1": "Chaque widget a ses propres contrôles. Le widget Heure ci-dessus est en mode édition - basculez 12/24 h et glissez le curseur pour la taille.",
+        "body2Pre": "Trois façons de modifier un widget : faites un clic droit dessus, maintenez ",
+        "body2Post": " (ou Maj) et cliquez sur le crayon qui apparaît, ou faites un clic droit sur son icône dans la barre latérale - ce menu est ouvert."
       },
       "drag": {
         "title": "Déplacez les widgets",
         "body1Pre": "Maintenez ",
         "body1Post": " et glissez le widget Heure pour le repositionner. Les widgets s'alignent sur la grille.",
-        "body2": "Lorsqu'un widget est en mode édition, une poignée apparaît sur son bord gauche — faites-la glisser pour le déplacer sans maintenir de touche.",
-        "hint": "Le curseur devient une main de glissement lorsque vous maintenez D ou Maj, ou que le mode glissement est activé — c'est votre repère.",
+        "body2": "Lorsqu'un widget est en mode édition, vous pouvez aussi le faire glisser directement, sans aucune touche.",
+        "hint": "Le curseur se transforme en main tant que D ou Maj est maintenue - c'est le signal.",
         "body1Sep": " ou "
       },
       "background": {
-        "title": "Sélectionnez les photos",
+        "title": "Choisir les fonds",
         "body1": "Mettez la photo actuelle en favori pour la garder dans la rotation. La poubelle la supprime à jamais.",
         "body2": "Ouvrez Choisir les arrière-plans pour décider quels films apparaissent, ou mettez en favori n'importe quelle photo.",
-        "open": "Choisir les arrière-plans",
-        "hint": "Les boutons favori et poubelle sont dans la barre latérale — ils clignotent maintenant."
+        "hint": "Le bouton Choisir les fonds clignote dans la barre latérale - cœur, corbeille et actualisation sont juste à côté."
       },
       "shortcuts": {
         "title": "Raccourcis clavier",
@@ -631,7 +630,7 @@
     "permissionsTitle": "Autorisations",
     "permissionsSub": "Ghiblify ne demande rien au départ. N'activez que ce que vous utilisez ; la révocation est immédiate.",
     "permissionGeolocation": "Permissions de localisation",
-    "permissionGeolocationSub": "Position approximative (à l'échelle de la ville) d'après votre connexion réseau — uniquement pour la météo locale. Ni GPS ni permission de localisation.",
+    "permissionGeolocationSub": "Position approximative (à l'échelle de la ville) d'après votre connexion réseau - uniquement pour la météo locale. Ni GPS ni permission de localisation.",
     "permissionBookmarks": "Favoris",
     "permissionBookmarksSub": "Permet au panneau de lire et d'organiser vos favoris Chrome.",
     "storageTitle": "Données enregistrées",
@@ -640,7 +639,7 @@
     "deleteKey": "Supprimer",
     "deleteKeyAria": "Supprimer {{key}}",
     "resetTitle": "Tout réinitialiser",
-    "resetSub": "Supprime tous les réglages enregistrés — widgets, fonds, noms, tâches — et recharge la page.",
+    "resetSub": "Supprime tous les réglages enregistrés - widgets, fonds, noms, tâches - et recharge la page.",
     "resetButton": "Tout réinitialiser",
     "resetConfirm": "Cette action est irréversible.",
     "resetConfirmYes": "Oui, réinitialiser",

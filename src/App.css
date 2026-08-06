@@ -11,7 +11,7 @@
    =========================================================================== */
 
 :root {
-    /* Text — same across themes (themes can override if they want) */
+    /* Text - same across themes (themes can override if they want) */
     --light: rgba(240, 227, 196, 0.95);
     --light-muted: rgba(240, 227, 196, 0.6);
 
@@ -28,7 +28,7 @@
     --sidebar-bg: rgba(31, 38, 32, 0.86);
     --sidebar-card: rgba(20, 26, 22, 0.55);
 
-    /* Focus ring — soft pink, palette-agnostic. Reads as "active"
+    /* Focus ring - soft pink, palette-agnostic. Reads as "active"
        on every backdrop without competing with the warm palette
        accents (which use --yellow). Light/dark/frost themes
        override below for contrast reasons. */
@@ -43,12 +43,12 @@
     /* Border-radius scale. Use these instead of ad-hoc px values so
        the corner softness reads as a coherent system across widgets,
        inputs, popovers, and modals.
-         xs — micro: scrollbar thumbs, tiny chips
-         sm — small detail: kbd, tooltip, base button
-         md — inputs, link tiles, small image surfaces
-         lg — widget shells, popovers, dropdown menus
-         xl — modals, large container surfaces
-         pill — pill buttons, segments, nav arrows
+         xs - micro: scrollbar thumbs, tiny chips
+         sm - small detail: kbd, tooltip, base button
+         md - inputs, link tiles, small image surfaces
+         lg - widget shells, popovers, dropdown menus
+         xl - modals, large container surfaces
+         pill - pill buttons, segments, nav arrows
 
        Every step derives from --radius-unit, so the whole system moves
        together when the user picks a corner style (Settings →
@@ -64,11 +64,11 @@
 
     /* Concentric corners. A surface sitting flush inside another, with
        `--nest-inset` of padding between them, needs its own radius to
-       be the outer one MINUS that inset — otherwise the two curves run
+       be the outer one MINUS that inset - otherwise the two curves run
        at different rates and the gap between them visibly pinches at
        the corners. Containers set --nest-inset; children use these.
        Floored at 0 so a tight inset can't produce a negative radius. */
-    /* Interactive controls — inputs, add-buttons, pills. One step
+    /* Interactive controls - inputs, add-buttons, pills. One step
        rounder than a surface, so at "Soft" a 38px-tall input reads as a
        capsule while a card stays a card. */
     --radius-control: var(--radius-lg);
@@ -80,7 +80,7 @@
     --pad-scale: 1;
 
     /* Corner rounding for the text-highlight bar. Expressed in em so it
-       tracks the font size — the same px radius that reads as "rounded"
+       tracks the font size - the same px radius that reads as "rounded"
        on 16px Info text is invisible behind a 200px clock. */
     --text-highlight-radius: 0.16em;
 
@@ -103,8 +103,8 @@
        to read through, regardless of where the user puts the slider. */
     --surface-alpha-cap: 1;
 
-    /* Surface RGB triple for widget cards / modals / tooltips —
-       anything that paints `rgba(<this>, alpha)` as its background.
+    /* Surface RGB triple for widget cards / modals / tooltips - anything
+       that paints `rgba(<this>, alpha)` as its background.
        Defaults to the active palette's --dark-rgb so widgets pick
        up the palette tint on most themes.
        The Frost theme remaps --dark-rgb to white (because Frost is
@@ -119,16 +119,23 @@
     /* Z-index tiers. Use these instead of ad-hoc values so layers
        compose predictably. Existing in-stacking-context values
        (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
-       fine as raw numbers — these tokens cover the cross-component
+       fine as raw numbers - these tokens cover the cross-component
        layers that previously used arms-race values like 10M / 20T. */
     --z-edit-overlay: 10000;
     /* dim covering sidebars + widgets in edit mode */
     --z-edit-overlay-content: 10001;
     /* widget content that must poke above the dim */
     --z-edit-panel-base: 90000;
-    /* widget edit panels — they stack among themselves (see the counter
+    /* widget edit panels - they stack among themselves (see the counter
        in EditWidget.tsx) but stay under every floating layer, so a menu
        opened FROM a panel always paints above it */
+    /* Guide highlight colour, as an RGB triple so callers can vary
+       alpha freely. Cool white rather than the palette amber: the
+       spotlight has to read as "the app is pointing at this", and an
+       amber glow competed with --yellow, which several palettes
+       already use for their own accents. */
+    --guide-glow: 255, 255, 255;
+
     --z-tutorial-widget: 100050;
     /* guide-only: lifts the widget being demoed, and the edit panel it
        opens, above the guide dialog (100002). The panel's own counter
@@ -143,22 +150,25 @@
     --z-tutorial-pulse: 100201;
     /* tutorial-only pulse above the handle */
     --z-tooltip: 100300;
-    /* tooltips + transient callouts (offline, drag hints, bookmarks/dock callouts, tutorial callouts) — highest tier; must read above EVERYTHING (modals, sidebars, pulses) since they're contextual help that the user is actively reaching for */
+    /* tooltips + transient callouts (offline, drag hints, bookmarks/dock
+       callouts, tutorial callouts) - highest tier; must read above
+       EVERYTHING (modals, sidebars, pulses) since they're contextual help
+       that the user is actively reaching for */
 
     /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
-       pills, callouts — anything that's NOT a widget surface and
+       pills, callouts - anything that's NOT a widget surface and
        needs to read consistently against any photo or palette.
        These are deliberately theme-INDEPENDENT (no theme overrides
        them). The existing `--dark` / `--light` are intentionally
        remapped per theme (e.g. Frost makes `--dark` white because
        the widget glass layer adds darkness over it), which broke
        any chrome consumer expecting `--dark` to actually be dark.
-       Migrate new chrome to these tokens — no Frost override
+       Migrate new chrome to these tokens - no Frost override
        needed.
-         --ui-chrome-bg        — solid-feeling dark surface
-         --ui-chrome-bg-hover  — slightly lighter on hover
-         --ui-chrome-fg        — readable text
-         --ui-chrome-border    — subtle 1px outline */
+         --ui-chrome-bg        - solid-feeling dark surface
+         --ui-chrome-bg-hover  - slightly lighter on hover
+         --ui-chrome-fg        - readable text
+         --ui-chrome-border    - subtle 1px outline */
     --ui-chrome-bg: rgba(20, 26, 32, 0.78);
     --ui-chrome-bg-hover: rgba(20, 26, 32, 0.9);
     --ui-chrome-fg: rgba(255, 255, 255, 0.96);
@@ -185,7 +195,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Spirited Away — light-mode palette. Soft pink-cream paper
+   Theme: Spirited Away - light-mode palette. Soft pink-cream paper
    for widget surfaces, deep plum text for legibility, with vivid
    soot-sprite pink as the dominant accent and herb-bath green as
    the secondary. Sidebar uses a coral-pink → light-green gradient
@@ -198,8 +208,8 @@
     --cream: #fdf2ee;
     --cream-rgb: 253, 242, 238;
     --red: #e85d8a;
-    /* purple-dark / red-dark are used as Pomodoro card backgrounds —
-       on this LIGHT theme they need to be LIGHT so dark text reads. */
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds - on
+       this LIGHT theme they need to be LIGHT so dark text reads. */
     --red-dark: #f5c4d2;
     --blue: #7aa3b8;
     --blue-muted: rgba(122, 163, 184, 0.6);
@@ -207,7 +217,7 @@
     --green: #6ab075;
     --rose: #f08aaa;
     --purple-dark: #e8d4dc;
-    /* Inverted text — deep plum on the light pink/green surfaces. */
+    /* Inverted text - deep plum on the light pink/green surfaces. */
     --light: rgba(74, 38, 50, 0.95);
     --light-muted: rgba(74, 38, 50, 0.6);
     --text-shadow-color: rgba(253, 242, 238, 0.85);
@@ -220,7 +230,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Howl's Moving Castle — Sophie's curse-grey hair as the
+   Theme: Howl's Moving Castle - Sophie's curse-grey hair as the
    primary accent ("silver" / soft pewter), the dusky periwinkle of
    her dress, and the misty alpine green-blue of the meadow scenes.
    Pulled the base toward a softer dusk-blue (less navy than before)
@@ -232,7 +242,7 @@
     --dark-muted: rgba(42, 58, 92, 0.7);
     --cream: #ecedf0;
     --cream-rgb: 236, 237, 240;
-    /* Silver accents — desaturated so they read as Sophie's hair
+    /* Silver accents - desaturated so they read as Sophie's hair
        rather than chrome. */
     --red: #d4d6dc;
     --red-dark: #8a8d97;
@@ -248,7 +258,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Totoro — deep forest, mossy greens, warm earth
+   Theme: Totoro - deep forest, mossy greens, warm earth
    --------------------------------------------------------------------------- */
 .theme-totoro {
     --dark: #1a3018;
@@ -270,7 +280,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Ponyo — Ponyo's actual palette: she's a goldfish-girl in a red
+   Theme: Ponyo - Ponyo's actual palette: she's a goldfish-girl in a red
    dress against deep ocean blue, but the FILM reads as mostly blue
    (sea, sky) with bright pink/red accents (her dress, hair). Lean
    into the deep blue base and use pink as the primary accent rather
@@ -296,7 +306,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Sky — bright cyan, sun yellow, cheerful
+   Theme: Sky - bright cyan, sun yellow, cheerful
    --------------------------------------------------------------------------- */
 .theme-sky {
     --dark: #14406e;
@@ -327,7 +337,7 @@
    =========================================================================== */
 
 /* ---------------------------------------------------------------------------
-   Theme: Butter — neutral light, sand + sage + warm clay
+   Theme: Butter - neutral light, sand + sage + warm clay
    --------------------------------------------------------------------------- */
 .theme-butter {
     --dark: #efe2c4;
@@ -353,7 +363,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Mint — pale green + butter yellow + soft coral
+   Theme: Mint - pale green + butter yellow + soft coral
    --------------------------------------------------------------------------- */
 .theme-mint {
     --dark: #c8e8d0;
@@ -379,7 +389,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Spring — pastel pink + pastel green together. Light theme: soft
+   Theme: Spring - pastel pink + pastel green together. Light theme: soft
    pink-cream sidebar with sage green and rose as paired accents, both
    visibly present. Dark text on light surfaces.
    --------------------------------------------------------------------------- */
@@ -389,7 +399,7 @@
     --dark-muted: rgba(244, 210, 220, 0.7);
     --cream: #fff0f6;
     --cream-rgb: 255, 240, 246;
-    /* Pink and green are co-stars — both bumped to a punchier pastel
+    /* Pink and green are co-stars - both bumped to a punchier pastel
        saturation so neither washes out. */
     --red: #f55a92;
     --red-dark: #c22c6e;
@@ -399,7 +409,7 @@
     --green: #6cd070;
     --rose: #ff85ad;
     --purple-dark: #a884c0;
-    /* Inverted text — dark plum on the light pink/green surfaces */
+    /* Inverted text - dark plum on the light pink/green surfaces */
     --light: rgba(70, 32, 52, 0.95);
     --light-muted: rgba(70, 32, 52, 0.6);
     --text-shadow-color: rgba(255, 240, 246, 0.85);
@@ -413,8 +423,8 @@
     --disabled-light: rgba(120, 60, 90, 0.5);
 }
 
-/* Bloom — Pomodoro break mode uses var(--red-dark) which on this
-   palette is a vivid hot pink (#c22c6e) — dialed down to a deeper,
+/* Bloom - Pomodoro break mode uses var(--red-dark) which on this
+   palette is a vivid hot pink (#c22c6e) - dialed down to a deeper,
    softer berry so the break timer doesn't glare against the rest of
    the pink-and-green theme. Focus mode (var(--purple-dark)) is fine.
    Surface tint goes through rgba(...) with --pomodoro-opacity as the
@@ -426,7 +436,7 @@
     background-image: none;
 }
 
-/* Bloom — active widget-icon glow uses green (the second co-star)
+/* Bloom - active widget-icon glow uses green (the second co-star)
    instead of the default yellow so the pink+green pairing carries
    through the active state too. */
 .theme-spring .widget-icon.active {
@@ -437,12 +447,12 @@
     background: color-mix(in srgb, var(--green) 48%, transparent);
 }
 
-/* Dark-palette break-mode pomodoro — drops the calming break blue
+/* Dark-palette break-mode pomodoro - drops the calming break blue
    from #9bc8db → #3a6480 (deep slate-blue) so the white text
    inherited from var(--light) (which every palette-dark theme
    binds to near-white) reads with proper contrast. The base rule
    pins parent text to dark navy, but interior rows resolve color
-   through var(--light) directly — hence the bg darkens instead of
+   through var(--light) directly - hence the bg darkens instead of
    trying to re-tint each nested element. Targets .palette-dark
    (applied to <html> for any non-light-mode theme) so the fix
    covers Ghibli / Howl's / Totoro / Ponyo / Sky / Dark / Frost. */
@@ -451,7 +461,7 @@
        slider visibly fades the surface. Previously this rule used
        `background:` with a hardcoded `#3a6480`, which has higher
        specificity than the base `.pomodoro-widget.break-mode` and
-       was silently winning the cascade — masking the slider's effect
+       was silently winning the cascade - masking the slider's effect
        for every dark-palette user (most Ghibli themes). */
     background-color: rgba(58, 100, 128, var(--pomodoro-opacity, 1));
     background-image: none;
@@ -474,7 +484,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Peony — pastel pink + pastel sky blue, paired equally.
+   Theme: Peony - pastel pink + pastel sky blue, paired equally.
    Light theme: light blue-pink wash sidebar, dark plum text.
    --------------------------------------------------------------------------- */
 .theme-peony {
@@ -492,7 +502,7 @@
     --green: #88c8a8;
     --rose: #ffb8d4;
     --purple-dark: #b89cd8;
-    /* Inverted text — dark on light surfaces */
+    /* Inverted text - dark on light surfaces */
     --light: rgba(60, 36, 70, 0.95);
     --light-muted: rgba(60, 36, 70, 0.6);
     --text-shadow-color: rgba(255, 240, 250, 0.85);
@@ -505,7 +515,7 @@
     --disabled-light: rgba(110, 70, 100, 0.5);
 }
 
-/* Cotton — active widget-icon glow uses blue (the second co-star) so
+/* Cotton - active widget-icon glow uses blue (the second co-star) so
    pink + blue read together throughout the sidebar. */
 .theme-peony .widget-icon.active {
     background: color-mix(in srgb, var(--blue) 32%, transparent);
@@ -516,12 +526,12 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Mono — light grayscale. White-ish widget surfaces, dark text.
+   Theme: Mono - light grayscale. White-ish widget surfaces, dark text.
    This is a *light* theme: --dark holds the light surface color so widget
    chrome (which paints rgba(--dark-rgb, 0.6)) renders white. Text vars
    are inverted to dark gray so they read on the light surface.
    --------------------------------------------------------------------------- */
-/* Light — neutral grayscale (the palette formerly named "mono"). Soft
+/* Light - neutral grayscale (the palette formerly named "mono"). Soft
    off-white surfaces with dark text. */
 .theme-light {
     --dark: #ececec;
@@ -530,7 +540,7 @@
     --cream: #fafafa;
     --cream-rgb: 250, 250, 250;
     --red: #555555;
-    /* purple-dark / red-dark are used as Pomodoro card backgrounds — on
+    /* purple-dark / red-dark are used as Pomodoro card backgrounds - on
        this LIGHT theme they need to be LIGHT so the dark text reads. */
     --red-dark: #d8c8c8;
     --blue: #444444;
@@ -539,7 +549,7 @@
     --green: #5a5a5a;
     --rose: #888888;
     --purple-dark: #d8d4dc;
-    /* Inverted text — dark on light surfaces */
+    /* Inverted text - dark on light surfaces */
     --light: rgba(24, 24, 24, 0.95);
     --light-muted: rgba(24, 24, 24, 0.6);
     --text-shadow-color: rgba(250, 250, 250, 0.85);
@@ -549,7 +559,7 @@
     --disabled-light: rgba(120, 120, 120, 0.5);
 }
 
-/* Dark — neutral grayscale, the inverse of "Light". Charcoal surfaces
+/* Dark - neutral grayscale, the inverse of "Light". Charcoal surfaces
    with bright off-white text. Mirror of the structure above. */
 .theme-dark {
     --dark: #1a1a1a;
@@ -575,7 +585,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Theme: Frost — Apple Liquid Glass aesthetic. Widget surfaces become
+   Theme: Frost - Apple Liquid Glass aesthetic. Widget surfaces become
    nearly clear panes of frosted glass: heavy blur + saturation boost
    on the backdrop-filter so the Ghibli photo bleeds through with even
    richer color than it has natively, plus a hard alpha cap so the
@@ -597,7 +607,7 @@
     --green: #a8c8b0;
     --rose: #d8b8c4;
     --purple-dark: #c8c0d8;
-    /* White text — the Frost glass keeps the Ghibli photo visible
+    /* White text - the Frost glass keeps the Ghibli photo visible
        behind every surface, so light text + a soft dark halo reads
        cleanest regardless of which film is showing. */
     --light: rgba(255, 255, 255, 0.96);
@@ -613,7 +623,7 @@
     --surface-alpha-cap: 0.22;
     /* Pin the surface tint to a fixed dark slate so widget cards,
        modals, tooltips, dock chrome, etc. all read as Frost's dark
-       glass automatically — no per-component .theme-frost override
+       glass automatically - no per-component .theme-frost override
        needed. (Without this, cards using `rgba(var(--surface-rgb),…)`
        would inherit the white --dark-rgb above and disappear.) */
     --surface-rgb: 10, 14, 20;
@@ -622,14 +632,14 @@
 /* Frost-only glass treatment.
    ---------------------------------------------------------------------------
    Why on .widget instead of per-cell: the .widget shell is
-   `position: fixed`, which makes it a CSS "backdrop root" — meaning a
+   `position: fixed`, which makes it a CSS "backdrop root" - meaning a
    `backdrop-filter` on any descendant can only blur pixels painted
    INSIDE the widget (i.e. nothing). The widget shell itself, though,
    is its own backdrop root and CAN blur the viewport behind it. So
-   the entire widget becomes one pane of frosted glass — which is also
+   the entire widget becomes one pane of frosted glass - which is also
    how macOS / iOS Liquid Glass actually composites.
 
-   Excludes Time / Date / Avatar / Info — those are designed as text
+   Excludes Time / Date / Avatar / Info - those are designed as text
    directly over the photo with their own halo, and look better
    without a card. */
 .theme-frost .widget[data-widget-key="todo"],
@@ -649,7 +659,7 @@
 }
 
 /* On Frost, the per-cell surfaces inside a frosted widget would just
-   double-stack the tint — the shell already provides the glass.
+   double-stack the tint - the shell already provides the glass.
    Strip their backgrounds + blur so the widget reads as a single pane. */
 .theme-frost .widget[data-widget-key="todo"] .todo-item-content,
 .theme-frost .widget[data-widget-key="todo"] .todo-add-btn,
@@ -662,7 +672,7 @@
     box-shadow: none !important;
 }
 
-/* QuickLinks on Frost — per-tile glass instead of one big pane.
+/* QuickLinks on Frost - per-tile glass instead of one big pane.
    Each link card gets its own frost so the grid breathes (you can
    see the photo in the gaps between tiles), and individual tiles
    read as discrete glass chips. Same dark wash as other widgets so
@@ -679,7 +689,7 @@
     color: #ffffff !important;
 }
 
-/* Tooltips, callouts, dropdowns on Frost — they default to using
+/* Tooltips, callouts, dropdowns on Frost - they default to using
    --light/--dark for surface + text, which on Frost is white-on-white.
    Force dark surface + white text so they actually read. */
 .theme-frost .tooltip-portal,
@@ -691,11 +701,11 @@
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Modal dialogs on Frost — every modal in the app uses
+/* Modal dialogs on Frost - every modal in the app uses
    `rgba(var(--dark-rgb), 0.96)` as its surface, which on Frost (where
    --dark-rgb is 255,255,255) renders white-on-white. Override every
    dialog surface to the same dark glass used for tooltips above. New
-   modals should reuse one of these classes — or get added here — to
+   modals should reuse one of these classes - or get added here - to
    keep Frost looking like Frost. */
 .theme-frost .welcome-dialog,
 .theme-frost .socials-dialog,
@@ -712,7 +722,7 @@
 }
 
 /* The tooltip arrow inherits var(--dark) for its border color, which
-   is white on Frost — recolor to match the dark pill above. */
+   is white on Frost - recolor to match the dark pill above. */
 .theme-frost .tooltip-portal.is-bottom::before {
     border-bottom-color: rgba(10, 14, 20, 0.92) !important;
 }
@@ -722,7 +732,7 @@
 }
 
 /* Shift-drag callout (rendered as body::after) reads var(--dark) for
-   surface and var(--light) for text — both white on Frost. The theme
+   surface and var(--light) for text - both white on Frost. The theme
    class lives on <html> and the .show-widget-outline class lives on
    <body>, so the descendant selector is required. */
 .theme-frost body.show-widget-outline::after {
@@ -772,12 +782,12 @@
     color: #ffffff !important;
 }
 
-/* Pomodoro card on Frost — its base uses var(--purple-dark) /
+/* Pomodoro card on Frost - its base uses var(--purple-dark) /
    var(--red-dark), which on Frost are pale lavender / dusty rose
    (white text on those reads poorly). Force a dark charcoal card
    with a soft warm tint shift on break mode so focus vs break
    still reads at a glance. */
-/* Welcome / Guide / Background-settings modals on Frost — their
+/* Welcome / Guide / Background-settings modals on Frost - their
    dialog backgrounds use var(--dark-rgb) which is white on Frost,
    making the modals invisible white-on-white. Force a dark dialog
    so the white text reads. */
@@ -798,7 +808,7 @@
     color: #ffffff !important;
 }
 
-/* Frost break mode — keep the dark glass aesthetic of the regular
+/* Frost break mode - keep the dark glass aesthetic of the regular
    Frost pomodoro instead of swapping to a solid color. A cool blue
    tint on the glass + a sky-blue glowing border cue the break
    state without abandoning the frosted aesthetic. White text stays
@@ -862,7 +872,7 @@
     border-color: rgba(255, 255, 255, 0.45) !important;
 }
 
-/* Focused inputs on Frost — same outlined-white treatment. */
+/* Focused inputs on Frost - same outlined-white treatment. */
 .theme-frost .widget .custom-input:focus {
     background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(255, 255, 255, 0.85) !important;
@@ -870,7 +880,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   High-contrast modifier — orthogonal to theme. Forces a true black/white
+   High-contrast modifier - orthogonal to theme. Forces a true black/white
    palette regardless of which theme is active, so contrast is guaranteed
    even on light themes (Pastel/Cream/Mint/Mono/Bloom). Every surface var
    is overridden so consumers that resolve `var(--dark)` / `var(--light)`
@@ -888,7 +898,7 @@
     /* Sidebar surfaces */
     --sidebar-bg: rgba(0, 0, 0, 0.96);
     --sidebar-card: rgba(18, 18, 18, 0.8);
-    /* Pure white focus ring — neutral so high-contrast doesn't pick
+    /* Pure white focus ring - neutral so high-contrast doesn't pick
        up the active palette's yellow accent (which previously gave
        everything a mustard wash). */
     --focus-ring: #ffffff;
@@ -896,7 +906,7 @@
     --widget-border-alpha: 0.6;
     /* Strong shadow for callouts */
     --text-shadow-color: rgba(0, 0, 0, 0.9);
-    /* Per-widget light/dark mode vars — overridden so the toggle becomes
+    /* Per-widget light/dark mode vars - overridden so the toggle becomes
        a no-op in high-contrast (everything reads as black surface +
        white text regardless of which mode the user picked). */
     --todo-text: #ffffff;
@@ -917,7 +927,7 @@
 }
 
 /* Force solid backings on every widget chrome surface. Pure black
-   surface, pure white border — no palette tint, so high-contrast
+   surface, pure white border - no palette tint, so high-contrast
    reads cleanly as a true black/white mode regardless of which theme
    the user has active. Uses !important to outrank per-widget CSS. */
 .high-contrast .widget,
@@ -968,7 +978,7 @@
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
-/* Sidebar buttons in high-contrast — solid black with white border + text
+/* Sidebar buttons in high-contrast - solid black with white border + text
    so they don't disappear into the (now also black) sidebar background. */
 .high-contrast .left-sidebar .btn {
     background: #000000 !important;
@@ -982,7 +992,7 @@
 }
 
 /* The floating Done / Guide buttons in edit mode: always white text +
-   white border, regardless of theme — so they stand out on any photo
+   white border, regardless of theme - so they stand out on any photo
    background and any palette. */
 .edit-toggle-button .btn {
     color: #ffffff !important;
@@ -998,7 +1008,7 @@
     color: #ffffff !important;
 }
 
-/* General sidebar buttons — add a subtle theme-aware border so on light
+/* General sidebar buttons - add a subtle theme-aware border so on light
    palettes (Cream/Mint/Bloom/Pastel/Mono) the button doesn't blend into
    the similarly-light sidebar background. */
 .left-sidebar .btn:not(.widget-icon) {
@@ -1018,7 +1028,7 @@
 
 html,
 body {
-    /* The new-tab page is a fixed-layout dashboard — never meant to
+    /* The new-tab page is a fixed-layout dashboard - never meant to
        scroll. Locking both root nodes prevents the few-pixel
        overscroll bounce that otherwise happens when a widget sits
        at the very edge of the viewport, dragging the photo
@@ -1029,7 +1039,7 @@ body {
 }
 
 
-/* Bundled font set — woff2 files live at public/assets/fonts/. Each
+/* Bundled font set - woff2 files live at public/assets/fonts/. Each
    is the latin subset, regular weight only. font-display:swap keeps
    initial paint on the system stack; the chosen face fades in
    once loaded. */
@@ -1050,7 +1060,7 @@ body {
     font-display: swap;
 }
 
-/* The system stack — also the fallback when a glyph is missing.
+/* The system stack - also the fallback when a glyph is missing.
    --app-font defaults here and per-font classes below override for
    the user's chosen face. Mono fonts fall back to the system mono
    stack rather than the proportional one for sensible-looking
@@ -1114,6 +1124,15 @@ body {
     animation: offline-callout-in 5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }
 
+/* Drag hint - same pill as the offline toast, but it sits below the
+   top edge rather than at it, so the two can never stack on top of
+   each other if a widget is edited while offline. Shorter dwell than
+   the 5s offline notice; it's a nudge, not a warning. */
+.drag-hint-callout {
+    top: 64px;
+    animation-duration: 3.2s;
+}
+
 @keyframes offline-callout-in {
     0% {
         opacity: 0;
@@ -1136,7 +1155,7 @@ body {
     }
 }
 
-/* Transient hint shown when the user shift-clicks a widget — old
+/* Transient hint shown when the user shift-clicks a widget - old
    versions used Shift-drag; the new affordance is the 'd' key.
    Same visual language as `.offline-callout` so the notification
    layer reads as one coherent system. */
@@ -1170,57 +1189,6 @@ body {
     gap: 8px;
 }
 
-/* Mode segmented toggle (Edit Widgets / Drag Mode). One pill, two
-   halves; the active half is filled, the other is hollow. The pair
-   acts as a unified mutex toggle so users can see at a glance which
-   mode they're in. */
-.mode-toggle {
-    display: inline-flex;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: var(--radius-pill);
-    padding: 3px;
-    gap: 0;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.mode-toggle-segment {
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.65);
-    border: none;
-    border-radius: var(--radius-pill);
-    cursor: pointer;
-    transition: background 140ms ease, color 140ms ease,
-        box-shadow 140ms ease;
-    white-space: nowrap;
-}
-
-.mode-toggle-segment:hover:not(.is-active) {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.mode-toggle-segment.is-active {
-    background: rgba(255, 255, 255, 0.95);
-    color: #1a1a1a;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-}
-
-.mode-toggle-segment:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-}
-
 /* ===========================================================================
    Hover tooltips
    ---------------------------------------------------------------------------
@@ -1238,7 +1206,7 @@ body {
    =========================================================================== */
 
 body.show-widget-outline::after {
-    content: "Widgets are now draggable — click and drag to move";
+    content: "Widgets are now draggable - click and drag to move";
     position: fixed;
     top: 16px;
     left: 50%;
@@ -1275,14 +1243,14 @@ body.show-widget-outline::after {
    One knob drives the whole radius scale (see --radius-unit above).
    AppContext puts one of these classes on <html> from the appearance
    setting; everything that uses a --radius-* token follows.
-     square  — near-hard corners, 1px of softening so edges don't alias
-     rounded — the default scale
-     pill    — everything as round as its box allows */
+     square  - near-hard corners, 1px of softening so edges don't alias
+     rounded - the default scale
+     pill    - everything as round as its box allows */
 
 html.corners-square {
     --radius-unit: 1px;
     /* A 999px pill next to 2px cards reads as a mistake, so pills
-       collapse too — just not all the way to a hard rectangle. */
+       collapse too - just not all the way to a hard rectangle. */
     --radius-pill: 6px;
     --pad-scale: 0.95;
     --text-highlight-radius: 0.02em;
@@ -1295,12 +1263,12 @@ html.corners-pill {
        and stopping short of one looks like a near-miss. */
     --radius-control: var(--radius-pill);
     --pad-scale: 1.45;
-    /* Half the line box — a capsule around a single line of text. */
+    /* Half the line box - a capsule around a single line of text. */
     --text-highlight-radius: 0.5em;
 }
 
 /* Quick Links tiles become discs. They're square by construction
-   (aspect-ratio: 1/1), so a 50% radius is a true circle — the shape
+   (aspect-ratio: 1/1), so a 50% radius is a true circle - the shape
    Chrome's own new-tab shortcuts use. */
 html.corners-pill .ql-grid-cell,
 html.corners-pill .ql-grid-link,
@@ -1310,7 +1278,7 @@ html.corners-pill .ql-add-cell {
 
 /* A circle has far less usable width than the square it's inscribed
    in, so the label needs to pull in from the sides and cap at one line
-   — otherwise a two-word title spills out past the curve. */
+   - otherwise a two-word title spills out past the curve. */
 html.corners-pill .ql-grid-link {
     padding-left: 18%;
     padding-right: 18%;
@@ -1324,7 +1292,7 @@ html.corners-pill .ql-grid-title {
 }
 
 /* The sidebar's widget toggles are square cells too, so they take the
-   same treatment — otherwise the one grid of squares left on screen
+   same treatment - otherwise the one grid of squares left on screen
    would contradict every rounded surface around it. */
 html.corners-pill .left-sidebar .widget-icon {
     border-radius: 50%;
@@ -1332,5 +1300,5 @@ html.corners-pill .left-sidebar .widget-icon {
 
 /* Padding scales with the corner setting at each surface's own rule
    (search for --pad-scale) rather than from one blanket declaration
-   here — several of these carry asymmetric padding that a single
+   here - several of these carry asymmetric padding that a single
    value would flatten. */

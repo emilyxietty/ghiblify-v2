@@ -24,7 +24,7 @@ import "./QuickLinks.css";
  *   - keep a real scheme, but lower-case it (and upgrade bare http on
  *     hosts that aren't local, since everything public is https now)
  *   - otherwise assume https
- *   - lower-case the host (paths stay case-sensitive — they matter)
+ *   - lower-case the host (paths stay case-sensitive - they matter)
  *   - drop a trailing "/" on a bare origin so "site.com" and
  *     "site.com/" don't become two different tiles
  */
@@ -47,7 +47,7 @@ const normalizeUrl = (raw: string) => {
       ? out.replace(/\/$/, "")
       : out;
   } catch {
-    // Unparseable (a bare word, say) — store what they typed rather
+    // Unparseable (a bare word, say) - store what they typed rather
     // than silently mangling it.
     return withScheme;
   }
@@ -79,7 +79,7 @@ export const QuickLinks: React.FC = () => {
     editingWidgetKey,
     appearance,
   } = useAppContext();
-  // True when QuickLinks is in any kind of edit mode — global or per-widget.
+  // True when QuickLinks is in any kind of edit mode - global or per-widget.
   const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
   const quicklinksSettings = widgets.quicklinks.settings;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -93,7 +93,7 @@ export const QuickLinks: React.FC = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [addGridLink, setAddGridLink] = useState(false);
-  // Right-click per-tile menu state — when set, ContextMenu opens
+  // Right-click per-tile menu state - when set, ContextMenu opens
   // at (x, y) with edit/delete actions for the targeted link id.
   const [linkMenu, setLinkMenu] = useState<{
     id: string;
@@ -108,7 +108,7 @@ export const QuickLinks: React.FC = () => {
 
   // The add card used to spring open by itself whenever the widget
   // entered edit mode. It now sits over the grid, so opening it
-  // unasked hides the very tiles the user came to rearrange — and the
+  // unasked hides the very tiles the user came to rearrange - and the
   // + tile is permanently visible, so there's nothing to compensate
   // for. Leaving edit mode still clears any half-typed entry.
   useEffect(() => {
@@ -120,7 +120,7 @@ export const QuickLinks: React.FC = () => {
   }, [isEditing, showGrid]);
 
   // Right-click "Add new link" entry on the widget's context menu
-  // dispatches this event — open the mode-appropriate add UI (grid
+  // dispatches this event - open the mode-appropriate add UI (grid
   // form or list popover).
   useEffect(() => {
     const onAdd = () => {
@@ -175,7 +175,7 @@ export const QuickLinks: React.FC = () => {
   }, [addGridLink, isEditing]);
 
   // The per-link right-click menu renders as a SIBLING of the list
-  // dropdown (it has to — a ContextMenu inside the popover would be
+  // dropdown (it has to - a ContextMenu inside the popover would be
   // clipped by it), so closing the dropdown left the menu floating
   // over the page on its own. Tie its lifetime to the parent.
   // Editing mode is exempt: there the list renders inline and is
@@ -259,11 +259,11 @@ export const QuickLinks: React.FC = () => {
       // A real modal, portalled to <body>: the widget shell is transform'ed,
   // so a fixed-position child would anchor to the widget, and inside the
   // widget the card competes with surfaces that scroll and clip. Shared
-  // by BOTH modes — grid tiles and the list dropdown open the same card
+  // by BOTH modes - grid tiles and the list dropdown open the same card
   // for add and edit.
   /* prior placement note: the widget shell is
               `transform`ed, so a fixed-position child of it would
-              anchor to the widget instead of the viewport — and inside
+              anchor to the widget instead of the viewport - and inside
               the widget the card had to compete with a grid that
               scrolls and clips. */
   const addEditModal =
@@ -285,7 +285,7 @@ export const QuickLinks: React.FC = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   addLink();
-                  // Closes on save either way — a modal that stays up
+                  // Closes on save either way - a modal that stays up
                   // after you commit reads as "that didn't work".
                   setAddGridLink(false);
                   setEditingLinkId(null);
@@ -297,7 +297,7 @@ export const QuickLinks: React.FC = () => {
                     : t("quicklinks.addTitle")}
                 </h4>
 
-                {/* Live preview of the tile being built — the favicon
+                {/* Live preview of the tile being built - the favicon
                     lands as soon as the URL resolves, which is the
                     fastest way to see you typed the right site. */}
                 <div className="ql-add-preview">
@@ -322,7 +322,7 @@ export const QuickLinks: React.FC = () => {
                     {/* The address as it will actually be saved. Shown
                         rather than typed into the field: rewriting the
                         input mid-keystroke moves the caret and makes
-                        the scheme impossible to edit — you'd type "g",
+                        the scheme impossible to edit - you'd type "g",
                         get "https://g", and be unable to get back in
                         front of it. */}
                     {url.trim() && (
@@ -343,7 +343,7 @@ export const QuickLinks: React.FC = () => {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   // Settle the field to its canonical form once you
-                  // leave it — the same normalisation submit applies,
+                  // leave it - the same normalisation submit applies,
                   // just made visible a step earlier.
                   onBlur={() => setUrl((v) => (v.trim() ? normalizeUrl(v) : v))}
                   onClick={(e) => e.stopPropagation()}
@@ -395,7 +395,7 @@ export const QuickLinks: React.FC = () => {
             document.body
           );
 
-  // Per-link right-click menu — shared verbatim between grid tiles and
+  // Per-link right-click menu - shared verbatim between grid tiles and
   // list rows so the two modes keep the same functionality.
   const linkMenuRender =
     linkMenu &&
@@ -638,7 +638,7 @@ export const QuickLinks: React.FC = () => {
                 })
               )}
             </ul>
-            {/* Subtle append row — same modal card as the grid. */}
+            {/* Subtle append row - same modal card as the grid. */}
             <button
               type="button"
               className="ql-list-add"
@@ -656,7 +656,7 @@ export const QuickLinks: React.FC = () => {
           </div>
   );
 
-  // List mode — when editing, render the trigger + dropdown inline (in
+  // List mode - when editing, render the trigger + dropdown inline (in
   // normal flow) so the widget container grows and the EditWidget
   // overlay covers the whole expanded surface. When NOT editing, use
   // InlinePopover so the dropdown opens/closes via trigger click.

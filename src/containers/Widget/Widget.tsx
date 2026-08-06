@@ -1,11 +1,11 @@
 import React, { ReactNode, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { EditIcon, OpenWithIcon } from "../../components/Icons/Icons";
+import { EditIcon } from "../../components/Icons/Icons";
 import { AccessTimeFilledIcon, CenterFocusStrongIcon, FaceIcon, FormatColorFillIcon, MusicNoteIcon, MyLocationIcon, PhotoSizeSelectSmallIcon, PlaceIcon, RefreshIcon, RemoveIcon, VisibilityOffIcon, VolumeUpIcon } from "../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
 } from "../../components/ContextMenu/ContextMenu";
-// Lazy — every widget mounts an EditWidget but only the one currently
+// Lazy - every widget mounts an EditWidget but only the one currently
 // being edited actually renders content. Gating on `isEditingThis`
 // below means the chunk only fetches the first time any widget enters
 // edit mode.
@@ -90,7 +90,7 @@ export const Widget: React.FC<WidgetProps> = ({
   }, [visible, shouldRender]);
 
   // NOTE: do NOT early-return here. All hooks below must run on every
-  // render (Rules of Hooks) — otherwise toggling visibility off (which
+  // render (Rules of Hooks) - otherwise toggling visibility off (which
   // flips `shouldRender` to false 220ms later) changes the hook count
   // mid-mount, React throws, the whole tree unmounts, and the user is
   // left staring at body's #000 background until they refresh.
@@ -108,8 +108,6 @@ export const Widget: React.FC<WidgetProps> = ({
     setWidgetInRightSidebar,
     setWidgetDockWidth,
     setWidgetShowBackground,
-    dragMode,
-    setDragMode,
     appearance,
     widgetsCommitted,
     previewWidgetSettings,
@@ -120,7 +118,7 @@ export const Widget: React.FC<WidgetProps> = ({
   const isEditingThis = showWidgetEdits || editingWidgetKey === storageKey;
   const widgetConfig = getWidgetConfig(storageKey);
   const widgetSettings = widgets[storageKey].settings as Record<string, unknown>;
-  // The saved values, without any hover preview — what the picker and
+  // The saved values, without any hover preview - what the picker and
   // the context menu should reflect.
   const committedSettings = widgetsCommitted[storageKey].settings as Record<
     string,
@@ -128,7 +126,7 @@ export const Widget: React.FC<WidgetProps> = ({
   >;
 
   const [position, setPosition] = useState(() => widgets[storageKey].position);
-  // Bounded click-to-front stacking — see utils/widgetStack.ts.
+  // Bounded click-to-front stacking - see utils/widgetStack.ts.
   const zIndex = useWidgetZIndex(storageKey);
 
   useLayoutEffect(() => {
@@ -146,7 +144,7 @@ export const Widget: React.FC<WidgetProps> = ({
     setPosition(widgets[storageKey].position);
   }, [widgets, storageKey]);
 
-  // Right-click context menu — viewport-relative position (clientX/Y),
+  // Right-click context menu - viewport-relative position (clientX/Y),
   // null = closed. ContextMenu handles its own outside-click / Escape /
   // scroll dismissal.
   const [contextMenuPos, setContextMenuPos] = useState<{
@@ -156,11 +154,12 @@ export const Widget: React.FC<WidgetProps> = ({
   // Character count for the type-in reveal. Measured from the rendered
   // text rather than guessed: `steps()` has to match the number of
   // characters or the reveal lands mid-glyph and reads as a wipe
-  // instead of typing. Measured once — re-measuring as the clock ticks
+  // instead of typing. Measured once - re-measuring as the clock ticks
   // would restart the animation every second.
   const [typeSteps, setTypeSteps] = useState(24);
 
-  // Hidden native colour input — the context menu's "custom colour"
+
+  // Hidden native colour input - the context menu's "custom colour"
   // row clicks it to open the OS palette directly.
   const nativeHighlightInput = useRef<HTMLInputElement | null>(null);
 
@@ -218,7 +217,7 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging(isResizing);
   }, [isResizing, setIsDragging]);
 
-  // Held-to-drag affordance — press and hold 'd' OR Shift to make
+  // Held-to-drag affordance - press and hold 'd' OR Shift to make
   // widgets draggable, release either to stop. Shift was the
   // original behavior; users coming from earlier versions tried it
   // out of muscle memory, so it's back as an alternative to 'd'.
@@ -226,14 +225,14 @@ export const Widget: React.FC<WidgetProps> = ({
   // gotchas: (1) Cmd+Shift+4 (macOS screenshot) can swallow the
   // keyup → outline gets stuck on; (2) Shift held during typing
   // capitals could trigger the affordance in non-input contexts.
-  // Both are mitigated below — see mousemove + blur + visibility
+  // Both are mitigated below - see mousemove + blur + visibility
   // handlers.
   //
   // Skipped when an <input>, <textarea>, <select>, or contentEditable
   // is focused so typing in todos / notes / search doesn't
   // accidentally enable drag.
   useEffect(() => {
-    // Track both keys independently — outline stays on while EITHER
+    // Track both keys independently - outline stays on while EITHER
     // is held. Refs (not state) so the listeners read the latest
     // values without re-binding on every change.
     const held = { d: false, shift: false };
@@ -256,7 +255,7 @@ export const Widget: React.FC<WidgetProps> = ({
     function handleKeyDown(e: KeyboardEvent) {
       if (isTypingTarget(e.target)) return;
       if (e.key === "d" || e.key === "D") {
-        // Plain 'd' only — combos (Cmd+D bookmark, etc.) shouldn't
+        // Plain 'd' only - combos (Cmd+D bookmark, etc.) shouldn't
         // trigger drag.
         if (e.metaKey || e.ctrlKey || e.altKey) return;
         held.d = true;
@@ -384,13 +383,13 @@ export const Widget: React.FC<WidgetProps> = ({
     };
   };
 
-  // Runtime overflow nudge — measures the widget's actual rendered
+  // Runtime overflow nudge - measures the widget's actual rendered
   // bounds and computes a corrective offset that keeps it inside the
   // viewport. Storage position is left alone (the user's intent is
   // preserved); only the rendered offset adjusts. The offset is
   // recomputed from the widget's NATURAL position (rect minus the
   // current offset) every measurement, so it shrinks back to zero
-  // when the viewport expands and the widget no longer overflows —
+  // when the viewport expands and the widget no longer overflows -
   // not just grows when it does. A ref mirrors the state value so
   // the closure inside ResizeObserver always reads the current
   // offset without re-creating the observer on every state change.
@@ -424,7 +423,7 @@ export const Widget: React.FC<WidgetProps> = ({
       } else if (naturalBottom > vh - margin) {
         dy = vh - margin - naturalBottom;
       }
-      // Direct set, not additive — converges in one render and
+      // Direct set, not additive - converges in one render and
       // shrinks back to {0,0} when the widget would naturally fit.
       if (dx !== cur.x || dy !== cur.y) {
         setOverflowOffset({ x: dx, y: dy });
@@ -444,7 +443,7 @@ export const Widget: React.FC<WidgetProps> = ({
     // Anchor horizontally centered but vertically anchored to the top
     // so changes in child height (collapse/expand) don't shift the
     // widget's top edge / header position. Overflow-nudge offset is
-    // baked in via calc() — keeps the widget inside the viewport on
+    // baked in via calc() - keeps the widget inside the viewport on
     // small screens without rewriting the user's stored position.
     return `translate(calc(-50% + ${overflowOffset.x}px), ${overflowOffset.y}px)`;
   };
@@ -471,7 +470,7 @@ export const Widget: React.FC<WidgetProps> = ({
         return;
       }
 
-      // Resize logic — translate the bound that's enabled into a settings patch.
+      // Resize logic - translate the bound that's enabled into a settings patch.
       if (isResizing && storageKey) {
         // Snap operates in screen-px (start / delta / bounds all in
         // current-viewport pixels) so the drag feel stays uniform
@@ -481,7 +480,7 @@ export const Widget: React.FC<WidgetProps> = ({
         const screenBound = (b: { min: number; max: number; step: number }) => ({
           min: toScreenPx(b.min),
           max: toScreenPx(b.max),
-          // Step in screen-px is the reference step scaled — but we
+          // Step in screen-px is the reference step scaled - but we
           // ALSO want the visible step to feel reasonable. Floor at
           // 1 px so very small viewports don't get a 0-step snap.
           step: Math.max(1, toScreenPx(b.step)),
@@ -521,7 +520,7 @@ export const Widget: React.FC<WidgetProps> = ({
               ),
             );
           }
-          // squareLock — width and height stay tied. Take the larger
+          // squareLock - width and height stay tied. Take the larger
           // of the two so the user can drag in either direction and
           // the widget always grows / shrinks as a square.
           if (
@@ -666,17 +665,22 @@ export const Widget: React.FC<WidgetProps> = ({
 
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
     // Any press (left click, drag start, right-click for the context
-    // menu) surfaces this widget above its siblings — before the drag
+    // menu) surfaces this widget above its siblings - before the drag
     // gating below, which returns early for plain clicks.
     bringWidgetToFront(storageKey);
     // Two ways to opt into widget dragging:
-    //   1. Hold 'd' + left-click (one-shot drag without leaving
-    //      normal mode). The 'd' keydown/keyup effect above keeps
-    //      `body.show-widget-outline` in sync with the held state,
-    //      so reading the class is the cheapest authoritative
-    //      check at click time.
-    //   2. Drag Mode is on (sticky mode toggled from sidebar /
-    //      right-click).
+    //   1. Hold 'd' or Shift + left-click. The keydown/keyup effect
+    //      above keeps `body.show-widget-outline` in sync with the
+    //      held state, so reading the class is the cheapest
+    //      authoritative check at click time.
+    //   2. The widget is in edit mode - then the whole shell is the
+    //      drag surface. This replaced a grab-handle tab: the handle
+    //      had to hang outside the widget, which put it off-screen (or
+    //      inside the left sidebar's hover strip) for left-parked
+    //      widgets, and every fallback position collided with
+    //      something else. The content is already dimmed and inert
+    //      under the edit overlay, so there's nothing to conflict
+    //      with.
     if (e.button !== 0) return;
     // `show-widget-outline` body class is added when EITHER `d` or
     // Shift is held (see the held-to-drag effect higher up). Both
@@ -685,12 +689,15 @@ export const Widget: React.FC<WidgetProps> = ({
       "show-widget-outline",
     );
     const target = e.target as HTMLElement | null;
-    const fromEditDragHandle = !!target?.closest?.(".widget-drag-handle");
-    if (!dragKeyHeld && !dragMode && !fromEditDragHandle) return;
+    // The settings panel is a DOM descendant of the widget (it's
+    // `position: fixed`, but still inside), so without this every
+    // click on a slider or swatch would start a drag instead.
+    if (target?.closest?.(".edit-panel")) return;
+    if (!dragKeyHeld && !isEditingThis) return;
     if (isResizing) return;
 
     // Don't hijack mousedowns that originated on the resize handle or
-    // the quick-edit button — those have their own click handlers and
+    // the quick-edit button - those have their own click handlers and
     // the drag flow swallows the click.
     if (target?.closest?.(".widget-resize-handle")) return;
     if (target?.closest?.(".widget-quick-edit")) return;
@@ -721,7 +728,7 @@ export const Widget: React.FC<WidgetProps> = ({
     e.stopPropagation();
 
     // Storage is reference-px; the drag handler does math in
-    // screen-px (so the drag feel stays consistent across viewports —
+    // screen-px (so the drag feel stays consistent across viewports -
     // 20 px of mouse movement is always one "step" regardless of
     // current viewport width). Convert stored → screen at drag-start;
     // we'll convert screen → reference at write time inside mousemove.
@@ -750,7 +757,7 @@ export const Widget: React.FC<WidgetProps> = ({
     widgetConfig.height
   );
 
-  // Safe to early-return now — all hooks above have already run.
+  // Safe to early-return now - all hooks above have already run.
   if (!shouldRender) return null;
 
   // Surface up the widget's opacity + blur settings (when present) as
@@ -765,10 +772,10 @@ export const Widget: React.FC<WidgetProps> = ({
     "blur" in widgetSettings
       ? Math.max(0, Math.min(1, Number(widgetSettings.blur) / 100))
       : undefined;
-  // Text highlight — a hex string turns it on, null/absent leaves it
+  // Text highlight - a hex string turns it on, null/absent leaves it
   // off. The shell only publishes the vars; which text nodes actually
   // get painted is a per-widget selector list in Widget.css.
-  // `widgetSettings` already carries any hover preview — AppContext
+  // `widgetSettings` already carries any hover preview - AppContext
   // merges it into the render view, so nothing extra is needed here.
   const highlight =
     typeof widgetSettings.highlightColor === "string"
@@ -865,7 +872,7 @@ export const Widget: React.FC<WidgetProps> = ({
       onContextMenu={(e) => {
         // Let the browser's native context menu (copy / cut / paste /
         // spell-check / undo) fire when the right-click is inside a
-        // text input, textarea, or any contentEditable element —
+        // text input, textarea, or any contentEditable element -
         // hijacking those would break basic editing UX. We DO still
         // stop propagation so the background's right-click handler
         // doesn't fire either.
@@ -917,24 +924,14 @@ export const Widget: React.FC<WidgetProps> = ({
             data-tooltip={t("widgets.edit.resizeTitle", {
               name: t(`widgets.names.${storageKey}`),
             })}
+            /* Read by the guide's CSS as a printed label beside the
+               handle (content: attr(...)), so the wording stays in the
+               locale files instead of being hard-coded in a stylesheet.
+               Inert outside the tour. */
+            data-guide-label={t("widgets.edit.guideResize")}
           ></div>
         )}
-      {isEditingThis && !isResizing && (
-        <button
-          type="button"
-          className="widget-drag-handle"
-          onMouseDown={handleWidgetMouseDown}
-          aria-label={t("widgets.contextMenu.drag", {
-            name: widgetConfig.name,
-          })}
-          data-tooltip={t("widgets.contextMenu.drag", {
-            name: widgetConfig.name,
-          })}
-        >
-          <span className="widget-drag-dots" aria-hidden="true" />
-        </button>
-      )}
-      {/* Drag-mode-only quick controls — only visible while `d` is held
+      {/* Quick controls - only visible while `d` or Shift is held
           and the widget isn't already in edit mode. The pencil at top-
           right jumps straight into editing this widget; the minus at
           top-left hides the widget without opening any menu. CSS class
@@ -985,10 +982,9 @@ export const Widget: React.FC<WidgetProps> = ({
             setWidgetInRightSidebar,
             setWidgetDockWidth,
             setWidgetShowBackground,
-            setDragMode,
             isFrost: appearance.theme === "frost",
             preview: (patch) => previewWidgetSettings(storageKey, patch),
-            // Straight to the OS palette — no intermediate panel. The
+            // Straight to the OS palette - no intermediate panel. The
             // hidden input below carries the current colour; changes
             // apply live while the user drags through the spectrum.
             openHighlightPicker: () => nativeHighlightInput.current?.click(),
@@ -1033,9 +1029,9 @@ const INFO_FIELD_KEYS = [
 // root menu compact.
 //
 // `mode` selects the surface:
-//   "canvas" — full menu (Edit, Drag, Hide + extras). Hide toggles
+//   "canvas" - full menu (Edit, Drag, Hide + extras). Hide toggles
 //     `visible`, removing the widget from BOTH canvas and dock.
-//   "dock"   — Edit/Drag are dropped (no-op in the dock; sizing is
+//   "dock"   - Edit/Drag are dropped (no-op in the dock; sizing is
 //     hard-coded). Hide only flips `inRightSidebar` so the canvas
 //     state is untouched. Settings extras come first since they're
 //     the user's primary use of right-click in the dock.
@@ -1051,7 +1047,6 @@ export function buildContextMenuItems(args: {
   setWidgetInRightSidebar: (k: WidgetKey, value: boolean) => void;
   setWidgetDockWidth: (k: WidgetKey, value: "half" | "full") => void;
   setWidgetShowBackground: (k: WidgetKey, value: boolean) => void;
-  setDragMode: (b: boolean) => void;
   isFrost: boolean;
   mode?: "canvas" | "dock";
   /** Demo a settings patch while a row is hovered; null clears it.
@@ -1071,7 +1066,6 @@ export function buildContextMenuItems(args: {
     setWidgetInRightSidebar,
     setWidgetDockWidth,
     setWidgetShowBackground,
-    setDragMode,
     isFrost,
     mode = "canvas",
     preview,
@@ -1091,12 +1085,6 @@ export function buildContextMenuItems(args: {
             label: t("widgets.contextMenu.edit", { name: widgetName }),
             onClick: () => setEditingWidgetKey(storageKey),
             icon: <EditIcon style={{ fontSize: 14 }} />,
-          },
-          {
-            type: "action",
-            label: t("widgets.contextMenu.drag", { name: widgetName }),
-            onClick: () => setDragMode(true),
-            icon: <OpenWithIcon style={{ fontSize: 14 }} />,
           },
           {
             type: "action",
@@ -1187,7 +1175,7 @@ export function buildContextMenuItems(args: {
     const s = widgets.weather.settings as WeatherSettings;
     const detail = resolveWeatherDetail(s);
     // Half-width dock cells aren't wide enough for the forecast strips,
-    // so the scale stops at "now" there — matching what the widget
+    // so the scale stops at "now" there - matching what the widget
     // actually renders on that surface.
     const isHalfDock =
       mode === "dock" && widgets.weather.dockWidth === "half";
@@ -1208,16 +1196,16 @@ export function buildContextMenuItems(args: {
         if (typeof label === "string" && label.trim()) locationLabel = label;
       }
     } catch {
-      /* ignore — no label shown */
+      /* ignore - no label shown */
     }
 
     const manual = isManualPlace(s.manualPlace) ? s.manualPlace : null;
 
-    // Four cascades — Location / Detail / Units / Style. Every root row
+    // Four cascades - Location / Detail / Units / Style. Every root row
     // is the same kind of thing (a group you open), and each cascade
     // answers exactly one question.
     extras = [
-      // The resolved place *is* the row — it used to be a dead info
+      // The resolved place *is* the row - it used to be a dead info
       // line with a separate "Location" cascade underneath, which read
       // as a disabled item sitting above the thing that actually works.
       {
@@ -1247,7 +1235,7 @@ export function buildContextMenuItems(args: {
                   label: manual.name,
                   selected: true,
                   onClick: () => {
-                    /* already active — picking it again is a no-op */
+                    /* already active - picking it again is a no-op */
                   },
                 },
               ] as ContextMenuItem[])
@@ -1295,13 +1283,13 @@ export function buildContextMenuItems(args: {
           label: t(`widgets.edit.weatherUnit${v}`),
           selected: s.unit === v,
           // Unit changes need a refetch, so the preview only swaps the
-          // suffix — close enough to answer "which one am I on?".
+          // suffix - close enough to answer "which one am I on?".
           onHover: demo({ unit: v }),
           onClick: () => updateWidgetSettings("weather", { unit: v }),
         })),
       },
       // Surface treatment and motion. Motion stays its own checkbox
-      // rather than being folded into the surface presets — wanting
+      // rather than being folded into the surface presets - wanting
       // still icons is usually an accessibility call, and it shouldn't
       // cost you the card.
       {
@@ -1339,7 +1327,7 @@ export function buildContextMenuItems(args: {
         ],
       },
       { type: "separator" },
-      // Location permission switch, mirroring Settings — "off" also
+      // Location permission switch, mirroring Settings - "off" also
       // forgets the cached coords so it visibly takes effect.
       {
         type: "checkbox",
@@ -1367,7 +1355,7 @@ export function buildContextMenuItems(args: {
         onClick: () =>
           updateWidgetSettings("notes", { showBorder: !showBorder }),
       },
-      // Paper swatches — mirror of the EditWidget row. Slot 0 of the
+      // Paper swatches - mirror of the EditWidget row. Slot 0 of the
       // presets is the shipped cream, stored as null; frosted glass
       // is just another paper at the end of the list.
       {
@@ -1419,7 +1407,7 @@ export function buildContextMenuItems(args: {
           label: opt.label,
           selected: s.selectedAvatar === opt.value,
           // Names alone ("Boh", "Heen") don't tell you who you're
-          // picking — hovering swaps the avatar in place so you see it.
+          // picking - hovering swaps the avatar in place so you see it.
           onHover: demo({ selectedAvatar: opt.value }),
           onClick: () =>
             updateWidgetSettings("avatar", { selectedAvatar: opt.value }),
@@ -1439,7 +1427,7 @@ export function buildContextMenuItems(args: {
         focusOn = blob?.focusMode === true;
       }
     } catch {
-      /* ignore — default to false */
+      /* ignore - default to false */
     }
     const pSettings = widgets.pomodoro.settings as {
       size?: "small" | "medium" | "large" | "compact" | "regular";
@@ -1460,7 +1448,7 @@ export function buildContextMenuItems(args: {
         : best
     );
     // Anything that isn't a known current size (small/medium/large)
-    // collapses to "medium" — covers legacy "compact" / "regular"
+    // collapses to "medium" - covers legacy "compact" / "regular"
     // labels and any other stale value, so the default experience
     // is always medium.
     const rawSize = pSettings.size ?? "medium";
@@ -1468,7 +1456,7 @@ export function buildContextMenuItems(args: {
       rawSize === "small" || rawSize === "medium" || rawSize === "large"
         ? rawSize
         : "medium";
-    // Chime settings, validated the same way Pomodoro validates them —
+    // Chime settings, validated the same way Pomodoro validates them -
     // stored settings can predate the feature (undefined) or name a
     // sound key that no longer exists.
     const currentSound: PomodoroSoundKey = isPomodoroSoundKey(pSettings.sound)
@@ -1516,13 +1504,13 @@ export function buildContextMenuItems(args: {
           onClick: () => updateWidgetSettings("pomodoro", { size: v }),
         })),
       },
-      // Each sound cascades onto its volume levels — one gesture sets
+      // Each sound cascades onto its volume levels - one gesture sets
       // chime + volume together, same pattern as card colour →
       // opacity (so there's no separate flat Volume cascade). "None"
       // stays a flat radio: volume is meaningless with no chime.
       // Picking a row previews it, same as the EditWidget dropdown.
       // The click is a real user gesture, so it doubles as the audio
-      // unlock — otherwise the context is still suspended when the
+      // unlock - otherwise the context is still suspended when the
       // timer ends half an hour later and the chime is silent.
       {
         type: "submenu",
@@ -1559,7 +1547,7 @@ export function buildContextMenuItems(args: {
               }
         ),
       },
-      // Card colour — mirror of the EditWidget swatch row, applied to
+      // Card colour - mirror of the EditWidget swatch row, applied to
       // both focus and break (see Pomodoro.css custom-card rules).
       // Each colour cascades onto its opacity levels, same one-gesture
       // pattern as the text highlight: the row you land on sets colour
@@ -1638,7 +1626,7 @@ export function buildContextMenuItems(args: {
     ];
   }
 
-  // Generic text-shadow cascade — auto-attaches to any widget whose
+  // Generic text-shadow cascade - auto-attaches to any widget whose
   // settings include `textShadow` (currently Time, Date, Greeting).
   // Adding `textShadow` to a new widget's settings interface gets
   // this submenu for free, no extra wiring.
@@ -1646,7 +1634,7 @@ export function buildContextMenuItems(args: {
     string,
     unknown
   >;
-  // Text highlight — auto-attaches to any widget whose settings carry
+  // Text highlight - auto-attaches to any widget whose settings carry
   // `highlightColor`. The cascade covers the common case (a suggested
   // colour, an alpha for it) without leaving the menu; the picker row
   // opens the full swatch/wheel/hex panel for everything else.
@@ -1689,7 +1677,7 @@ export function buildContextMenuItems(args: {
       // opacity, opacity/style are inline rows, and the custom row
       // jumps STRAIGHT into the OS palette. (The old shape nested an
       // opacity cascade under every colour and routed custom through
-      // an intermediate panel — three layers before paint hit text.)
+      // an intermediate panel - three layers before paint hit text.)
       items: [
         {
           type: "radio",
@@ -1734,7 +1722,7 @@ export function buildContextMenuItems(args: {
           ),
           onClick: () => openHighlightPicker?.(),
         },
-        // Opacity + style rows — inline, only while a highlight is on.
+        // Opacity + style rows - inline, only while a highlight is on.
         ...(current
           ? ([
               { type: "separator" },
@@ -1776,7 +1764,7 @@ export function buildContextMenuItems(args: {
     });
   }
 
-  // Type-in — auto-attaches wherever the setting exists, same rule as
+  // Type-in - auto-attaches wherever the setting exists, same rule as
   // the highlight above.
   if ("typeIn" in widgetSettingsAny) {
     extras.push({
@@ -1809,13 +1797,13 @@ export function buildContextMenuItems(args: {
     });
   }
 
-  // Generic opacity / blur cascades — mirror the textShadow pattern.
+  // Generic opacity / blur cascades - mirror the textShadow pattern.
   // Auto-attaches to any widget whose settings include numeric
   // `opacity` / `blur` fields (Todo, QuickLinks, SearchBar, Weather,
   // Pomodoro [opacity only]). Gated by theme to match EditWidget's
   // slider, which swaps the same way:
   //   - Non-Frost themes: Opacity is the meaningful surface knob
-  //     (alpha of the tinted background). Blur is irrelevant — the
+  //     (alpha of the tinted background). Blur is irrelevant - the
   //     widget isn't a glass pane.
   //   - Frost: Blur is the meaningful knob (glass haze intensity).
   //     Opacity is locked by the Frost surface alpha cap.
@@ -1824,10 +1812,10 @@ export function buildContextMenuItems(args: {
   const OPACITY_BLUR_PRESETS = [0, 25, 50, 75, 100];
   // Weather-specific gate: the opacity knob only tints the hourly /
   // daily forecast cell backgrounds. If the user has both strips off
-  // (only "Now" showing), opacity is a no-op — same gate EditWidget
-  // applies to its slider — so we skip the cascade entirely.
+  // (only "Now" showing), opacity is a no-op - same gate EditWidget
+  // applies to its slider - so we skip the cascade entirely.
   // Weather's opacity only tints the forecast cells, which don't exist
-  // below the "hourly" detail level — so the cascade would be a no-op.
+  // below the "hourly" detail level - so the cascade would be a no-op.
   const weatherDetail = resolveWeatherDetail(
     widgets.weather.settings as WeatherSettings
   );
@@ -1839,7 +1827,7 @@ export function buildContextMenuItems(args: {
     typeof widgetSettingsAny.opacity === "number" &&
     !isFrost &&
     !weatherOpacityIsNoOp &&
-    // Pomodoro's opacity lives inside its card-colour cascade — a
+    // Pomodoro's opacity lives inside its card-colour cascade - a
     // second flat entry here would fight it.
     storageKey !== "pomodoro"
   ) {
@@ -1878,7 +1866,7 @@ export function buildContextMenuItems(args: {
   }
 
   if (mode === "dock") {
-    // Background toggle is intentionally absent now — every dock
+    // Background toggle is intentionally absent now - every dock
     // widget paints a uniform glass card via `.dock-widget` CSS so
     // the dock reads as one consistent design. The
     // `setWidgetShowBackground` setter is kept on the context so
@@ -1892,8 +1880,8 @@ export function buildContextMenuItems(args: {
     //
     // Some widgets are locked to a specific size in the dock and
     // skip the half/full radio entirely:
-    //   Todo/Info — content-dense, half-cell breaks them.
-    //   Avatar   — small image tile, full-row reads as empty space.
+    //   Todo/Info - content-dense, half-cell breaks them.
+    //   Avatar   - small image tile, full-row reads as empty space.
     const FULL_WIDTH_ONLY: WidgetKey[] = ["todo", "info"];
     const HALF_WIDTH_ONLY: WidgetKey[] = ["avatar"];
     const allowHalf =

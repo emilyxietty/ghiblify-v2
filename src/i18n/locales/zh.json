@@ -64,11 +64,6 @@
       "rate": "评分",
       "rateAria": "在 Chrome 应用商店评分",
       "languageAria": "选择语言",
-      "dragMode": "拖动模式",
-      "dragModeDone": "完成",
-      "dragModeAria": "进入拖动模式",
-      "dragModeOnAria": "退出拖动模式",
-      "modeToggleAria": "在编辑与拖动间切换",
       "editWidgets": "编辑模式",
       "resetAllWidgets": "重置所有小组件",
       "resetFilters": "重置背景设置",
@@ -100,6 +95,10 @@
       "saturation": "饱和度",
       "parallax": "视差效果",
       "parallaxTooltip": "光标移动时背景照片会轻微跟随，营造出柔和的纵深感 — 仿佛前景悬浮在略远的场景之上。"
+    },
+    "edgePanel": {
+      "label": "右侧面板",
+      "off": "关闭"
     }
   },
   "rightDock": {
@@ -131,8 +130,7 @@
     },
     "tooltip": {
       "show": "显示 {{name}} 小组件",
-      "hide": "隐藏 {{name}} 小组件",
-      "disabledBy": "请先关闭{{other}}，才能启用{{this}}"
+      "hide": "隐藏 {{name}} 小组件"
     },
     "contextMenu": {
       "edit": "编辑 {{name}}",
@@ -268,7 +266,8 @@
       "styleClear": "透明",
       "styleWeather": "天气",
       "highlightTune": "调整高亮",
-      "weatherLocationHint": "您的位置仅用于获取本地天气预报，除天气服务外不会发送到任何地方。"
+      "weatherLocationHint": "您的位置仅用于获取本地天气预报，除天气服务外不会发送到任何地方。",
+      "guideResize": "调整大小"
     },
     "gapps": {
       "menuAria": "Google 应用",
@@ -548,8 +547,8 @@
     }
   },
   "callouts": {
-    "shiftDrag": "小组件现在可拖动 — 单击并拖动以移动",
-    "focusMode": "按 Esc 退出专注模式"
+    "focusMode": "按 Esc 退出专注模式",
+    "widgetDraggable": "现在可以拖动{{name}}了——点击并拖动即可移动"
   },
   "welcome": {
     "previousAria": "上一张",
@@ -579,30 +578,30 @@
         "tryItNow": "立即尝试！"
       },
       "palette": {
-        "title": "选择调色板",
-        "body1": "点击色块为整个 UI 重新着色。明亮色板会反转文本和表面；霜冻色板让小组件呈现玻璃质感。",
-        "hint": "你可随时在侧边栏的「外观」部分切换调色板。"
+        "title": "调整外观",
+        "body1": "点击色板即可为整个界面重新着色。浅色调色板会让文字和表面反转为深色；Frost 调色板则为每个小组件添加玻璃质感。",
+        "hint": "调色板、字体和圆角都在侧边栏的“外观”部分，随时可以更改。",
+        "body2": "同一部分还包含字体与圆角——选择整个页面的字体，以及每个表面的圆角程度。三者现已在侧边栏中展开。"
       },
       "adjustTime": {
-        "title": "自定义小组件",
+        "title": "编辑小组件",
         "body1": "每个小组件都有自己的控件。上方的时间小组件正处于编辑模式 — 切换 12/24 小时制，并拖动滑块调整大小。",
-        "body2Pre": "编辑任意小组件有两种方式：右键点击它，或按住 ",
-        "body2Post": "（或 Shift）并点击悬停时出现的铅笔图标。"
+        "body2Pre": "编辑任意小组件有三种方式：在页面上右键点击它，按住 ",
+        "body2Post": "（或 Shift）并点击出现的铅笔图标，或在左侧边栏右键点击它的图标——该菜单现已打开。"
       },
       "drag": {
         "title": "移动小组件",
         "body1Pre": "按住 ",
         "body1Post": " 并拖动上方的时间小组件以重新定位。小组件会对齐到网格线。",
-        "body2": "当小组件处于编辑模式时，其左侧边缘会出现拖动手柄——拖动它即可移动，无需按住任何键。",
-        "hint": "按住 D 或 Shift,或开启拖动模式时,光标会变成抓手 — 这就是提示。",
+        "body2": "当小组件处于编辑模式时，也可以直接拖动它本身，无需按任何键。",
+        "hint": "按住 D 或 Shift 时光标会变成抓手——这就是提示。",
         "body1Sep": " 或 "
       },
       "background": {
-        "title": "策划照片",
+        "title": "选择背景",
         "body1": "收藏当前照片，使其始终保留在轮播中。删除则永远不再出现。",
         "body2": "打开「选择背景」选择展示哪些电影，或为任意照片点心。",
-        "open": "选择背景",
-        "hint": "侧边栏中有当前照片的收藏与删除按钮 — 现在正在闪烁。"
+        "hint": "侧边栏中的“选择背景”按钮正在闪烁——收藏、删除和刷新就在旁边。"
       },
       "shortcuts": {
         "title": "键盘快捷键",

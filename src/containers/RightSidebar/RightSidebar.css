@@ -1,5 +1,5 @@
 /* ===========================================================================
-   Right sidebar — Chrome bookmarks
+   Right sidebar - Chrome bookmarks
    Mirrors LeftSidebar UX: hover the right edge to open, Esc to close,
    inert when closed.
    =========================================================================== */
@@ -91,9 +91,12 @@
     width: 28px;
     height: 2px;
     margin-top: 6px;
-    background: var(--yellow);
+    /* --light, not a literal white: it tracks the palette, so this
+       reads near-white on dark surfaces and stays visible on the light
+       ones. Matches the left sidebar's heading underline. */
+    background: var(--light);
     border-radius: var(--radius-xs);
-    opacity: 0.7;
+    opacity: 0.55;
 }
 
 /* ---------------------------------------------------------------------------
@@ -200,7 +203,7 @@
 }
 
 /* The inner <a> would otherwise show the link cursor on top of the
-   row's grab cursor — keep the row's affordance consistent. */
+   row's grab cursor - keep the row's affordance consistent. */
 .bookmarks-link-item .bookmarks-link {
     cursor: inherit;
 }
@@ -218,9 +221,9 @@
     left: 8px;
     right: 8px;
     height: 2px;
-    background: var(--yellow, #e9b330);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 2px;
-    box-shadow: 0 0 8px color-mix(in srgb, var(--yellow) 60%, transparent);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
     pointer-events: none;
     z-index: 6;
 }
@@ -233,7 +236,7 @@
     bottom: -2px;
 }
 
-/* Folder as drop target — highlight the toggle when a bookmark is
+/* Folder as drop target - highlight the toggle when a bookmark is
    being dragged over this folder (not over its child links). The
    class lives on the .bookmarks-folder <li> now, so we target the
    button via descendant selector. */
@@ -243,7 +246,7 @@
     border-radius: var(--radius-sm);
 }
 
-/* Empty-search state — shown when the user types a query that
+/* Empty-search state - shown when the user types a query that
    doesn't match anything in the bookmarks tree. A small Ghibli
    avatar keeps the panel feeling alive instead of just empty. */
 .bookmarks-no-results {
@@ -346,7 +349,7 @@
     border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
 }
 
-/* Permission prompt — shown instead of the tree when the optional
+/* Permission prompt - shown instead of the tree when the optional
    `bookmarks` grant is missing. The panel can be switched on without
    the permission, so this is the in-place way to hand it over. */
 .bookmarks-permission {

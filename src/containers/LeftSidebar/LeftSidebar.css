@@ -1,5 +1,5 @@
 /* ===========================================================================
-   Left sidebar — Studio Ghibli theme
+   Left sidebar - Studio Ghibli theme
    =========================================================================== */
 
 /* ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@
    above the modal backdrop (which sits at 100000, above the default
    sidebar tier of 99999), and a per-target pulse animation
    highlights the relevant area. The sidebar stays fully interactive
-   — users can click the highlighted control without closing the
+   - users can click the highlighted control without closing the
    guide modal behind it.
    --------------------------------------------------------------------------- */
 
@@ -48,14 +48,14 @@
     pointer-events: auto;
 }
 
-/* "guide" target — pulse the Guide button at the top. */
+/* "guide" target - pulse the Guide button at the top. */
 .left-sidebar.spotlight-guide .sidebar-guide-btn {
     animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
     position: relative;
     z-index: 1;
 }
 
-/* "widgets" target — pulse the entire widget toggle grid so the user
+/* "widgets" target - pulse the entire widget toggle grid so the user
    sees where to click to show/hide widgets. */
 .left-sidebar.spotlight-widgets .widget-section {
     animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
@@ -63,19 +63,22 @@
     z-index: 1;
 }
 
-/* "background" target — pulse the heart / delete / select-backgrounds
-   row so the user knows where these live in the sidebar going forward. */
-.left-sidebar.spotlight-background .background-actions {
+/* "background" target - pulse ONLY the Select backgrounds button. The
+   halo used to wrap the whole action row, which lit up refresh, heart
+   and trash too and left the user guessing which one the slide meant. */
+.left-sidebar.spotlight-background .background-actions-select {
     animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
     position: relative;
     z-index: 1;
     border-radius: var(--radius-md);
 }
 
-/* "palette" target — pulse only the swatch grid itself so the user's
-   eye lands on the actionable bit, not the section title or the
-   adjacent high-contrast toggle. */
-.left-sidebar.spotlight-palette .theme-swatches {
+/* "palette" target - the Appearance slide covers palette, font AND
+   corners, so the halo goes around the whole section rather than the
+   swatch grid alone. The three collapsibles inside are force-opened
+   by LeftSidebar.tsx while the spotlight is up, so all of it is
+   visible at once. */
+.left-sidebar.spotlight-palette .appearance-section {
     animation: sidebar-spotlight-pulse 1.6s ease-in-out infinite;
     position: relative;
     z-index: 1;
@@ -84,20 +87,24 @@
     margin: -6px;
 }
 
+/* A halo that flows outward and fades, rather than a scaling pill.
+   The old version scaled its target 2% on every cycle, which made
+   whole sections twitch under the cursor while the user was trying to
+   click them; the ring carries the same "look here" signal without
+   moving anything. */
 @keyframes sidebar-spotlight-pulse {
 
     0%,
     100% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 80%, transparent),
-            0 0 0 1px color-mix(in srgb, var(--yellow) 50%, transparent);
-        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(var(--guide-glow), 0.4),
+            0 0 0 1px rgba(var(--guide-glow), 0.32);
     }
 
     50% {
         box-shadow:
-            0 0 0 10px color-mix(in srgb, var(--yellow) 0%, transparent),
-            0 0 18px 4px color-mix(in srgb, var(--yellow) 70%, transparent);
-        transform: scale(1.02);
+            0 0 0 9px rgba(var(--guide-glow), 0),
+            0 0 20px 4px rgba(var(--guide-glow), 0.45),
+            0 0 0 1px rgba(var(--guide-glow), 0.55);
     }
 }
 
@@ -119,7 +126,7 @@
     box-sizing: border-box;
 }
 
-/* Top button group — fixed at the top, doesn't scroll. Owns its
+/* Top button group - fixed at the top, doesn't scroll. Owns its
    own horizontal padding (24px both sides) and a 32px top padding
    to give the band a comfortable margin from the sidebar chrome.
    The bottom 16px keeps a gap to the scroll content below. */
@@ -128,7 +135,7 @@
     padding: 32px 24px 16px 24px;
 }
 
-/* Scrolling middle — owns the overflow. Extends to the sidebar's
+/* Scrolling middle - owns the overflow. Extends to the sidebar's
    right edge so the browser-rendered scrollbar sits at the very
    right. `padding-right: 24px` keeps section content indented to
    match the header / footer; the scrollbar overlays the rightmost
@@ -142,7 +149,7 @@
    padding-left, so a glow on the left edge of a section isn't
    cut off either.
    `min-height: 0` is required for a flex child with
-   `overflow-y: auto` to actually scroll — without it, the child
+   `overflow-y: auto` to actually scroll - without it, the child
    claims its intrinsic content height and pushes the footer off
    the bottom of the sidebar. `scrollbar-gutter: stable` reserves
    the scrollbar lane even when content doesn't overflow so the
@@ -159,7 +166,7 @@
     box-sizing: border-box;
 }
 
-/* Bottom button group + version chip — fixed at the bottom, doesn't
+/* Bottom button group + version chip - fixed at the bottom, doesn't
    scroll. Flex column so the version chip's `align-self: center`
    works. Owns its horizontal padding to match the header. */
 .sidebar-footer {
@@ -175,7 +182,7 @@
     gap: 12px;
 }
 
-/* Bottom button-group — divider line + wrap behavior. Sits inside
+/* Bottom button-group - divider line + wrap behavior. Sits inside
    the `.sidebar-footer` flex column. */
 .sidebar-bottom {
     padding-top: 16px;
@@ -183,7 +190,7 @@
     flex-wrap: wrap;
 }
 
-/* Version chip beneath the bottom button group — small, muted text
+/* Version chip beneath the bottom button group - small, muted text
    that doubles as a click target opening the changelog modal. Sits
    centered below the row so it reads as meta-info rather than a
    primary action. */
@@ -215,7 +222,7 @@
 /* Language picker sits inline beside Rate / Report. The base
    .dropdown is `width: 100%`, which would push our two siblings
    onto the next line. Force the wrapper AND the inner toggle button
-   to size to their content via `max-content` — `width: auto` alone
+   to size to their content via `max-content` - `width: auto` alone
    was leaving the button visibly stretched.
    flex: 0 0 auto disables grow/shrink so the picker stays compact
    inside its flex parent. */
@@ -239,7 +246,7 @@
     flex: 0 0 auto;
 }
 
-/* Palette-themed pill — matches .btn-dark used by the Report and
+/* Palette-themed pill - matches .btn-dark used by the Report and
    Rate buttons next to this picker. Frost has a dedicated override
    below (since `--dark` is intentionally white in Frost). */
 .left-sidebar .language-picker .dropdown-toggle,
@@ -266,7 +273,7 @@
     outline-offset: 2px;
 }
 
-/* Frost — palette has --dark = white which would render the pill
+/* Frost - palette has --dark = white which would render the pill
    white-on-white. Match the dark glass treatment used by .btn-dark
    on Frost (see App.css). */
 .theme-frost .left-sidebar .language-picker .dropdown-toggle,
@@ -282,15 +289,14 @@
     border-color: rgba(255, 255, 255, 0.32);
 }
 
-/* The picker lives at the very bottom of the sidebar — when its menu
+/* The picker lives at the very bottom of the sidebar - when its menu
    opens downward it extends past the sidebar's bottom edge (the
    sidebar's overflow-y: auto would otherwise clip it). Flip the menu
    to open UPWARD instead so it floats above the buttons, comfortably
    inside the panel. */
 /* Both pickers portal their menu to <body>, so these selectors
    target the menu element by its passed-through className DIRECTLY
-   (not as a descendant of the .left-sidebar / welcome-card tree —
-   the portal breaks the ancestor chain). The Dropdown component
+   (not as a descendant of the .left-sidebar / welcome-card tree - the portal breaks the ancestor chain). The Dropdown component
    forwards `className` to both the wrapper div AND the menu <ul>,
    so `.dropdown-menu.language-picker` matches the portaled menu. */
 .dropdown-menu.language-picker,
@@ -302,7 +308,7 @@
     z-index: var(--z-portal);
 }
 
-/* Frost override — same dark-glass treatment as the toggle. */
+/* Frost override - same dark-glass treatment as the toggle. */
 .theme-frost .dropdown-menu.language-picker,
 .theme-frost .dropdown-menu.welcome-language-picker {
     background: rgba(10, 14, 20, 0.92);
@@ -371,26 +377,29 @@
     opacity: 0.85;
 }
 
-/* Underline accent in soft yellow for a touch of warmth */
+/* Underline accent under each section heading. Uses the sidebar's own
+   ink rather than the warm yellow: --light tracks the palette, so this
+   reads as near-white on the dark surfaces and stays legible on the
+   light palettes, where a literal white would vanish. */
 .left-sidebar h4::after {
     content: "";
     display: block;
     width: 28px;
     height: 2px;
     margin-top: 6px;
-    background: var(--yellow);
+    background: var(--light);
     border-radius: var(--radius-xs);
-    opacity: 0.7;
+    opacity: 0.55;
 }
 
 /* Heading-with-trailing-button row. Used by the WIDGETS section so a
    small settings cog can sit on the right of the heading without
    knocking the underline accent off (the accent is on the h4
    ::after, which stays anchored under the heading text since the h4
-   itself only grows to its text width by default — `flex: 1` here
+   itself only grows to its text width by default - `flex: 1` here
    keeps that). */
 /* Section heading rows (Widgets / Appearance / Background / Cursor)
-   all share this layout — heading on the left, a ghost cog on the
+   all share this layout - heading on the left, a ghost cog on the
    right that only appears while the section is hovered or the cog
    itself has keyboard focus. Hiding it keeps four identical cogs from
    turning the sidebar into a column of buttons. */
@@ -467,7 +476,7 @@
     gap: 8px;
 }
 
-/* Stronger hover for every regular Button inside the sidebar — lift +
+/* Stronger hover for every regular Button inside the sidebar - lift +
    shadow + theme-yellow ring. Excludes .widget-icon (it has its own). */
 .left-sidebar .btn:not(.widget-icon) {
     transition: background 160ms ease, border-color 160ms ease,
@@ -495,7 +504,7 @@
    --------------------------------------------------------------------------- */
 
 .left-sidebar .widget-section {
-    /* Grid layout — fixed column count, square cells. Icon size
+    /* Grid layout - fixed column count, square cells. Icon size
        derives from card width / column count, so adding/removing
        widgets keeps the grid tidy automatically. 7 cells per row
        packs the toggles tighter so more fit without scrolling. */
@@ -531,7 +540,7 @@
 .widget-icon svg {
     color: var(--disabled-light);
     transition: color 160ms ease;
-    /* Match the smaller img size for the 7-column grid — keeps the
+    /* Match the smaller img size for the 7-column grid - keeps the
        SVG-rendered toggles visually flush with the avatar (img). */
     width: 18px;
     height: 18px;
@@ -561,22 +570,6 @@
     background: color-mix(in srgb, var(--green) 22%, transparent);
 }
 
-/* Blocked = the toggle is unavailable because its mutually-exclusive
-   sibling is currently on (bookmarks vs right sidebar — both occupy
-   the right edge so we only allow one at a time). The button stays
-   enabled so the data-tooltip handler still fires; click is no-op. */
-.widget-icon.widget-icon-blocked {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.widget-icon.widget-icon-blocked:hover,
-.widget-icon.widget-icon-blocked:active {
-    background: transparent;
-    transform: none;
-    box-shadow: none;
-}
-
 .widget-icon.active svg {
     color: var(--light);
 }
@@ -585,7 +578,7 @@
     background: color-mix(in srgb, var(--green) 36%, transparent);
 }
 
-/* Avatar tile — rounded image with a subtle dim when inactive.
+/* Avatar tile - rounded image with a subtle dim when inactive.
    Slightly smaller than the canvas defaults to match the tighter
    7-column widget grid. */
 .widget-icon img {
@@ -670,7 +663,7 @@
     transition: background 140ms ease;
 }
 
-/* Compact preview chip in a collapsible's summary — shows the active
+/* Compact preview chip in a collapsible's summary - shows the active
    choice (palette swatch / cursor sprite) so users see what's
    selected without expanding. Sits to the right of the leading
    "Settings" label, just before the chevron. */
@@ -731,7 +724,7 @@
     /* Soft slide-fade-down when the section expands. Plays once per
        open (the [open] attribute is the trigger). The native <details>
        element has no transitionable close path, so the collapse is
-       still instantaneous — keep that asymmetry in mind if the
+       still instantaneous - keep that asymmetry in mind if the
        animation changes. Matches the chevron's 200ms rotate so the
        header and body land together. */
     animation: sidebar-collapsible-open 220ms cubic-bezier(0.32, 0.72, 0.32, 1);
@@ -749,7 +742,7 @@
     }
 }
 
-/* Action row beneath the Filters card — Select Backgrounds takes the
+/* Action row beneath the Filters card - Select Backgrounds takes the
    remaining width, the trash icon sits beside it as a square. */
 .background-actions {
     display: flex;
@@ -801,7 +794,7 @@
    --------------------------------------------------------------------------- */
 
 .theme-swatches {
-    /* Grid — fixed column count, square cells. Swatch diameter is
+    /* Grid - fixed column count, square cells. Swatch diameter is
        derived from the container width / column count. */
     --swatch-cols: 10;
     display: grid;
@@ -810,12 +803,12 @@
     margin-top: 8px;
 }
 
-/* Cursor presets — small grid, each cell a tinted card holding the
+/* Cursor presets - small grid, each cell a tinted card holding the
    sprite or default-cursor glyph. Matches the visual feel of the
    theme swatches but rounded-rect (not circular) so the cursor art
    sits flat. */
 .cursor-swatches {
-    /* 9 columns — fits all current cursor presets (default + 8
+    /* 9 columns - fits all current cursor presets (default + 8
        effects: soot, sparkle, petal, bubble, heart, leaf,
        strawberry, shikigami) on one row at the default sidebar
        width. */
@@ -881,8 +874,7 @@
     box-sizing: border-box;
     /* Each swatch carries its own theme-<name> class which locally
        rebinds --dark / --red / --yellow / --blue. The dominant half
-       of the swatch is the palette's actual surface color (--dark) —
-       that's the color the user will see most of when the palette is
+       of the swatch is the palette's actual surface color (--dark) - that's the color the user will see most of when the palette is
        applied. The other half cycles through three accent colors so
        palettes with similar accents (Ghibli vs Spirited vs Totoro)
        still look distinct because their --dark differs. */
@@ -909,7 +901,7 @@
     box-shadow: 0 0 0 2px var(--focus-ring), 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-/* Frost swatch — Frost itself is a "dark glass" palette (charcoal
+/* Frost swatch - Frost itself is a "dark glass" palette (charcoal
    surfaces, white text), but its --dark var is white (the surface is
    the photo behind, blurred). Override the swatch's dominant half to
    black so the swatch reads as a dark palette at a glance. */
@@ -1024,7 +1016,7 @@
     margin-top: 4px;
 }
 
-/* Range slider — buttery yellow thumb for that Calcifer touch */
+/* Range slider - buttery yellow thumb for that Calcifer touch */
 .filter-slider {
     width: 100%;
     height: 4px;
@@ -1075,11 +1067,11 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Scrollbars — cute, narrow, pill-shaped thumb that floats inside its
+   Scrollbars - cute, narrow, pill-shaped thumb that floats inside its
    track with a little breathing room on each side. The `border:
    transparent` + `background-clip: padding-box` trick paints the
    theme-tinted color only on the padding box, so the visible thumb
-   is narrower than the track width — looks like a free-floating
+   is narrower than the track width - looks like a free-floating
    pill rather than a flush bar.
    --------------------------------------------------------------------------- */
 
@@ -1133,7 +1125,7 @@
     background-clip: padding-box;
 }
 
-/* Font picker — vertical list of buttons. Each option's label is
+/* Font picker - vertical list of buttons. Each option's label is
    rendered IN that font so the picker doubles as a live preview.
    Mirrors theme-swatch states (hover/focus/selected) so the two
    pickers feel related. */
@@ -1178,7 +1170,7 @@
     border-color: color-mix(in srgb, var(--light) 38%, transparent);
 }
 
-/* Aa preview chip in the picker's collapsed summary — uses the same
+/* Aa preview chip in the picker's collapsed summary - uses the same
    fontFamily as the active selection so users see at a glance which
    font is on. */
 .collapsible-preview {
@@ -1208,7 +1200,7 @@
    The values are spaced to stay distinguishable at 18×12px, not scaled
    from the real tokens. At this size a 5px radius already reads as a
    capsule on a 12px-tall chip, which made Rounded and Soft look like
-   the same option — so Rounded stays a visibly-cornered rectangle and
+   the same option - so Rounded stays a visibly-cornered rectangle and
    only Soft goes fully round. */
 .corner-swatch-square .corner-swatch-chip {
     border-radius: 0;
@@ -1230,7 +1222,7 @@
     background: color-mix(in srgb, var(--light) 60%, transparent);
 }
 
-/* Corner style picker — three tiles across one full-width row, chip
+/* Corner style picker - three tiles across one full-width row, chip
    and label side by side. */
 .corner-swatches {
     display: flex;
@@ -1279,7 +1271,7 @@
    The values are spaced to stay distinguishable at 18×12px, not scaled
    from the real tokens. At this size a 5px radius already reads as a
    capsule on a 12px-tall chip, which made Rounded and Soft look like
-   the same option — so Rounded stays a visibly-cornered rectangle and
+   the same option - so Rounded stays a visibly-cornered rectangle and
    only Soft goes fully round. */
 .corner-swatch-square .corner-swatch-chip {
     border-radius: 0;

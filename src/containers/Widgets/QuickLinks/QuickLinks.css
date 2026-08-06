@@ -1,5 +1,5 @@
 /* ===========================================================================
-   QuickLinks — single theme-tinted style. Surface uses the active
+   QuickLinks - single theme-tinted style. Surface uses the active
    palette's --dark-rgb triple at the alpha set by the per-widget
    opacity slider. Text uses --light, the palette's contrast-safe
    text color (works on both rich-dark and pastel-light palettes).
@@ -78,7 +78,7 @@
     /* Make each cell a CSS container so its contents (favicon, title,
        padding) can size in `cqi` (% of cell inline size). Without
        this the column grew with the widget but favicon stayed 36px
-       and title stayed 12px — tiles looked empty on large layouts. */
+       and title stayed 12px - tiles looked empty on large layouts. */
     container-type: inline-size;
 }
 
@@ -191,10 +191,10 @@
     overflow: hidden;
 }
 
-/* The + add control card. Hidden by default — only shown while Shift is
+/* The + add control card. Hidden by default - only shown while Shift is
    held. Exception: when the grid is empty, show it always so the user
    has an obvious way to add their first link. */
-/* Delete overlay on each tile — hidden by default, shown only while
+/* Delete overlay on each tile - hidden by default, shown only while
    Shift is held (body.show-widget-outline). User clicks the X to remove
    the link. */
 .ql-delete-overlay {
@@ -216,7 +216,7 @@
     display: flex;
 }
 
-/* (Per-element tooltip overrides removed — the global TooltipPortal
+/* (Per-element tooltip overrides removed - the global TooltipPortal
    handles positioning + viewport edge detection automatically.) */
 
 .ql-delete-overlay:hover,
@@ -256,7 +256,7 @@
     margin-bottom: 72px;
 }
 
-/* On Frost, every surface is glass over the photo — without an
+/* On Frost, every surface is glass over the photo - without an
    explicit background the form's inputs blur into the wallpaper.
    Wrap the row in the same dark glass treatment used by tooltips so
    the inputs are legible. */
@@ -270,7 +270,7 @@
     -webkit-backdrop-filter: blur(10px) saturate(1.4);
 }
 
-/* Circular palette-themed save button — matches the SearchBar circular
+/* Circular palette-themed save button - matches the SearchBar circular
    button. Theme --dark surface, --light icon, theme-yellow ring on hover. */
 .quicklinksSettings-add-btn {
     width: 34px;
@@ -368,7 +368,7 @@
 
 .quicklinksSettings-dropdown {
     min-width: min(420px, 90vw);
-    /* Always genuinely dark — popover content inside (links, inputs, empty
+    /* Always genuinely dark - popover content inside (links, inputs, empty
        state) uses white text, so the surface needs to stay dark on every
        palette including the light ones (Pastel/Cream/Mint/Bloom/Mono).
        Don't tie this to theme --dark-rgb (which goes light on those). */
@@ -384,7 +384,7 @@
 /* Lift the QuickLinks widget itself above sibling widgets while its
    dropdown is rendered. Other widgets all live at z-index: 1000 in the
    parent stacking context, and z-index: 2001 on the dropdown alone
-   doesn't escape its own widget's stacking context — so without this
+   doesn't escape its own widget's stacking context - so without this
    rule the popover would stay visually behind any later-rendered
    widget. */
 .widget[data-widget-key="quicklinks"]:has(.quicklinksSettings-dropdown) {
@@ -409,6 +409,8 @@
     padding: 4px 4px 4px 8px;
     border-radius: var(--radius-md);
     transition: background 120ms ease;
+    /* Positioning context for the drop indicator below. */
+    position: relative;
 }
 
 .quicklinksSettings-item.draggable {
@@ -452,8 +454,23 @@
     opacity: 0.5;
 }
 
-.quicklinksSettings-item.drag-over {
-    box-shadow: inset 0 2px 0 0 #1976d2;
+/* Drop indicator. This was an inset box-shadow in a hardcoded Material
+   blue, which ignored the palette and, being inset, got clipped by the
+   tile's own rounding into a stubby bar sitting inside the row. A
+   floating insertion line reads as "the link lands here" instead of
+   "this tile has a border", and it matches the bookmarks panel, which
+   is the same reorder interaction. */
+.quicklinksSettings-item.drag-over::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    pointer-events: none;
 }
 
 .ql-favicon {
@@ -524,7 +541,7 @@
     /* Follows the palette's text colour (not hardcoded white) so the
        icons read on light palettes too. */
     color: var(--ql-text-muted, color-mix(in srgb, var(--light) 60%, transparent));
-    /* Hidden until the row is hovered / keyboard-focused — resting
+    /* Hidden until the row is hovered / keyboard-focused - resting
        rows show just favicon + link. */
     opacity: 0;
     transition: opacity 120ms ease;
@@ -563,7 +580,7 @@
    find without knowing a modifier key. */
 
 /* A regular grid tile, always visible and sized like every other
-   quicklink — not a floating corner button. Dashed border keeps it
+   quicklink - not a floating corner button. Dashed border keeps it
    readable as "empty slot / add here". */
 .ql-add-cell {
     display: flex;
@@ -742,7 +759,7 @@
 }
 
 
-/* List-mode "Add link" opener — same modal as the grid. Deliberately
+/* List-mode "Add link" opener - same modal as the grid. Deliberately
    quiet: a muted text row appended after the list, brightening on
    hover, instead of the previous full-width dashed billboard. */
 .ql-list-add {

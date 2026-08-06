@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "What's new",
-    "intro": "Updates ship fast — join the Discord to see what's new and chat with the community.",
+    "intro": "Updates ship fast - join the Discord to see what's new and chat with the community.",
     "joinButton": "Join the Discord",
     "openTooltip": "View recent changes",
     "openAria": "View changelog (current version v{{version}})"
@@ -64,11 +64,6 @@
       "rate": "Rate me",
       "rateAria": "Rate Ghiblify on the Chrome Web Store",
       "languageAria": "Choose language",
-      "dragMode": "Drag Mode",
-      "dragModeDone": "Done dragging",
-      "dragModeAria": "Enter drag mode (move widgets without holding Shift)",
-      "dragModeOnAria": "Exit drag mode",
-      "modeToggleAria": "Switch between Edit Widgets and Drag Mode",
       "editWidgets": "Edit Mode",
       "resetAllWidgets": "Reset All Widgets",
       "resetFilters": "Reset background settings",
@@ -99,17 +94,21 @@
       "contrast": "Contrast",
       "saturation": "Saturation",
       "parallax": "Parallax motion",
-      "parallaxTooltip": "Background photo gently shifts as you move the cursor — adds a subtle sense of depth, like the foreground floats in front of a slightly distant scene."
+      "parallaxTooltip": "Background photo gently shifts as you move the cursor - adds a subtle sense of depth, like the foreground floats in front of a slightly distant scene."
     },
     "filterUnits": {
       "px": "px",
       "percent": "%"
+    },
+    "edgePanel": {
+      "label": "Right panel",
+      "off": "Off"
     }
   },
   "rightDock": {
     "emptyTitle": "Right sidebar",
     "emptyHint": "Click the Settings button below to choose which widgets appear here. They can live in the right sidebar and on the canvas at the same time.",
-    "callout": "Right sidebar — hover the right edge to open",
+    "callout": "Right sidebar - hover the right edge to open",
     "settingsLabel": "Settings",
     "pickerLabel": "Choose widgets to show in the right sidebar",
     "showBackgroundsLabel": "Show backgrounds",
@@ -135,8 +134,7 @@
     },
     "tooltip": {
       "show": "Show {{name}} widget",
-      "hide": "Hide {{name}} widget",
-      "disabledBy": "Disable {{other}} first to enable {{this}}"
+      "hide": "Hide {{name}} widget"
     },
     "contextMenu": {
       "edit": "Edit {{name}}",
@@ -274,7 +272,8 @@
       "styleClear": "Clear",
       "styleWeather": "Weather",
       "highlightTune": "Adjust highlight",
-      "weatherLocationHint": "Your location is only used to fetch the local forecast — it never leaves this device except to the weather service."
+      "weatherLocationHint": "Your location is only used to fetch the local forecast - it never leaves this device except to the weather service.",
+      "guideResize": "Resize"
     },
     "gapps": {
       "menuAria": "Google apps",
@@ -314,7 +313,7 @@
     "imageAria": "Search by image",
     "imageTooltip": "Search by image",
     "removeHistoryAria": "Remove “{{query}}” from recent searches",
-    "voiceDenied": "Microphone access declined — click to try again"
+    "voiceDenied": "Microphone access declined - click to try again"
   },
   "quicklinks": {
     "trigger": "Links",
@@ -369,8 +368,8 @@
     "searchAria": "Search bookmarks",
     "loading": "Loading bookmarks…",
     "empty": "No bookmarks yet.",
-    "callout": "Bookmarks panel — hover the right edge to open",
-    "errorNoChrome": "This page isn't running as a Chrome extension — chrome.* APIs are unavailable. Open the new tab inside the installed extension (URL should start with chrome-extension://).",
+    "callout": "Bookmarks panel - hover the right edge to open",
+    "errorNoChrome": "This page isn't running as a Chrome extension - chrome.* APIs are unavailable. Open the new tab inside the installed extension (URL should start with chrome-extension://).",
     "errorNoBookmarks": "chrome.bookmarks is missing. Either the bookmarks permission isn't active, or the extension isn't fully installed. Try: chrome://extensions → remove Ghiblify → Load unpacked → select dist/.",
     "errorBookmarksApi": "Bookmarks error: {{message}}",
     "errorLoad": "Failed to load bookmarks: {{message}}",
@@ -489,7 +488,7 @@
     "enableLocation": "Use my location",
     "retry": "Try again",
     "today": "Today",
-    "locationOff": "No location set — use yours, or pick a city ☁️",
+    "locationOff": "No location set - use yours, or pick a city ☁️",
     "chooseCity": "Choose a city"
   },
   "socials": {
@@ -557,8 +556,8 @@
     }
   },
   "callouts": {
-    "shiftDrag": "Widgets are now draggable — click and drag to move",
-    "focusMode": "Press Esc to exit focus mode"
+    "focusMode": "Press Esc to exit focus mode",
+    "widgetDraggable": "{{name}} is draggable now - click and drag to move it"
   },
   "welcome": {
     "previousAria": "Previous slide",
@@ -576,42 +575,42 @@
       },
       "findGuide": {
         "title": "You can come back to this guide anytime",
-        "body1Pre": "Hover the left edge of the screen — or press ",
-        "body1Post": " — to open the sidebar. The Guide button at the top brings this tour right back. Look for the pulsing button there now.",
+        "body1Pre": "Hover the left edge of the screen - or press ",
+        "body1Post": " - to open the sidebar. The Guide button at the top brings this tour right back. Look for the pulsing button there now.",
         "hint": "The sidebar is open behind this dialog so you can see exactly where to find it later."
       },
       "widgets": {
         "title": "Pick your widgets",
         "body1": "Tap any icon to show or hide it on the page. Active widgets glow with the palette's accent color.",
-        "body2Pre": "These same toggles live in the sidebar — hover the left edge of the screen or press ",
+        "body2Pre": "These same toggles live in the sidebar - hover the left edge of the screen or press ",
         "body2Post": " to find them later.",
         "tryItNow": "Try it now!"
       },
       "palette": {
-        "title": "Choose a palette",
+        "title": "Adjust appearance",
         "body1": "Click a swatch to retint the entire UI. Light palettes flip text and surfaces dark; the Frost palette gives every widget a glass treatment.",
-        "hint": "You can switch palettes anytime from the sidebar's Appearance section."
+        "hint": "Palette, font and corners all live in the sidebar's Appearance section, so you can change them anytime.",
+        "body2": "The same section carries Font and Corners - pick the typeface for the whole page, and how rounded every surface should be. All three are expanded in the sidebar now."
       },
       "adjustTime": {
-        "title": "Customize widgets",
-        "body1": "Every widget has its own controls. The Time widget above is now in edit mode — flip between 12 / 24-hour, and drag the slider to size the clock.",
-        "body2Pre": "Two ways to edit any widget: right-click it, or hold ",
-        "body2Post": " (or Shift) and click the pencil that appears on hover."
+        "title": "Edit widgets",
+        "body1": "Every widget has its own controls. The Time widget above is now in edit mode - flip between 12 / 24-hour, and drag the slider to size the clock.",
+        "body2Pre": "Three ways to edit any widget: right-click it on the page, hold ",
+        "body2Post": " (or Shift) and click the pencil that appears on hover, or right-click the widget's icon in the left sidebar - that menu is open now."
       },
       "drag": {
         "title": "Move widgets around",
         "body1Pre": "Hold ",
         "body1Sep": " or ",
         "body1Post": " and click-drag the Time widget above to reposition it. Widgets snap to grid lines (left edge, center, right edge) so they stay tidy.",
-        "body2": "While a widget is in edit mode, a grab handle appears on its left edge — drag that to move it without holding any key.",
-        "hint": "The cursor turns into a grab hand while D or Shift is held or Drag Mode is on — that's your cue."
+        "body2": "While a widget is in edit mode you can also just drag the widget itself - no key needed.",
+        "hint": "The cursor turns into a grab hand while D or Shift is held - that's your cue."
       },
       "background": {
-        "title": "Curate the photos",
-        "body1": "Heart the current photo to add it to your favorites — favorites stay in the rotation no matter what. Trash it to never see it again.",
+        "title": "Select backgrounds",
+        "body1": "Heart the current photo to add it to your favorites - favorites stay in the rotation no matter what. Trash it to never see it again.",
         "body2": "Open Select Backgrounds to choose which films appear, or browse and heart any photo from any film.",
-        "open": "Select Backgrounds",
-        "hint": "Heart and trash buttons for the current photo live in the sidebar — pulsing now."
+        "hint": "The Select backgrounds button is pulsing in the sidebar - heart, trash and refresh sit beside it."
       },
       "shortcuts": {
         "title": "Keyboard shortcuts",
@@ -649,9 +648,9 @@
     "buttonLabel": "Settings",
     "buttonAria": "Open settings",
     "permissionsTitle": "Permissions",
-    "permissionsSub": "Ghiblify asks for nothing up front. Turn on only what you use — revoking takes effect immediately.",
+    "permissionsSub": "Ghiblify asks for nothing up front. Turn on only what you use - revoking takes effect immediately.",
     "permissionGeolocation": "Location permissions",
-    "permissionGeolocationSub": "Approximate (city-level) location from your network connection — used only to fetch the local forecast. No GPS, no location permission.",
+    "permissionGeolocationSub": "Approximate (city-level) location from your network connection - used only to fetch the local forecast. No GPS, no location permission.",
     "permissionBookmarks": "Bookmarks",
     "permissionBookmarksSub": "Lets the bookmarks panel read and organise your Chrome bookmarks.",
     "storageTitle": "Stored data",
@@ -660,7 +659,7 @@
     "deleteKey": "Delete",
     "deleteKeyAria": "Delete {{key}}",
     "resetTitle": "Reset everything",
-    "resetSub": "Deletes every saved setting — widgets, backgrounds, names, todos, the lot — and reloads the page.",
+    "resetSub": "Deletes every saved setting - widgets, backgrounds, names, todos, the lot - and reloads the page.",
     "resetButton": "Reset everything",
     "resetConfirm": "This can't be undone.",
     "resetConfirmYes": "Yes, reset",

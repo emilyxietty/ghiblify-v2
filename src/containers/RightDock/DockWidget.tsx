@@ -1,5 +1,5 @@
 /**
- * DockWidget — lightweight wrapper for a widget rendered inside the
+ * DockWidget - lightweight wrapper for a widget rendered inside the
  * RightDock. Skips the canvas-only mechanics that `<Widget>` carries
  * (free positioning, drag-to-position, resize handles, focus-mode
  * portal) since the dock controls layout itself: widgets stack
@@ -54,7 +54,6 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
     setWidgetDockWidth,
     setWidgetShowBackground,
     reorderDockedWidgets,
-    setDragMode,
     appearance,
   } = useAppContext();
   const [contextMenuPos, setContextMenuPos] = useState<
@@ -63,7 +62,7 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
   const [dragging, setDragging] = useState(false);
   const [dropSide, setDropSide] = useState<"before" | "after" | null>(null);
 
-  // Merged view of widget settings used by the dock context menu —
+  // Merged view of widget settings used by the dock context menu -
   // each entry's `settings` is canvas + dockSettings overrides, so
   // radios and checkboxes reflect what's actually rendered in the
   // dock (not the canvas state). Writes go through
@@ -85,7 +84,7 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
 
   if (!visible) return null;
 
-  // Half-width widgets share a row with another half — the dock body
+  // Half-width widgets share a row with another half - the dock body
   // is a 2-column grid; full widgets span both columns. Some widgets
   // are locked to a specific size regardless of stored preference
   // (matches the gating in buildContextMenuItems → mode === "dock").
@@ -101,7 +100,7 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
       : widgets[storageKey].dockWidth;
   const showBg = widgets[storageKey].showBackground;
 
-  // Build the current ordered list of docked keys — the helper used
+  // Build the current ordered list of docked keys - the helper used
   // by drop handlers to compute the new sequence.
   const orderedDockedKeys = (): WidgetKey[] =>
     (WIDGET_KEYS as readonly WidgetKey[])
@@ -128,7 +127,7 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
       }}
       onDragOver={(e) => {
         // The dataTransfer types check ensures we only react to our
-        // own dock drags — text selections etc. are ignored. Note:
+        // own dock drags - text selections etc. are ignored. Note:
         // dataTransfer is read-only during dragover, so we check
         // .types (a frozen DOMStringList) rather than getData.
         if (!e.dataTransfer.types.includes(DOCK_DRAG_MIME)) return;
@@ -185,7 +184,6 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
             setWidgetInRightSidebar,
             setWidgetDockWidth,
             setWidgetShowBackground,
-            setDragMode,
             isFrost: appearance.theme === "frost",
             mode: "dock",
           })}

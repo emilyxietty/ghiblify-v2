@@ -73,7 +73,7 @@ export type ThemeName = (typeof THEME_NAMES)[number];
 /** Palettes whose `--dark` surface is actually a soft/light tone, with
  *  `--light` set to a dark text color. Determines which mode flag the
  *  app applies to <html> so widget surfaces can pick contrast-safe
- *  text + accents (CSS only — no new vars needed at the call site). */
+ *  text + accents (CSS only - no new vars needed at the call site). */
 export const LIGHT_MODE_THEMES: ReadonlySet<ThemeName> = new Set<ThemeName>([
   "butter",
   "mint",
@@ -99,11 +99,11 @@ const LEGACY_THEME_RENAMES: Record<string, ThemeName> = {
 // Available cursor presets. "default" leaves the OS cursor untouched
 // and shows nothing extra. The others render a sprite, trail, or
 // soft colour halo BESIDE the OS cursor (we never replace the
-// cursor itself — see CursorEffect.tsx).
+// cursor itself - see CursorEffect.tsx).
 //
-//   companion  — single sprite that eases toward the cursor
-//   trail      — particles emit + drift behind the cursor
-//   glow       — soft colour halo follows the cursor
+//   companion  - single sprite that eases toward the cursor
+//   trail      - particles emit + drift behind the cursor
+//   glow       - soft colour halo follows the cursor
 export const CURSOR_NAMES = [
   "default",
   "soot",
@@ -119,7 +119,7 @@ export const CURSOR_NAMES = [
 export type CursorName = (typeof CURSOR_NAMES)[number];
 
 // Bundled cute fonts (see public/assets/fonts/ + @font-face rules in
-// App.css). "default" means the system stack — no font file loaded.
+// App.css). "default" means the system stack - no font file loaded.
 // Adding a new font: drop a woff2 in /public/assets/fonts/, add its
 // @font-face + html.font-<key> override in App.css, and append the
 // key here. The picker auto-renders.
@@ -144,7 +144,7 @@ export interface AppearanceSettings {
   /** When true (default), widget size settings (width / height /
    *  fontSize / size) are interpreted as "px at a 1920px-wide
    *  reference viewport" and scaled to the current viewport on
-   *  render — so a widget looks proportionally the same on a 27"
+   *  render - so a widget looks proportionally the same on a 27"
    *  monitor and a 13" laptop. When false, the stored pixel
    *  numbers are used as-is. Toggled from the LeftSidebar's
    *  "Widget Settings" modal. Default ON preserves prior behavior. */
@@ -189,7 +189,7 @@ export type WidgetEntry<K extends WidgetKey> = {
    *  in neither. Only takes effect while the `rightSidebar` widget
    *  is enabled. */
   inRightSidebar: boolean;
-  /** How wide this widget renders inside the dock — either the full
+  /** How wide this widget renders inside the dock - either the full
    *  column or half (so two widgets share a row). Only meaningful
    *  for widgets the picker / context-menu opts in (Weather, Time,
    *  Date, Avatar, Notes). Other dock widgets always span full. */
@@ -198,7 +198,7 @@ export type WidgetEntry<K extends WidgetKey> = {
    *  by default for "naked" widgets (Time, Date, Greeting, Info,
    *  Avatar). Widgets that already have their own card (Weather,
    *  Pomodoro, Todo, Notes) ignore this field; their built-in card
-   *  is the surface. Dock-only — the canvas instance ignores it. */
+   *  is the surface. Dock-only - the canvas instance ignores it. */
   showBackground: boolean;
   /** Position of this widget within the right dock's vertical
    *  stack. Lower values render first. Defaults to a per-widget
@@ -211,12 +211,25 @@ export type WidgetEntry<K extends WidgetKey> = {
   /** Overrides applied on top of `settings` when this widget renders
    *  inside the right dock. Lets the user keep e.g. a different
    *  weather unit / forecast layout in the dock vs the canvas
-   *  without forking the widget logic. Empty by default — when
+   *  without forking the widget logic. Empty by default - when
    *  empty, the dock instance reads canvas settings unchanged. */
   dockSettings: Partial<WidgetSettingsMap[K]>;
 };
 
 export type WidgetsState = { [K in WidgetKey]: WidgetEntry<K> };
+
+/** Guide spotlight targets. "welcome" is the odd one out: it means the
+ *  guide is running but the sidebar should stay SHUT - the opening
+ *  slide is a landing screen, and a sidebar sliding in behind it just
+ *  competes for attention. Every other value opens the sidebar and
+ *  pulses the named region. */
+export type SidebarSpotlight =
+  | "welcome"
+  | "guide"
+  | "widgets"
+  | "palette"
+  | "background"
+  | null;
 
 interface AppContextType {
   // global UI
@@ -224,14 +237,6 @@ interface AppContextType {
   setIsDragging: (b: boolean) => void;
   showWidgetEdits: boolean;
   toggleEditMode: () => void;
-  /** Drag Mode lets the user reposition any widget by left-click +
-   *  drag — no Shift required. Toggled from the sidebar's "Drag Mode"
-   *  button or any widget's right-click "Drag widget" item. Stays on
-   *  until "Done" is clicked. Independent of edit mode (the two
-   *  modes are visual-cue siblings; either can be on alone). */
-  dragMode: boolean;
-  setDragMode: (b: boolean) => void;
-  toggleDragMode: () => void;
   showGuide: boolean;
   setShowGuide: (b: boolean) => void;
   /** Drives a "spotlight" tour effect on the LeftSidebar: when set,
@@ -239,8 +244,8 @@ interface AppContextType {
    *  CSS pulse animation highlights the relevant region (the Guide
    *  button, the widget toggle grid, etc.). Welcome modal slides set
    *  this; null clears it. */
-  sidebarSpotlight: "guide" | "widgets" | "palette" | "background" | null;
-  setSidebarSpotlight: (s: "guide" | "widgets" | "palette" | "background" | null) => void;
+  sidebarSpotlight: SidebarSpotlight;
+  setSidebarSpotlight: (s: SidebarSpotlight) => void;
   /** When non-null, only this single widget shows its EditWidget overlay
    *  (triggered by the Shift+pencil affordance on a single widget).
    *  showWidgetEdits is the global "edit all widgets" mode and is
@@ -257,7 +262,7 @@ interface AppContextType {
   backgroundParallax: boolean;
   setBackgroundParallax: (on: boolean) => void;
   /** Global toggle for the optional glass card behind naked dock
-   *  widgets. Off by default — user opts in from the dock footer. */
+   *  widgets. Off by default - user opts in from the dock footer. */
   dockShowBackgrounds: boolean;
   setDockShowBackgrounds: (on: boolean) => void;
   backgroundSelection: Record<string, boolean>;
@@ -272,8 +277,8 @@ interface AppContextType {
   appearance: AppearanceSettings;
   updateAppearance: (patch: Partial<AppearanceSettings>) => void;
 
-  // widgets — single source of truth
-  /** Widget state as the app should *render* it — the committed
+  // widgets - single source of truth
+  /** Widget state as the app should *render* it - the committed
    *  settings with any live hover preview merged on top. */
   widgets: WidgetsState;
   /** Widget state as it is actually saved. Menus and settings UI read
@@ -292,7 +297,7 @@ interface AppContextType {
     patch: Partial<WidgetSettingsMap[K]>
   ) => void;
   /** Patch the dock-only override layer for a widget. Has no effect
-   *  on the canvas instance — the canvas reads `settings`. */
+   *  on the canvas instance - the canvas reads `settings`. */
   updateWidgetDockSettings: <K extends WidgetKey>(
     key: K,
     patch: Partial<WidgetSettingsMap[K]>
@@ -325,7 +330,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Widgets that default to hidden — keeps the first-load page calm and
+// Widgets that default to hidden - keeps the first-load page calm and
 // uncluttered. Users opt them in via the sidebar toggles.
 const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "searchbar",
@@ -382,7 +387,7 @@ const persistWidgets = (state: WidgetsState) => {
     const entry = state[key];
     const out: Record<string, unknown> = {};
     // Compare visible against the widget's actual default (most default to
-    // true, but bookmarks defaults to false — so toggling it on differs
+    // true, but bookmarks defaults to false - so toggling it on differs
     // from default and MUST be persisted).
     const defaultVisible = !HIDDEN_BY_DEFAULT.has(key);
     if (entry.visible !== defaultVisible) out.visible = entry.visible;
@@ -542,7 +547,7 @@ const loadInitialWidgets = (): WidgetsState => {
 
   // One-time pull from the previous (jQuery) Ghiblify extension's
   // `localStorage.quickLinks` (HTML strings). Always attempted, even
-  // when the modern blob exists — the legacy entry is only present
+  // when the modern blob exists - the legacy entry is only present
   // for users coming from the v1 extension. Cleared after read so
   // it's idempotent.
   const legacyQL = readLegacyQuickLinks();
@@ -551,7 +556,7 @@ const loadInitialWidgets = (): WidgetsState => {
     clearLegacyQuickLinks();
   }
 
-  // Modern blob — apply diffs onto defaults. Done after the legacy
+  // Modern blob - apply diffs onto defaults. Done after the legacy
   // pull so a user with both legacy AND modern data keeps their
   // modern set (legacy is treated as a seed for first-run only).
   const blob = readPersisted<Record<string, any> | null>(STORAGE_KEY, null);
@@ -612,14 +617,14 @@ const loadInitialWidgets = (): WidgetsState => {
     }
     return defaults;
   } else {
-    // Fresh install (no stored blob yet) — defaults are already
+    // Fresh install (no stored blob yet) - defaults are already
     // authored at the 1920 reference baseline, so mark the schema
     // as migrated so the migration block above never runs for new
     // users.
     writePersisted(SCHEMA_VERSION_KEY, 2);
   }
 
-  // No modern blob — migrate from legacy (no-op if no legacy keys exist)
+  // No modern blob - migrate from legacy (no-op if no legacy keys exist)
   const migrated = migrateLegacy(defaults);
   persistWidgets(migrated);
   clearLegacyKeys();
@@ -631,12 +636,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [showWidgetEdits, setShowWidgetEdits] = useState(false);
-  const [dragMode, setDragMode] = useState(false);
   // Open the guide automatically the first time a user ever opens this
   // extension, then flip a localStorage flag so it stays closed thereafter.
-  const [sidebarSpotlight, setSidebarSpotlight] = useState<
-    "guide" | "widgets" | "palette" | "background" | null
-  >(null);
+  const [sidebarSpotlight, setSidebarSpotlight] =
+    useState<SidebarSpotlight>(null);
   const [currentBackground, setCurrentBackground] = useState<string>("");
   const [showGuide, setShowGuide] = useState(
     () => readPersisted<boolean>("ghiblify_guide_seen", false) !== true
@@ -662,7 +665,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   // reads as a cohesive card stack (matches Apple's Notification
   // Center widget look); user can toggle off from the dock footer
   // for a transparent / photo-blended look. Notes / Weather / Todo
-  // keep their own surfaces — Weather force-flips its showCard to
+  // keep their own surfaces - Weather force-flips its showCard to
   // match this toggle, so the whole dock visually agrees.
   const [dockShowBackgrounds, setDockShowBackgroundsState] =
     useState<boolean>(
@@ -705,14 +708,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       "palette-dark",
       !LIGHT_MODE_THEMES.has(appearance.theme)
     );
-    // Corner style — html.corners-<key> reassigns --radius-unit, which
+    // Corner style - html.corners-<key> reassigns --radius-unit, which
     // the whole --radius-* scale derives from. "rounded" is the base
     // scale, so it needs no class.
     CORNER_STYLES.forEach((c) => root.classList.remove(`corners-${c}`));
     if ((appearance.corners ?? "rounded") !== "rounded") {
       root.classList.add(`corners-${appearance.corners}`);
     }
-    // Font class — "default" means the system stack so no class is
+    // Font class - "default" means the system stack so no class is
     // applied; otherwise html.font-<key> sets --app-font via App.css.
     FONT_NAMES.forEach((f) => root.classList.remove(`font-${f}`));
     if (appearance.font !== "default") {
@@ -728,7 +731,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
   const [widgets, setWidgets] = useState<WidgetsState>(loadInitialWidgets);
 
-  // Live hover preview. Kept out of `widgets` entirely — it must never
+  // Live hover preview. Kept out of `widgets` entirely - it must never
   // be persisted, and menus need to keep seeing the committed value to
   // render their selection marks correctly.
   const [settingsPreview, setSettingsPreview] = useState<{
@@ -752,7 +755,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     } as WidgetsState;
   }, [widgets, settingsPreview]);
 
-  // Debounced persist — coalesces high-frequency state changes
+  // Debounced persist - coalesces high-frequency state changes
   // (resize-drag fires on every mousemove → updateWidgetSettings →
   // setWidgets, which without this debounce would write the whole
   // blob to localStorage + chrome.storage on every pixel of a
@@ -803,24 +806,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // The legacy global edit state remains for guided-tour compatibility.
-  // Normal editing is per-widget and can coexist with drag mode.
+  // Normal editing is per-widget.
   const toggleEditMode = () => {
     setShowWidgetEdits((prev) => {
-      const next = !prev;
-      if (next) setDragMode(false);
       setIsDragging(false);
-      return next;
+      return !prev;
     });
   };
-
-  const setDragModeExclusive = (b: boolean) => {
-    setDragMode(b);
-    if (b) {
-      setShowWidgetEdits(false);
-    }
-  };
-
-  const toggleDragMode = () => setDragModeExclusive(!dragMode);
 
   const setEditingWidgetKeyExclusive = (k: WidgetKey | null) => {
     setEditingWidgetKey(k);
@@ -860,7 +852,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
-  // Cross-device sync — when chrome.storage.sync delivers a remote
+  // Cross-device sync - when chrome.storage.sync delivers a remote
   // appearance update from a sibling Chrome install, mirror it into
   // local React state without bouncing back through writePersisted
   // (the mirror has already been updated by the hybrid layer).
@@ -970,7 +962,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       return;
     setWidgets((prev) => {
       const next = buildDefaultWidgets();
-      // Preserve user-created content — links and the greeting name
+      // Preserve user-created content - links and the greeting name
       // are user data, not config. Resetting positions/sizes
       // shouldn't make the user retype their name or rebuild their
       // bookmark grid.
@@ -987,9 +979,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setIsDragging,
         showWidgetEdits,
         toggleEditMode,
-        dragMode,
-        setDragMode: setDragModeExclusive,
-        toggleDragMode,
         showGuide,
         setShowGuide,
         sidebarSpotlight,

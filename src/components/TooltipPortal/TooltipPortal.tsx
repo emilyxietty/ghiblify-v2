@@ -12,7 +12,7 @@ interface TooltipState {
 /**
  * Mount once at the app root. Listens for hover/focus on any element with
  * a `data-tooltip="..."` attribute and renders the tooltip via a portal
- * attached to document.body — so the tooltip can never be clipped by an
+ * attached to document.body - so the tooltip can never be clipped by an
  * ancestor `overflow: hidden/auto` container (which is the limitation of
  * the older `[data-tooltip]::after`/`::before` pseudo-element approach).
  */
@@ -31,7 +31,7 @@ export const TooltipPortal: React.FC = () => {
       // of the viewport so the tooltip stays on-screen.
       const placement = rect.bottom > window.innerHeight - 80 ? "top" : "bottom";
       // x is the trigger center. The render-time effect below
-      // measures the tooltip's ACTUAL width and clamps if needed —
+      // measures the tooltip's ACTUAL width and clamps if needed -
       // doing it here with the CSS max-width over-clamps short
       // tooltips (e.g. "Default") so they end up shifted far from
       // their trigger.
@@ -96,7 +96,7 @@ export const TooltipPortal: React.FC = () => {
 
     // Hide the tooltip if its trigger element is removed from the DOM
     // mid-hover (e.g. the user clicks a button that unmounts the widget
-    // it sits on — no mouseout fires because the element disappears
+    // it sits on - no mouseout fires because the element disappears
     // rather than the cursor leaving it). Without this the tooltip
     // would orphan and stay on screen until the next pointer move.
     //

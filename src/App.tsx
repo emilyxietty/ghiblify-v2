@@ -1,9 +1,8 @@
-import React, { lazy, Suspense, useEffect } from "react";
-import { OpenWithIcon } from "./components/Icons/Icons";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { HelpOutlineIcon } from "./components/Icons/Icons";
 import "./App.css";
 import { Button } from "./components/Button/Button";
-// Lazy — fetched only on first guide open. Saves it from the initial
+// Lazy - fetched only on first guide open. Saves it from the initial
 // newtab paint chunk.
 const WelcomeModal = lazy(() => import("./components/WelcomeModal/WelcomeModal"));
 import { Background } from "./containers/Background/Background";
@@ -17,7 +16,7 @@ import CursorEffect from "./components/CursorEffect/CursorEffect";
 import { Avatar } from "./containers/Widgets/Avatar/Avatar";
 import { DateDisplay } from "./containers/Widgets/Date/Date";
 import { Greeting } from "./containers/Widgets/Greeting/Greeting";
-// Notes is a lightweight paper shell (static import — paints instantly);
+// Notes is a lightweight paper shell (static import - paints instantly);
 // it lazy-loads its own Lexical editor chunk internally, so users who
 // never enable Notes still don't download Lexical (the shell's dynamic
 // import() only fires when the widget actually mounts).
@@ -75,22 +74,8 @@ const AppContent: React.FC = () => {
     editingWidgetKey,
     setEditingWidgetKey,
     setCurrentBackground,
-    dragMode,
-    setDragMode,
     dockShowBackgrounds,
   } = useAppContext();
-
-  // While Drag Mode is on, mark the body so widgets get the same
-  // visual cues they get on Shift (outline, grab cursor, quick-edit
-  // pencils visible). Distinct from `.show-widget-outline` (which is
-  // the transient Shift-held state) so the keyup handler in Widget.tsx
-  // doesn't tear it off when Shift is released.
-  useEffect(() => {
-    if (dragMode) {
-      document.body.classList.add("drag-mode-on");
-      return () => document.body.classList.remove("drag-mode-on");
-    }
-  }, [dragMode]);
 
   // Mirror the global "show dock backgrounds" toggle onto the body
   // so DockWidget.css can scope the optional glass-card rule
@@ -103,33 +88,21 @@ const AppContent: React.FC = () => {
     }
   }, [dockShowBackgrounds]);
 
-  // Exit Drag Mode on outside click / Esc / Enter — same dismissal
-  // model as global Edit Mode. Clicks on widgets, the sidebar, the
-  // top edit-toggle bar (where the Drag Mode toggle lives), the
-  // right-click ContextMenu, and modals don't count as "outside" so
-  // the user can interact with all of those without losing drag mode.
+  // Transient "you can drag this now" toast, fired when a widget
+  // enters edit mode. Entering edit mode makes the whole widget the
+  // drag surface, which is invisible otherwise - the outline says
+  // "selected", not "movable". Keyed on the widget so re-entering on a
+  // different widget re-announces it.
+  const [dragHint, setDragHint] = useState<string | null>(null);
   useEffect(() => {
-    if (!dragMode) return;
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target.closest(
-          ".widget, .left-sidebar, .edit-toggle-button, .ctx-menu, [role='dialog']"
-        )
-      )
-        return;
-      setDragMode(false);
-    };
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "Enter") setDragMode(false);
-    };
-    document.addEventListener("click", handleClick);
-    document.addEventListener("keydown", handleKey);
+    if (!editingWidgetKey) return;
+    setDragHint(t("widgets.names." + editingWidgetKey));
+    const id = window.setTimeout(() => setDragHint(null), 3200);
     return () => {
-      document.removeEventListener("click", handleClick);
-      document.removeEventListener("keydown", handleKey);
+      window.clearTimeout(id);
+      setDragHint(null);
     };
-  }, [dragMode, setDragMode]);
+  }, [editingWidgetKey, t]);
 
   // Mirror the resolved background URL into context so consumers
   // outside the App tree (e.g. the LeftSidebar's delete-background
@@ -181,6 +154,19 @@ const AppContent: React.FC = () => {
           {t("common.offlineCallout")}
         </div>
       )}
+      {dragHint && (
+        <div
+          /* Same chrome as the offline toast; keyed so re-entering edit
+             mode on another widget restarts the animation instead of
+             leaving a stale pill on screen. */
+          key={dragHint}
+          className="offline-callout drag-hint-callout"
+          role="status"
+          aria-live="polite"
+        >
+          {t("callouts.widgetDraggable", { name: dragHint })}
+        </div>
+      )}
       <LeftSidebar />
       <RightSidebar visible={widgets.bookmarks.visible} />
       {(() => {
@@ -191,7 +177,7 @@ const AppContent: React.FC = () => {
         // RightDock is always mounted (gated internally on `visible`)
         // so it can detect the off→on transition and fire its hint
         // callout, the same way the bookmarks RightSidebar does.
-        // Excludes greeting, quicklinks, searchbar, and pomodoro —
+        // Excludes greeting, quicklinks, searchbar, and pomodoro -
         // their canvas-tuned layouts don't compress cleanly into the
         // dock column, so they're canvas-only by design.
         const dockEntries: Array<{
@@ -229,7 +215,7 @@ const AppContent: React.FC = () => {
           // Render in user-defined order. dockOrder is an integer
           // assigned by `reorderDockedWidgets` after a drag, or the
           // canonical WIDGET_KEYS index when the user hasn't dragged
-          // yet — both produce a stable sort.
+          // yet - both produce a stable sort.
           .sort(
             (a, b) =>
               widgets[a.key].dockOrder - widgets[b.key].dockOrder,
@@ -247,7 +233,7 @@ const AppContent: React.FC = () => {
           </RightDock>
         );
       })()}
-      {(showWidgetEdits || editingWidgetKey || dragMode) && (
+      {(showWidgetEdits || editingWidgetKey) && (
         <div className="edit-toggle-button">
           <Button
             variant="outline-light"
@@ -261,34 +247,11 @@ const AppContent: React.FC = () => {
             <HelpOutlineIcon style={{ fontSize: 14 }} />
             {t("common.guide")}
           </Button>
-          {/* Drag Mode is hidden while a widget is being edited — the
-              two modes fight over the same gestures, and the bar
-              reads cleaner with just Guide + Done during edits. */}
-          {!editingWidgetKey && !showWidgetEdits && (
-            <Button
-              variant={dragMode ? "dark" : "outline-light"}
-              size="small"
-              pill
-              aria-pressed={dragMode}
-              onClick={() => setDragMode(!dragMode)}
-              data-tooltip={t(
-                dragMode
-                  ? "sidebar.buttons.dragModeOnAria"
-                  : "sidebar.buttons.dragModeAria"
-              )}
-            >
-              <OpenWithIcon style={{ fontSize: 14 }} />
-              {t("sidebar.buttons.dragMode")}
-            </Button>
-          )}
           <Button
             variant="outline-light"
             size="small"
             pill
-            onClick={() => {
-              if (editingWidgetKey) setEditingWidgetKey(null);
-              if (dragMode) setDragMode(false);
-            }}
+            onClick={() => setEditingWidgetKey(null)}
           >
             {t("common.done")}
           </Button>
@@ -300,7 +263,7 @@ const AppContent: React.FC = () => {
         </Suspense>
       )}
       <TooltipPortal />
-      {/* Cursor whimsy — companion sprite or particle trail beside
+      {/* Cursor whimsy - companion sprite or particle trail beside
           the OS cursor. Reads appearance.cursor; null when the
           preset is "default". */}
       <CursorEffect />

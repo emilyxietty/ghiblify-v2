@@ -15,7 +15,7 @@
   },
   "changelog": {
     "title": "Novidades",
-    "intro": "As atualizações chegam rápido — entre no Discord para ver as novidades e conversar com a comunidade.",
+    "intro": "As atualizações chegam rápido - entre no Discord para ver as novidades e conversar com a comunidade.",
     "joinButton": "Entrar no Discord",
     "openTooltip": "Ver mudanças recentes",
     "openAria": "Ver registro de mudanças (versão atual v{{version}})"
@@ -59,11 +59,6 @@
       "rate": "Avaliar",
       "rateAria": "Avaliar Ghiblify na Chrome Web Store",
       "languageAria": "Escolher idioma",
-      "dragMode": "Modo arrastar",
-      "dragModeDone": "Concluído",
-      "dragModeAria": "Ativar modo arrastar",
-      "dragModeOnAria": "Sair do modo arrastar",
-      "modeToggleAria": "Alternar entre Editar e Arrastar",
       "editWidgets": "Modo edição",
       "resetAllWidgets": "Restaurar widgets",
       "resetFilters": "Restaurar ajustes de fundo",
@@ -94,13 +89,17 @@
       "contrast": "Contraste",
       "saturation": "Saturação",
       "parallax": "Efeito parallax",
-      "parallaxTooltip": "A foto de fundo se desloca suavemente ao mover o cursor, criando uma sensação de profundidade — como se o primeiro plano flutuasse à frente de uma cena um pouco mais distante."
+      "parallaxTooltip": "A foto de fundo se desloca suavemente ao mover o cursor, criando uma sensação de profundidade - como se o primeiro plano flutuasse à frente de uma cena um pouco mais distante."
+    },
+    "edgePanel": {
+      "label": "Painel direito",
+      "off": "Desligado"
     }
   },
   "rightDock": {
     "emptyTitle": "Barra lateral direita",
     "emptyHint": "Clique no botão Configurações abaixo para escolher quais widgets aparecem aqui. Eles podem aparecer na barra lateral e no canvas ao mesmo tempo.",
-    "callout": "Barra lateral direita — passe o cursor pela borda direita para abrir",
+    "callout": "Barra lateral direita - passe o cursor pela borda direita para abrir",
     "settingsLabel": "Configurações",
     "pickerLabel": "Escolha os widgets a mostrar na barra lateral direita",
     "showBackgroundsLabel": "Mostrar fundos",
@@ -125,8 +124,7 @@
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
-      "hide": "Ocultar widget {{name}}",
-      "disabledBy": "Desative {{other}} primeiro para ativar {{this}}"
+      "hide": "Ocultar widget {{name}}"
     },
     "contextMenu": {
       "edit": "Editar {{name}}",
@@ -262,7 +260,8 @@
       "styleClear": "Transparente",
       "styleWeather": "Clima",
       "highlightTune": "Ajustar destaque",
-      "weatherLocationHint": "Sua localização é usada apenas para obter a previsão local — só sai deste dispositivo para o serviço de meteorologia."
+      "weatherLocationHint": "Sua localização é usada apenas para obter a previsão local - só sai deste dispositivo para o serviço de meteorologia.",
+      "guideResize": "Redimensionar"
     },
     "gapps": {
       "menuAria": "Apps do Google",
@@ -302,7 +301,7 @@
     "imageAria": "Pesquisar por imagem",
     "imageTooltip": "Pesquisar por imagem",
     "removeHistoryAria": "Remover “{{query}}” das buscas recentes",
-    "voiceDenied": "Acesso ao microfone negado — clique para tentar novamente"
+    "voiceDenied": "Acesso ao microfone negado - clique para tentar novamente"
   },
   "quicklinks": {
     "ariaDialog": "Links rápidos",
@@ -354,7 +353,7 @@
     "searchAria": "Buscar nos favoritos",
     "loading": "Carregando…",
     "empty": "Nenhum favorito ainda.",
-    "callout": "Painel de favoritos — passe o cursor pela borda direita",
+    "callout": "Painel de favoritos - passe o cursor pela borda direita",
     "errorNoChrome": "Esta página não é executada como extensão do Chrome. Abra a nova aba dentro da extensão instalada.",
     "errorNoBookmarks": "chrome.bookmarks indisponível. Verifique a permissão ou reinstale a extensão.",
     "errorBookmarksApi": "Erro de favoritos: {{message}}",
@@ -473,7 +472,7 @@
     "enableLocation": "Usar minha localização",
     "retry": "Tentar novamente",
     "today": "Hoje",
-    "locationOff": "Sem localização — use a sua ou escolha uma cidade ☁️",
+    "locationOff": "Sem localização - use a sua ou escolha uma cidade ☁️",
     "chooseCity": "Escolher cidade"
   },
   "socials": {
@@ -541,8 +540,8 @@
     }
   },
   "callouts": {
-    "shiftDrag": "Os widgets agora podem ser arrastados — clique e arraste para mover",
-    "focusMode": "Esc para sair do modo concentração"
+    "focusMode": "Esc para sair do modo concentração",
+    "widgetDraggable": "{{name}} agora pode ser arrastado - clique e arraste para mover"
   },
   "welcome": {
     "previousAria": "Slide anterior",
@@ -560,42 +559,42 @@
       },
       "findGuide": {
         "title": "Você pode voltar a este guia a qualquer momento",
-        "body1Pre": "Passe o cursor pela borda esquerda da tela — ou pressione ",
-        "body1Post": " — para abrir a barra lateral. O botão Guia no topo reabre este tour. Procure-o piscando agora.",
+        "body1Pre": "Passe o cursor pela borda esquerda da tela - ou pressione ",
+        "body1Post": " - para abrir a barra lateral. O botão Guia no topo reabre este tour. Procure-o piscando agora.",
         "hint": "A barra lateral está aberta atrás deste diálogo para você ver onde encontrá-la depois."
       },
       "widgets": {
         "title": "Escolha seus widgets",
         "body1": "Toque em qualquer ícone para mostrá-lo ou ocultá-lo. Os widgets ativos brilham com a cor de destaque da paleta.",
-        "body2Pre": "Estes mesmos botões ficam na barra lateral — passe o cursor pela borda esquerda ou pressione ",
+        "body2Pre": "Estes mesmos botões ficam na barra lateral - passe o cursor pela borda esquerda ou pressione ",
         "body2Post": " para encontrá-los depois.",
         "tryItNow": "Experimente agora!"
       },
       "palette": {
-        "title": "Escolha uma paleta",
-        "body1": "Clique em uma amostra para repintar toda a UI. Paletas claras invertem texto e superfícies; a paleta Gelo dá um acabamento de vidro.",
-        "hint": "Você pode trocar de paleta a qualquer momento na seção Aparência."
+        "title": "Ajuste a aparência",
+        "body1": "Clique em uma amostra para recolorir toda a interface. Paletas claras invertem texto e superfícies; a paleta Frost dá a cada widget um acabamento de vidro.",
+        "hint": "Paleta, fonte e cantos ficam na seção Aparência da barra lateral, então você pode mudá-los quando quiser.",
+        "body2": "A mesma seção traz Fonte e Cantos - escolha a tipografia de toda a página e o quanto cada superfície é arredondada. As três estão abertas na barra lateral."
       },
       "adjustTime": {
-        "title": "Personalize widgets",
-        "body1": "Cada widget tem seus próprios controles. O widget de Hora acima está em modo edição — alterne 12/24 h e arraste o controle deslizante para o tamanho.",
-        "body2Pre": "Duas formas de editar qualquer widget: clique com o botão direito nele, ou segure ",
-        "body2Post": " (ou Shift) e clique no lápis que aparece ao passar o cursor."
+        "title": "Editar widgets",
+        "body1": "Cada widget tem seus próprios controles. O widget de Hora acima está em modo edição - alterne 12/24 h e arraste o controle deslizante para o tamanho.",
+        "body2Pre": "Três formas de editar qualquer widget: clique com o botão direito nele, segure ",
+        "body2Post": " (ou Shift) e clique no lápis que aparece, ou clique com o botão direito no ícone dele na barra lateral - esse menu está aberto agora."
       },
       "drag": {
         "title": "Mova os widgets",
         "body1Pre": "Mantenha ",
         "body1Post": " e arraste o widget de Hora para reposicioná-lo. Os widgets se ajustam à grade.",
-        "body2": "Quando um widget está em modo de edição, aparece uma alça na borda esquerda — arraste-a para movê-lo sem segurar nenhuma tecla.",
-        "hint": "O cursor se transforma em uma mão de arrastar enquanto você mantém D ou Shift, ou quando o modo de arrastar está ativo — esse é o sinal.",
+        "body2": "Quando um widget está em modo de edição, você também pode simplesmente arrastá-lo - sem tecla nenhuma.",
+        "hint": "O cursor vira uma mãozinha enquanto você segura D ou Shift - esse é o sinal.",
         "body1Sep": " ou "
       },
       "background": {
-        "title": "Cure as fotos",
+        "title": "Escolher planos de fundo",
         "body1": "Favorite a foto atual para mantê-la na rotação. A lixeira a remove para sempre.",
         "body2": "Abra Selecionar planos de fundo para escolher quais filmes aparecem, ou favorite qualquer foto.",
-        "open": "Selecionar planos de fundo",
-        "hint": "Os botões de favoritar e lixeira estão na barra lateral — piscando agora."
+        "hint": "O botão Escolher planos de fundo está pulsando na barra lateral - coração, lixeira e atualizar ficam ao lado."
       },
       "shortcuts": {
         "title": "Atalhos de teclado",
@@ -635,7 +634,7 @@
     "permissionsTitle": "Permissões",
     "permissionsSub": "O Ghiblify não pede nada de início. Ative apenas o que usar; revogar tem efeito imediato.",
     "permissionGeolocation": "Permissões de localização",
-    "permissionGeolocationSub": "Localização aproximada (nível de cidade) pela sua conexão de rede — usada apenas para obter a previsão local. Sem GPS, sem permissão de localização.",
+    "permissionGeolocationSub": "Localização aproximada (nível de cidade) pela sua conexão de rede - usada apenas para obter a previsão local. Sem GPS, sem permissão de localização.",
     "permissionBookmarks": "Favoritos",
     "permissionBookmarksSub": "Permite que o painel leia e organize seus favoritos do Chrome.",
     "storageTitle": "Dados salvos",
@@ -644,7 +643,7 @@
     "deleteKey": "Excluir",
     "deleteKeyAria": "Excluir {{key}}",
     "resetTitle": "Redefinir tudo",
-    "resetSub": "Apaga todas as configurações salvas — widgets, fundos, nomes, tarefas — e recarrega a página.",
+    "resetSub": "Apaga todas as configurações salvas - widgets, fundos, nomes, tarefas - e recarrega a página.",
     "resetButton": "Redefinir tudo",
     "resetConfirm": "Isso não pode ser desfeito.",
     "resetConfirmYes": "Sim, redefinir",

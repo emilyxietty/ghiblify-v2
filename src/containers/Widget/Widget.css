@@ -7,14 +7,14 @@
     width: max-content;
     white-space: nowrap;
     border: 1px solid rgba(var(--cream-rgb, 240, 227, 196), var(--widget-border-alpha, 0));
-    /* Shell stays transparent — widgets that need a card render their
+    /* Shell stays transparent - widgets that need a card render their
        own .widget-card surface. */
     background: transparent;
     /* Soft fade-in on mount when a widget is toggled visible. */
     animation: widget-fade-in 220ms ease both;
 }
 
-/* `showBackground` is intentionally dock-only — see DockWidget.css
+/* `showBackground` is intentionally dock-only - see DockWidget.css
    for the glass-card rule. The canvas widget shell stays naked so
    the user's chosen layout / typography reads cleanly against the
    photo background; the dock surface is a separate concern. */
@@ -50,14 +50,14 @@
     background: transparent;
 }
 
-/* The unified card surface — every "boxy" widget paints its visible chrome
+/* The unified card surface - every "boxy" widget paints its visible chrome
    here. Surface color comes from --surface-rgb (set per widget container,
    typically --cream-rgb in light mode, --dark-rgb in dark mode).
 
    Cards have a built-in opacity floor of 0.6 so Todo / SearchBar /
    QuickLinks are visible by default (the theme palette tints the card,
    which is what the user expects from a "card" widget). The sidebar
-   slider can push the opacity higher than the floor — useful for users
+   slider can push the opacity higher than the floor - useful for users
    who want a fully-solid card on a busy photo background. */
 .widget-card {
     background: rgba(var(--surface-rgb, var(--dark-rgb, 31, 38, 32)), 0.6);
@@ -77,12 +77,12 @@
     /* cursor: grab; */
 }
 
-/* Pointer cursor on the widget shell signals interactability — the
+/* Pointer cursor on the widget shell signals interactability - the
    widget responds to right-click (context menu), shift-drag (move),
    and quick-edit pencil. Inner content (textareas, links, todo
    checkboxes) sets its own cursor and overrides this. The
-   .show-widget-outline / .drag-mode-on rules below replace this
-   with grab/grabbing while those modes are active. */
+   .show-widget-outline rules below replace this with grab/grabbing
+   while a drag key is held. */
 .widget.draggable {
     cursor: pointer;
 }
@@ -97,7 +97,7 @@
    padding, so remove the universal widget-content inset for them.
    This makes the SHELL box (where frost glass paints) coincide
    exactly with the inner card box (where the weather-mood card and
-   todo/notes surfaces paint) — without it, glass backgrounds ran
+   todo/notes surfaces paint) - without it, glass backgrounds ran
    15px larger on every side than card backgrounds. */
 .widget[data-widget-key="notes"] .widget-content,
 .widget[data-widget-key="weather"] .widget-content,
@@ -118,8 +118,8 @@
     padding: 0;
 }
 
-/* Frosted surface (todo, weather — any widget whose settings carry
-   `frosted`) — same shell-hoisted blur as the notes/paper frost (a
+/* Frosted surface (todo, weather - any widget whose settings carry
+   `frosted`) - same shell-hoisted blur as the notes/paper frost (a
    backdrop-filter on any descendant would sample the empty shell
    interior, not the wallpaper). Radius matches the inner card
    rounding so the glass slab doesn't square-corner past the content. */
@@ -129,7 +129,7 @@
     backdrop-filter: blur(14px) saturate(1.15);
 }
 
-/* Dark ("smoked") glass — same blur, plus a dark tint painted on the
+/* Dark ("smoked") glass - same blur, plus a dark tint painted on the
    shell between the blurred wallpaper and the content. */
 .widget.widget-surface-frost.frost-dark {
     background-color: rgba(12, 16, 20, 0.42);
@@ -137,7 +137,7 @@
 
 /* Notes frosted-paper glass. The blur MUST live on the .widget shell:
    the shell is `position: fixed` + `transform`, i.e. its own backdrop
-   root, so it can sample the wallpaper behind it — a backdrop-filter on
+   root, so it can sample the wallpaper behind it - a backdrop-filter on
    the descendant .notes-widget would only see the empty shell interior
    (see the frost note in App.css). */
 .widget.widget-notes-frost {
@@ -182,61 +182,24 @@
     cursor: nwse-resize;
 }
 
+/* Flush with the shell - outline-offset: 0 puts the ring exactly on the
+   border box, so it traces the widget's real footprint instead of a box
+   3px larger on every side. It follows the shell's border-radius, so it
+   also hugs rounded card widgets rather than squaring off past them. */
 .widget.edit-mode {
     outline: 1px solid rgba(255, 255, 255, 0.72);
-    outline-offset: 3px;
+    outline-offset: 0;
 }
 
-.widget-drag-handle {
-    position: absolute;
-    /* Vertically centered via auto margins (top+bottom 0) so the fixed
-       transform slots below stay free for the hover/active nudges. The
-       height clamp keeps the tab inside the shell on short widgets —
-       a fixed 40px tab pinned to the top used to hang past the bottom
-       edge of anything shorter than ~46px. */
-    top: 0;
-    bottom: 0;
-    margin: auto 0;
-    left: -30px;
-    z-index: 110;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: min(40px, 100%);
-    padding: 0;
-    transform: none;
-    color: var(--interaction-accent, #8fc7e8);
-    background: var(--ui-chrome-bg, rgba(20, 26, 32, 0.88));
-    border: 1px solid color-mix(in srgb, var(--interaction-accent, #8fc7e8) 55%, transparent);
-    border-radius: var(--radius-md) 0 0 var(--radius-md);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38);
+/* In edit mode the whole shell is the drag surface (see the note in
+   Widget.tsx). The outline already says "this one is selected"; the
+   grab cursor says "and you can move it". */
+.widget.edit-mode {
     cursor: grab;
-    transition: background 140ms ease, transform 140ms ease;
 }
 
-.widget-drag-handle:hover {
-    color: #ffffff;
-    background: color-mix(in srgb, var(--ui-chrome-bg-hover, #202a32) 82%, var(--interaction-accent, #8fc7e8));
-    transform: translateX(-2px);
-}
-
-.widget-drag-handle:active {
+.widget.edit-mode:active {
     cursor: grabbing;
-    transform: translateX(1px) scale(0.97);
-}
-
-.widget-drag-dots {
-    width: 12px;
-    height: 19px;
-    background-image: radial-gradient(circle, currentColor 1.5px, transparent 1.7px);
-    background-position: 0 0;
-    background-size: 6px 6px;
-}
-
-.widget-drag-handle:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
 }
 
 .widget.resizing .widget-overlay {
@@ -249,37 +212,32 @@
     flex-direction: row;
 }
 
-/* Either the transient Shift-held state OR the sticky Drag Mode
-   gives widgets the same draggable cue (outline + grab cursor). */
-.show-widget-outline .widget,
-.drag-mode-on .widget {
+/* Holding a drag key (d / Shift) gives widgets the draggable cue - outline + grab cursor. */
+.show-widget-outline .widget {
     outline: 1px solid rgba(255, 255, 255, 0.5) !important;
     cursor: grab;
 }
 
 /* While the mode outline above is showing, the .dragging/.resizing
    state border would paint a SECOND white line one pixel inside it
-   (border at the box edge, outline just outside) — reads as a double
+   (border at the box edge, outline just outside) - reads as a double
    outline. One cue is enough; the border stays for contexts with no
    mode outline. */
 .show-widget-outline .widget.dragging,
 .show-widget-outline .widget.resizing,
-.drag-mode-on .widget.dragging,
-.drag-mode-on .widget.resizing,
 /* Same doubling via the per-widget edit outline (right-click → Edit):
-   its outline sits 3px out, the drag/resize border at the box edge —
-   two visible rings while dragging. */
+   the outline and the drag/resize border now sit on the SAME box edge,
+   so together they'd paint a heavier, slightly off-colour line. */
 .widget.edit-mode.dragging,
 .widget.edit-mode.resizing {
     border-color: transparent;
 }
 
-.show-widget-outline .widget:active,
-.drag-mode-on .widget:active {
+.show-widget-outline .widget:active {
     cursor: grabbing;
 }
 
-/* Quick-edit pencil — only shown while Shift is held. Lets you jump
+/* Quick-edit pencil - only shown while Shift is held. Lets you jump
    directly into editing a single widget instead of toggling global edit
    mode from the sidebar. */
 .widget-quick-edit {
@@ -320,7 +278,7 @@
     outline-offset: 2px;
 }
 
-/* Quick-hide minus — mirror of .widget-quick-edit at the top-LEFT
+/* Quick-hide minus - mirror of .widget-quick-edit at the top-LEFT
    corner. Same fade-in on `.show-widget-outline`, same chrome, just
    semantically different (toggles widget visibility off rather than
    opening the edit overlay). */
@@ -414,7 +372,7 @@
     filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.85));
 }
 
-/* Hidden native colour input — exists only so the context menu's
+/* Hidden native colour input - exists only so the context menu's
    "custom colour" row can .click() it to summon the OS palette.
    Zero-footprint but NOT display:none (Chrome ignores clicks on
    display:none colour inputs). */
@@ -429,7 +387,7 @@
 }
 
 /* ONE highlight mechanism for solid AND frosted: the pill is always
-   the shell box — tint here, padding below for breathing room, and
+   the shell box - tint here, padding below for breathing room, and
    blur (when >0) simply layers onto the SAME box. The previous split
    (solid = a paint-layer hugging the text, frost = the shell) made
    the pill visibly jump between two geometries the moment the blur
@@ -442,18 +400,17 @@
     border-radius: var(--text-highlight-radius, 0.35em);
 }
 
-/* The pill's breathing room is CONSTANT on the text widgets — applied
-   whether or not a highlight is active — so toggling a background is
+/* The pill's breathing room is CONSTANT on the text widgets - applied
+   whether or not a highlight is active - so toggling a background is
    paint-only and never resizes or shifts the widget. (Scoped to the
    four highlight-capable widgets; card widgets size their own
    surfaces.) The analog clock's padding:0 override in Time.css wins
    via higher specificity.
    Two scale factors keep the pill proportionate:
    - --pad-scale tracks the CORNER style (0.95 square / 1 rounded /
-     1.45 soft) — softer corners need more inset or the curve crowds
+     1.45 soft) - softer corners need more inset or the curve crowds
      the glyphs;
-   - the em terms track the content font size (the shell adopts it —
-     see Widget.tsx), so a 157px clock gets a proportionally deeper
+   - the em terms track the content font size (the shell adopts it - see Widget.tsx), so a 157px clock gets a proportionally deeper
      pill than 13px info text, with the px terms as a floor for small
      text. */
 .widget[data-widget-key="time"] .widget-content,
@@ -471,7 +428,7 @@
     text-shadow: none;
 }
 
-/* Blur is purely additive — same box, same radius, zero movement. */
+/* Blur is purely additive - same box, same radius, zero movement. */
 .widget.has-text-highlight.highlight-frost {
     -webkit-backdrop-filter: blur(calc(var(--text-highlight-blur, 0.6) * 20px)) saturate(1.15);
     backdrop-filter: blur(calc(var(--text-highlight-blur, 0.6) * 20px)) saturate(1.15);
@@ -488,7 +445,7 @@
 /* Info stacks one div per field. Left as block they'd each stretch the
    full container width and the highlight would read as a slab rather
    than as marker over the words. */
-/* Info stacks one div per field, and flex blockifies its children — so
+/* Info stacks one div per field, and flex blockifies its children - so
    the highlight goes on an inline <span> one level in. That way it hugs
    the words (and each wrapped line of a long quote) instead of painting
    the full-width row. */
@@ -506,7 +463,7 @@
    real elements (the greeting's editable name button, Info's list), and
    swapping their text every 55ms would fight React and lose the caret
    position mid-edit. The step count comes from the measured character
-   count (see --type-in-steps in Widget.tsx) — a fixed count lands
+   count (see --type-in-steps in Widget.tsx) - a fixed count lands
    mid-glyph on short strings and reads as a wipe. */
 
 .widget.has-type-in .time,
@@ -525,8 +482,8 @@
     animation-fill-mode: both, none;
 }
 
-/* Once the reveal finishes the caret has no reason to keep blinking —
-   this stops it a beat after the text lands. */
+/* Once the reveal finishes the caret has no reason to keep blinking - this
+   stops it a beat after the text lands. */
 .widget.has-type-in .time,
 .widget.has-type-in .date,
 .widget.has-type-in .greeting-text,
