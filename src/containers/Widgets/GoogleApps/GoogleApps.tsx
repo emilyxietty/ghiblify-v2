@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { AccountCircleIcon, AppsIcon } from "../../../components/Icons/Icons";
 import { useT } from "../../../i18n/i18n";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
+import {
+  isHighlightTextColor,
+  resolveForeground,
+} from "../../../utils/textHighlight";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import {
@@ -207,8 +211,18 @@ export const GoogleApps: React.FC = () => {
   // collapses to a whisper when glass is on rather than stacking two
   // surfaces.
   const gFrosted = resolveSurfaceFrost(settings.frosted, appearance.theme);
+  const gInk = isHighlightTextColor(settings.textColor)
+    ? settings.textColor
+    : "auto";
   const surfaceStyle: Record<string, string | number> = {
     "--gapps-opacity": gFrosted ? 0.14 : (settings.opacity ?? 75) / 100,
+    ...((): Record<string, string> => {
+      if (typeof settings.surfaceColor === "string")
+        return { "--gapps-ink": resolveForeground(settings.surfaceColor, gInk) };
+      if (gInk === "light") return { "--gapps-ink": "#ffffff" };
+      if (gInk === "dark") return { "--gapps-ink": "#1f2420" };
+      return {};
+    })(),
     ...(typeof settings.surfaceColor === "string"
       ? {
           "--dark-rgb": settings.surfaceColor

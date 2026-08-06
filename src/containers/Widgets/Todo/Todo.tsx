@@ -3,6 +3,10 @@ import TextInput from "../../../components/TextInput/TextInput";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
+import {
+  isHighlightTextColor,
+  resolveForeground,
+} from "../../../utils/textHighlight";
 import { useScaledPx } from "../../../utils/viewportScale";
 import { EditIcon } from "../../../components/Icons/Icons";
 import { ClearIcon, DragIndicatorIcon } from "../../../components/Icons/Icons";
@@ -379,18 +383,53 @@ export const Todo: React.FC = () => {
         )
           ? 0.14
           : ((todoSettings as any).opacity ?? 50) / 100,
+        // The add-task field is furniture like a row, not part of the
+        // widget's backdrop, so it follows the ROW highlight. It used
+        // to read `opacity`, which now drives the widget background
+        // and defaults to clear - which left the input invisible.
         ["--input-opacity" as any]: resolveSurfaceFrost(
           (todoSettings as any).frosted,
           appearance.theme
         )
           ? 0.14
-          : ((todoSettings as any).opacity ?? 50) / 100,
+          : ((todoSettings as any).rowOpacity ?? 75) / 100,
         // Custom surface tint - override the theme's --surface-rgb
         // with the chosen hex as an "r, g, b" triplet.
         ...(typeof (todoSettings as any).surfaceColor === "string"
           ? {
               ["--todo-surface-rgb" as any]: (
                 (todoSettings as any).surfaceColor as string
+              )
+                .replace("#", "")
+                .match(/../g)!
+                .map((h: string) => parseInt(h, 16))
+                .join(", "),
+            }
+          : {}),
+        // Ink over the surface. --todo-text is what every text rule in
+        // Todo.css reads, so overriding it here reaches all of them.
+        // An explicit light/dark applies with or without a tint; only
+        // "auto" needs a colour to reason about.
+        ...(() => {
+          const ts = todoSettings as any;
+          const mode = isHighlightTextColor(ts.textColor)
+            ? ts.textColor
+            : "auto";
+          if (typeof ts.surfaceColor === "string")
+            return {
+              ["--todo-text" as any]: resolveForeground(ts.surfaceColor, mode),
+            };
+          if (mode === "light") return { ["--todo-text" as any]: "#f7f3ea" };
+          if (mode === "dark") return { ["--todo-text" as any]: "#1f2420" };
+          return {};
+        })(),
+        // Row highlight - independent of the widget background above.
+        ["--todo-row-opacity" as any]:
+          ((todoSettings as any).rowOpacity ?? 75) / 100,
+        ...(typeof (todoSettings as any).rowColor === "string"
+          ? {
+              ["--todo-row-rgb" as any]: (
+                (todoSettings as any).rowColor as string
               )
                 .replace("#", "")
                 .match(/../g)!

@@ -273,7 +273,8 @@
       "styleWeather": "Weather",
       "highlightTune": "Adjust highlight",
       "weatherLocationHint": "Your location is only used to fetch the local forecast - it never leaves this device except to the weather service.",
-      "guideResize": "Resize"
+      "guideResize": "Resize",
+      "surfaceHighlights": "Highlights"
     },
     "gapps": {
       "menuAria": "Google apps",

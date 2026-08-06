@@ -823,9 +823,11 @@ export const Widget: React.FC<WidgetProps> = ({
           ? " widget-notes-frost"
           : ""
       }${
+        // Quicklinks is absent on purpose: it has no frost chips, and
+        // its blur is a continuous slider instead, so the shell rule
+        // keyed on --widget-blur owns it entirely.
         (storageKey === "todo" ||
           storageKey === "weather" ||
-          storageKey === "quicklinks" ||
           storageKey === "googleApps") &&
         resolveSurfaceFrost(
           widgetSettings.frosted as boolean | undefined,

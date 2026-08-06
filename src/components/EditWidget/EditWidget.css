@@ -685,3 +685,109 @@
     color: var(--light-muted);
     flex-shrink: 0;
 }
+
+/* Tune toggle on the Background row - opens the same kind of side
+   flyout the highlight picker uses, so opacity / blur don't take up a
+   permanent row on every widget that has a surface. Sits at the end of
+   the chip strip, visually separated so it doesn't read as one of the
+   surface choices. */
+.edit-panel-tune-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin-left: 4px;
+    padding: 0;
+    flex-shrink: 0;
+    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 70%, transparent);
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease,
+        border-color 140ms ease;
+}
+
+.edit-panel-tune-btn:hover {
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+    color: var(--light);
+}
+
+.edit-panel-tune-btn.is-open {
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+    border-color: color-mix(in srgb, var(--light) 45%, transparent);
+    color: var(--light);
+}
+
+.edit-panel-tune-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Header for a side flyout: title on the left, dismiss on the right. */
+.edit-panel-side-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.edit-panel-side-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 65%, transparent);
+    cursor: pointer;
+}
+
+.edit-panel-side-close:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    color: var(--light);
+}
+
+/* Grip + widget name. Carries the drag hint so the heading itself
+   doesn't hand its title down to the buttons beside it. */
+.edit-panel-title-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Hide action, pinned to the right of the panel's title bar. The title
+   is the drag handle, so this sits inside it via margin-left: auto and
+   stops the pointer press from starting a panel drag. */
+.edit-panel-hide {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 60%, transparent);
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.edit-panel-hide:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+    color: var(--light);
+}
+
+.edit-panel-hide:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}

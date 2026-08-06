@@ -143,6 +143,17 @@ export interface TodoSettings {
    *  presets only (todo text is var(--light)) - same palette as the
    *  pomodoro card. */
   surfaceColor?: string | null;
+  /** Ink on top of the surface. "auto" derives it from surfaceColor's
+   *  luminance, so a pale tint gets dark text instead of the default
+   *  light one. */
+  textColor?: "auto" | "light" | "dark";
+  /** HIGHLIGHTS: the per-row tint, separate from the widget's own
+   *  background above. Rows carried the surface before it moved to the
+   *  container, so these keep that look available independently. */
+  rowColor?: string | null;
+  rowOpacity: number;
+  rowBlur: number;
+  rowTextColor?: "auto" | "light" | "dark";
 }
 export interface AvatarSettings {
   selectedAvatar: string;
@@ -170,8 +181,12 @@ export interface QuicklinksSettings {
   /** Dark ("smoked") glass variant; only meaningful while frosted. */
   frostDark?: boolean;
   /** Surface tint override - an "r, g, b"-able hex. null/absent = the
-   *  theme's --dark-rgb. Deep tones only (tile text is var(--light)). */
+   *  theme's --dark-rgb. */
   surfaceColor?: string | null;
+  /** Ink on top of the surface. "auto" derives it from surfaceColor's
+   *  luminance, so a pale tint gets dark text instead of the default
+   *  light one. Same model as the text-highlight pill. */
+  textColor?: "auto" | "light" | "dark";
 }
 export interface SearchBarSettings {
   width: number;
@@ -324,6 +339,10 @@ export interface GoogleAppsSettings {
   frostDark?: boolean;
   /** Custom tint from the surface chips, as #rrggbb. */
   surfaceColor?: string | null;
+  /** Ink on top of the surface. "auto" derives it from surfaceColor's
+   *  luminance, so a pale tint gets dark text instead of the default
+   *  light one. */
+  textColor?: "auto" | "light" | "dark";
 }
 export interface NotesSettings {
   width: number;
@@ -548,7 +567,9 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       width: 350,
       height: 350,
       collapsed: false,
-      opacity: 75,
+      opacity: 0,
+      rowOpacity: 75,
+      rowBlur: 10,
       blur: 10,
       // `frosted` intentionally absent: undefined = follow the theme
       // (Frost palette ⇒ glass). The chips write true/false explicitly.
@@ -676,11 +697,11 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // touch from the true corner so it clears the weather widget and
     // the screen edge.
     position: { x: 93, y: 5 },
-    // Matches the other surface widgets (todo / quicklinks) so the
-    // chips behave the same way here. Opacity 0 was tried first, to
-    // keep the shipped look bare, but it made every solid chip render
-    // fully transparent - the surface was there and invisible.
-    settings: { opacity: 75, blur: 10 },
+    // Clear by default, like todo and quicklinks. 75 was used briefly
+    // because a solid colour picked at 0 alpha painted nothing, but the
+    // picker now raises the alpha on first pick, so 0 is safe and the
+    // widget matches its own "no background" state on first open.
+    settings: { opacity: 0, blur: 10 },
     // todoFrosted = the shared surface-chips row (theme / colours /
     // glass), the same control todo and quicklinks use.
     customControls: { todoFrosted: true },

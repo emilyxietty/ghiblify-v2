@@ -415,6 +415,24 @@
     border-radius: var(--text-highlight-radius, 0.35em);
 }
 
+/* Info is the exception: it stacks several independent lines (title,
+   year, runtime, quote), so one pill around the whole widget reads as a
+   slab rather than as marker over the text. Each line gets its own.
+   NOTE: this forfeits the blur, which only works on the shell - the
+   shell is the backdrop root, so a backdrop-filter on a line samples
+   the empty shell interior instead of the wallpaper. */
+.widget[data-widget-key="info"].has-text-highlight {
+    background: transparent;
+}
+
+.widget[data-widget-key="info"].has-text-highlight .info-item-text {
+    background: var(--text-highlight);
+    border-radius: var(--text-highlight-radius, 0.35em);
+    padding: 0.1em 0.32em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
 /* The pill's breathing room is CONSTANT on the text widgets - applied
    whether or not a highlight is active - so toggling a background is
    paint-only and never resizes or shifts the widget. (Scoped to the

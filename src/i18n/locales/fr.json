@@ -256,7 +256,8 @@
       "styleWeather": "Météo",
       "highlightTune": "Ajuster le surlignage",
       "weatherLocationHint": "Votre position sert uniquement à récupérer la météo locale - elle ne quitte cet appareil que vers le service météo.",
-      "guideResize": "Redimensionner"
+      "guideResize": "Redimensionner",
+      "surfaceHighlights": "Surlignages"
     },
     "gapps": {
       "menuAria": "Applications Google",

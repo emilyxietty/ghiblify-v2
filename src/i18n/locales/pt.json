@@ -261,7 +261,8 @@
       "styleWeather": "Clima",
       "highlightTune": "Ajustar destaque",
       "weatherLocationHint": "Sua localização é usada apenas para obter a previsão local - só sai deste dispositivo para o serviço de meteorologia.",
-      "guideResize": "Redimensionar"
+      "guideResize": "Redimensionar",
+      "surfaceHighlights": "Destaques"
     },
     "gapps": {
       "menuAria": "Apps do Google",

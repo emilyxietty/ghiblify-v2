@@ -48,7 +48,7 @@
     border: none;
     border-radius: 50%;
     background: transparent;
-    color: #ffffff;
+    color: var(--gapps-ink, #ffffff);
     cursor: pointer;
     /* Keeps the glyphs legible on a bright photo when the cluster has
        no surface of its own. */

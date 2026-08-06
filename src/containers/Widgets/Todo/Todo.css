@@ -22,6 +22,16 @@
        "completed" affordance. */
     --todo-accent: var(--green, #5e8a4f);
     --todo-danger: #ff8a8a;
+    /* The surface paints HERE, on the widget's own box. It used to
+       paint on each .todo-item-content instead, which meant the
+       control labelled "Background" was really tinting the rows -
+       highlights, not a background. */
+    border-radius: var(--radius-lg);
+    background: rgba(
+        var(--todo-surface-rgb),
+        min(var(--todo-opacity, 0.5), var(--surface-alpha-cap, 1))
+    );
+    transition: background 160ms ease;
 }
 
 /* The configured height is a cap, not a forced empty footprint. The
@@ -221,9 +231,12 @@
     align-items: center;
     gap: 10px;
     padding: 9px 12px;
+    /* Rows carry the HIGHLIGHT tint, which is separate from the
+       widget's own background on .todo-container. Defaults to the
+       surface colour so an untouched widget looks as it always has. */
     background: rgba(
-        var(--todo-surface-rgb),
-        min(var(--todo-opacity, 0.5), var(--surface-alpha-cap, 1))
+        var(--todo-row-rgb, var(--todo-surface-rgb)),
+        min(var(--todo-row-opacity, 0.75), var(--surface-alpha-cap, 1))
     );
     color: var(--todo-text);
     border: 1px solid var(--todo-border);
@@ -238,9 +251,14 @@
 }
 
 .todo-item:hover .todo-item-content {
+    /* Same tint, a touch more, so hover reads as "this row" without
+       changing hue. */
     background: rgba(
-        var(--todo-surface-rgb),
-        calc(var(--todo-opacity, 0.5) + 0.2)
+        var(--todo-row-rgb, var(--todo-surface-rgb)),
+        min(
+            calc(var(--todo-row-opacity, 0.75) + 0.18),
+            var(--surface-alpha-cap, 1)
+        )
     );
     border-color: color-mix(in srgb, var(--todo-text) 28%, transparent);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);

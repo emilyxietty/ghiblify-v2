@@ -7,6 +7,10 @@ import {
   ContextMenuItem,
 } from "../../../components/ContextMenu/ContextMenu";
 import { Favicon } from "../../../components/Favicon/Favicon";
+import {
+  isHighlightTextColor,
+  resolveForeground,
+} from "../../../utils/textHighlight";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import TextInput from "../../../components/TextInput/TextInput";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
@@ -485,12 +489,8 @@ export const QuickLinks: React.FC = () => {
   // Shared surface treatment (mirrors todo): frosted drops the tile
   // alpha to a whisper so the shell's glass reads through; a custom
   // surfaceColor overrides the theme's --dark-rgb triplet locally.
-  const qs = quicklinksSettings as unknown as {
-    opacity?: number;
-    listOpacity?: number;
-    frosted?: boolean;
-    surfaceColor?: string | null;
-  };
+  // QuicklinksSettings carries all of these now, so no cast needed.
+  const qs = quicklinksSettings;
   // Each mode paints a different surface (the grid's own background vs
   // the floating popup), so they carry separate alphas.
   const surfaceAlpha = showGrid ? (qs.opacity ?? 0) : (qs.listOpacity ?? 75);
@@ -502,6 +502,19 @@ export const QuickLinks: React.FC = () => {
     "--input-opacity": qlFrosted
       ? 0.14
       : Math.max(0.35, surfaceAlpha / 100),
+    // Ink follows the chosen tint - a pale surface needs dark text, and
+    // the default --light would vanish on it. An EXPLICIT light/dark
+    // pick applies even with no surface colour, since that's a direct
+    // instruction rather than something derived from a tint; only
+    // "auto" needs a colour to reason about.
+    ...((): Record<string, string> => {
+      const mode = isHighlightTextColor(qs.textColor) ? qs.textColor : "auto";
+      if (typeof qs.surfaceColor === "string")
+        return { "--ql-ink": resolveForeground(qs.surfaceColor, mode) };
+      if (mode === "light") return { "--ql-ink": "#f7f3ea" };
+      if (mode === "dark") return { "--ql-ink": "#1f2420" };
+      return {};
+    })(),
     ...(typeof qs.surfaceColor === "string"
       ? {
           "--ql-surface-rgb": qs.surfaceColor

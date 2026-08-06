@@ -591,6 +591,51 @@ const loadInitialWidgets = (): WidgetsState => {
       writePersisted(STORAGE_KEY, blob);
     }
 
+    // Schema-v3: quicklinks' surface split into a pair per mode. Before
+    // this, ONE `opacity`/`blur` drove both the grid tiles and the list
+    // popup; now the list reads listOpacity/listBlur, whose defaults
+    // (95/0) differ from the grid's (0/0). Without this, anyone who had
+    // deliberately tuned their list surface would silently get the new
+    // default instead of their own value.
+    //
+    // Only stored values are carried across. Someone who never touched
+    // the slider has nothing persisted (the blob holds diffs from
+    // defaults only) and correctly lands on the new defaults.
+    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 3) {
+      const ql = blob.quicklinks?.settings;
+      if (ql) {
+        if (typeof ql.opacity === "number" && ql.listOpacity === undefined) {
+          ql.listOpacity = ql.opacity;
+        }
+        if (typeof ql.blur === "number" && ql.listBlur === undefined) {
+          ql.listBlur = ql.blur;
+        }
+        // Grid tiles used to default to 75 and now default to 0. An
+        // existing user who never touched the slider has nothing
+        // stored, so they'd silently lose the card they've always had.
+        // Pin the OLD default for them; the new one is for fresh
+        // installs, which never reach this branch.
+        if (ql.opacity === undefined) ql.opacity = 75;
+      }
+      // Todo's `opacity` used to tint each ROW; now it tints the
+      // widget's own background and the rows read rowOpacity. Carry
+      // the stored value across to the rows and leave the new
+      // background clear, which reproduces exactly what the user had.
+      const td = blob.todo?.settings;
+      if (td) {
+        if (td.rowOpacity === undefined) td.rowOpacity = td.opacity ?? 75;
+        if (td.rowBlur === undefined && typeof td.blur === "number") {
+          td.rowBlur = td.blur;
+        }
+        if (typeof td.surfaceColor === "string" && td.rowColor === undefined) {
+          td.rowColor = td.surfaceColor;
+        }
+        td.opacity = 0;
+      }
+      writePersisted(SCHEMA_VERSION_KEY, 3);
+      writePersisted(STORAGE_KEY, blob);
+    }
+
     for (const key of WIDGET_KEYS) {
       const entry = defaults[key];
       const stored = blob[key];
@@ -621,7 +666,7 @@ const loadInitialWidgets = (): WidgetsState => {
     // authored at the 1920 reference baseline, so mark the schema
     // as migrated so the migration block above never runs for new
     // users.
-    writePersisted(SCHEMA_VERSION_KEY, 2);
+    writePersisted(SCHEMA_VERSION_KEY, 3);
   }
 
   // No modern blob - migrate from legacy (no-op if no legacy keys exist)
@@ -958,8 +1003,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const resetAllWidgets = () => {
-    if (!window.confirm("Are you sure you want to reset all widgets to default?"))
-      return;
+    // No confirm here. Every caller already asks - the settings modal
+    // puts up its own dialog first - so this fired a second, native
+    // browser prompt on top of it. It was also the one piece of
+    // user-facing copy in the app that was hardcoded English rather
+    // than going through i18n.
     setWidgets((prev) => {
       const next = buildDefaultWidgets();
       // Preserve user-created content - links and the greeting name

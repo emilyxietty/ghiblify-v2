@@ -1,7 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../components/Button/Button";
-import { DragIndicatorIcon, PlaceIcon } from "../Icons/Icons";
+import {
+  BlurOnIcon,
+  CloseIcon,
+  DragIndicatorIcon,
+  OpacityIcon,
+  PlaceIcon,
+  VisibilityOffIcon,
+} from "../Icons/Icons";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
   AvatarSettings,
@@ -147,6 +154,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     widgetsCommitted,
     updateWidgetSettings,
     previewWidgetSettings,
+    toggleWidgetVisibility,
+    setEditingWidgetKey,
     appearance,
   } = useAppContext();
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -172,6 +181,14 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // Whether the tuning column (opacity / blur / ink) is expanded out
   // the panel's right side - toggled by the strip's chevron.
   const [highlightTuneOpen, setHighlightTuneOpen] = useState(false);
+  // Same disclosure model as the highlight picker: the row stays a
+  // compact set of chips, and the numeric tuning (opacity / blur) lives
+  // behind a toggle so the panel doesn't grow a slider for every widget
+  // that happens to have a surface.
+  const [surfaceTuneOpen, setSurfaceTuneOpen] = useState(false);
+  // Todo alone has two surfaces: its own background, and the per-row
+  // highlight. They tune independently, so each owns a flyout.
+  const [rowTuneOpen, setRowTuneOpen] = useState(false);
 
   useEffect(() => {
     if (!isWidgetKey(storageKey)) return;
@@ -294,6 +311,81 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const sliderValue = supportsSlider
     ? Math.round(Number(settings[sliderField]) || 0)
     : 50;
+
+  // Quicklinks exposes opacity AND blur together (no frost chip to
+  // switch between them), and each mode stores its own pair.
+  const qlGrid = (widgetsCommitted.quicklinks.settings as QuicklinksSettings)
+    .gridMode;
+  const qlFields = qlGrid
+    ? { opacity: "opacity", blur: "blur" }
+    : { opacity: "listOpacity", blur: "listBlur" };
+
+  // Surface fields for whichever widget owns the Background control.
+  // Quicklinks is the only one that stores a pair per mode.
+  const surfaceFields =
+    storageKey === "quicklinks"
+      ? qlFields
+      : { opacity: "opacity", blur: "blur" };
+  const surfaceSettings = settings as Record<string, unknown>;
+  const surfaceColorValue =
+    typeof surfaceSettings.surfaceColor === "string"
+      ? surfaceSettings.surfaceColor
+      : null;
+  const surfaceInk = isHighlightTextColor(surfaceSettings.textColor)
+    ? surfaceSettings.textColor
+    : "auto";
+  const surfaceOpacityValue = Math.round(
+    Number(surfaceSettings[surfaceFields.opacity]) || 0
+  );
+  const surfaceBlurValue = Math.round(
+    Number(surfaceSettings[surfaceFields.blur]) || 0
+  );
+
+  const rowColorValue =
+    typeof surfaceSettings.rowColor === "string"
+      ? surfaceSettings.rowColor
+      : null;
+  const rowInk = isHighlightTextColor(surfaceSettings.rowTextColor)
+    ? surfaceSettings.rowTextColor
+    : "auto";
+  const rowOpacityValue = Math.round(Number(surfaceSettings.rowOpacity) || 0);
+  const rowBlurValue = Math.round(Number(surfaceSettings.rowBlur) || 0);
+
+  const qlSettings = widgetsCommitted.quicklinks.settings as QuicklinksSettings;
+  const qlSurfaceColor =
+    typeof qlSettings.surfaceColor === "string" ? qlSettings.surfaceColor : null;
+  const qlTextColor = isHighlightTextColor(qlSettings.textColor)
+    ? qlSettings.textColor
+    : "auto";
+  const qlOpacityValue = Math.round(
+    Number(qlSettings[qlFields.opacity as keyof QuicklinksSettings]) || 0
+  );
+  const qlBlurValue = Math.round(
+    Number(qlSettings[qlFields.blur as keyof QuicklinksSettings]) || 0
+  );
+
+  // Widgets whose Background row owns the numeric tuning. Others keep
+  // the slider inline, since without a surface row there'd be nothing
+  // to expand from.
+  const surfaceOwnsTuning = !!(controls?.todoFrosted && supportsSlider);
+  // Quicklinks drives its own panel from the swatch, so it never shows
+  // the separate tune toggle.
+  const showTuneToggle = surfaceOwnsTuning && storageKey !== "quicklinks";
+  // Naming follows what the control actually paints:
+  //   Highlights - the individual pieces inside the widget
+  //                (quicklinks GRID tiles, todo rows)
+  //   Background - the widget's whole surface
+  //                (quicklinks LIST popup, google apps cluster,
+  //                 weather card, and the pill behind time / date /
+  //                 greeting / info, which for a text-only widget IS
+  //                 its background)
+  // Info paints a pill per line rather than one behind the widget, so
+  // it names the control after what it does.
+  const paintsPieces =
+    (storageKey === "quicklinks" && qlGrid) || storageKey === "info";
+  const surfaceLabel = paintsPieces
+    ? t("widgets.edit.surfaceHighlights")
+    : t("widgets.edit.surfaceStyle");
 
   const supportsTextShadow =
     "textShadow" in (widgetConfig.settings as Record<string, unknown>);
@@ -432,7 +524,9 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     <div
       ref={panelRef}
       className={`edit-panel${
-        highlightTuneOpen && supportsHighlight && highlightValue
+        (highlightTuneOpen && supportsHighlight && highlightValue) ||
+        (surfaceTuneOpen && controls?.todoFrosted && supportsSlider) ||
+        (rowTuneOpen && storageKey === "todo")
           ? " edit-panel-expanded"
           : ""
       }`}
@@ -468,10 +562,45 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         onPointerMove={onHandleMove}
         onPointerUp={onHandleUp}
         onPointerCancel={onHandleUp}
-        title={t("widgets.edit.panelDragHint")}
       >
-        <DragIndicatorIcon className="edit-panel-grip" style={{ fontSize: 14 }} />
-        {t(`widgets.names.${storageKey}`)}
+        {/* The drag hint belongs to the grip + name, NOT the <h3>: a
+            title on the heading is inherited by every child, so it
+            surfaced over the hide button too and beat its own
+            tooltip. */}
+        <span
+          className="edit-panel-title-label"
+          title={t("widgets.edit.panelDragHint")}
+        >
+          <DragIndicatorIcon
+            className="edit-panel-grip"
+            style={{ fontSize: 14 }}
+          />
+          {t(`widgets.names.${storageKey}`)}
+        </span>
+        {/* Hiding is the one action every widget shares, and until now
+            the only route to it was holding a key for the quick-hide
+            button. It closes the panel too - leaving an editor open on
+            a widget that's no longer on screen makes no sense.
+            onPointerDown stops propagation so the title bar's drag
+            handler doesn't claim the press. */}
+        <button
+          type="button"
+          className="edit-panel-hide"
+          aria-label={t("widgets.contextMenu.hide", {
+            name: t(`widgets.names.${storageKey}`),
+          })}
+          data-tooltip={t("widgets.contextMenu.hide", {
+            name: t(`widgets.names.${storageKey}`),
+          })}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleWidgetVisibility(storageKey);
+            setEditingWidgetKey(null);
+          }}
+        >
+          <VisibilityOffIcon style={{ fontSize: 14 }} />
+        </button>
       </h3>
 
       <div className="edit-panel-body">
@@ -590,99 +719,85 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
+      {/* Quicklinks uses the highlight model instead of surface chips:
+          one swatch that opens a full tuning panel (colour, ink,
+          opacity, blur). The chip strip only ever offered a handful of
+          preset tones, and with a continuous blur slider now in play a
+          pair of frost presets alongside it was two controls fighting
+          over one property. */}
       {controls?.todoFrosted && (
-        // Preview circles: theme default + deep-tone surface colours
-        // (light text stays readable) + light/dark glass.
-        <Row label={t("widgets.edit.surfaceStyle")}>
-          <div
-            className="edit-panel-swatches"
-            role="radiogroup"
-            aria-label={t("widgets.edit.surfaceStyle")}
-          >
-            {(() => {
-              const s = settings as {
-                frosted?: boolean;
-                frostDark?: boolean;
-                surfaceColor?: string | null;
-              };
-              const pick = (patch: Record<string, unknown>) => ({
-                onMouseEnter: () => previewWidgetSettings(storageKey, patch),
-                onMouseLeave: () => previewWidgetSettings(storageKey, null),
-                onClick: (e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  updateWidgetSettings(storageKey, patch as never);
-                },
-              });
-              return (
-                <>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={s.frosted !== true && !s.surfaceColor}
-                    aria-label={t("widgets.edit.pomodoroColorDefaultAria")}
-                    data-tooltip={t("widgets.edit.pomodoroColorDefaultAria")}
-                    className={`edit-panel-swatch edit-panel-swatch-theme${
-                      s.frosted !== true && !s.surfaceColor ? " is-active" : ""
-                    }`}
-                    {...pick({
-                      frosted: false,
-                      frostDark: false,
-                      surfaceColor: null,
-                    })}
-                  />
-                  {POMODORO_CARD_PRESETS.map((hex) => (
-                    <button
-                      key={hex}
-                      type="button"
-                      role="radio"
-                      aria-checked={s.frosted !== true && s.surfaceColor === hex}
-                      aria-label={hex.toUpperCase()}
-                      data-tooltip={hex.toUpperCase()}
-                      className={`edit-panel-swatch${
-                        s.frosted !== true && s.surfaceColor === hex
-                          ? " is-active"
-                          : ""
-                      }`}
-                      style={{ background: hex }}
-                      {...pick({
-                        frosted: false,
-                        frostDark: false,
-                        surfaceColor: hex,
-                      })}
-                    />
-                  ))}
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={s.frosted === true && s.frostDark !== true}
-                    aria-label={t("widgets.edit.styleFrost")}
-                    data-tooltip={t("widgets.edit.styleFrost")}
-                    className={`edit-panel-swatch edit-panel-swatch-frost${
-                      s.frosted === true && s.frostDark !== true
-                        ? " is-active"
-                        : ""
-                    }`}
-                    {...pick({ frosted: true, frostDark: false })}
-                  />
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={s.frosted === true && s.frostDark === true}
-                    aria-label={t("widgets.edit.styleFrostDark")}
-                    data-tooltip={t("widgets.edit.styleFrostDark")}
-                    className={`edit-panel-swatch edit-panel-swatch-frost-dark${
-                      s.frosted === true && s.frostDark === true
-                        ? " is-active"
-                        : ""
-                    }`}
-                    {...pick({ frosted: true, frostDark: true })}
-                  />
-                </>
-              );
-            })()}
-          </div>
-        </Row>
+        <div className="edit-panel-slider-row">
+          <span className="edit-panel-row-label">{surfaceLabel}</span>
+          <ColorPicker
+            color={surfaceColorValue}
+            textColor={surfaceInk}
+            opacity={surfaceOpacityValue}
+            blur={surfaceBlurValue}
+            expanded={surfaceTuneOpen}
+            onExpandChange={setSurfaceTuneOpen}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, {
+                [surfaceFields.blur]: v,
+              } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                surfaceColor: next,
+                // A colour picked while the surface is fully
+                // transparent would paint nothing and read as a broken
+                // picker; clearing it drops the alpha back so the
+                // widget doesn't keep the theme tint that first pick
+                // introduced.
+                ...(next
+                  ? surfaceOpacityValue === 0
+                    ? { [surfaceFields.opacity]: 25 }
+                    : {}
+                  : { [surfaceFields.opacity]: 0 }),
+              } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, { textColor: next } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                [surfaceFields.opacity]: next,
+              } as never)
+            }
+          />
+        </div>
       )}
+
+      {storageKey === "todo" && (
+        <div className="edit-panel-slider-row">
+          <span className="edit-panel-row-label">
+            {t("widgets.edit.surfaceHighlights")}
+          </span>
+          <ColorPicker
+            color={rowColorValue}
+            textColor={rowInk}
+            opacity={rowOpacityValue}
+            blur={rowBlurValue}
+            expanded={rowTuneOpen}
+            onExpandChange={setRowTuneOpen}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, { rowBlur: v } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                rowColor: next,
+                ...(next && rowOpacityValue === 0 ? { rowOpacity: 25 } : {}),
+              } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, { rowTextColor: next } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, { rowOpacity: next } as never)
+            }
+          />
+        </div>
+      )}
+
 
       {controls?.weatherFrosted && (
         // Weather's four surfaces as preview circles: Clear (nothing),
@@ -1114,7 +1229,9 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         // ~10 chips beside a side label was an unreadable squeeze.
         <div className="edit-panel-slider-row">
           <span className="edit-panel-row-label">
-            {t("widgets.edit.highlightLabel")}
+            {storageKey === "info"
+              ? t("widgets.edit.surfaceHighlights")
+              : t("widgets.edit.surfaceStyle")}
           </span>
           <ColorPicker
             color={highlightValue}
@@ -1202,7 +1319,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         />
       )}
 
-      {supportsSlider && (
+      {supportsSlider && !surfaceOwnsTuning && (
         <SliderRow
           id={`widget-${storageKey}-${sliderField}`}
           label={
@@ -1224,6 +1341,68 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         />
       )}
       </div>
+
+      {rowTuneOpen && storageKey === "todo" && (
+        <div className="edit-panel-side">
+          <HighlightTuning
+            onClose={() => setRowTuneOpen(false)}
+            color={rowColorValue}
+            textColor={rowInk}
+            opacity={rowOpacityValue}
+            blur={rowBlurValue}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, { rowBlur: v } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                rowColor: next,
+                ...(next && rowOpacityValue === 0 ? { rowOpacity: 25 } : {}),
+              } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, { rowTextColor: next } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, { rowOpacity: next } as never)
+            }
+          />
+        </div>
+      )}
+
+      {surfaceTuneOpen && controls?.todoFrosted && (
+        <div className="edit-panel-side">
+          <HighlightTuning
+            onClose={() => setSurfaceTuneOpen(false)}
+            color={surfaceColorValue}
+            textColor={surfaceInk}
+            opacity={surfaceOpacityValue}
+            blur={surfaceBlurValue}
+            onBlurChange={(v) =>
+              updateWidgetSettings(storageKey, {
+                [surfaceFields.blur]: v,
+              } as never)
+            }
+            onChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                surfaceColor: next,
+                ...(next
+                  ? surfaceOpacityValue === 0
+                    ? { [surfaceFields.opacity]: 25 }
+                    : {}
+                  : { [surfaceFields.opacity]: 0 }),
+              } as never)
+            }
+            onTextColorChange={(next) =>
+              updateWidgetSettings(storageKey, { textColor: next } as never)
+            }
+            onOpacityChange={(next) =>
+              updateWidgetSettings(storageKey, {
+                [surfaceFields.opacity]: next,
+              } as never)
+            }
+          />
+        </div>
+      )}
 
       {highlightTuneOpen && supportsHighlight && highlightValue && (
         <div className="edit-panel-side">

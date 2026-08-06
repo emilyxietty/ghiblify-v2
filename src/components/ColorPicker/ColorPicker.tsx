@@ -354,7 +354,12 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
           className={`color-picker-inline-swatch${
             props.color === hex ? " is-active" : ""
           }`}
-          style={{ background: withAlpha(hex, props.opacity) }}
+          // Solid, NOT at the current alpha: at a low opacity every
+          // chip washed out to near-identical translucent grey, so the
+          // palette stopped being a palette. The tuning rows below
+          // preview what the alpha and blur actually do; these chips
+          // are here to let you tell the colours apart.
+          style={{ background: hex }}
           aria-label={hex.toUpperCase()}
           data-tooltip={hex.toUpperCase()}
           onMouseEnter={() => props.onPreviewChange?.(hex)}

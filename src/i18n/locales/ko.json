@@ -267,7 +267,8 @@
       "styleWeather": "날씨",
       "highlightTune": "강조 조정",
       "weatherLocationHint": "위치 정보는 지역 날씨를 가져오는 데만 사용되며, 날씨 서비스 외에는 전송되지 않습니다.",
-      "guideResize": "크기 조절"
+      "guideResize": "크기 조절",
+      "surfaceHighlights": "하이라이트"
     },
     "gapps": {
       "menuAria": "Google 앱",
