@@ -5,11 +5,7 @@
     overflow: hidden;
 }
 
-/* Fades in over the pre-painted wallpaper on <body> (see prepaint.js).
-   Every load picks a fresh photo, so the two images differ and the
-   handover was a hard cut. Crossfading makes it read as the page
-   settling rather than as a flicker. Short enough not to feel like an
-   effect; `both` holds the end state so nothing pops at the finish. */
+/* Fade the selected photo in over the page's solid loading color. */
 .background-filter {
     position: absolute;
     top: 0;
@@ -61,13 +57,6 @@
 }
 
 .background-loading {
-    /* Transparent - `newtab.html`'s inline pre-mount script paints
-       the previous wallpaper (or the chihiro043 splash on first
-       load ever) on <body> before React mounts. While useBackground
-       picks the real image asynchronously, we let that pre-paint
-       show through. The old `background-color: #000` here was
-       covering the splash with black until React's loading flag
-       flipped to false. */
     display: flex;
     align-items: center;
     justify-content: center;

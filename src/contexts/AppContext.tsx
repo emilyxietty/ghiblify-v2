@@ -35,11 +35,14 @@ import {
   remove as removePersisted,
   subscribe as subscribePersisted,
   write as writePersisted,
+  writeBatch as writePersistedBatch,
 } from "../storage/hybridStorage";
 import { setProportionalScaling } from "../utils/viewportScale";
 
 const STORAGE_KEY = "ghiblify_widgets";
 const SCHEMA_VERSION_KEY = "ghiblify_widgets_schema_version";
+const CURRENT_WIDGET_SCHEMA_VERSION = 7;
+const LEGACY_DOCK_BACKGROUND_KEY = "ghiblify_dock_show_bg";
 
 // Per-widget, the fields stored as REFERENCE-VIEWPORT pixels (i.e.,
 // "px as if at 1920px viewport width"). Used by the v2 migration
@@ -428,6 +431,16 @@ const persistWidgets = (state: WidgetsState) => {
   }
 };
 
+const persistWidgetMigration = (
+  blob: Record<string, any>,
+  schemaVersion: number,
+) => {
+  writePersistedBatch({
+    [STORAGE_KEY]: blob,
+    [SCHEMA_VERSION_KEY]: schemaVersion,
+  });
+};
+
 // Read a localStorage int, or fall back. Empty string → fallback.
 const readInt = (key: string, fallback: number): number => {
   const v = localStorage.getItem(key);
@@ -576,6 +589,13 @@ const loadInitialWidgets = (): WidgetsState => {
   // modern set (legacy is treated as a seed for first-run only).
   const blob = readPersisted<Record<string, any> | null>(STORAGE_KEY, null);
   if (blob) {
+    let schemaVersion = readPersisted<number>(SCHEMA_VERSION_KEY, 1);
+    const upgradingFrom240 = schemaVersion <= 2;
+    const legacyDockBackground = readPersisted<boolean | null>(
+      LEGACY_DOCK_BACKGROUND_KEY,
+      null,
+    );
+
     // Schema-v2 migration: stored size fields used to be raw px;
     // now they're "px at a 1920 reference viewport". A user whose
     // widgets were sized at e.g. 1280px wide needs their values
@@ -585,7 +605,6 @@ const loadInitialWidgets = (): WidgetsState => {
     //
     // Safe to run synchronously here because `window.innerWidth` is
     // available at module-load time inside the new-tab page.
-    const schemaVersion = readPersisted<number>(SCHEMA_VERSION_KEY, 1);
     if (schemaVersion < 2 && typeof window !== "undefined") {
       const referenceWidth = 1920;
       const currentWidth = window.innerWidth || referenceWidth;
@@ -602,8 +621,8 @@ const loadInitialWidgets = (): WidgetsState => {
           }
         }
       }
-      writePersisted(SCHEMA_VERSION_KEY, 2);
-      writePersisted(STORAGE_KEY, blob);
+      schemaVersion = 2;
+      persistWidgetMigration(blob, schemaVersion);
     }
 
     // Schema-v3: quicklinks' surface split into a pair per mode. Before
@@ -613,42 +632,84 @@ const loadInitialWidgets = (): WidgetsState => {
     // deliberately tuned their list surface would silently get the new
     // default instead of their own value.
     //
-    // Only stored values are carried across. Someone who never touched
-    // the slider has nothing persisted (the blob holds diffs from
-    // defaults only) and correctly lands on the new defaults.
-    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 3) {
-      const ql = blob.quicklinks?.settings;
-      if (ql) {
-        if (typeof ql.opacity === "number" && ql.listOpacity === undefined) {
-          ql.listOpacity = ql.opacity;
+    // An existing Quick Links entry may only contain visibility or
+    // position because the old values matched defaults. Recreate those
+    // old defaults before translating so an enabled widget keeps its look.
+    if (schemaVersion < 3) {
+      if (blob.notes && blob.notes.position === undefined) {
+        blob.notes.position = { x: 80, y: 30 };
+      }
+      if (blob.pomodoro && blob.pomodoro.position === undefined) {
+        blob.pomodoro.position = {
+          x: 86.83040935672514,
+          y: 57.429153924566776,
+        };
+      }
+      const qlEntry = blob.quicklinks;
+      if (qlEntry) {
+        qlEntry.settings ??= {};
+        const ql = qlEntry.settings;
+        const oldOpacity =
+          typeof ql.opacity === "number" ? ql.opacity : 75;
+        const oldBlur = typeof ql.blur === "number" ? ql.blur : 10;
+        if (ql.listOpacity === undefined) ql.listOpacity = oldOpacity;
+        if (ql.listBlur === undefined) ql.listBlur = oldBlur;
+        ql.opacity = oldOpacity;
+        ql.blur = oldBlur;
+
+        const oldWidth = typeof ql.width === "number" ? ql.width : 600;
+        const oldHeight = typeof ql.height === "number" ? ql.height : 200;
+        if (ql.linksPerRow === undefined) {
+          ql.linksPerRow = Math.max(
+            2,
+            Math.min(6, Math.round(oldWidth / 100) - 1),
+          );
         }
-        if (typeof ql.blur === "number" && ql.listBlur === undefined) {
-          ql.listBlur = ql.blur;
+        if (ql.visibleRows === undefined) {
+          ql.visibleRows = Math.max(
+            1,
+            Math.min(4, Math.round(oldHeight / 100) - 1),
+          );
         }
-        // Grid tiles used to default to 75 and now default to 0. An
-        // existing user who never touched the slider has nothing
-        // stored, so they'd silently lose the card they've always had.
-        // Pin the OLD default for them; the new one is for fresh
-        // installs, which never reach this branch.
-        if (ql.opacity === undefined) ql.opacity = 75;
       }
       // Todo's `opacity` used to tint each ROW; now it tints the
       // widget's own background and the rows read rowOpacity. Carry
       // the stored value across to the rows and leave the new
       // background clear, which reproduces exactly what the user had.
-      const td = blob.todo?.settings;
-      if (td) {
-        if (td.rowOpacity === undefined) td.rowOpacity = td.opacity ?? 75;
-        if (td.rowBlur === undefined && typeof td.blur === "number") {
-          td.rowBlur = td.blur;
-        }
-        if (typeof td.surfaceColor === "string" && td.rowColor === undefined) {
-          td.rowColor = td.surfaceColor;
-        }
-        td.opacity = 0;
+      blob.todo ??= {};
+      blob.todo.settings ??= {};
+      const td = blob.todo.settings;
+      if (td.height === undefined) td.height = 200;
+      if (td.rowOpacity === undefined) td.rowOpacity = td.opacity ?? 75;
+      if (td.rowBlur === undefined && typeof td.blur === "number") {
+        td.rowBlur = td.blur;
       }
-      writePersisted(SCHEMA_VERSION_KEY, 3);
-      writePersisted(STORAGE_KEY, blob);
+      if (typeof td.surfaceColor === "string" && td.rowColor === undefined) {
+        td.rowColor = td.surfaceColor;
+      }
+      td.opacity = 0;
+
+      const dockTd = blob.todo.dockSettings;
+      if (dockTd && typeof dockTd === "object") {
+        if (
+          dockTd.rowOpacity === undefined &&
+          typeof dockTd.opacity === "number"
+        ) {
+          dockTd.rowOpacity = dockTd.opacity;
+        }
+        if (dockTd.rowBlur === undefined && typeof dockTd.blur === "number") {
+          dockTd.rowBlur = dockTd.blur;
+        }
+        if (
+          typeof dockTd.surfaceColor === "string" &&
+          dockTd.rowColor === undefined
+        ) {
+          dockTd.rowColor = dockTd.surfaceColor;
+        }
+        if (typeof dockTd.opacity === "number") dockTd.opacity = 0;
+      }
+      schemaVersion = 3;
+      persistWidgetMigration(blob, schemaVersion);
     }
 
     // Schema-v4: the text widgets' highlight now defaults to 50%
@@ -657,61 +718,87 @@ const loadInitialWidgets = (): WidgetsState => {
     // would silently see their pill go half-transparent. Pin the old
     // value for them; widgets with no colour set have no pill to
     // change, so they're left alone and pick up the new default.
-    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 4) {
+    if (schemaVersion < 4) {
       for (const key of ["time", "date", "greeting", "info"] as const) {
-        const st = blob[key]?.settings;
-        if (
-          st &&
-          typeof st.highlightColor === "string" &&
-          st.highlightOpacity === undefined
-        ) {
-          st.highlightOpacity = 100;
+        const entry = blob[key];
+        if (!entry) continue;
+        for (const settings of [entry.settings, entry.dockSettings]) {
+          if (
+            settings &&
+            typeof settings.highlightColor === "string" &&
+            settings.highlightOpacity === undefined
+          ) {
+            settings.highlightOpacity = 100;
+          }
         }
       }
-      writePersisted(SCHEMA_VERSION_KEY, 4);
-      writePersisted(STORAGE_KEY, blob);
+      schemaVersion = 4;
+      persistWidgetMigration(blob, schemaVersion);
     }
 
     // Schema-v5: Todo, Weather, and Notes now seed a fresh right dock.
     // The old persisted format omitted false membership values, so pin
     // those omissions to false for existing users before applying the new
     // defaults. Explicitly docked widgets already carry true and stay put.
-    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 5) {
+    if (schemaVersion < 5) {
       for (const key of DEFAULT_DOCK_WIDGET_KEYS) {
         blob[key] ??= {};
         if (blob[key].inRightSidebar === undefined) {
           blob[key].inRightSidebar = false;
         }
       }
-      writePersisted(SCHEMA_VERSION_KEY, 5);
-      writePersisted(STORAGE_KEY, blob);
+      schemaVersion = 5;
+      persistWidgetMigration(blob, schemaVersion);
     }
 
     // Schema-v6: the right-dock panel background is now a three-way
-    // surface choice. Preserve the old enabled switch as Frost; old
-    // disabled/absent values naturally become the new Clear default.
-    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 6) {
-      const settings = blob.rightSidebar?.settings;
-      if (settings) {
-        if (settings.panelBackground === true && settings.frosted === undefined) {
-          settings.frosted = true;
-          settings.frostDark = false;
-        }
-        delete settings.panelBackground;
+    // surface choice. Preserve the old enabled switch as Frost. In 2.4,
+    // an absent key also meant enabled because that switch defaulted on.
+    if (schemaVersion < 6) {
+      blob.rightSidebar ??= {};
+      blob.rightSidebar.settings ??= {};
+      const settings = blob.rightSidebar.settings;
+      if (settings.panelBackground === true && settings.frosted === undefined) {
+        settings.frosted = true;
+        settings.frostDark = false;
+      } else if (upgradingFrom240 && settings.frosted === undefined) {
+        settings.frosted = legacyDockBackground !== false;
+        settings.frostDark = false;
       }
-      writePersisted(SCHEMA_VERSION_KEY, 6);
-      writePersisted(STORAGE_KEY, blob);
+      delete settings.panelBackground;
+      for (const entry of Object.values(blob)) {
+        if (entry && typeof entry === "object") delete entry.showBackground;
+      }
+      schemaVersion = 6;
+      persistWidgetMigration(blob, schemaVersion);
     }
 
-    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 7) {
+    if (schemaVersion < 7) {
       const settings = blob.quicklinks?.settings;
       if (settings) {
+        const oldWidth =
+          typeof settings.width === "number" ? settings.width : 600;
+        const oldHeight =
+          typeof settings.height === "number" ? settings.height : 200;
+        if (settings.linksPerRow === undefined) {
+          settings.linksPerRow = Math.max(
+            2,
+            Math.min(6, Math.round(oldWidth / 100) - 1),
+          );
+        }
+        if (settings.visibleRows === undefined) {
+          settings.visibleRows = Math.max(
+            1,
+            Math.min(4, Math.round(oldHeight / 100) - 1),
+          );
+        }
         delete settings.width;
         delete settings.height;
       }
-      writePersisted(SCHEMA_VERSION_KEY, 7);
-      writePersisted(STORAGE_KEY, blob);
+      schemaVersion = 7;
+      persistWidgetMigration(blob, schemaVersion);
     }
+    removePersisted(LEGACY_DOCK_BACKGROUND_KEY);
 
     for (const key of WIDGET_KEYS) {
       const entry = defaults[key];
@@ -754,17 +841,28 @@ const loadInitialWidgets = (): WidgetsState => {
       SCHEMA_VERSION_KEY,
       null,
     );
+    if (schemaVersion !== null && schemaVersion <= 2) {
+      defaults.todo.settings.height = 200;
+      const legacyDockBackground = readPersisted<boolean | null>(
+        LEGACY_DOCK_BACKGROUND_KEY,
+        null,
+      );
+      defaults.rightSidebar.settings.frosted =
+        legacyDockBackground !== false;
+      defaults.rightSidebar.settings.frostDark = false;
+      removePersisted(LEGACY_DOCK_BACKGROUND_KEY);
+    }
     if (schemaVersion !== null && schemaVersion < 5) {
       for (const key of DEFAULT_DOCK_WIDGET_KEYS) {
         defaults[key].inRightSidebar = false;
       }
     }
-    writePersisted(SCHEMA_VERSION_KEY, 7);
   }
 
   // No modern blob - migrate from legacy (no-op if no legacy keys exist)
   const migrated = migrateLegacy(defaults);
   persistWidgets(migrated);
+  writePersisted(SCHEMA_VERSION_KEY, CURRENT_WIDGET_SCHEMA_VERSION);
   clearLegacyKeys();
   return migrated;
 };

@@ -24,21 +24,6 @@
 </head>
 
 <body>
-    <!--
-      Pre-mount paint — runs before React. On the VERY FIRST LOAD EVER
-      (no localStorage cache yet) the body paints `chihiro043.jpg`,
-      which is the chosen splash image for fresh installs. On every
-      subsequent load the body paints the previously-displayed
-      wallpaper from `ghiblify:lastBg` (written by `useBackground`),
-      so users see yesterday's photo instantly instead of waiting
-      for React to mount and pick a fresh image. Bare try/catch
-      because Chrome's strict-mode iframes / private contexts can
-      throw on localStorage access.
-    -->
-    <!-- External file, NOT inline: MV3's CSP blocks inline scripts in
-         extension pages (an inline version of this ran for months as
-         a silent no-op — see the comment in prepaint.js). -->
-    <script src="/prepaint.js"></script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
 </body>

@@ -64,7 +64,6 @@ const STORAGE_GROUPS: Array<{ id: string; keys: string[] }> = [
     id: "background",
     keys: [
       "ghiblify_background",
-      "ghiblify:lastBg",
       "ghiblify_favorites",
       "ghiblify_blacklist",
       "background_selection",

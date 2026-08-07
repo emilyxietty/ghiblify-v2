@@ -1,47 +1,37 @@
 import { createRoot } from "react-dom/client";
-import App from "./App";
+// Stylesheet only, imported statically on purpose. App itself is
+// loaded dynamically below so its synchronous storage initializers
+// can't run before the recovery completes - but that also moved every
+// stylesheet out of <head> and behind those awaits, so the page spent
+// the wait with no app CSS and then repainted all at once. CSS has no
+// storage side effects, so pulling this one out front costs nothing
+// and puts a <link> back in <head> at parse time.
+import "./App.css";
 import { cleanLegacyStorage } from "./storage/legacyMigrations";
 import {
   restoreMirrorFromChrome,
   runOneTimeSetup,
 } from "./storage/hybridStorage";
 
-// Mirror recovery FIRST: if the user cleared browsing data, the
-// localStorage mirror is gone while chrome.storage still holds their
-// real settings - booting from the empty mirror and then persisting
-// anything would overwrite that data with defaults (the "my quick
-// links reset themselves" bug). Restore the mirror, then reload once
-// so the synchronous init path re-runs against recovered data. The
-// sessionStorage guard makes the reload strictly once-per-tab, so a
-// genuinely fresh install can never reload-loop. React mounts
-// immediately regardless - the restore resolves in milliseconds and
-// only triggers the reload in the rare wiped-mirror case.
-const REHYDRATE_GUARD = "ghiblify_rehydrated_this_tab";
-restoreMirrorFromChrome()
-  .then((restored) => {
-    let guarded = false;
-    try {
-      guarded = sessionStorage.getItem(REHYDRATE_GUARD) === "1";
-      if (restored && !guarded) sessionStorage.setItem(REHYDRATE_GUARD, "1");
-    } catch {
-      guarded = true; // no sessionStorage - don't risk a loop
-    }
-    if (restored && !guarded) {
-      window.location.reload();
-      return;
-    }
-    // Single combined gate for all one-time install work - drains v1
-    // (jQuery) Ghiblify storage entries AND copies pre-hybrid
-    // localStorage values into chrome.storage. Idempotent. Run AFTER
-    // the restore so a wiped-mirror boot can't migrate emptiness.
-    runOneTimeSetup(cleanLegacyStorage);
-  })
-  .catch(() => {
-    runOneTimeSetup(cleanLegacyStorage);
-  });
+const bootstrap = async () => {
+  try {
+    await runOneTimeSetup(cleanLegacyStorage);
+  } catch {
+    /* the mirror remains usable */
+  }
+  try {
+    await restoreMirrorFromChrome();
+  } catch {
+    /* boot from the mirror */
+  }
 
-const container = document.getElementById("root");
-if (container) {
-  const root = createRoot(container);
-  root.render(<App />);
-}
+  // Import App only after storage is ready. App's dependency graph has
+  // synchronous storage initializers, so a static import would let them
+  // run before the awaited recovery above and reintroduce the data-loss race.
+  const { default: App } = await import("./App");
+  const container = document.getElementById("root");
+  if (!container) return;
+  createRoot(container).render(<App />);
+};
+
+void bootstrap();

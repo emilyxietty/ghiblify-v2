@@ -44,7 +44,7 @@ Widget persistence is debounced in `AppContext`; settings updaters do not write 
 
 ## Migration
 
-On initialization, the legacy layout is read once (`widgets_state` plus per-key entries), built into the current shape, written as `ghiblify_widgets`, and the legacy keys are deleted. The one-time setup also seeds `chrome.storage` from pre-hybrid local values. `index.tsx` restores a missing mirror from `chrome.storage` before the app can overwrite it with defaults.
+On initialization, the legacy layout is read once (`widgets_state` plus per-key entries), built into the current shape, written as `ghiblify_widgets`, and the legacy keys are deleted. The one-time setup also seeds `chrome.storage` from pre-hybrid local values. `index.tsx` reconciles missing or stale mirror values from authoritative `chrome.storage` before it imports and mounts the app, so synchronous initializers cannot overwrite saved state with defaults.
 
 Not all user content belongs in the widget blob. Todo items use `ghiblify_todo`, while Pomodoro and weather cache/election data keep dedicated keys.
 

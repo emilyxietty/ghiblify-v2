@@ -1091,15 +1091,6 @@ body {
     background-color: #000;
 }
 
-/* Transparent, NOT black. `prepaint.js` paints the previous wallpaper
-   onto <body> before React mounts precisely so a new tab never sits on
-   a blank slab - and #root, an opaque child covering the whole
-   viewport, drew straight over it. The effect was the flash the
-   pre-paint exists to prevent, just moved later: photo, then black
-   from the moment this stylesheet landed, then the fresh photo once it
-   decoded. `.background-loading` is transparent for the same reason;
-   this was the last curtain in front of it. Body keeps the black, so
-   there's still a dark base under everything. */
 #root {
     background-color: transparent;
     min-height: 100vh;

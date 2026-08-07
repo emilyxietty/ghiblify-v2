@@ -24,6 +24,10 @@ export default defineConfig({
     }),
   ],
   build: {
+    modulePreload: {
+      resolveDependencies: (_filename, deps, context) =>
+        context.hostType === "html" ? [] : deps,
+    },
     outDir: "dist",
     rollupOptions: {
       input: {

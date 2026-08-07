@@ -18,16 +18,7 @@
     "intro": "Updates ship fast - join the Discord to see what's new and chat with the community.",
     "joinButton": "Join the Discord",
     "openTooltip": "View recent changes",
-    "openAria": "View changelog (current version v{{version}})",
-    "notes": {
-      "v250Notes": "Notes became a real editor: links, numbered lists, indenting, dividers and clear-formatting, on a toolbar that follows your cursor.",
-      "v250Dock": "The right dock gained per-widget alignment, width and order, plus a short guide the first time you open it.",
-      "v250Weather": "Weather was rebuilt - the hourly strip lines up with the daily card, weekdays are correct in your timezone, and setting a location is one dialog.",
-      "v250Links": "Quick Links and Google apps: list and grid finally match, each with its own surface and a shared add/edit dialog.",
-      "v250Surfaces": "One colour picker now drives every widget surface, and frost follows your theme instead of fighting it.",
-      "v250Editing": "Drag Mode is gone - drag straight from edit mode. Widgets come to front when clicked, and the tour was reworked.",
-      "v250Under": "Under the hood: the wallpaper paints instantly on a new tab, location and email permissions are no longer requested, and cross-device sync is safer."
-    }
+    "openAria": "View changelog (current version v{{version}})"
   },
   "themes": {
     "ghibli": "Ghibli",

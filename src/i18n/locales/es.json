@@ -18,16 +18,7 @@
     "intro": "Las actualizaciones llegan rápido - únete a Discord para ver lo nuevo y charlar con la comunidad.",
     "joinButton": "Únete a Discord",
     "openTooltip": "Ver cambios recientes",
-    "openAria": "Ver registro de cambios (versión actual v{{version}})",
-    "notes": {
-      "v250Notes": "Las notas ahora son un editor de verdad: enlaces, listas numeradas, sangrías, separadores y borrar formato, con una barra que sigue al cursor.",
-      "v250Dock": "El panel derecho gana alineación, ancho y orden por widget, además de una guía breve la primera vez que lo abres.",
-      "v250Weather": "El tiempo se rehízo: la franja horaria se alinea con la tarjeta diaria, los días salen bien en tu zona horaria y elegir ubicación es un solo diálogo.",
-      "v250Links": "Enlaces rápidos y apps de Google: lista y cuadrícula por fin coinciden, cada una con su superficie y un diálogo compartido para añadir y editar.",
-      "v250Surfaces": "Un único selector de color controla todas las superficies, y el efecto glaseado sigue tu tema en vez de pelearse con él.",
-      "v250Editing": "Se acabó el modo arrastrar: arrastra directamente desde el modo edición. Los widgets pasan al frente al hacer clic y la guía se rehízo.",
-      "v250Under": "Por dentro: el fondo se pinta al instante en cada pestaña nueva, ya no se piden permisos de ubicación ni de correo, y la sincronización entre dispositivos es más segura."
-    }
+    "openAria": "Ver registro de cambios (versión actual v{{version}})"
   },
   "themes": {
     "spirited": "El viaje de Chihiro",

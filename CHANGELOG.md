@@ -7,6 +7,19 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
+## 2.5.0 — 2026-08-07
+
+- Added a rich Notes editor with links, lists, indentation, dividers,
+  clear-formatting, and a contextual toolbar.
+- Expanded the right dock with per-widget alignment, width, ordering,
+  independent surface settings, and a first-use guide.
+- Reworked Weather, Quick Links, Google Apps, widget surface controls,
+  edit-mode dragging, stacking, and the onboarding tour.
+- Hardened the hybrid-storage startup sequence and added ordered widget
+  schema migrations that preserve 2.4.0 layouts and visual settings.
+- Removed the previous-wallpaper prepaint handoff so a new tab displays
+  one selected background rather than flashing between two images.
+
 ## 2.4.0 — 2026-08-03
 
 Large settings + widget pass. Highlights:

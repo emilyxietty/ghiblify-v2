@@ -124,12 +124,6 @@ export const useBackground = () => {
         // stranded with nothing to display.
         const sourcesToUse = allowedSources;
 
-        console.log("useBackground: backgroundSelection", backgroundSelection);
-        console.log(
-          "useBackground: allowed source titles",
-          sourcesToUse.map((s) => s.title),
-        );
-
         // Only use sources that have metadata entries - prevents selecting a
         // background whose metadata is missing and falling back to the default.
         const validSources = sourcesToUse.filter(
@@ -160,9 +154,6 @@ export const useBackground = () => {
         });
 
         if (allLinks.length === 0) {
-          console.log(
-            "useBackground: no candidate links with metadata found, falling back to default",
-          );
           // Self-heal - when the pool is empty (no enabled movies AND
           // no favorites), auto-enable the first available source so
           // the user is never stranded with nothing to rotate. Picks
@@ -267,13 +258,6 @@ export const useBackground = () => {
           chosenLink = `${chosenLink}${sep}cb=${Date.now()}`;
         }
 
-        console.log(
-          "useBackground: selected source",
-          selected?.sourceTitle,
-          "link",
-          chosenLink,
-        );
-
         // Resolve metadata. When the pick came from the favorites
         // pool the sourceTitle is the sentinel "__favorites__" - not
         // a real metadata key - so look up the actual originating
@@ -334,20 +318,6 @@ export const useBackground = () => {
       );
     };
   }, [backgroundSelection, online]);
-
-  // Persist the most recent background URL to localStorage. The
-  // inline script in `newtab.html` reads this on the NEXT new-tab
-  // load and paints it on <body> before React mounts, so users see
-  // their previous wallpaper instantly. On the very first load ever
-  // (no cache), the script falls back to chihiro043.jpg.
-  useEffect(() => {
-    if (!currentBackground) return;
-    try {
-      localStorage.setItem("ghiblify:lastBg", currentBackground);
-    } catch {
-      /* ignore - quota exceeded / private context */
-    }
-  }, [currentBackground]);
 
   return { currentBackground, filmTitle, loading };
 };

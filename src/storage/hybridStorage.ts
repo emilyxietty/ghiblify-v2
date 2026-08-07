@@ -38,8 +38,8 @@
  *   subscribe(key, fn)       - fires on any chrome.storage change
  *                              for that key (this tab, sibling tab,
  *                              or remote sync from another device)
- *   migrateOnce()            - one-time copy of pre-hybrid
- *                              localStorage values into chrome.storage
+ *   runOneTimeSetup()        - one-time setup + mirror seeding
+ *   restoreMirrorFromChrome()- boot-time source-of-truth reconciliation
  *
  * Values are arbitrary JSON-serializable data. The mirror stringifies;
  * chrome.storage stores the parsed structure natively.
@@ -143,6 +143,28 @@ export const write = (key: string, value: unknown): void => {
   }
 };
 
+/** Write several registered values as one update per storage area. */
+export const writeBatch = (values: Record<string, unknown>): void => {
+  const byArea: Record<Area, Record<string, unknown>> = {
+    sync: {},
+    local: {},
+  };
+  for (const [key, value] of Object.entries(values)) {
+    writeMirror(key, value);
+    const area = areaFor(key);
+    if (area) byArea[area][key] = value;
+  }
+  if (!hasChromeStorage) return;
+  for (const area of ["sync", "local"] as const) {
+    if (Object.keys(byArea[area]).length === 0) continue;
+    try {
+      chromeNs.storage[area].set(byArea[area]);
+    } catch {
+      /* ignore - mirror still holds every value */
+    }
+  }
+};
+
 /** Remove from both mirror and chrome.storage. */
 export const remove = (key: string): void => {
   removeMirror(key);
@@ -218,8 +240,8 @@ if (hasChromeStorage) {
 // silently undo the other device's edits. Anything genuinely newer in
 // the mirror reaches chrome.storage through the next `write()`
 // anyway - every write goes to both layers.
-const performHybridMigration = async (): Promise<void> => {
-  if (!hasChromeStorage) return;
+const performHybridMigration = async (): Promise<boolean> => {
+  if (!hasChromeStorage) return true;
 
   // Bucket by area so we can issue at most two get/set pairs rather
   // than one per key.
@@ -241,40 +263,49 @@ const performHybridMigration = async (): Promise<void> => {
   }
 
   const getArea = (area: Area, keys: string[]) =>
-    new Promise<Record<string, unknown>>((resolve) => {
+    new Promise<Record<string, unknown> | null>((resolve) => {
       if (!keys.length) return resolve({});
       try {
-        chromeNs.storage[area].get(keys, (items: Record<string, unknown>) =>
-          resolve(items ?? {}),
+        chromeNs.storage[area].get(
+          keys,
+          (items: Record<string, unknown>) => {
+            if (chromeNs.runtime?.lastError) {
+              resolve(null);
+              return;
+            }
+            resolve(items ?? {});
+          },
         );
       } catch {
-        // Unreadable: treat everything as already present rather than
-        // risk overwriting values we failed to look at.
-        resolve(Object.fromEntries(keys.map((k) => [k, null])));
+        resolve(null);
       }
     });
 
   const setArea = (area: Area, payload: Record<string, unknown>) =>
-    new Promise<void>((resolve) => {
-      if (Object.keys(payload).length === 0) return resolve();
+    new Promise<boolean>((resolve) => {
+      if (Object.keys(payload).length === 0) return resolve(true);
       try {
-        chromeNs.storage[area].set(payload, () => resolve());
+        chromeNs.storage[area].set(payload, () => {
+          resolve(!chromeNs.runtime?.lastError);
+        });
       } catch {
-        resolve();
+        resolve(false);
       }
     });
 
   const seed = async (area: Area) => {
     const keys = Object.keys(mirrored[area]);
     const existing = await getArea(area, keys);
+    if (existing == null) return false;
     const payload: Record<string, unknown> = {};
     for (const key of keys) {
       if (existing[key] === undefined) payload[key] = mirrored[area][key];
     }
-    await setArea(area, payload);
+    return setArea(area, payload);
   };
 
-  await Promise.all([seed("sync"), seed("local")]);
+  const results = await Promise.all([seed("sync"), seed("local")]);
+  return results.every(Boolean);
 };
 
 /**
@@ -312,7 +343,8 @@ export const runOneTimeSetup = async (
     }
   }
 
-  await performHybridMigration();
+  const migrated = await performHybridMigration();
+  if (!migrated) return;
 
   try {
     localStorage.setItem(SETUP_FLAG, String(SETUP_VERSION));
@@ -332,8 +364,8 @@ export const runOneTimeSetup = async (
 };
 
 /**
- * Boot-time mirror recovery - the fix for "my settings reset
- * themselves".
+ * Boot-time mirror reconciliation - the fix for "my settings reset
+ * themselves" and for a mirror that went stale while Chrome was closed.
  *
  * The localStorage mirror is NOT durable: Chrome wipes an extension's
  * localStorage when the user clears browsing data (and under storage
@@ -343,36 +375,38 @@ export const runOneTimeSetup = async (
  * ones) then overwrote the user's REAL data in chrome.storage.
  * Quick links, todos, positions: all gone.
  *
- * This scans every registered key: where the mirror is missing a key
- * that chrome.storage still has, the mirror is restored from
- * chrome.storage. Returns true if anything was restored - the caller
- * should reload the page so the whole synchronous init path re-runs
- * against the recovered mirror.
+ * Chrome storage is authoritative. This reads every registered key and
+ * copies any present Chrome value over a missing or stale mirror value.
+ * A Chrome-missing value does not remove a mirror value: that can be a
+ * legitimate fallback from a previous failed async write.
+ *
+ * The caller must await this before importing or mounting app code so no
+ * synchronous initializer can persist defaults over an unrecovered value.
  */
 export const restoreMirrorFromChrome = async (): Promise<boolean> => {
   if (!hasChromeStorage) return false;
 
   const keysByArea: Record<Area, string[]> = { sync: [], local: [] };
   for (const [key, area] of Object.entries(HYBRID_KEYS)) {
-    let mirrored: string | null = null;
-    try {
-      mirrored = localStorage.getItem(key);
-    } catch {
-      return false; // storage unavailable - nothing sensible to do
-    }
-    if (mirrored == null) keysByArea[area].push(key);
+    keysByArea[area].push(key);
   }
-  if (!keysByArea.sync.length && !keysByArea.local.length) return false;
 
   const getArea = (area: Area, keys: string[]) =>
-    new Promise<Record<string, unknown>>((resolve) => {
+    new Promise<Record<string, unknown> | null>((resolve) => {
       if (!keys.length) return resolve({});
       try {
-        chromeNs.storage[area].get(keys, (items: Record<string, unknown>) =>
-          resolve(items ?? {})
+        chromeNs.storage[area].get(
+          keys,
+          (items: Record<string, unknown>) => {
+            if (chromeNs.runtime?.lastError) {
+              resolve(null);
+              return;
+            }
+            resolve(items ?? {});
+          },
         );
       } catch {
-        resolve({});
+        resolve(null);
       }
     });
 
@@ -383,8 +417,16 @@ export const restoreMirrorFromChrome = async (): Promise<boolean> => {
 
   let restored = false;
   for (const items of [syncItems, localItems]) {
+    if (items == null) continue;
     for (const [key, value] of Object.entries(items)) {
       if (value === undefined) continue;
+      let current: string | null;
+      try {
+        current = localStorage.getItem(key);
+      } catch {
+        return restored;
+      }
+      if (current === JSON.stringify(value)) continue;
       writeMirror(key, value);
       restored = true;
     }
