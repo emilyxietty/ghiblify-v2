@@ -18,6 +18,7 @@ import {
   useOptionalPermission,
   type OptionalPermission,
 } from "../../utils/chromePermissions";
+import { ConfirmDialog } from "../ConfirmDialog/ConfirmDialog";
 import { CloseIcon, DeleteOutlineIcon, ExpandMoreIcon } from "../Icons/Icons";
 import "./SettingsModal.css";
 
@@ -55,7 +56,6 @@ const STORAGE_GROUPS: Array<{ id: string; keys: string[] }> = [
       "ghiblify_todo",
       "ghiblify_pomodoro",
       "ghiblify_weather",
-      "ghiblify_dock_show_bg",
       "ghiblify_recent_colors",
       "ghiblify_search_history",
     ],
@@ -222,59 +222,6 @@ interface PendingAction {
   run: () => void;
 }
 
-const ConfirmDialog: React.FC<{
-  action: PendingAction;
-  cancelLabel: string;
-  onCancel: () => void;
-}> = ({ action, cancelLabel, onCancel }) => {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    ref.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        // Captured before the settings dialog's own Escape handler so
-        // cancelling the confirm doesn't also close everything behind it.
-        e.stopPropagation();
-        onCancel();
-      }
-    };
-    document.addEventListener("keydown", onKey, true);
-    return () => document.removeEventListener("keydown", onKey, true);
-  }, [onCancel]);
-
-  return (
-    <div className="settings-confirm-backdrop" onClick={onCancel}>
-      <div
-        ref={ref}
-        className="settings-confirm-dialog"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="settings-confirm-title"
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 id="settings-confirm-title" className="settings-confirm-title">
-          {action.title}
-        </h3>
-        <p className="settings-confirm-message">{action.message}</p>
-        <div className="settings-confirm-actions">
-          <button type="button" className="settings-btn" onClick={onCancel}>
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className="settings-btn settings-btn-danger"
-            onClick={() => action.run()}
-          >
-            {action.confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 /**
  * The stored-data list for one area.
  *
@@ -373,8 +320,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     backgroundParallax,
     setBackgroundParallax,
     updateBackgroundFilters,
-    dockShowBackgrounds,
-    setDockShowBackgrounds,
     resetAllWidgets,
     resetRightSidebar,
     setEditingWidgetKey,
@@ -537,12 +482,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               checked={appearance.proportionalScaling !== false}
               onChange={(v) => updateAppearance({ proportionalScaling: v })}
             />
-            <ToggleRow
-              label={t("settings.dockBackgrounds")}
-              description={t("settings.dockBackgroundsSub")}
-              checked={dockShowBackgrounds}
-              onChange={setDockShowBackgrounds}
-            />
             <div className="settings-actions">
               <DangerButton
                 label={t("settings.resetWidgets")}
@@ -593,7 +532,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {t("settings.appearanceTitle")}
             </h3>
             <ToggleRow
-              label={t("sidebar.filters.highContrast")}
+              label={t("sidebar.appearance.highContrast")}
               description={t("settings.highContrastSub")}
               checked={appearance.highContrast}
               onChange={(v) => updateAppearance({ highContrast: v })}
@@ -727,11 +666,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               label={t("settings.permissionMicrophone")}
               description={t("settings.permissionMicrophoneSub")}
             />
-            <PermissionRow
-              name="identity.email"
-              label={t("settings.permissionEmail")}
-              description={t("settings.permissionEmailSub")}
-            />
           </section>
         )}
 
@@ -773,8 +707,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
       {pending && (
         <ConfirmDialog
-          action={pending}
+          open
+          title={pending.title}
+          message={pending.message}
+          confirmLabel={pending.confirmLabel}
           cancelLabel={t("settings.resetConfirmCancel")}
+          onConfirm={pending.run}
           onCancel={() => setPending(null)}
         />
       )}

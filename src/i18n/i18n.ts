@@ -146,6 +146,20 @@ export function getLocale(): string {
   return currentLocale;
 }
 
+const INTL_LOCALES: Record<string, string> = {
+  en: "en-US",
+  es: "es-ES",
+  fr: "fr-FR",
+  ja: "ja-JP",
+  ko: "ko-KR",
+  pt: "pt-BR",
+  zh: "zh-CN",
+};
+
+export function getIntlLocale(): string {
+  return INTL_LOCALES[currentLocale] ?? "en-US";
+}
+
 export function t(
   key: string,
   vars?: Record<string, string | number>

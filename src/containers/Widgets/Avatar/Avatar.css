@@ -17,7 +17,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Credit chip - single component, two reveal triggers (Shift hold OR
+   Credit chip - single component, two reveal triggers (D hold OR
    widget in edit mode). Shows the avatar's display name plus, when
    available, the creator name as a link to the source.
    --------------------------------------------------------------------------- */
@@ -65,7 +65,7 @@
     opacity: 0.85;
 }
 
-/* Reveal triggers - Shift held anywhere OR widget in edit mode. */
+/* Reveal triggers - D held anywhere OR widget in edit mode. */
 body.show-widget-outline .avatar-credit,
 .widget.edit-mode .avatar-credit {
     opacity: 1;
@@ -75,7 +75,7 @@ body.show-widget-outline .avatar-credit,
 /* ---------------------------------------------------------------------------
    Nav arrows for cycling avatars. Always in the DOM (so the user
    doesn't see a layout shift when entering edit mode), hidden by
-   default. Only revealed in edit mode - Shift hold is just for the
+   default. Only revealed in edit mode - D hold is just for the
    credit, not for picking a new avatar.
    --------------------------------------------------------------------------- */
 

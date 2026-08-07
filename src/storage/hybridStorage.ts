@@ -59,6 +59,7 @@ export const HYBRID_KEYS: Record<string, Area> = {
   // Larger blobs that don't need to follow the user across devices.
   // Could be promoted to "sync" later if quota allows.
   ghiblify_widgets: "local",
+  ghiblify_widgets_schema_version: "local",
   ghiblify_background: "local",
   ghiblify_todo: "local",
   // Per-install flag.
@@ -70,6 +71,7 @@ export const HYBRID_KEYS: Record<string, Area> = {
 // the previous pair of flags (`ghiblify_legacy_cleaned`,
 // `ghiblify_hybrid_migrated`); see runOneTimeSetup below.
 const SETUP_FLAG = "ghiblify_setup_done";
+const SETUP_VERSION = 2;
 const LEGACY_FLAGS = [
   "ghiblify_legacy_cleaned",
   "ghiblify_hybrid_migrated",
@@ -260,24 +262,26 @@ const performHybridMigration = async (): Promise<void> => {
 export const runOneTimeSetup = async (
   cleanLegacy: () => void
 ): Promise<void> => {
-  let already = false;
+  let storedVersion: string | null = null;
   try {
-    already = localStorage.getItem(SETUP_FLAG) === "true";
+    storedVersion = localStorage.getItem(SETUP_FLAG);
   } catch {
     return;
   }
-  if (already) return;
+  if (storedVersion === String(SETUP_VERSION)) return;
 
-  try {
-    cleanLegacy();
-  } catch {
-    /* ignore - workers are themselves idempotent and try-wrapped */
+  if (storedVersion == null) {
+    try {
+      cleanLegacy();
+    } catch {
+      /* ignore - workers are themselves idempotent and try-wrapped */
+    }
   }
 
   await performHybridMigration();
 
   try {
-    localStorage.setItem(SETUP_FLAG, "true");
+    localStorage.setItem(SETUP_FLAG, String(SETUP_VERSION));
     // Tidy the previous-build per-step flags so users don't carry
     // dead keys around forever.
     LEGACY_FLAGS.forEach((k) => localStorage.removeItem(k));

@@ -69,10 +69,16 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
       setSidebarSpotlight("guide");
     } else if (slide === "widgets") {
       setSidebarSpotlight("widgets");
+    } else if (slide === "adjustTime") {
+      setSidebarSpotlight("widgetEdit");
+    } else if (slide === "drag") {
+      setSidebarSpotlight("canvas");
     } else if (slide === "palette") {
       setSidebarSpotlight("palette");
     } else if (slide === "background") {
       setSidebarSpotlight("background");
+    } else if (slide === "shortcuts") {
+      setSidebarSpotlight("shortcuts");
     } else {
       setSidebarSpotlight(null);
     }
@@ -90,34 +96,29 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
     return () => document.body.classList.remove("guide-open");
   }, [open]);
 
-  // Drop the Time widget into edit mode while the adjustTime slide is
-  // showing, so the user sees the widget's actual edit-mode chrome
-  // (resize handle + EditWidget overlay) on the page above the dialog.
-  // Cleanup runs when the slide changes or the modal closes.
-  // Also flips a body class so CSS can pulse the 12/24h toggle and
-  // the resize handle on the Time widget - pure visual cue that lives
-  // alongside the existing sidebar spotlight rules.
   useEffect(() => {
     if (!open) return;
-    if (SLIDE_IDS[index] !== "adjustTime") return;
-    setEditingWidgetKey("time");
-    document.body.classList.add("tutorial-adjust-time");
-    // Also open the sidebar toggle's right-click menu for Time - the
-    // third route into editing a widget, and the one nobody discovers
-    // on their own. Deferred a frame so the sidebar has finished
-    // sliding in and the toggle's rect is final.
-    const raf = window.requestAnimationFrame(() => {
-      window.dispatchEvent(
-        new CustomEvent("ghiblify:open-toggle-menu", {
-          detail: { key: "time" },
-        }),
-      );
-    });
+    const slide = SLIDE_IDS[index];
+    if (slide !== "adjustTime" && slide !== "drag") return;
+    const className =
+      slide === "adjustTime" ? "tutorial-enter-edit" : "tutorial-edit-widget";
+    setEditingWidgetKey(slide === "drag" ? "time" : null);
+    document.body.classList.add(className);
+    const raf =
+      slide === "adjustTime"
+        ? window.requestAnimationFrame(() => {
+            window.dispatchEvent(
+              new CustomEvent("ghiblify:open-toggle-menu", {
+                detail: { key: "time" },
+              }),
+            );
+          })
+        : null;
     return () => {
-      window.cancelAnimationFrame(raf);
+      if (raf !== null) window.cancelAnimationFrame(raf);
       window.dispatchEvent(new CustomEvent("ghiblify:close-toggle-menu"));
       setEditingWidgetKey(null);
-      document.body.classList.remove("tutorial-adjust-time");
+      document.body.classList.remove(className);
     };
   }, [open, index, setEditingWidgetKey]);
 
@@ -225,23 +226,13 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         return (
           <>
             <p>{t("welcome.slides.adjustTime.body1")}</p>
-            <p>
-              {t("welcome.slides.adjustTime.body2Pre")}
-              <Key>d</Key>
-              {t("welcome.slides.adjustTime.body2Post")}
-            </p>
+            <p>{t("welcome.slides.adjustTime.body2")}</p>
           </>
         );
       case "drag":
         return (
           <>
-            <p>
-              {t("welcome.slides.drag.body1Pre")}
-              <Key>d</Key>
-              {t("welcome.slides.drag.body1Sep")}
-              <Key>shift</Key>
-              {t("welcome.slides.drag.body1Post")}
-            </p>
+            <p>{t("welcome.slides.drag.body1")}</p>
             <p>{t("welcome.slides.drag.body2")}</p>
             <p className="welcome-hint">{t("welcome.slides.drag.hint")}</p>
           </>
@@ -265,18 +256,20 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
             </li>
             <li>
               <span className="welcome-shortcut-keys">
-                <Key>d</Key> {t("welcome.slides.shortcuts.orSep")}{" "}
-                <Key>shift</Key> + drag
+                <Key>D</Key> + drag
               </span>
               <span>{t("welcome.slides.shortcuts.moveWidget")}</span>
             </li>
             <li>
               <span className="welcome-shortcut-keys">
-                <Key>d</Key> {t("welcome.slides.shortcuts.orSep")}{" "}
-                <Key>shift</Key> +{" "}
+                <Key>D</Key> +{" "}
                 <span className="welcome-icon-key" aria-label="edit pencil icon">
                   <EditIcon style={{ fontSize: 14 }} />
                 </span>
+                <span>{t("welcome.slides.shortcuts.orSep")}</span>
+                <Key>
+                  {t("welcome.slides.adjustTime.rightClickWidgetCue")}
+                </Key>
               </span>
               <span>{t("welcome.slides.shortcuts.editWidget")}</span>
             </li>
@@ -330,6 +323,8 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
         isCorneredMode ? " is-cornered-mode" : ""
       }${isPassthrough ? " is-passthrough" : ""}${
         slideId === "welcome" ? " is-welcome-slide" : ""
+      }${
+        slideId === "shortcuts" ? " is-shortcuts-slide" : ""
       }`}
     >
       <div

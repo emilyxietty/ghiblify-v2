@@ -1,6 +1,6 @@
 # Widgets
 
-Every widget is registered in `src/config/widgetConfig.ts` and rendered through the universal wrapper at `src/containers/Widget/Widget.tsx`.
+Every widget is registered in `src/config/widgetConfig.ts`. `WidgetRenderer.tsx` supplies its content to either the canvas `Widget` shell or the dock `DockWidget` shell.
 
 ## Anatomy of a widget
 
@@ -10,7 +10,7 @@ src/containers/Widgets/<Name>/
 └── <Name>.css     # co-located styles, BEM-lite class names
 ```
 
-The widget receives no drag/resize props - `Widget.tsx` handles that. It does receive whatever settings come from AppContext (font size, dimensions, dark mode, etc.) so it can render at the right scale.
+The widget receives no drag/resize props. Canvas-only widgets can read AppContext directly. A widget that can appear in the dock should use `hooks/useWidgetSettings.ts`, which merges dock overrides on the dock surface and writes back to the correct settings layer.
 
 ## Widget config entry
 
@@ -48,42 +48,34 @@ The map type `WidgetConfigsType` is `{ [K in WidgetKey]: WidgetConfig<K> }` - ad
    - Define a `FooSettings` interface (no `position`, no `visible`).
    - Add `foo: FooSettings` to `WidgetSettingsMap` and `"foo"` to `WIDGET_KEYS`.
    - Add the `foo` entry to `WIDGET_CONFIGS` with `name`, `position`, `settings`, and any of `fontSize`/`width`/`height`/`size`/`customControls` you need.
+   - Add the key to `CANVAS_WIDGET_KEYS` and, when applicable, `LEFT_SIDEBAR_WIDGET_KEYS` or `DOCK_WIDGET_KEYS`. Dockable widgets also need a `DOCK_WIDTH_POLICIES` entry.
 2. **Build the component** in `src/containers/Widgets/Foo/Foo.tsx`:
    ```ts
    const { widgets } = useAppContext();
    const settings = widgets.foo.settings;  // typed as FooSettings
    ```
    Read-only widgets stop here. Widgets that need to mutate their own settings call `updateWidgetSettings("foo", patch)`.
-3. **Render it** in `App.tsx`, gated by `widgets.foo.visible`, wrapped in `<Widget storageKey="foo">`.
-4. **Add the sidebar toggle** in `src/containers/LeftSidebar/LeftSidebar.tsx` - one `<Button>` calling `toggleWidgetVisibility("foo")`.
-5. **Verify**: load the unpacked extension, toggle on, drag, edit, reload, confirm persistence in the `ghiblify_widgets` localStorage entry.
+3. **Register its content** in `WidgetRenderer.tsx`. Add its picker glyph to `WidgetIcon.tsx` when it appears in the sidebar or dock.
+4. **Verify**: load the unpacked extension, toggle on, drag, edit, reload, and confirm persistence in `ghiblify_widgets` (both the local mirror and `chrome.storage.local`).
 
-No AppContext changes required - the generic `updateWidgetSettings` and the `WidgetsState` shape pick up the new key automatically.
+No `App.tsx` or `LeftSidebar.tsx` render branch is required. The generic `updateWidgetSettings` and `WidgetsState` shape pick up the new key automatically. Add the key to `HIDDEN_BY_DEFAULT` only when it should start off.
 
-User content (todo items, link lists) lives in widget settings now too (e.g. `widgets.quicklinks.settings.links`). If you have something that genuinely doesn't belong (cross-tab pomodoro state, etc.), use a separate localStorage key.
+Small widget-owned content can live in settings (Quick Links does). Larger, independently synchronized content can use a dedicated hybrid key (Todo does). Cross-tab coordination that relies on the browser `storage` event, such as Pomodoro leader election, stays in plain localStorage.
 
 ## Reusing controls in EditWidget
 
 If your widget needs a toggle/picker that already exists (font size, dark mode, time format, infoFields, avatar selector, grid mode), set the corresponding `customControls` flag and you're done - `EditWidget` renders it automatically.
 
-If you need a brand-new control type, add it to `EditWidget.tsx` behind a new `customControls` key. Use the **custom event pattern** to signal the widget rather than threading callbacks through `Widget`:
+If you need a brand-new control type, add it to `EditWidget.tsx` behind a new `customControls` key and update settings through `updateWidgetSettings`:
 
 ```ts
-// In EditWidget on user action:
-window.dispatchEvent(new CustomEvent("myWidgetSomethingChanged", { detail: ... }));
-
-// In your widget:
-useEffect(() => {
-  const handler = (e: CustomEvent) => { /* react */ };
-  window.addEventListener("myWidgetSomethingChanged", handler as EventListener);
-  return () => window.removeEventListener("myWidgetSomethingChanged", handler as EventListener);
-}, []);
+updateWidgetSettings("foo", { mySetting: nextValue });
 ```
 
 ## Modifying an existing widget
 
 - Drag/resize/position behavior lives in `Widget.tsx` - touch carefully; it affects every widget.
-- Widget-internal state (e.g. todo items, quick link entries) is local to the widget file plus its own localStorage key. AppContext does not own it.
+- Decide content ownership deliberately: Quick Links lives in widget settings; Todo uses a dedicated hybrid key; Pomodoro uses dedicated local-only coordination state.
 - Snap points are defined in `Widget.tsx` (2%, 50%, 98%). Changing them changes layout for all widgets.
 
 ## Things to keep consistent

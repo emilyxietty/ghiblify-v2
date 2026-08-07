@@ -66,7 +66,6 @@
       "languageAria": "Choose language",
       "editWidgets": "Edit Mode",
       "resetAllWidgets": "Reset All Widgets",
-      "resetFilters": "Reset background settings",
       "selectBackgrounds": "Select Backgrounds",
       "deleteBackground": "Delete background",
       "deleteBackgroundAria": "Remove the current background from the rotation",
@@ -78,7 +77,7 @@
       "refreshBackgroundAria": "Pick a new background from the selected sources"
     },
     "appearance": {
-      "palette": "Palette",
+      "palette": "Palettes",
       "paletteAria": "Color palette",
       "highContrast": "High contrast"
     },
@@ -107,12 +106,30 @@
   },
   "rightDock": {
     "emptyTitle": "Right sidebar",
-    "emptyHint": "Click the Settings button below to choose which widgets appear here. They can live in the right sidebar and on the canvas at the same time.",
+    "emptyHint": "Click the + button below to choose which widgets appear here. They can live in the right sidebar and on the canvas at the same time.",
     "callout": "Right sidebar - hover the right edge to open",
     "settingsLabel": "Settings",
+    "addWidgetsLabel": "Add widgets",
     "pickerLabel": "Choose widgets to show in the right sidebar",
-    "showBackgroundsLabel": "Show backgrounds",
-    "resetLabel": "Reset right sidebar",
+    "panelBackgroundLabel": "Panel background",
+    "orderLabel": "Order",
+    "moveUpLabel": "Move up",
+    "moveDownLabel": "Move down",
+    "guide": {
+      "button": "Right sidebar guide",
+      "title": "Using the right sidebar",
+      "intro": "Choose what appears here, then customize each widget independently from its canvas version.",
+      "addTitle": "Choose widgets",
+      "addBody": "Click the + button, then select the widgets you want in the right sidebar.",
+      "editTitle": "Open widget settings",
+      "editBody": "Right-click any widget in the right sidebar to open its controls.",
+      "rightClickCue": "Right-click",
+      "orderTitle": "Move widgets",
+      "orderBody": "In the Order row, use the up or down arrow. Each click moves the widget one position.",
+      "sizeTitle": "Choose a size",
+      "sizeBody": "For supported widgets, choose the square for half width or the rectangle for full width."
+    },
+    "resetLabel": "Reset sidebar widgets",
     "resetConfirm": "Reset all right sidebar settings? Your canvas widgets are not affected."
   },
   "widgets": {
@@ -144,7 +161,6 @@
       "hideFromRightSidebar": "Hide from right sidebar",
       "dockWidthFull": "Full width",
       "dockWidthHalf": "Half width",
-      "showBackground": "Show background",
       "time12": "12-hour",
       "time24": "24-hour",
       "timeAnalog": "Analog",
@@ -183,13 +199,24 @@
       "textShadow": "Text shadow",
       "textShadowAria": "Text shadow strength",
       "noCustomization": "No customization available",
+      "dockWidth": "Widget width",
       "darkModeAria": "Toggle dark mode",
       "timeFormatAria": "Choose clock format",
       "timeFormat12": "12h",
       "timeFormat24": "24h",
       "timeFormatAnalog": "Analog",
+      "dateFormatLabel": "Date style",
+      "dateToday": "Today",
+      "dateFormat": {
+        "long": "Full date",
+        "short": "Short date",
+        "slash": "With slashes",
+        "calendar": "Mini calendar"
+      },
       "gridShow": "Show as grid",
       "gridShowList": "Show as list",
+      "quicklinksPerRow": "Links per row",
+      "quicklinksVisibleRows": "Visible rows",
       "resizeTitle": "Drag to resize {{name}}",
       "infoFields": {
         "japaneseTitle": "Japanese Title",
@@ -246,6 +273,10 @@
         "hourly": "Hourly",
         "full": "Full forecast"
       },
+      "weatherLayoutLabel": "Layout",
+      "weatherLayoutAria": "Choose weather layout",
+      "weatherLayoutStandard": "Standard",
+      "weatherLayoutCompact": "Compact",
       "weatherStylePlain": "Plain",
       "weatherStyleCard": "Card",
       "weatherAnimatedIcons": "Animated icons",
@@ -271,7 +302,10 @@
       "styleFrostDark": "Dark frost",
       "styleClear": "Clear",
       "styleWeather": "Weather",
+      "backgroundTune": "Adjust background",
+      "backgroundTuneUnavailable": "Select a background to customize it",
       "highlightTune": "Adjust highlight",
+      "highlightTuneUnavailable": "Select a highlight to customize it",
       "weatherLocationHint": "Your location is only used to fetch the local forecast - it never leaves this device except to the weather service.",
       "guideResize": "Resize",
       "surfaceHighlights": "Highlights",
@@ -279,8 +313,7 @@
     },
     "gapps": {
       "menuAria": "Google apps",
-      "accountAria": "Google Account",
-      "personalize": "Show my account initial"
+      "accountAria": "Google Account"
     }
   },
   "greeting": {
@@ -327,7 +360,6 @@
     "editLink": "Edit link",
     "deleteLink": "Delete link",
     "deleteAria": "Delete {{title}}",
-    "deleteGridTooltip": "Delete {{title}}",
     "deleteListTooltip": "Delete link",
     "removeTooltip": "Remove links",
     "doneDeleteTooltip": "Done deleting",
@@ -344,7 +376,9 @@
     "previewEmpty": "New link",
     "cancel": "Cancel",
     "save": "Save",
-    "addButton": "Add"
+    "addButton": "Add",
+    "previousPage": "Previous quick links page",
+    "nextPage": "Next quick links page"
   },
   "pomodoro": {
     "modeFocus": "Pomodoro",
@@ -595,18 +629,18 @@
         "body2": "The same section carries Font and Corners - pick the typeface for the whole page, and how rounded every surface should be. All three are expanded in the sidebar now."
       },
       "adjustTime": {
-        "title": "Edit widgets",
-        "body1": "Every widget has its own controls. The Time widget above is now in edit mode - flip between 12 / 24-hour, and drag the slider to size the clock.",
-        "body2Pre": "Three ways to edit any widget: right-click it on the page, hold ",
-        "body2Post": " (or Shift) and click the pencil that appears on hover, or right-click the widget's icon in the left sidebar - that menu is open now."
+        "title": "Enter edit mode",
+        "body1": "Right-click any widget on the page to enter edit mode and open its controls.",
+        "body2": "You can also right-click its icon in the left sidebar, then choose Edit. Both options are indicated on the Time widget now.",
+        "rightClickWidgetCue": "Right-click widget",
+        "rightClickIconCue": "Right-click icon"
       },
       "drag": {
-        "title": "Move widgets around",
-        "body1Pre": "Hold ",
-        "body1Sep": " or ",
-        "body1Post": " and click-drag the Time widget above to reposition it. Widgets snap to grid lines (left edge, center, right edge) so they stay tidy.",
-        "body2": "While a widget is in edit mode you can also just drag the widget itself - no key needed.",
-        "hint": "The cursor turns into a grab hand while D or Shift is held - that's your cue."
+        "title": "Drag, resize, edit widgets",
+        "body1": "Use the edit panel to change the widget's settings.",
+        "body2": "Drag the widget itself to move it—no key needed.",
+        "dragCue": "Click + drag",
+        "hint": "Drag the shadowed corner grip to resize."
       },
       "background": {
         "title": "Select backgrounds",
@@ -618,7 +652,7 @@
         "title": "Keyboard shortcuts",
         "openSidebar": "Open or close the sidebar",
         "moveWidget": "Move a widget around",
-        "editWidget": "Edit a single widget (hold D or Shift, click the pencil)",
+        "editWidget": "Edit, drag, resize a specific widget",
         "escape": "Close the sidebar, popovers, edit mode, or this guide",
         "enter": "Confirm an edit, or exit edit mode",
         "navigateGuide": "Navigate slides in this guide",
@@ -668,7 +702,7 @@
     "resetConfirmCancel": "Cancel",
     "section": {
       "widgets": "Widget settings",
-      "appearance": "Appearance settings",
+      "appearance": "Palette settings",
       "background": "Background settings",
       "cursor": "Cursor settings"
     },
@@ -677,8 +711,6 @@
     "backgroundTitle": "Background",
     "cursorTitle": "Cursor",
     "cursorSub": "Puts the cursor trail back to the plain system pointer. Its setting is stored with Appearance.",
-    "dockBackgrounds": "Dock card backgrounds",
-    "dockBackgroundsSub": "Paint a glass card behind widgets docked on the right.",
     "highContrastSub": "Stronger text contrast across the whole page.",
     "parallaxSub": "The wallpaper drifts gently with your cursor.",
     "resetWidgets": "Reset all widgets",
@@ -693,7 +725,7 @@
       "other": "Other"
     },
     "deleteKeyConfirm": "Delete “{{key}}” from storage? Anything it holds is gone for good.",
-    "resetWidgetsConfirm": "Put every widget back to its default position, size and settings? Your quick links and greeting name are kept.",
+    "resetWidgetsConfirm": "Put every widget back to its default position, size and settings? Your quick links, greeting name, notes and todo list are kept.",
     "resetDockConfirm": "Put the right-hand dock back to its default layout?",
     "resetAppearanceConfirm": "Put the theme, font and contrast back to their defaults?",
     "resetBackgroundConfirm": "Put the background filters and parallax back to their defaults?",
@@ -708,8 +740,6 @@
       "square": "Square",
       "rounded": "Rounded",
       "pill": "Soft"
-    },
-    "permissionEmail": "Email address",
-    "permissionEmailSub": "Personalizes the Google widget's account button with your initial. Nothing else."
+    }
   }
 }

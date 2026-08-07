@@ -1,34 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { useAppContext } from "../../../contexts/AppContext";
-import { getLocale, useT } from "../../../i18n/i18n";
+import React from "react";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
+import { getIntlLocale, useT } from "../../../i18n/i18n";
+import { useNow } from "../../../hooks/useNow";
 import { useScaledPx } from "../../../utils/viewportScale";
 import "./Time.css";
 
-// Map our internal locale codes to BCP 47 tags Intl understands.
-// Anything missing falls back to "en-US".
-const BCP47: Record<string, string> = {
-  en: "en-US",
-  ja: "ja-JP",
-  es: "es-ES",
-  fr: "fr-FR",
-  zh: "zh-CN",
-  pt: "pt-BR",
-  ko: "ko-KR",
-};
-
 export const Time: React.FC = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const { widgets } = useAppContext();
-  const timeSettings = widgets.time.settings;
+  const currentTime = useNow();
+  const { settings: timeSettings } = useWidgetSettings("time");
   // Subscribe to locale changes so the time re-renders when the
   // user picks a new language (only matters in 12h mode where the
   // dayPeriod label is locale-specific: AM/PM vs 午前/午後 etc.).
   useT();
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Use Intl.DateTimeFormat.formatToParts so we can pull the
   // dayPeriod component out by NAME, not by regex. The previous
@@ -36,7 +19,7 @@ export const Time: React.FC = () => {
   // left "午後1:45" / "오후 1:45" / "下午1:45" untouched (period would
   // never get split into the small chip). With formatToParts the
   // period chip works in every locale.
-  const tag = BCP47[getLocale()] ?? "en-US";
+  const tag = getIntlLocale();
   const fmt = new Intl.DateTimeFormat(tag, {
     hour: "numeric",
     minute: "2-digit",

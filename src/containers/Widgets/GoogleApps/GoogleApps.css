@@ -66,21 +66,6 @@
     text-decoration: none;
 }
 
-/* Letter avatar - Google's signed-in look: initial on a stable
-   per-email colour. */
-.gapps-letter {
-    width: 28px;
-    height: 28px;
-    display: inline-grid;
-    place-items: center;
-    border-radius: 50%;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 600;
-    user-select: none;
-}
-
-
 /* The apps grid - a rounded card dropping from the cluster's right
    edge, like the real launcher. Solid surface (matches the edit-panel
    family) so tiles read over any wallpaper. */

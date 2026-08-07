@@ -1,6 +1,7 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -8,6 +9,9 @@ import React, {
   useState,
 } from "react";
 import {
+  DEFAULT_DOCK_WIDGET_KEYS,
+  DockWidgetAlignment,
+  getDefaultDockAlignment,
   WidgetKey,
   WidgetPosition,
   WidgetSettingsMap,
@@ -47,7 +51,6 @@ const REFERENCE_PX_FIELDS: Partial<Record<WidgetKey, readonly string[]>> = {
   greeting: ["fontSize"],
   info: ["fontSize"],
   todo: ["width", "height"],
-  quicklinks: ["width", "height"],
   searchbar: ["width", "height"],
   notes: ["width", "height"],
   avatar: ["size"],
@@ -179,6 +182,11 @@ export interface BackgroundFilters {
 }
 
 export type WidgetDockWidth = "half" | "full";
+export type WidgetSurface = "canvas" | "dock";
+export interface WidgetDockLayoutPatch {
+  dockWidth?: WidgetDockWidth;
+  dockAlignment?: DockWidgetAlignment;
+}
 
 export type WidgetEntry<K extends WidgetKey> = {
   visible: boolean;
@@ -194,17 +202,15 @@ export type WidgetEntry<K extends WidgetKey> = {
    *  for widgets the picker / context-menu opts in (Weather, Time,
    *  Date, Avatar, Notes). Other dock widgets always span full. */
   dockWidth: WidgetDockWidth;
-  /** Optional translucent glass card around the widget content. Off
-   *  by default for "naked" widgets (Time, Date, Greeting, Info,
-   *  Avatar). Widgets that already have their own card (Weather,
-   *  Pomodoro, Todo, Notes) ignore this field; their built-in card
-   *  is the surface. Dock-only - the canvas instance ignores it. */
-  showBackground: boolean;
+  /** Horizontal content alignment used only by the right-dock copy.
+   *  Kept outside widget settings so changing the dock composition
+   *  never alters the same widget on the canvas. */
+  dockAlignment: DockWidgetAlignment;
   /** Position of this widget within the right dock's vertical
    *  stack. Lower values render first. Defaults to a per-widget
    *  fallback so newly-docked widgets land at a stable position
-   *  before the user has dragged anything. The user reorders via
-   *  drag-and-drop on the dock; that updates dockOrder for every
+   *  before the user has reordered anything. The dock editor's Up/Down
+   *  controls update dockOrder for every
    *  currently-docked widget so the indices stay sequential. */
   dockOrder: number;
   settings: WidgetSettingsMap[K];
@@ -218,15 +224,15 @@ export type WidgetEntry<K extends WidgetKey> = {
 
 export type WidgetsState = { [K in WidgetKey]: WidgetEntry<K> };
 
-/** Guide spotlight targets. "welcome" is the odd one out: it means the
- *  guide is running but the sidebar should stay SHUT - the opening
- *  slide is a landing screen, and a sidebar sliding in behind it just
- *  competes for attention. Every other value opens the sidebar and
- *  pulses the named region. */
+/** Guide spotlight targets. Some steps use the value only to control
+ *  whether the sidebar is visible; the rest also pulse the named region. */
 export type SidebarSpotlight =
   | "welcome"
+  | "canvas"
+  | "shortcuts"
   | "guide"
   | "widgets"
+  | "widgetEdit"
   | "palette"
   | "background"
   | null;
@@ -247,7 +253,7 @@ interface AppContextType {
   sidebarSpotlight: SidebarSpotlight;
   setSidebarSpotlight: (s: SidebarSpotlight) => void;
   /** When non-null, only this single widget shows its EditWidget overlay
-   *  (triggered by the Shift+pencil affordance on a single widget).
+   *  (triggered by the D+pencil affordance on a single widget).
    *  showWidgetEdits is the global "edit all widgets" mode and is
    *  independent. */
   editingWidgetKey: WidgetKey | null;
@@ -261,10 +267,6 @@ interface AppContextType {
    *  of the background prefs. */
   backgroundParallax: boolean;
   setBackgroundParallax: (on: boolean) => void;
-  /** Global toggle for the optional glass card behind naked dock
-   *  widgets. Off by default - user opts in from the dock footer. */
-  dockShowBackgrounds: boolean;
-  setDockShowBackgrounds: (on: boolean) => void;
   backgroundSelection: Record<string, boolean>;
   updateBackgroundSelection: (movieKey: string, value: boolean) => void;
   /** URL of the photo currently painted by `<Background>`. Set by
@@ -288,7 +290,14 @@ interface AppContextType {
    *  menu row can demo what picking it would do. null clears. */
   previewWidgetSettings: (
     key: WidgetKey,
-    patch: Record<string, unknown> | null
+    patch: Record<string, unknown> | null,
+    surface?: WidgetSurface
+  ) => void;
+  /** Temporarily recompose one dock widget while the user hovers a
+   *  layout choice. null restores all saved dock layout values. */
+  previewWidgetDockLayout: (
+    key: WidgetKey,
+    patch: WidgetDockLayoutPatch | null,
   ) => void;
   toggleWidgetVisibility: (key: WidgetKey) => void;
   updateWidgetPosition: (key: WidgetKey, pos: WidgetPosition) => void;
@@ -311,17 +320,18 @@ interface AppContextType {
    *  spans the column; "half" lets two widgets share a row. Stored
    *  per-widget so users can mix half + full. */
   setWidgetDockWidth: (key: WidgetKey, value: WidgetDockWidth) => void;
-  /** Toggle the optional glass-card surface on widgets that don't
-   *  paint one by default (Time, Date, Greeting, Info, Avatar). */
-  setWidgetShowBackground: (key: WidgetKey, value: boolean) => void;
+  setWidgetDockAlignment: (
+    key: WidgetKey,
+    value: DockWidgetAlignment,
+  ) => void;
   /** Reorder docked widgets. Pass the array of currently-docked
    *  keys in the new desired order; this rewrites every entry's
    *  `dockOrder` to its index in the array so the sequence stays
    *  contiguous. Other widgets' dockOrder is left alone. */
   reorderDockedWidgets: (orderedKeys: WidgetKey[]) => void;
   /** Reset every dock-only field on every widget back to defaults
-   *  (inRightSidebar=false, dockWidth=full, showBackground=false,
-   *  dockOrder=canonical index, dockSettings={}). The canvas-side
+   *  (Todo/Weather/Notes membership, full width, canonical order,
+   *  dockSettings={}). The canvas-side
    *  state (visible, position, settings) is left alone. */
   resetRightSidebar: () => void;
 
@@ -342,6 +352,10 @@ const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "googleApps",
 ]);
 
+const DOCKED_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>(
+  DEFAULT_DOCK_WIDGET_KEYS,
+);
+
 const buildDefaultWidgets = (): WidgetsState => {
   const out = {} as WidgetsState;
   for (const key of WIDGET_KEYS) {
@@ -349,12 +363,12 @@ const buildDefaultWidgets = (): WidgetsState => {
     (out as Record<WidgetKey, unknown>)[key] = {
       visible: !HIDDEN_BY_DEFAULT.has(key),
       position: { ...cfg.position },
-      inRightSidebar: false,
+      inRightSidebar: DOCKED_BY_DEFAULT.has(key),
       dockWidth: "full" as WidgetDockWidth,
-      showBackground: false,
+      dockAlignment: getDefaultDockAlignment(key),
       // Default order matches the canonical WIDGET_KEYS index so a
       // freshly-docked widget lands at a stable position before the
-      // user has reordered anything. The user's drag-and-drop
+      // user has reordered anything. The dock ordering controls
       // reassigns sequential integers across all docked widgets.
       dockOrder: WIDGET_KEYS.indexOf(key),
       settings: structuredClone(cfg.settings),
@@ -393,9 +407,12 @@ const persistWidgets = (state: WidgetsState) => {
     if (entry.visible !== defaultVisible) out.visible = entry.visible;
     if (!positionsEqual(entry.position, cfg.position))
       out.position = entry.position;
-    if (entry.inRightSidebar) out.inRightSidebar = true;
+    const defaultInRightSidebar = DOCKED_BY_DEFAULT.has(key);
+    if (entry.inRightSidebar !== defaultInRightSidebar)
+      out.inRightSidebar = entry.inRightSidebar;
     if (entry.dockWidth !== "full") out.dockWidth = entry.dockWidth;
-    if (entry.showBackground) out.showBackground = true;
+    if (entry.dockAlignment !== getDefaultDockAlignment(key))
+      out.dockAlignment = entry.dockAlignment;
     if (entry.dockOrder !== WIDGET_KEYS.indexOf(key))
       out.dockOrder = entry.dockOrder;
     const settingsDiff = diffSettings(entry.settings, cfg.settings);
@@ -495,8 +512,6 @@ const migrateLegacy = (defaults: WidgetsState): WidgetsState => {
   avatar.size = readInt("avatar_size", avatar.size);
 
   const ql = state.quicklinks.settings;
-  ql.width = readInt("quicklinks_width", ql.width);
-  ql.height = readInt("quicklinks_height", ql.height);
   if (localStorage.getItem("quicklinks_grid") !== null) {
     ql.gridMode = readBool("quicklinks_grid", ql.gridMode);
   }
@@ -657,6 +672,47 @@ const loadInitialWidgets = (): WidgetsState => {
       writePersisted(STORAGE_KEY, blob);
     }
 
+    // Schema-v5: Todo, Weather, and Notes now seed a fresh right dock.
+    // The old persisted format omitted false membership values, so pin
+    // those omissions to false for existing users before applying the new
+    // defaults. Explicitly docked widgets already carry true and stay put.
+    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 5) {
+      for (const key of DEFAULT_DOCK_WIDGET_KEYS) {
+        blob[key] ??= {};
+        if (blob[key].inRightSidebar === undefined) {
+          blob[key].inRightSidebar = false;
+        }
+      }
+      writePersisted(SCHEMA_VERSION_KEY, 5);
+      writePersisted(STORAGE_KEY, blob);
+    }
+
+    // Schema-v6: the right-dock panel background is now a three-way
+    // surface choice. Preserve the old enabled switch as Frost; old
+    // disabled/absent values naturally become the new Clear default.
+    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 6) {
+      const settings = blob.rightSidebar?.settings;
+      if (settings) {
+        if (settings.panelBackground === true && settings.frosted === undefined) {
+          settings.frosted = true;
+          settings.frostDark = false;
+        }
+        delete settings.panelBackground;
+      }
+      writePersisted(SCHEMA_VERSION_KEY, 6);
+      writePersisted(STORAGE_KEY, blob);
+    }
+
+    if (readPersisted<number>(SCHEMA_VERSION_KEY, 1) < 7) {
+      const settings = blob.quicklinks?.settings;
+      if (settings) {
+        delete settings.width;
+        delete settings.height;
+      }
+      writePersisted(SCHEMA_VERSION_KEY, 7);
+      writePersisted(STORAGE_KEY, blob);
+    }
+
     for (const key of WIDGET_KEYS) {
       const entry = defaults[key];
       const stored = blob[key];
@@ -667,14 +723,21 @@ const loadInitialWidgets = (): WidgetsState => {
         entry.inRightSidebar = !!stored.inRightSidebar;
       if (stored.dockWidth === "half" || stored.dockWidth === "full")
         entry.dockWidth = stored.dockWidth;
-      if (stored.showBackground !== undefined)
-        entry.showBackground = !!stored.showBackground;
+      if (
+        stored.dockAlignment === "left" ||
+        stored.dockAlignment === "center" ||
+        stored.dockAlignment === "right"
+      )
+        entry.dockAlignment = stored.dockAlignment;
       if (typeof stored.dockOrder === "number")
         entry.dockOrder = stored.dockOrder;
       if (stored.settings)
         entry.settings = { ...entry.settings, ...stored.settings };
       if (stored.dockSettings && typeof stored.dockSettings === "object")
         entry.dockSettings = { ...stored.dockSettings };
+    }
+    if (defaults.date.settings.displayStyle === "calendar") {
+      defaults.date.settings.typeIn = false;
     }
     if (legacyQL && legacyQL.length) {
       // Persist the freshly-imported quick links into the modern
@@ -687,7 +750,16 @@ const loadInitialWidgets = (): WidgetsState => {
     // authored at the 1920 reference baseline, so mark the schema
     // as migrated so the migration block above never runs for new
     // users.
-    writePersisted(SCHEMA_VERSION_KEY, 4);
+    const schemaVersion = readPersisted<number | null>(
+      SCHEMA_VERSION_KEY,
+      null,
+    );
+    if (schemaVersion !== null && schemaVersion < 5) {
+      for (const key of DEFAULT_DOCK_WIDGET_KEYS) {
+        defaults[key].inRightSidebar = false;
+      }
+    }
+    writePersisted(SCHEMA_VERSION_KEY, 7);
   }
 
   // No modern blob - migrate from legacy (no-op if no legacy keys exist)
@@ -725,18 +797,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const [backgroundParallax, setBackgroundParallaxState] = useState<boolean>(
     () => readParallax()
   );
-
-  // Optional glass-card surface behind every "naked" dock widget
-  // (Time, Date, Greeting, Info, Avatar). On by default so the dock
-  // reads as a cohesive card stack (matches Apple's Notification
-  // Center widget look); user can toggle off from the dock footer
-  // for a transparent / photo-blended look. Notes / Weather / Todo
-  // keep their own surfaces - Weather force-flips its showCard to
-  // match this toggle, so the whole dock visually agrees.
-  const [dockShowBackgrounds, setDockShowBackgroundsState] =
-    useState<boolean>(
-      () => readPersisted<boolean>("ghiblify_dock_show_bg", true) !== false
-    );
 
   const [backgroundSelection, setBackgroundSelection] = useState<
     Record<string, boolean>
@@ -803,23 +863,49 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const [settingsPreview, setSettingsPreview] = useState<{
     key: WidgetKey;
     patch: Record<string, unknown>;
+    surface: WidgetSurface;
   } | null>(null);
-  const previewWidgetSettings = (
-    key: WidgetKey,
-    patch: Record<string, unknown> | null
-  ) => setSettingsPreview(patch ? { key, patch } : null);
+  const [dockLayoutPreview, setDockLayoutPreview] = useState<{
+    key: WidgetKey;
+    patch: WidgetDockLayoutPatch;
+  } | null>(null);
+  const previewWidgetSettings = useCallback(
+    (
+      key: WidgetKey,
+      patch: Record<string, unknown> | null,
+      surface: WidgetSurface = "canvas",
+    ) => setSettingsPreview(patch ? { key, patch, surface } : null),
+    [],
+  );
+  const previewWidgetDockLayout = useCallback(
+    (key: WidgetKey, patch: WidgetDockLayoutPatch | null) =>
+      setDockLayoutPreview(patch ? { key, patch } : null),
+    [],
+  );
 
   const widgetsForRender = useMemo(() => {
-    if (!settingsPreview) return widgets;
-    const { key, patch } = settingsPreview;
-    return {
-      ...widgets,
-      [key]: {
-        ...widgets[key],
-        settings: { ...widgets[key].settings, ...patch },
-      },
-    } as WidgetsState;
-  }, [widgets, settingsPreview]);
+    let next = widgets;
+    if (settingsPreview) {
+      const { key, patch, surface } = settingsPreview;
+      next = {
+        ...next,
+        [key]: {
+          ...next[key],
+          ...(surface === "dock"
+            ? { dockSettings: { ...next[key].dockSettings, ...patch } }
+            : { settings: { ...next[key].settings, ...patch } }),
+        },
+      } as WidgetsState;
+    }
+    if (dockLayoutPreview) {
+      const { key, patch } = dockLayoutPreview;
+      next = {
+        ...next,
+        [key]: { ...next[key], ...patch },
+      } as WidgetsState;
+    }
+    return next;
+  }, [widgets, settingsPreview, dockLayoutPreview]);
 
   // Debounced persist - coalesces high-frequency state changes
   // (resize-drag fires on every mousemove → updateWidgetSettings →
@@ -880,18 +966,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
-  const setEditingWidgetKeyExclusive = (k: WidgetKey | null) => {
-    setEditingWidgetKey(k);
-  };
-
   const setBackgroundParallax = (on: boolean) => {
     setBackgroundParallaxState(on);
     writeParallax(on);
-  };
-
-  const setDockShowBackgrounds = (on: boolean) => {
-    setDockShowBackgroundsState(on);
-    writePersisted("ghiblify_dock_show_bg", on);
   };
 
   const updateBackgroundFilters = (filters: Partial<BackgroundFilters>) => {
@@ -989,18 +1066,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
-  const setWidgetShowBackground = (key: WidgetKey, value: boolean) => {
+  const setWidgetDockAlignment = (
+    key: WidgetKey,
+    value: DockWidgetAlignment,
+  ) => {
     setWidgets((prev) => ({
       ...prev,
-      [key]: { ...prev[key], showBackground: value },
+      [key]: { ...prev[key], dockAlignment: value },
     }));
   };
 
   const reorderDockedWidgets = (orderedKeys: WidgetKey[]) => {
     setWidgets((prev) => {
       const next = { ...prev };
+      const entries = next as Record<WidgetKey, WidgetEntry<WidgetKey>>;
       orderedKeys.forEach((key, idx) => {
-        next[key] = { ...next[key], dockOrder: idx };
+        entries[key] = { ...entries[key], dockOrder: idx };
       });
       return next;
     });
@@ -1009,14 +1090,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const resetRightSidebar = () => {
     setWidgets((prev) => {
       const next = { ...prev };
+      const entries = next as Record<WidgetKey, WidgetEntry<WidgetKey>>;
       (WIDGET_KEYS as readonly WidgetKey[]).forEach((key) => {
-        next[key] = {
-          ...next[key],
-          inRightSidebar: false,
+        entries[key] = {
+          ...entries[key],
+          inRightSidebar: DOCKED_BY_DEFAULT.has(key),
           dockWidth: "full",
-          showBackground: false,
+          dockAlignment: getDefaultDockAlignment(key),
           dockOrder: WIDGET_KEYS.indexOf(key),
           dockSettings: {},
+          ...(key === "rightSidebar"
+            ? {
+                settings: structuredClone(
+                  WIDGET_CONFIGS.rightSidebar.settings,
+                ),
+              }
+            : {}),
         };
       });
       return next;
@@ -1031,12 +1120,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     // than going through i18n.
     setWidgets((prev) => {
       const next = buildDefaultWidgets();
-      // Preserve user-created content - links and the greeting name
-      // are user data, not config. Resetting positions/sizes
-      // shouldn't make the user retype their name or rebuild their
-      // bookmark grid.
+      // Preserve user-created content. Todo items already live under
+      // their own storage key, outside the widget-layout reset.
       next.quicklinks.settings.links = prev.quicklinks.settings.links;
       next.greeting.settings.name = prev.greeting.settings.name;
+      next.notes.settings.content = prev.notes.settings.content;
+      next.notes.settings.richContent = prev.notes.settings.richContent;
       return next;
     });
   };
@@ -1053,13 +1142,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         sidebarSpotlight,
         setSidebarSpotlight,
         editingWidgetKey,
-        setEditingWidgetKey: setEditingWidgetKeyExclusive,
+        setEditingWidgetKey,
         backgroundFilters,
         updateBackgroundFilters,
         backgroundParallax,
         setBackgroundParallax,
-        dockShowBackgrounds,
-        setDockShowBackgrounds,
         backgroundSelection,
         updateBackgroundSelection,
         currentBackground,
@@ -1069,13 +1156,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         widgets: widgetsForRender,
         widgetsCommitted: widgets,
         previewWidgetSettings,
+        previewWidgetDockLayout,
         toggleWidgetVisibility,
         updateWidgetPosition,
         updateWidgetSettings,
         updateWidgetDockSettings,
         setWidgetInRightSidebar,
         setWidgetDockWidth,
-        setWidgetShowBackground,
+        setWidgetDockAlignment,
         reorderDockedWidgets,
         resetRightSidebar,
         resetAllWidgets,
@@ -1091,8 +1179,3 @@ export const useAppContext = () => {
   if (!ctx) throw new Error("useAppContext must be used within AppProvider");
   return ctx;
 };
-
-// Type-safe accessor for a single widget's settings.
-export const useWidgetSettings = <K extends WidgetKey>(
-  key: K
-): WidgetSettingsMap[K] => useAppContext().widgets[key].settings;

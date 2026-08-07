@@ -186,7 +186,7 @@ const Pomodoro: React.FC = () => {
   );
   const [isRunning, setIsRunning] = useState(initial.current.isRunning);
   const [isBreak, setIsBreak] = useState(initial.current.isBreak);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
   // --- Completion chime ---------------------------------------------
   // Settings are mirrored into a ref because the countdown effect below

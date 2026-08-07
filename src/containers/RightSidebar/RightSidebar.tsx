@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { EdgePanelCallout } from "../../components/EdgePanelCallout/EdgePanelCallout";
 import { ChevronRightIcon, DeleteOutlineIcon } from "../../components/Icons/Icons";
 import { FolderIcon } from "../../components/Icons/Icons";
 import {
@@ -6,6 +7,7 @@ import {
   ContextMenuItem,
 } from "../../components/ContextMenu/ContextMenu";
 import { useAppContext } from "../../contexts/AppContext";
+import { useEdgePanel } from "../../hooks/useEdgePanel";
 import { useT } from "../../i18n/i18n";
 import { isEditableTarget } from "../../utils/isEditableTarget";
 import { useOptionalPermission } from "../../utils/chromePermissions";
@@ -548,9 +550,18 @@ interface RightSidebarProps {
 export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   const t = useT();
   const { isDragging } = useAppContext();
-  const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState("");
-  const sidebarRef = useRef<HTMLElement | null>(null);
+  const {
+    isOpen,
+    setIsOpen,
+    showCallout,
+    panelRef: sidebarRef,
+  } = useEdgePanel({
+    visible,
+    panelWidth: SIDEBAR_WIDTH,
+    edgeTrigger: SIDEBAR_EDGE_TRIGGER,
+    interactionLocked: isDragging,
+  });
   // `bookmarks` is an optional permission - the panel can be enabled
   // without it, so ask for the tree only once the grant is in hand and
   // otherwise show the prompt below. `granted === null` means "still
@@ -564,52 +575,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
       ? t(error.key, { message: error.message })
       : t(error.key)
     : null;
-
-  // Track previous visible so we can show a transient callout when the
-  // user toggles bookmarks on (not on every reload, only the transition).
-  const wasVisible = useRef(visible);
-  const [showCallout, setShowCallout] = useState(false);
-  useEffect(() => {
-    if (visible && !wasVisible.current) {
-      setShowCallout(true);
-      const t = window.setTimeout(() => setShowCallout(false), 3500);
-      wasVisible.current = visible;
-      return () => window.clearTimeout(t);
-    }
-    wasVisible.current = visible;
-  }, [visible]);
-
-  // When the widget is toggled off, also close the sidebar.
-  useEffect(() => {
-    if (!visible) setIsOpen(false);
-  }, [visible]);
-
-  // Edge-hover open + outside close (mirror of LeftSidebar). While
-  // a widget drag is in flight both branches bail so swinging the
-  // cursor past the right edge can't hijack the drag with a sidebar
-  // reveal, and a sidebar that's already open stays put.
-  useEffect(() => {
-    if (!visible) return;
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) return;
-      const w = window.innerWidth;
-      const sidebarWidth = Math.min(SIDEBAR_WIDTH, w);
-      if (e.clientX > w - SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
-      else if (isOpen && e.clientX < w - sidebarWidth) setIsOpen(false);
-    };
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [visible, isOpen, isDragging]);
-
-  // Escape closes
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [isOpen]);
 
   // Cmd/Ctrl+B toggles the bookmarks panel - mirrors the Cmd/Ctrl+K
   // sidebar shortcut on the left. Only active when bookmarks widget
@@ -630,14 +595,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
     return () => document.removeEventListener("keydown", handler);
   }, [visible]);
 
-  // inert when closed
-  useEffect(() => {
-    const el = sidebarRef.current;
-    if (!el) return;
-    if (isOpen) el.removeAttribute("inert");
-    else el.setAttribute("inert", "");
-  }, [isOpen]);
-
   if (!visible) return null;
 
   // Tree comes back as [{ id: "0", children: [{ id: "1", title: "Bookmarks Bar", ... }] }]
@@ -654,11 +611,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
 
   return (
     <>
-      {showCallout && (
-        <div className="bookmarks-toggle-callout" role="status" aria-live="polite">
-          {t("bookmarks.callout")}
-        </div>
-      )}
+      <EdgePanelCallout
+        visible={showCallout}
+        message={t("bookmarks.callout")}
+      />
       <aside
       ref={sidebarRef}
       id="bookmarks-sidebar"

@@ -98,6 +98,7 @@ import {
 import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
+import { Z_FLOATING } from "../../../utils/zLayers";
 import "./Notes.css";
 
 // Sticky-note widget, Lexical edition - Notion-ish. Bold / italic /
@@ -615,16 +616,19 @@ const LIST_OPTIONS: {
   { key: "check", labelKey: "notes.toolbar.checkList", Glyph: CheckGlyph },
 ];
 
-// Toolbar height + gap: less viewport headroom than this above the
-// note and the bar flips below the note's top edge instead.
-const TOOLBAR_CLEARANCE_PX = 48;
+const TOOLBAR_GAP_PX = 8;
+const TOOLBAR_VIEWPORT_MARGIN_PX = 8;
 
 const FloatingToolbarPlugin: React.FC = () => {
   const t = useT();
   const [editor] = useLexicalComposerContext();
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-  // Flipped under the note's top edge when there's no viewport
-  // headroom above it (note dragged against the top of the screen).
+  const [pos, setPos] = useState<{
+    x: number;
+    top: number;
+    bottom: number;
+  } | null>(null);
+  // Flipped beneath the complete note when there's no viewport
+  // headroom above it.
   const [below, setBelow] = useState(false);
   const [active, setActive] = useState<Record<string, boolean>>({});
   const [listType, setListType] = useState<ActiveListType>(null);
@@ -654,11 +658,54 @@ const FloatingToolbarPlugin: React.FC = () => {
   // both the blur-hide listener and the focus gate in refresh() need
   // to recognise the toolbar as "still ours".
   const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const [toolbarX, setToolbarX] = useState<number | null>(null);
   // The menus open UPWARD by default (drop-up above the toolbar). When
   // the note sits near the top of the screen that overflows off-screen,
   // so we measure the open menu and flip it below the button instead.
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [menuBelow, setMenuBelow] = useState(false);
+
+  // The note may sit flush against either viewport edge, and the dock
+  // places it close to the right edge by design. Measure the real bar
+  // (its width changes slightly with list context and translations),
+  // keep its centre within the viewport, and use its actual height to
+  // decide whether it belongs above or below the paper.
+  useLayoutEffect(() => {
+    if (!pos) {
+      setToolbarX(null);
+      return;
+    }
+    const el = toolbarRef.current;
+    if (!el) return;
+    const place = () => {
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+      const half = width / 2;
+      const minX = TOOLBAR_VIEWPORT_MARGIN_PX + half;
+      const maxX = Math.max(
+        minX,
+        window.innerWidth - TOOLBAR_VIEWPORT_MARGIN_PX - half,
+      );
+      const nextX = Math.min(Math.max(pos.x, minX), maxX);
+      const nextBelow =
+        pos.top - TOOLBAR_GAP_PX - height < TOOLBAR_VIEWPORT_MARGIN_PX;
+      setToolbarX((current) =>
+        current !== null && Math.abs(current - nextX) < 0.5
+          ? current
+          : nextX,
+      );
+      setBelow((current) => (current === nextBelow ? current : nextBelow));
+    };
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(el);
+    window.addEventListener("resize", place);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", place);
+    };
+  }, [pos]);
+
   useLayoutEffect(() => {
     if (!openGroup) {
       setMenuBelow(false);
@@ -666,9 +713,24 @@ const FloatingToolbarPlugin: React.FC = () => {
     }
     const el = menuRef.current;
     if (!el) return;
-    // Measured in the default drop-up position; if its top clears the
-    // viewport, drop it down instead.
-    setMenuBelow(el.getBoundingClientRect().top < 8);
+    const place = () => {
+      // Reset the previous menu's correction before measuring this one.
+      el.style.setProperty("--notes-menu-shift-x", "0px");
+      const rect = el.getBoundingClientRect();
+      const shiftX =
+        rect.left < TOOLBAR_VIEWPORT_MARGIN_PX
+          ? TOOLBAR_VIEWPORT_MARGIN_PX - rect.left
+          : rect.right > window.innerWidth - TOOLBAR_VIEWPORT_MARGIN_PX
+            ? window.innerWidth - TOOLBAR_VIEWPORT_MARGIN_PX - rect.right
+            : 0;
+      el.style.setProperty("--notes-menu-shift-x", `${shiftX}px`);
+      // Measured in the default drop-up position; if its top clears the
+      // viewport, drop it down instead.
+      setMenuBelow(rect.top < TOOLBAR_VIEWPORT_MARGIN_PX);
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
   }, [openGroup]);
 
   // Dismiss an open drop-up (colour pickers, size, block, list, the
@@ -792,13 +854,15 @@ const FloatingToolbarPlugin: React.FC = () => {
       // the PAPER (.notes-widget), not the contenteditable: the text
       // area sits ~18% inside the painted border, so anchoring to it
       // parked the bar on top of the note's decorative edge. When the
-      // note touches the top of the screen the bar flips under the top
-      // edge instead of sliding off-screen.
+      // note touches the top of the screen the bar moves beneath the
+      // paper instead of sliding off-screen or covering its text.
       const paperEl = rootEl.closest(".notes-widget") ?? rootEl;
       const rect = paperEl.getBoundingClientRect();
-      const flip = rect.top < TOOLBAR_CLEARANCE_PX;
-      setBelow(flip);
-      setPos({ x: rect.left + rect.width / 2, y: rect.top });
+      setPos({
+        x: rect.left + rect.width / 2,
+        top: rect.top,
+        bottom: rect.bottom,
+      });
     });
   }, [editor]);
 
@@ -1006,13 +1070,18 @@ const FloatingToolbarPlugin: React.FC = () => {
             top: r.top,
             width: r.width,
             height: r.height,
+            zIndex: Z_FLOATING - 1,
           }}
         />
       ))}
       <div
         ref={toolbarRef}
         className={`notes-toolbar${below ? " below" : ""}`}
-        style={{ left: pos.x, top: pos.y }}
+        style={{
+          left: toolbarX ?? pos.x,
+          top: below ? pos.bottom : pos.top,
+          zIndex: Z_FLOATING,
+        }}
       role="toolbar"
       aria-label={t("notes.toolbar.ariaLabel")}
       // Keep the editor selection alive while clicking buttons.

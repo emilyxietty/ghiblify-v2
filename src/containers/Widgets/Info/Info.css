@@ -40,6 +40,47 @@
     display: inline-block;
 }
 
+/* Type-in (see useLineTypeIn in Info.tsx). The untyped remainder of a
+   line stays in the flow, just invisible, so the block reserves its
+   finished size from the first frame: nothing reflows as the words fill
+   in, and a long quote wraps where it will finally sit. */
+.info-item-pending {
+    visibility: hidden;
+}
+
+/* The caret rides the end of the typed run. It's a border on the inline
+   box rather than a pseudo-element between the two spans: an atomic
+   inline there would be a line-break opportunity, so a word split
+   mid-type could wrap differently than the finished line. Transparent
+   at rest, so it costs the same 0.06em whether or not it's blinking and
+   the remainder never shifts. */
+.info-item-typed {
+    border-right: 0.06em solid transparent;
+}
+
+.info-item-typed.is-typing {
+    animation: info-type-caret 0.75s steps(1, end) infinite;
+}
+
+@keyframes info-type-caret {
+    0%,
+    49% {
+        border-right-color: currentColor;
+    }
+    50%,
+    100% {
+        border-right-color: transparent;
+    }
+}
+
+/* An animated reveal is exactly what this preference is about - the
+   hook reveals everything at once, so only the caret is left to stop. */
+@media (prefers-reduced-motion: reduce) {
+    .info-item-typed.is-typing {
+        animation: none;
+    }
+}
+
 /* 
 .info-item:last-child {
     margin-bottom: 0;

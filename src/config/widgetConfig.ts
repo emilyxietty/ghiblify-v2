@@ -56,8 +56,18 @@ export interface TimeSettings {
  *  it on and is the colour; null is off. One field rather than an
  *  enabled flag plus a colour, so the two can't disagree. */
 export type HighlightColor = string | null;
+export type DateDisplayStyle = "long" | "short" | "slash" | "calendar";
+export const DATE_DISPLAY_STYLES = [
+  "long",
+  "short",
+  "slash",
+  "calendar",
+] as const satisfies readonly DateDisplayStyle[];
 export interface DateSettings {
   fontSize: number;
+  /** Long localized date, abbreviated date, numeric slash date, or a
+   *  compact month grid with today highlighted. */
+  displayStyle: DateDisplayStyle;
   textShadow: number;
   highlightColor: HighlightColor;
   /** Ink on top of the highlight. "auto" picks from the highlight's
@@ -160,9 +170,11 @@ export interface AvatarSettings {
   size: number;
 }
 export interface QuicklinksSettings {
-  width: number;
-  height: number;
   gridMode: boolean;
+  /** Number of link tiles shown across each grid page. */
+  linksPerRow: number;
+  /** Number of link rows shown on each grid page. */
+  visibleRows: number;
   links: QuicklinkItem[];
   /** GRID mode surface: 0-100 alpha of the grid's own background. */
   opacity: number;
@@ -191,6 +203,10 @@ export interface QuicklinksSettings {
 export interface SearchBarSettings {
   width: number;
   height: number;
+  /** Surface tint. null/absent = the built-in Google-style white. */
+  surfaceColor?: string | null;
+  /** Ink over the bar; "auto" derives it from surfaceColor. */
+  textColor?: "auto" | "light" | "dark";
   /** 0–100 - controls the alpha of input + button surface (non-Frost). */
   opacity: number;
   /** 0–100 - Frost blur intensity. */
@@ -291,6 +307,9 @@ export interface WeatherSettings {
   unit: "C" | "F";
   /** How much forecast to show - see WEATHER_DETAILS. */
   detail: WeatherDetail;
+  /** On the canvas, show one forecast section at a time behind the same
+   *  Now / Hourly / Daily tabs used by a half-width dock widget. */
+  compact: boolean;
   /** 0–100 - alpha of the hourly/daily forecast cell backgrounds
    *  (non-Frost). The widget itself stays transparent; only the cells
    *  use this. */
@@ -331,10 +350,15 @@ export interface WeatherSettings {
 // unused.
 export type BookmarksSettings = Record<string, never>;
 // Right Sidebar is a meta-widget - toggling it on enables a persistent
-// right-side dock that hosts other widgets. Position and settings are
-// unused; the dock contents come from each widget's `inRightSidebar`
-// flag (added in a later chunk).
-export type RightSidebarSettings = Record<string, never>;
+// right-side dock that hosts other widgets. Its settings belong to the
+// panel itself; widget-specific appearance remains in each docked
+// widget's dockSettings.
+export interface RightSidebarSettings {
+  /** Clear by default; true applies backdrop blur to the complete dock. */
+  frosted: boolean;
+  /** Smoked-glass tint layered over the same blur. */
+  frostDark: boolean;
+}
 /** Google corner - waffle apps menu + account button. Stateless. */
 export interface GoogleAppsSettings {
   /** 0-100 - alpha of the cluster's surface (non-Frost). */
@@ -423,6 +447,101 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "googleApps",
 ];
 
+/**
+ * Widget placement lives here so the canvas, sidebar, and dock do not
+ * maintain competing lists. The order is also the default visual order for
+ * each surface.
+ */
+export const CANVAS_WIDGET_KEYS = [
+  "quicklinks",
+  "time",
+  "date",
+  "greeting",
+  "todo",
+  "info",
+  "avatar",
+  "searchbar",
+  "pomodoro",
+  "weather",
+  "googleApps",
+  "notes",
+] as const satisfies readonly WidgetKey[];
+
+export type CanvasWidgetKey = (typeof CANVAS_WIDGET_KEYS)[number];
+
+export const LEFT_SIDEBAR_WIDGET_KEYS = [
+  "time",
+  "date",
+  "greeting",
+  "info",
+  "todo",
+  "quicklinks",
+  "searchbar",
+  "pomodoro",
+  "weather",
+  "notes",
+  "googleApps",
+] as const satisfies readonly CanvasWidgetKey[];
+
+export const DOCK_WIDGET_KEYS = [
+  "time",
+  "date",
+  "info",
+  "todo",
+  "weather",
+  "notes",
+  "avatar",
+] as const satisfies readonly CanvasWidgetKey[];
+
+export type DockWidgetKey = (typeof DOCK_WIDGET_KEYS)[number];
+export type DockWidthPolicy = "flexible" | "full" | "half";
+export type DockWidgetAlignment = "left" | "center" | "right";
+
+export const DOCK_ALIGNMENT_WIDGET_KEYS = [
+  "time",
+  "date",
+  "info",
+  "weather",
+] as const satisfies readonly DockWidgetKey[];
+
+const DEFAULT_DOCK_ALIGNMENTS: Partial<
+  Record<WidgetKey, DockWidgetAlignment>
+> = {
+  time: "center",
+  date: "right",
+  info: "right",
+  weather: "left",
+};
+
+export const supportsDockAlignment = (key: WidgetKey): boolean =>
+  (DOCK_ALIGNMENT_WIDGET_KEYS as readonly WidgetKey[]).includes(key);
+
+export const getDefaultDockAlignment = (
+  key: WidgetKey,
+): DockWidgetAlignment => DEFAULT_DOCK_ALIGNMENTS[key] ?? "left";
+
+export const DEFAULT_DOCK_WIDGET_KEYS = [
+  "todo",
+  "weather",
+  "notes",
+] as const satisfies readonly DockWidgetKey[];
+
+export const DOCK_WIDTH_POLICIES: Record<DockWidgetKey, DockWidthPolicy> = {
+  time: "flexible",
+  date: "flexible",
+  info: "full",
+  todo: "full",
+  avatar: "half",
+  weather: "flexible",
+  notes: "flexible",
+};
+
+export const getDockWidthPolicy = (
+  key: WidgetKey,
+): DockWidthPolicy | null =>
+  (DOCK_WIDTH_POLICIES as Partial<Record<WidgetKey, DockWidthPolicy>>)[key] ??
+  null;
+
 /** Surface-frost resolution. An EXPLICIT user choice (true/false,
  *  written by the surface chips) always wins; untouched (undefined)
  *  follows the palette - the Frost theme defaults frost-capable
@@ -444,6 +563,7 @@ export interface ResizeBound {
 
 export interface CustomControls {
   timeFormat?: boolean;
+  dateFormat?: boolean;
   infoFields?: boolean;
   avatarSelector?: boolean;
   gridMode?: boolean;
@@ -451,6 +571,7 @@ export interface CustomControls {
   weatherUnit?: boolean;
   /** Detail scale - replaces the old sections + icons-only pair. */
   weatherDetail?: boolean;
+  weatherCompact?: boolean;
   /** Card + icon animation, as one visual group. */
   weatherStyle?: boolean;
   /** City search + "use my location" reset, in the edit overlay. */
@@ -521,6 +642,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     position: { x: 50, y: 50 },
     settings: {
       fontSize: 24,
+      displayStyle: "long",
       textShadow: 100,
       highlightColor: null,
       highlightTextColor: "auto",
@@ -529,6 +651,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       typeIn: false,
     },
     fontSize: { min: 10, max: 50, step: 5 },
+    customControls: { dateFormat: true },
   },
   greeting: {
     name: "Greeting",
@@ -597,9 +720,9 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     name: "Quick Links",
     position: { x: 50, y: 54.791029561671756 },
     settings: {
-      width: 600,
-      height: 200,
       gridMode: true,
+      linksPerRow: 5,
+      visibleRows: 1,
       links: [],
       opacity: 0,
       blur: 0,
@@ -608,8 +731,6 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       // `frosted` intentionally absent - see the todo note.
       surfaceColor: null,
     },
-    width: { min: 200, max: 600, step: 100 },
-    height: { min: 200, max: 700, step: 100 },
     // todoFrosted = the shared surface-chips row (theme/colours/glass).
     customControls: { gridMode: true, todoFrosted: true },
   },
@@ -618,6 +739,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     position: { x: 50, y: 2 },
     settings: { width: 550, height: 64, opacity: 75, blur: 10 },
     width: { min: 200, max: 800, step: 25 },
+    customControls: { todoFrosted: true },
     // These are reference px against a 1920-wide viewport, so they
     // render smaller on a laptop - 64 lands at ~48 real px on a 1440
     // screen, which is the Google pill's height. The floor was 20 back
@@ -663,6 +785,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     settings: {
       unit: "C",
       detail: "now",
+      compact: false,
       opacity: 75,
       blur: 10,
       iconStyle: "animated",
@@ -675,6 +798,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     customControls: {
       weatherUnit: true,
       weatherDetail: true,
+      weatherCompact: true,
       weatherStyle: true,
       weatherLocation: true,
       weatherFrosted: true,
@@ -728,7 +852,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // dock's contents are routed there by each widget's
     // inRightSidebar flag (introduced in a later chunk).
     position: { x: 0, y: 0 },
-    settings: {},
+    settings: { frosted: false, frostDark: false },
   },
 };
 

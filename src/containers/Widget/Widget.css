@@ -14,11 +14,6 @@
     animation: widget-fade-in 220ms ease both;
 }
 
-/* `showBackground` is intentionally dock-only - see DockWidget.css
-   for the glass-card rule. The canvas widget shell stays naked so
-   the user's chosen layout / typography reads cleanly against the
-   photo background; the dock surface is a separate concern. */
-
 @keyframes widget-fade-in {
     from {
         opacity: 0;
@@ -78,7 +73,7 @@
 }
 
 /* Pointer cursor on the widget shell signals interactability - the
-   widget responds to right-click (context menu), shift-drag (move),
+   widget responds to right-click (context menu), D-drag (move),
    and quick-edit pencil. Inner content (textareas, links, todo
    checkboxes) sets its own cursor and overrides this. The
    .show-widget-outline rules below replace this with grab/grabbing
@@ -133,12 +128,19 @@
     backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px)) saturate(1.05);
 }
 
+/* Quick Links derives its width from the selected number of columns. Let
+   that deterministic grid approach the viewport edge on compact screens. */
+.widget[data-widget-key="quicklinks"] {
+    max-width: calc(100vw - 24px);
+}
+
 /* Frosted surface (todo, weather - any widget whose settings carry
    `frosted`) - same shell-hoisted blur as the notes/paper frost (a
    backdrop-filter on any descendant would sample the empty shell
    interior, not the wallpaper). Radius matches the inner card
    rounding so the glass slab doesn't square-corner past the content. */
-.widget.widget-surface-frost {
+.widget.widget-surface-frost,
+.dock-widget.widget-surface-frost {
     border-radius: var(--radius-lg);
     -webkit-backdrop-filter: blur(14px) saturate(1.15);
     backdrop-filter: blur(14px) saturate(1.15);
@@ -146,7 +148,8 @@
 
 /* Dark ("smoked") glass - same blur, plus a dark tint painted on the
    shell between the blurred wallpaper and the content. */
-.widget.widget-surface-frost.frost-dark {
+.widget.widget-surface-frost.frost-dark,
+.dock-widget.widget-surface-frost.frost-dark {
     background-color: rgba(12, 16, 20, 0.42);
 }
 
@@ -155,7 +158,8 @@
    root, so it can sample the wallpaper behind it - a backdrop-filter on
    the descendant .notes-widget would only see the empty shell interior
    (see the frost note in App.css). */
-.widget.widget-notes-frost {
+.widget.widget-notes-frost,
+.dock-widget.widget-notes-frost {
     border-radius: var(--radius-xl);
     -webkit-backdrop-filter: blur(calc(var(--widget-opacity, 1) * 8px)) saturate(1.1);
     backdrop-filter: blur(calc(var(--widget-opacity, 1) * 8px)) saturate(1.1);
@@ -227,7 +231,7 @@
     flex-direction: row;
 }
 
-/* Holding a drag key (d / Shift) gives widgets the draggable cue - outline + grab cursor. */
+/* Holding D gives widgets the draggable cue - outline + grab cursor. */
 .show-widget-outline .widget {
     outline: 1px solid rgba(255, 255, 255, 0.5) !important;
     cursor: grab;
@@ -252,7 +256,7 @@
     cursor: grabbing;
 }
 
-/* Quick-edit pencil - only shown while Shift is held. Lets you jump
+/* Quick-edit pencil - only shown while D is held. Lets you jump
    directly into editing a single widget instead of toggling global edit
    mode from the sidebar. */
 .widget-quick-edit {
@@ -425,12 +429,24 @@
     background: transparent;
 }
 
-.widget[data-widget-key="info"].has-text-highlight .info-item-text {
+/* On the typed run rather than on .info-item-text, which also holds the
+   not-yet-typed remainder: highlighting that would paint a full-width
+   pill over invisible text and then type into it. Growing with the words
+   is also what makes the marker hug each wrapped line of a long quote. */
+.widget[data-widget-key="info"].has-text-highlight .info-item-typed {
     background: var(--text-highlight);
     border-radius: var(--text-highlight-radius, 0.35em);
     padding: 0.1em 0.32em;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
+}
+
+/* A line waiting its turn to type has no text yet, and the pill's own
+   padding would leave a stray chip of colour floating where the words
+   will land. The caret is a border, so it still shows through this. */
+.widget[data-widget-key="info"].has-text-highlight .info-item-typed:empty {
+    background: none;
+    padding: 0;
 }
 
 /* The pill's breathing room is CONSTANT on the text widgets - applied
@@ -493,22 +509,30 @@
    Reveals the text a character at a time on load, then leaves it alone.
    Done by animating the clip width in `steps()` rather than by
    re-rendering a growing substring in JS: the widgets involved contain
-   real elements (the greeting's editable name button, Info's list), and
-   swapping their text every 55ms would fight React and lose the caret
-   position mid-edit. The step count comes from the measured character
-   count (see --type-in-steps in Widget.tsx) - a fixed count lands
-   mid-glyph on short strings and reads as a wipe. */
+   real elements (the greeting's editable name button), and swapping
+   their text every 55ms would fight React and lose the caret position
+   mid-edit. The step count comes from the measured character count
+   (see --type-in-steps in Widget.tsx) - a fixed count lands mid-glyph
+   on short strings and reads as a wipe.
+
+   Scoped to the three single-line widgets, whose box IS their text.
+   Info opted out: its rows are full-width blocks of very uneven length,
+   where a clip width types the short ones in two steps and then walks
+   the caret across an empty row, and clips a quote too long to fit on
+   one `nowrap` line. It counts characters instead - see Info.tsx. */
 
 .widget.has-type-in .time,
 .widget.has-type-in .date,
-.widget.has-type-in .greeting-text,
-.widget.has-type-in .info-item-text {
+.widget.has-type-in .greeting-text {
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
     vertical-align: bottom;
-    /* Ends at the caret, which is why the border sits inside the clip. */
-    border-right: 0.06em solid currentColor;
+    /* Ends at the caret, which is why the border sits inside the clip.
+       Transparent at rest so a line still waiting its turn shows
+       nothing: the blink animation owns the visible state, and with
+       fill-mode `none` it leaves this alone during its delay. */
+    border-right: 0.06em solid transparent;
     animation:
         widget-type-in var(--type-in-duration, 1.3s) steps(var(--type-in-steps, 24), end) both,
         widget-type-caret 0.75s steps(1, end) infinite;
@@ -516,16 +540,23 @@
 }
 
 /* Once the reveal finishes the caret has no reason to keep blinking - this
-   stops it a beat after the text lands. */
+   stops it a beat after the text lands. The caret blink runs `infinite`
+   rather than for a fixed 3 iterations because a long reveal can outlast
+   2.25s; the caret-off below is what actually ends it, and being later in
+   the list with fill-mode `forwards` it wins over the still-running
+   blink. --type-in-delay is 0 throughout now that Info drives its own
+   staggered reveal; it stays as the hook for any future stagger. */
 .widget.has-type-in .time,
 .widget.has-type-in .date,
-.widget.has-type-in .greeting-text,
-.widget.has-type-in .info-item-text {
+.widget.has-type-in .greeting-text {
     animation-name: widget-type-in, widget-type-caret, widget-type-caret-off;
     animation-duration: var(--type-in-duration, 1.3s), 0.75s, 0.01s;
     animation-timing-function: steps(var(--type-in-steps, 24), end), steps(1, end), linear;
-    animation-iteration-count: 1, 3, 1;
-    animation-delay: 0s, 0s, calc(var(--type-in-duration, 1.3s) + 0.3s);
+    animation-iteration-count: 1, infinite, 1;
+    animation-delay:
+        var(--type-in-delay, 0s),
+        var(--type-in-delay, 0s),
+        calc(var(--type-in-delay, 0s) + var(--type-in-duration, 1.3s) + 0.3s);
     animation-fill-mode: both, none, forwards;
 }
 
@@ -543,30 +574,17 @@
     to { border-right-color: transparent; }
 }
 
-/* Info stacks several lines; each types in a beat after the one above
-   so the block reads top-to-bottom instead of all at once. */
-.widget.has-type-in .info-item:nth-child(2) .info-item-text {
-    animation-delay: 0.18s, 0.18s, calc(var(--type-in-duration, 1.3s) + 0.48s);
-}
-
-.widget.has-type-in .info-item:nth-child(3) .info-item-text {
-    animation-delay: 0.36s, 0.36s, calc(var(--type-in-duration, 1.3s) + 0.66s);
-}
-
-.widget.has-type-in .info-item:nth-child(4) .info-item-text {
-    animation-delay: 0.54s, 0.54s, calc(var(--type-in-duration, 1.3s) + 0.84s);
-}
-
-.widget.has-type-in .info-item:nth-child(5) .info-item-text {
-    animation-delay: 0.72s, 0.72s, calc(var(--type-in-duration, 1.3s) + 1.02s);
-}
+/* Info's line-by-line reveal needs no rules here: it counts characters
+   in JS and paints its own caret (see useLineTypeIn + Info.css). Its
+   rows are conditionally rendered, so an nth-child ladder over one
+   shared duration wouldn't be reveal order anyway once a field is
+   switched off. */
 
 /* An animated reveal is exactly what this preference is about. */
 @media (prefers-reduced-motion: reduce) {
     .widget.has-type-in .time,
     .widget.has-type-in .date,
-    .widget.has-type-in .greeting-text,
-    .widget.has-type-in .info-item-text {
+    .widget.has-type-in .greeting-text {
         animation: none;
         border-right-color: transparent;
         width: auto;

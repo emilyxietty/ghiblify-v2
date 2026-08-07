@@ -694,7 +694,7 @@
    Force dark surface + white text so they actually read. */
 .theme-frost .tooltip-portal,
 .theme-frost .quicklinksSettings-dropdown,
-.theme-frost .bookmarks-toggle-callout,
+.theme-frost .edge-panel-callout,
 .theme-frost .welcome-kbd {
     background: rgba(10, 14, 20, 0.92) !important;
     color: #ffffff !important;
@@ -731,7 +731,7 @@
     border-top-color: rgba(10, 14, 20, 0.92) !important;
 }
 
-/* Shift-drag callout (rendered as body::after) reads var(--dark) for
+/* D-drag callout (rendered as body::after) reads var(--dark) for
    surface and var(--light) for text - both white on Frost. The theme
    class lives on <html> and the .show-widget-outline class lives on
    <body>, so the descendant selector is required. */
@@ -1102,7 +1102,7 @@ body {
 }
 
 /* Transient toast shown when the browser flips offline. Mirrors the
-   bookmarks-toggle-callout treatment so the two reads as a coherent
+   edge-panel callout treatment so the two read as a coherent
    notification system. Lives in the top portal tier so it renders
    above the bookmarks panel. */
 .offline-callout {
@@ -1155,29 +1155,6 @@ body {
     }
 }
 
-/* Transient hint shown when the user shift-clicks a widget - old
-   versions used Shift-drag; the new affordance is the 'd' key.
-   Same visual language as `.offline-callout` so the notification
-   layer reads as one coherent system. */
-.shift-drag-hint-callout {
-    position: fixed;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.78);
-    color: #ffffff;
-    padding: 8px 18px;
-    border-radius: var(--radius-pill);
-    font-size: 12.5px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    z-index: var(--z-tooltip);
-    pointer-events: none;
-    animation: offline-callout-in 3s cubic-bezier(0.32, 0.72, 0.32, 1) both;
-}
-
 .edit-toggle-button {
     position: fixed;
     top: 20px;
@@ -1198,9 +1175,9 @@ body {
    =========================================================================== */
 
 /* ===========================================================================
-   Shift-held drag callout
+   D-held drag callout
    ---------------------------------------------------------------------------
-   Widget.tsx toggles `body.show-widget-outline` on Shift keydown/keyup.
+   Widget.tsx toggles `body.show-widget-outline` on D keydown/keyup.
    This shows a small fixed banner at the top of the screen so users know
    why widgets are now grabbable.
    =========================================================================== */
@@ -1222,10 +1199,10 @@ body.show-widget-outline::after {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     border: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
     pointer-events: none;
-    animation: shift-callout-in 180ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
+    animation: drag-callout-in 180ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
 }
 
-@keyframes shift-callout-in {
+@keyframes drag-callout-in {
     from {
         opacity: 0;
         transform: translateX(-50%) translateY(-12px);

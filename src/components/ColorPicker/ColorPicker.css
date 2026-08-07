@@ -71,9 +71,9 @@
     box-sizing: border-box;
 }
 
-/* Chevron - expands the edit panel's tuning column. Chip-sized to
-   sit in the strip; dimmed when no colour is active (nothing to
-   tune); flips to point back while open. */
+/* Persistent disclosure cue for the tuning column. It stays in the
+   strip while disabled so choosing a swatch never reveals a surprise
+   second level. */
 .color-picker-expand {
     box-sizing: border-box;
     width: 20px;
@@ -84,13 +84,13 @@
     place-items: center;
     border: 1px solid color-mix(in srgb, var(--light) 28%, transparent);
     border-radius: 50%;
-    background: transparent;
+    background: color-mix(in srgb, var(--light) 7%, transparent);
     color: var(--light);
     cursor: pointer;
     transition: transform 120ms ease, background 120ms ease;
 }
 
-.color-picker-expand:hover:not(:disabled) {
+.color-picker-expand:hover:not([aria-disabled="true"]) {
     transform: scale(1.12);
     background: color-mix(in srgb, var(--light) 12%, transparent);
 }
@@ -108,8 +108,8 @@
     color: var(--dark, #1f2620);
 }
 
-.color-picker-expand:disabled {
-    opacity: 0.35;
+.color-picker-expand[aria-disabled="true"] {
+    opacity: 0.5;
     cursor: default;
 }
 

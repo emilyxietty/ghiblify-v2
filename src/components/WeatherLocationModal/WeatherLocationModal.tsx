@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import { clearWeatherLocation } from "../../hooks/useWeather";
 import { useT } from "../../i18n/i18n";
 import { GeoResult, isManualPlace, searchPlaces } from "../../utils/geocoding";
+import { DialogShell } from "../DialogShell/DialogShell";
 import {
-  CloseIcon,
   MyLocationIcon,
   PlaceIcon,
   RefreshIcon,
@@ -50,7 +49,6 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
   const [status, setStatus] = useState<"idle" | "loading" | "empty" | "error">(
     "idle"
   );
-  const dialogRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
 
@@ -89,20 +87,8 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
     setResults([]);
     setStatus("idle");
     const id = window.setTimeout(() => inputRef.current?.focus(), 0);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", onKey, true);
-    return () => {
-      window.clearTimeout(id);
-      document.removeEventListener("keydown", onKey, true);
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
+    return () => window.clearTimeout(id);
+  }, [open]);
 
   const refreshWeather = () =>
     window.dispatchEvent(new CustomEvent("ghiblify:weather:refresh"));
@@ -136,26 +122,17 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
   // whose shell carries a `transform` - and a transformed ancestor makes
   // `position: fixed` resolve against that element instead of the
   // viewport, so the backdrop covered the widget rather than the page.
-  return createPortal(
-    <div className="weather-location-backdrop" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        className="weather-location-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="weather-location-title"
-        onClick={(e) => e.stopPropagation()}
-        tabIndex={-1}
-      >
-        <button
-          type="button"
-          className="weather-location-close"
-          aria-label={t("modal.common.closeAria")}
-          onClick={onClose}
-        >
-          <CloseIcon fontSize="small" />
-        </button>
-
+  return (
+    <DialogShell
+      open={open}
+      onClose={onClose}
+      backdropClassName="weather-location-backdrop"
+      dialogClassName="weather-location-dialog"
+      labelledBy="weather-location-title"
+      closeClassName="weather-location-close"
+      closeLabel={t("modal.common.closeAria")}
+      portal
+    >
         <h2 id="weather-location-title" className="weather-location-title">
           {t("widgets.contextMenu.weatherLocation")}
         </h2>
@@ -228,9 +205,7 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
             </button>
           ))}
         </div>
-      </div>
-    </div>,
-    document.body
+    </DialogShell>
   );
 };
 

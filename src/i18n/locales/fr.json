@@ -59,7 +59,6 @@
       "languageAria": "Choisir la langue",
       "editWidgets": "Mode édition",
       "resetAllWidgets": "Réinitialiser les widgets",
-      "resetFilters": "Réinitialiser les paramètres d'arrière-plan",
       "selectBackgrounds": "Choisir les arrière-plans",
       "deleteBackground": "Supprimer l'arrière-plan",
       "deleteBackgroundAria": "Retirer l'arrière-plan actuel de la rotation",
@@ -71,6 +70,7 @@
       "refreshBackgroundAria": "Choisir un nouvel arrière-plan parmi les sources sélectionnées"
     },
     "appearance": {
+      "palette": "Palettes",
       "paletteAria": "Palette de couleurs",
       "highContrast": "Contraste élevé"
     },
@@ -94,12 +94,30 @@
   },
   "rightDock": {
     "emptyTitle": "Barre latérale droite",
-    "emptyHint": "Cliquez sur le bouton Paramètres ci-dessous pour choisir les widgets à afficher ici. Ils peuvent vivre dans la barre latérale et sur le canevas en même temps.",
+    "emptyHint": "Cliquez sur le bouton + ci-dessous pour choisir les widgets à afficher ici. Ils peuvent vivre dans la barre latérale et sur le canevas en même temps.",
     "callout": "Barre latérale droite - survolez le bord droit pour l'ouvrir",
     "settingsLabel": "Paramètres",
+    "addWidgetsLabel": "Ajouter des widgets",
     "pickerLabel": "Choisissez les widgets à afficher dans la barre latérale droite",
-    "showBackgroundsLabel": "Afficher les arrière-plans",
-    "resetLabel": "Réinitialiser la barre latérale",
+    "panelBackgroundLabel": "Arrière-plan du panneau",
+    "orderLabel": "Ordre",
+    "moveUpLabel": "Monter",
+    "moveDownLabel": "Descendre",
+    "guide": {
+      "button": "Guide de la barre latérale droite",
+      "title": "Utiliser la barre latérale droite",
+      "intro": "Choisissez ce qui s'affiche ici, puis personnalisez chaque widget indépendamment de sa version sur le canevas.",
+      "addTitle": "Choisir les widgets",
+      "addBody": "Cliquez sur le bouton +, puis sélectionnez les widgets à placer dans la barre latérale droite.",
+      "editTitle": "Ouvrir les paramètres du widget",
+      "editBody": "Faites un clic droit sur un widget de la barre latérale pour ouvrir ses commandes.",
+      "rightClickCue": "Clic droit",
+      "orderTitle": "Déplacer les widgets",
+      "orderBody": "Dans la ligne Ordre, utilisez la flèche vers le haut ou le bas. Chaque clic déplace le widget d'une position.",
+      "sizeTitle": "Choisir une taille",
+      "sizeBody": "Pour les widgets compatibles, choisissez le carré pour une demi-largeur ou le rectangle pour la pleine largeur."
+    },
+    "resetLabel": "Réinitialiser les widgets latéraux",
     "resetConfirm": "Réinitialiser tous les paramètres de la barre latérale droite ? Les widgets du canevas ne sont pas affectés."
   },
   "widgets": {
@@ -129,7 +147,6 @@
       "hideFromRightSidebar": "Retirer de la barre latérale droite",
       "dockWidthFull": "Pleine largeur",
       "dockWidthHalf": "Demi-largeur",
-      "showBackground": "Afficher l'arrière-plan",
       "time12": "12 heures",
       "time24": "24 heures",
       "timeAnalog": "Analogique",
@@ -168,13 +185,24 @@
       "textShadow": "Ombre du texte",
       "textShadowAria": "Intensité de l'ombre du texte",
       "noCustomization": "Aucune personnalisation disponible",
+      "dockWidth": "Largeur du widget",
       "darkModeAria": "Activer/désactiver le mode sombre",
       "timeFormatAria": "Choisir le format d'horloge",
       "timeFormat12": "12h",
       "timeFormat24": "24h",
       "timeFormatAnalog": "Analogique",
+      "dateFormatLabel": "Style de date",
+      "dateToday": "Aujourd’hui",
+      "dateFormat": {
+        "long": "Date complète",
+        "short": "Date courte",
+        "slash": "Avec barres obliques",
+        "calendar": "Mini calendrier"
+      },
       "gridShow": "Afficher en grille",
       "gridShowList": "Afficher en liste",
+      "quicklinksPerRow": "Liens par ligne",
+      "quicklinksVisibleRows": "Lignes visibles",
       "resizeTitle": "Faites glisser pour redimensionner {{name}}",
       "infoFields": {
         "japaneseTitle": "Titre japonais",
@@ -229,6 +257,10 @@
         "hourly": "Par heure",
         "full": "Prévisions complètes"
       },
+      "weatherLayoutLabel": "Disposition",
+      "weatherLayoutAria": "Choisir la disposition météo",
+      "weatherLayoutStandard": "Standard",
+      "weatherLayoutCompact": "Compacte",
       "weatherStylePlain": "Simple",
       "weatherStyleCard": "Carte",
       "weatherAnimatedIcons": "Icônes animées",
@@ -254,7 +286,10 @@
       "styleFrostDark": "Givré sombre",
       "styleClear": "Transparent",
       "styleWeather": "Météo",
+      "backgroundTune": "Ajuster l’arrière-plan",
+      "backgroundTuneUnavailable": "Sélectionnez un arrière-plan pour le personnaliser",
       "highlightTune": "Ajuster le surlignage",
+      "highlightTuneUnavailable": "Sélectionnez un surlignage pour le personnaliser",
       "weatherLocationHint": "Votre position sert uniquement à récupérer la météo locale - elle ne quitte cet appareil que vers le service météo.",
       "guideResize": "Redimensionner",
       "surfaceHighlights": "Surlignages",
@@ -262,8 +297,7 @@
     },
     "gapps": {
       "menuAria": "Applications Google",
-      "accountAria": "Compte Google",
-      "personalize": "Afficher mon initiale de compte"
+      "accountAria": "Compte Google"
     }
   },
   "greeting": {
@@ -310,7 +344,6 @@
     "editLink": "Modifier le lien",
     "deleteLink": "Supprimer le lien",
     "deleteAria": "Supprimer {{title}}",
-    "deleteGridTooltip": "Supprimer {{title}}",
     "deleteListTooltip": "Supprimer le lien",
     "removeTooltip": "Supprimer des liens",
     "doneDeleteTooltip": "Terminé",
@@ -326,7 +359,9 @@
     "previewEmpty": "Nouveau lien",
     "cancel": "Annuler",
     "save": "Enregistrer",
-    "addButton": "Ajouter"
+    "addButton": "Ajouter",
+    "previousPage": "Page précédente des liens rapides",
+    "nextPage": "Page suivante des liens rapides"
   },
   "pomodoro": {
     "modeBreak": "Pause",
@@ -575,18 +610,18 @@
         "body2": "La même section contient Police et Coins : choisissez la typographie de toute la page et l'arrondi de chaque surface. Les trois sont dépliées dans la barre latérale."
       },
       "adjustTime": {
-        "title": "Modifier les widgets",
-        "body1": "Chaque widget a ses propres contrôles. Le widget Heure ci-dessus est en mode édition - basculez 12/24 h et glissez le curseur pour la taille.",
-        "body2Pre": "Trois façons de modifier un widget : faites un clic droit dessus, maintenez ",
-        "body2Post": " (ou Maj) et cliquez sur le crayon qui apparaît, ou faites un clic droit sur son icône dans la barre latérale - ce menu est ouvert."
+        "title": "Entrer en mode édition",
+        "body1": "Faites un clic droit sur un widget de la page pour passer en mode édition et ouvrir ses contrôles.",
+        "body2": "Vous pouvez aussi faire un clic droit sur son icône dans la barre latérale, puis choisir Modifier. Les deux options sont indiquées sur le widget Heure.",
+        "rightClickWidgetCue": "Clic droit sur le widget",
+        "rightClickIconCue": "Clic droit sur l’icône"
       },
       "drag": {
-        "title": "Déplacez les widgets",
-        "body1Pre": "Maintenez ",
-        "body1Post": " et glissez le widget Heure pour le repositionner. Les widgets s'alignent sur la grille.",
-        "body2": "Lorsqu'un widget est en mode édition, vous pouvez aussi le faire glisser directement, sans aucune touche.",
-        "hint": "Le curseur se transforme en main tant que D ou Maj est maintenue - c'est le signal.",
-        "body1Sep": " ou "
+        "title": "Glisser, redimensionner et modifier les widgets",
+        "body1": "Utilisez le panneau d'édition pour modifier les réglages du widget.",
+        "body2": "Faites glisser le widget pour le déplacer, sans aucune touche.",
+        "dragCue": "Cliquer-glisser",
+        "hint": "Faites glisser la poignée ombrée dans le coin pour le redimensionner."
       },
       "background": {
         "title": "Choisir les fonds",
@@ -598,7 +633,7 @@
         "title": "Raccourcis clavier",
         "openSidebar": "Ouvrir ou fermer la barre latérale",
         "moveWidget": "Déplacer un widget",
-        "editWidget": "Modifier un widget (maintenez D ou Maj, cliquez sur le crayon)",
+        "editWidget": "Modifier, déplacer et redimensionner un widget précis",
         "escape": "Fermer la barre latérale, popovers, mode édition ou ce guide",
         "enter": "Confirmer une édition ou quitter le mode édition",
         "navigateGuide": "Naviguer dans les diapositives du guide",
@@ -648,7 +683,7 @@
     "resetConfirmCancel": "Annuler",
     "section": {
       "widgets": "Réglages des widgets",
-      "appearance": "Réglages d'apparence",
+      "appearance": "Paramètres des palettes",
       "background": "Réglages du fond",
       "cursor": "Réglages du curseur"
     },
@@ -657,8 +692,6 @@
     "backgroundTitle": "Fond",
     "cursorTitle": "Curseur",
     "cursorSub": "Rétablit le pointeur système par défaut. Son réglage est enregistré avec Apparence.",
-    "dockBackgrounds": "Fonds de carte du dock",
-    "dockBackgroundsSub": "Affiche une carte en verre derrière les widgets ancrés à droite.",
     "highContrastSub": "Contraste du texte renforcé sur toute la page.",
     "parallaxSub": "Le fond suit doucement votre curseur.",
     "resetWidgets": "Réinitialiser les widgets",
@@ -673,7 +706,7 @@
       "other": "Autres"
     },
     "deleteKeyConfirm": "Supprimer « {{key}} » du stockage ? Son contenu sera définitivement perdu.",
-    "resetWidgetsConfirm": "Remettre tous les widgets à leur position, taille et réglages par défaut ? Vos liens et votre prénom sont conservés.",
+    "resetWidgetsConfirm": "Remettre tous les widgets à leur position, taille et réglages par défaut ? Vos liens rapides, votre prénom, vos notes et votre liste de tâches sont conservés.",
     "resetDockConfirm": "Remettre le dock de droite à sa disposition par défaut ?",
     "resetAppearanceConfirm": "Remettre le thème, la police et le contraste par défaut ?",
     "resetBackgroundConfirm": "Remettre les filtres du fond et le parallaxe par défaut ?",
@@ -688,8 +721,6 @@
       "square": "Droits",
       "rounded": "Arrondis",
       "pill": "Doux"
-    },
-    "permissionEmail": "Adresse e-mail",
-    "permissionEmailSub": "Personnalise le bouton de compte du widget Google avec votre initiale. Rien d'autre."
+    }
   }
 }

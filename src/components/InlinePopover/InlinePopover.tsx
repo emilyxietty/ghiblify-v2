@@ -203,25 +203,6 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
               handleTriggerToggle(e);
             }
           }}
-          onMouseDown={(e) => {
-            // Forward Shift+left-click to parent widget for drag
-            if (e.button === 0 && e.shiftKey) {
-              const el = e.currentTarget as HTMLElement;
-              const widgetEl = el.closest(".widget") as HTMLElement | null;
-              if (widgetEl) {
-                const evt = new MouseEvent("mousedown", {
-                  bubbles: true,
-                  cancelable: true,
-                  view: window,
-                  clientX: e.clientX,
-                  clientY: e.clientY,
-                  button: 0,
-                  shiftKey: true,
-                });
-                widgetEl.dispatchEvent(evt);
-              }
-            }
-          }}
           style={{ pointerEvents: "auto" }}
         >
           {trigger}

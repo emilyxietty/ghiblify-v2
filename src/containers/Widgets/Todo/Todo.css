@@ -1,6 +1,6 @@
 .todo-container {
     min-width: 100px;
-    max-width: 450px;
+    max-width: min(450px, calc(100vw - 24px));
     width: 350px;
     display: flex;
     flex-direction: column;
@@ -13,6 +13,10 @@
        --light supplies the contrast-safe text color. The per-
        widget opacity slider drives --todo-opacity inline. */
     --todo-surface-rgb: var(--surface-rgb, 31, 38, 32);
+    /* Row highlight defaults to the theme tone INDEPENDENTLY of the
+       background above. Falling back to --todo-surface-rgb meant
+       choosing a background dragged the highlights along with it. */
+    --todo-row-rgb: var(--surface-rgb, 31, 38, 32);
     --todo-text: var(--light);
     --todo-text-muted: color-mix(in srgb, var(--light) 60%, transparent);
     --todo-border: color-mix(in srgb, var(--light) 22%, transparent);
@@ -32,6 +36,8 @@
         min(var(--todo-opacity, 0.5), var(--surface-alpha-cap, 1))
     );
     transition: background 160ms ease;
+    container-name: todo-widget;
+    container-type: inline-size;
 }
 
 /* The configured height is a cap, not a forced empty footprint. The
@@ -57,7 +63,7 @@
 /* when collapsed, keep the same widget width so header doesn't re-center */
 .todo-container.collapsed {
     min-width: 100px;
-    max-width: 450px;
+    max-width: min(450px, calc(100vw - 24px));
     width: 350px;
 }
 
@@ -235,7 +241,7 @@
        widget's own background on .todo-container. Defaults to the
        surface colour so an untouched widget looks as it always has. */
     background: rgba(
-        var(--todo-row-rgb, var(--todo-surface-rgb)),
+        var(--todo-row-rgb),
         min(var(--todo-row-opacity, 0.75), var(--surface-alpha-cap, 1))
     );
     color: var(--todo-text);
@@ -254,7 +260,7 @@
     /* Same tint, a touch more, so hover reads as "this row" without
        changing hue. */
     background: rgba(
-        var(--todo-row-rgb, var(--todo-surface-rgb)),
+        var(--todo-row-rgb),
         min(
             calc(var(--todo-row-opacity, 0.75) + 0.18),
             var(--surface-alpha-cap, 1)
@@ -609,4 +615,114 @@
 .todo-container.collapsed .todo-input-wrapper,
 .todo-container.collapsed .todo-list {
     display: none;
+}
+
+/* Scale from the Todo widget's actual rendered width. This covers both
+   viewport proportional scaling and the dock without coupling either
+   surface to a browser-width media query. */
+@container todo-widget (max-width: 280px) {
+    .todo-input-wrapper .custom-input {
+        min-height: 34px;
+        padding: 8px 30px 8px 8px;
+        font-size: 12px;
+    }
+
+    .todo-add-btn {
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        font-size: 15px;
+    }
+
+    .todo-list {
+        width: calc(100% + 10px);
+        margin-right: -10px;
+        padding: 2px 10px 20px 0;
+        gap: 4px;
+    }
+
+    .todo-item-content {
+        gap: 6px;
+        padding: 6px 7px;
+    }
+
+    .todo-checkbox {
+        width: 18px;
+        height: 18px;
+        min-width: 18px;
+        border-width: 1.5px;
+    }
+
+    .todo-checkbox svg {
+        width: 11px;
+        height: 11px;
+    }
+
+    .todo-text,
+    .todo-edit-input {
+        font-size: 11.5px;
+        line-height: 1.35;
+    }
+
+    .todo-edit-input {
+        min-width: 0;
+        padding: 3px 5px;
+    }
+
+    .todo-edit-btn,
+    .todo-delete-btn {
+        width: 18px;
+        height: 18px;
+        min-width: 18px;
+    }
+
+    .todo-edit-btn svg,
+    .todo-delete-btn svg {
+        font-size: 12px !important;
+    }
+
+    .todo-drag-handle {
+        width: 14px;
+    }
+
+    .todo-drag-handle svg {
+        font-size: 13px !important;
+    }
+}
+
+/* At the narrowest supported width, keep task text usable by placing
+   the secondary row actions beneath the checkbox/text line instead of
+   letting four fixed-size controls squeeze the label to a few pixels. */
+@container todo-widget (max-width: 180px) {
+    .todo-item-content {
+        flex-wrap: wrap;
+        column-gap: 4px;
+        row-gap: 3px;
+        padding: 5px 6px;
+    }
+
+    .todo-text,
+    .todo-edit-input {
+        flex: 1 1 calc(100% - 22px);
+        min-width: calc(100% - 22px);
+    }
+
+    .todo-edit-btn {
+        margin-left: auto;
+    }
+
+    .todo-edit-btn,
+    .todo-delete-btn,
+    .todo-drag-handle {
+        opacity: 0.65;
+    }
+
+    .todo-item:hover .todo-edit-btn,
+    .todo-item:hover .todo-delete-btn,
+    .todo-item:hover .todo-drag-handle,
+    .todo-item:focus-within .todo-edit-btn,
+    .todo-item:focus-within .todo-delete-btn,
+    .todo-item:focus-within .todo-drag-handle {
+        opacity: 1;
+    }
 }

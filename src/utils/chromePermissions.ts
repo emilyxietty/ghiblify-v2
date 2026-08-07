@@ -31,12 +31,7 @@ export type OptionalPermission =
   // Voice search. An extension page never gets the browser's mic
   // prompt - getUserMedia is denied outright unless the extension holds
   // `audioCapture` - so this grant is the only route to the microphone.
-  | "audioCapture"
-  // The Google-corner widget's letter avatar. Carries the "know your
-  // email address" install warning, so it MUST stay optional - adding
-  // a warning-bearing required permission in an update auto-disables
-  // the extension for every existing user until they re-approve.
-  | "identity.email";
+  | "audioCapture";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const permissionsApi = (): any => {

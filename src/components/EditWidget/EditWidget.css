@@ -259,31 +259,54 @@
     cursor: nwse-resize;
     pointer-events: auto;
     z-index: var(--z-resize-handle);
+    transition: transform 140ms ease;
 }
 
-.widget-resize-handle::after {
+.widget-resize-handle:hover {
+    transform: scale(1.05);
+}
+
+.widget-resize-handle:active {
+    transform: scale(0.96);
+}
+
+/* Corner grip. This was a 6px-thick L of borders with one rounded
+   corner, which read as a hard bracket clamped onto the widget. It's
+   now three short diagonal strokes - the familiar "grip" idiom - drawn
+   as a repeating gradient so they stay crisp at any size and need no
+   extra elements. Rounded line caps aren't available on a gradient, so
+   the softness comes from the strokes being short and inset rather
+   than from a curve. */
+.widget-resize-handle::before {
     content: "";
     position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 100%;
-    height: 100%;
-    border-bottom: 6px solid #ccc;
-    border-right: 6px solid #ccc;
-    border-radius: 0 0 8px 0;
-    box-sizing: border-box;
-    /* pointer-events: none; */
-    transition: border-color 0.2s;
+    right: 4px;
+    bottom: 4px;
+    width: 15px;
+    height: 15px;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.85) 0 2px,
+        transparent 2px 5px
+    );
+    /* Clip the square of stripes down to the lower-right triangle so it
+       reads as a corner, not a hatched box. */
+    -webkit-mask-image: linear-gradient(-45deg, #000 42%, transparent 42%);
+    mask-image: linear-gradient(-45deg, #000 42%, transparent 42%);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.95))
+        drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+    opacity: 0.9;
+    transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.widget-resize-handle:hover::after {
-    border-bottom-color: white;
-    border-right-color: white;
+.widget-resize-handle:hover::before {
+    opacity: 1;
+    transform: scale(1.08);
 }
 
-.widget-resize-handle:active::after {
-    border-bottom-color: white;
-    border-right-color: white;
+.widget-resize-handle:active::before {
+    opacity: 1;
+    transform: scale(0.96);
 }
 
 /* Highlight sits in the same panel as the text-shadow slider - both
@@ -432,9 +455,107 @@
     color: var(--light);
 }
 
+.edit-panel-segment:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.edit-panel-segment:disabled:hover {
+    color: var(--light-muted);
+}
+
 .edit-panel-segment.is-active {
     color: var(--dark, #1f2620);
     background: var(--light);
+}
+
+.edit-panel-order-control {
+    display: flex;
+    gap: 4px;
+}
+
+.edit-panel-order-button {
+    width: 30px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--light) 10%, transparent);
+    color: var(--light);
+    cursor: pointer;
+    transition: background 140ms ease, opacity 140ms ease;
+}
+
+.edit-panel-order-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--light) 18%, transparent);
+}
+
+.edit-panel-order-button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.edit-panel-order-up svg {
+    transform: rotate(180deg);
+}
+
+.edit-panel-width-control .edit-panel-segment {
+    min-width: 42px;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-panel-width-shape {
+    display: block;
+    height: 14px;
+    box-sizing: border-box;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+}
+
+.edit-panel-width-shape-half {
+    width: 14px;
+}
+
+.edit-panel-width-shape-full {
+    width: 28px;
+}
+
+.edit-panel-align-icon {
+    width: 24px;
+    height: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.edit-panel-align-left {
+    align-items: flex-start;
+}
+
+.edit-panel-align-center {
+    align-items: center;
+}
+
+.edit-panel-align-right {
+    align-items: flex-end;
+}
+
+.edit-panel-align-icon span {
+    width: 18px;
+    height: 2px;
+    border-radius: var(--radius-pill, 999px);
+    background: currentColor;
+}
+
+.edit-panel-align-icon span:nth-child(2) {
+    width: 12px;
 }
 
 /* Expanded state: the tuning column slides out the right side - the
@@ -555,34 +676,9 @@
     );
 }
 
-/* Smoked-glass variant - same stripes, dark. */
-.edit-panel-swatch-frost-dark {
-    background: repeating-linear-gradient(
-        45deg,
-        rgba(18, 24, 30, 0.85) 0 3px,
-        rgba(18, 24, 30, 0.45) 3px 6px
-    );
-}
-
-/* "Clear" (no surface) - diagonal slash over nothing. */
-.edit-panel-swatch-clear {
-    background: linear-gradient(
-        to top right,
-        transparent 42%,
-        #e05a5a 46%,
-        #e05a5a 54%,
-        transparent 58%
-    );
-}
-
 /* Theme-default surface chip. */
 .edit-panel-swatch-theme {
     background: rgb(var(--surface-rgb, 31, 38, 32));
-}
-
-/* Weather-mood card chip - sky-to-sun wash. */
-.edit-panel-swatch-weather {
-    background: linear-gradient(135deg, #7ec3e8 0%, #b8dcf0 55%, #f5d98a 100%);
 }
 
 .edit-panel-avatar-grid {

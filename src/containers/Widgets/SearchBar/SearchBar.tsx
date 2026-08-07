@@ -17,6 +17,11 @@ import {
 import { fetchSuggestions, splitSuggestion } from "../../../utils/searchSuggest";
 import { requestPermission } from "../../../utils/chromePermissions";
 import { useScaledPx } from "../../../utils/viewportScale";
+import {
+  hexToRgbChannels,
+  isHighlightTextColor,
+  resolveForeground,
+} from "../../../utils/textHighlight";
 import "./SearchBar.css";
 
 const SUGGEST_DEBOUNCE_MS = 120;
@@ -230,16 +235,41 @@ const SearchBar: React.FC = () => {
   const rowCount = rows.length;
   const showSuggestions = focused && rowCount > 0;
   const displayValue = activeIdx >= 0 ? rows[activeIdx]?.value ?? query : query;
+  const surfaceMode = isHighlightTextColor(searchbarSettings.textColor)
+    ? searchbarSettings.textColor
+    : "auto";
+  const surfaceRgb =
+    typeof searchbarSettings.surfaceColor === "string"
+      ? hexToRgbChannels(searchbarSettings.surfaceColor)
+      : null;
+  const searchbarStyle = {
+    width,
+    "--sb-opacity": searchbarSettings.opacity / 100,
+    "--input-opacity": searchbarSettings.opacity / 100,
+    ...(surfaceRgb ? { "--sb-surface-rgb": surfaceRgb } : {}),
+    ...((): Record<string, string> => {
+      const color = searchbarSettings.surfaceColor;
+      const ink =
+        typeof color === "string"
+          ? resolveForeground(color, surfaceMode)
+          : surfaceMode === "light"
+            ? "#f7f3ea"
+            : surfaceMode === "dark"
+              ? "#1f2420"
+              : null;
+      return ink
+        ? {
+            "--sb-ink": ink,
+            "--sb-ink-muted": `color-mix(in srgb, ${ink} 62%, transparent)`,
+            "--sb-line": `color-mix(in srgb, ${ink} 22%, transparent)`,
+          }
+        : {};
+    })(),
+  } as React.CSSProperties;
 
   return (
     <div
-      style={{
-        width,
-        ["--sb-opacity" as any]:
-          ((searchbarSettings as any).opacity ?? 50) / 100,
-        ["--input-opacity" as any]:
-          ((searchbarSettings as any).opacity ?? 50) / 100,
-      }}
+      style={searchbarStyle}
       className="widget-header searchbar-widget"
     >
       <form
@@ -253,7 +283,7 @@ const SearchBar: React.FC = () => {
         // Passed as a var rather than as `minHeight` so the stylesheet
         // can floor it - an inline min-height would win outright and a
         // scaled-down value could leave the pill squashed.
-        style={{ ["--sb-min-height" as any]: `${height}px` }}
+        style={{ "--sb-min-height": `${height}px` } as React.CSSProperties}
       >
         <SearchIcon className="searchbar-leading-icon" />
 

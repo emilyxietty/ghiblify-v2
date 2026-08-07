@@ -2,7 +2,7 @@
 
 ## State: a single Context, single source of truth
 
-`src/contexts/AppContext.tsx` is the only state container. The widget state shape is uniform - every widget has `{ visible, position, settings }`:
+`src/contexts/AppContext.tsx` is the primary state container. The widget state shape is uniform across the canvas and dock:
 
 ```ts
 type WidgetsState = {
@@ -10,11 +10,15 @@ type WidgetsState = {
     visible: boolean;
     position: { x: number; y: number }; // viewport-percent
     settings: WidgetSettingsMap[K]; // widget-specific
+    inRightSidebar: boolean;
+    dockWidth: "half" | "full";
+    dockOrder: number;
+    dockSettings: Partial<WidgetSettingsMap[K]>;
   };
 };
 ```
 
-Plus background filters/selection and the transient `isDragging` flag the `Background` reads to render the snap grid. No Redux, no Zustand.
+Plus appearance, background state, guide/edit state, and transient drag state. `DockSurfaceContext` is only a render-surface marker; it is not a second store. No Redux, no Zustand.
 
 Settings types (in `src/config/widgetConfig.ts`) deliberately do **not** include `position` or `visible` - those belong to the widget shell, not the widget content.
 
@@ -32,58 +36,58 @@ const {
 
 `updateWidgetSettings` is generic - TypeScript narrows the patch type by the key you pass.
 
-## Persistence: one key, diff-from-defaults
+## Persistence: hybrid storage, diff-from-defaults
 
-A single localStorage key `ghiblify_widgets` holds the state, encoded as a minimal blob: only fields that differ from `WIDGET_CONFIGS[key].settings` / `.position` are written. If everything is at defaults, the key is removed entirely.
+A single `ghiblify_widgets` key holds the state as a minimal blob: only fields that differ from defaults are written. `storage/hybridStorage.ts` writes registered keys to `chrome.storage` and a synchronous `localStorage` mirror, which keeps first paint free of an async defaults flash.
 
-A `useEffect` watches `widgets` and re-persists on every change. There is no per-setting `localStorage.setItem` scattered around the updaters.
+Widget persistence is debounced in `AppContext`; settings updaters do not write storage individually. Pomodoro election and location-tied caches remain local-only because they need synchronous cross-tab events or are machine-specific.
 
 ## Migration
 
-On context init, if `ghiblify_widgets` doesn't exist, the legacy layout is read once (`widgets_state` blob plus per-key entries: `time_x`, `time_y`, `time_switch`, `time_fontSize`, `info_selectedFields`, `quick_links`, …), built into the new shape, written as `ghiblify_widgets`, and the legacy keys are deleted. Migration runs once per browser profile; subsequent loads only touch the new key.
+On initialization, the legacy layout is read once (`widgets_state` plus per-key entries), built into the current shape, written as `ghiblify_widgets`, and the legacy keys are deleted. The one-time setup also seeds `chrome.storage` from pre-hybrid local values. `index.tsx` restores a missing mirror from `chrome.storage` before the app can overwrite it with defaults.
 
-Anything outside the widgets state - `background_filters`, `background_selection`, `quick_links` user content (no, this is migrated into `widgets.quicklinks.settings.links`), `pomodoro_*` cross-tab keys - keeps its own storage.
+Not all user content belongs in the widget blob. Todo items use `ghiblify_todo`, while Pomodoro and weather cache/election data keep dedicated keys.
 
 ## Widget rendering pipeline
 
 ```
 App.tsx
   └── AppProvider (context)
-        ├── Background          (reads filters + isDragging)
-        ├── LeftSidebar         (toggles + filter sliders)
-        └── for each visible widget:
-              Widget (containers/Widget/Widget.tsx)
-                ├── handles drag, resize, edit-mode overlay
-                └── renders the inner widget (Time, Todo, …)
+        ├── LeftSidebar
+        ├── RightSidebar (bookmarks)
+        ├── RightDock
+        │     └── DockWidget → WidgetRenderer
+        └── Background (canvas)
+              └── Widget → WidgetRenderer
 ```
 
-`Widget.tsx` is the universal wrapper. Individual widgets in `containers/Widgets/` should stay focused on their own logic - drag/resize/persistence is already handled.
+`WidgetRenderer` maps a widget key to content once, so canvas and dock cannot drift into separate component lists. Placement arrays and dock width policy live in `widgetConfig.ts`. `Widget.tsx` owns canvas drag/resize/edit behavior; `DockWidget.tsx` owns the dock surface and opens the shared `EditWidget` panel with dock-scoped settings. That panel exposes Up/Down controls, while `AppContext` persists the resulting dock order.
 
 ## Drag and resize
 
 In `containers/Widget/Widget.tsx`:
 
-- **Drag**: requires `Shift + left-click` on a non-interactive element (inputs, buttons, etc. are excluded). Position updates on `mousemove`; on `mouseup` it snaps to the nearest grid line (2%, 50%, 98% of viewport). Final position is committed to AppContext, which persists it.
-- **Resize**: handle is only visible in edit mode. Behavior depends on what the widget supports - `fontSize` (Time/Date/Info), `width`/`height` (Todo/QuickLinks/SearchBar), or a single `size` (Avatar). The relevant slider/handle dispatches updates to AppContext immediately so the widget reacts in real time.
+- **Drag**: hold `d` and drag, or drag a widget that is already in edit mode. Interactive controls are excluded outside edit mode. Position updates on `mousemove`; on `mouseup` it snaps to the nearest grid line (2%, 50%, 98% of viewport) and commits to AppContext.
+- **Resize**: the handle is only visible in edit mode. Behavior depends on config bounds: `fontSize`, `width`/`height`, a single `size`, or square-locked width/height for Notes. Updates flow through AppContext immediately.
 - **Snap grid overlay**: `Background.tsx` shows the grid only when `isDragging === true`.
 
-Holding Shift outside a drag still toggles a `body.shift-pressed` class so widget outlines appear. See lines ~77-94 of `Widget.tsx`.
+Holding `d` toggles `body.show-widget-outline`, which reveals outlines and quick edit/hide controls.
 
 ## Edit mode
 
-`App.tsx` owns the `editingWidget` state. Three exits:
+`AppContext` owns the canvas `editingWidgetKey`; each `DockWidget` owns its local editor-open state so opening a dock editor cannot also open the canvas copy. Both surfaces use the same `EditWidget` component and support three exits:
 
 1. Click outside the widget
 2. Press Escape
 3. Press Enter
 
-The exit logic is centralized in `useEffect`s in `App.tsx` (lines ~39-62), not in individual widgets.
+Canvas exit handling lives in `App.tsx`; the shared editor handles the same exits when a dock `onClose` callback is supplied.
 
-`EditWidget` (in `components/EditWidget/`) is rendered as an overlay by the `Widget` wrapper. It reads the widget's config entry and conditionally renders controls (font slider, dark mode switch, time-format toggle, avatar picker, field selector, grid-mode toggle). Widget-specific behavior is keyed off `customControls` in `widgetConfig.ts`.
+`EditWidget` (in `components/EditWidget/`) is rendered as an overlay by either wrapper. It reads the widget's config entry and conditionally renders controls (font slider, dark mode switch, time-format toggle, avatar picker, field selector, grid-mode toggle). Widget-specific behavior is keyed off `customControls` in `widgetConfig.ts`; dock edits and previews write to `dockSettings`, while canvas edits write to `settings`.
 
 ## Cross-widget signaling
 
-There isn't any. Widgets read settings from context (`widgets[key].settings`); when `EditWidget` calls `updateWidgetSettings(key, patch)`, the context updates and every consumer re-renders. The old `window.dispatchEvent` / `addEventListener` choreography (`timeSettingsChange`, `quicklinksGridChange`, `avatarSettingsChange`) is gone - it was a workaround for the parallel-state problem that no longer exists.
+Ordinary settings never use an event bus: widgets read context and `EditWidget` writes context. Targeted custom events remain for genuinely imperative coordination such as guide demos, a dock peek, a weather refresh, or synchronizing two Todo instances mounted in the same tab. Keep those events namespaced as `ghiblify:*` and do not use them as parallel settings state.
 
 ## Pomodoro: leader election
 
@@ -109,7 +113,7 @@ Implication: if you add timer-like multi-tab features, follow this pattern. Don'
 
 `useInfoConfig.ts` separately fetches `movie_metadata.json` and exposes title/year/quote/etc. for the Info widget.
 
-Both files must be in `manifest.json` `web_accessible_resources` or the fetch will 404.
+Both files live in `public/` so Vite copies them into `dist/`. Because they are fetched by an extension page, they do not need `web_accessible_resources` unless a normal web page also needs access.
 
 ## File structure invariants
 

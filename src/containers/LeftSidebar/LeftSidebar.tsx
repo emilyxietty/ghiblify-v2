@@ -18,11 +18,15 @@ const SettingsModal = lazy(() =>
   import("../../components/SettingsModal/SettingsModal"),
 );
 import type { SettingsSection } from "../../components/SettingsModal/SettingsModal";
-import { WeatherSettings } from "../../config/widgetConfig";
+import {
+  LEFT_SIDEBAR_WIDGET_KEYS,
+  type WeatherSettings,
+  type WidgetKey,
+} from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
 import { isManualPlace } from "../../utils/geocoding";
-import { DeleteOutlineIcon, FormatQuoteIcon, RefreshIcon, RestoreIcon, SearchIcon, StickyNote2Icon, WbSunnyIcon, AppsIcon } from "../../components/Icons/Icons";
-import { AccessTimeFilledIcon, BookmarksIcon, BugReportIcon, CalendarTodayIcon, CheckBoxIcon, EmojiEmotionsIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LinkIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon, TimerIcon, VerticalSplitIcon } from "../../components/Icons/Icons";
+import { DeleteOutlineIcon, RefreshIcon, WbSunnyIcon } from "../../components/Icons/Icons";
+import { BugReportIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon } from "../../components/Icons/Icons";
 import {
   codeToIconName,
   iconUrl as weatherIconUrl,
@@ -30,6 +34,7 @@ import {
 
 import { Button } from "../../components/Button/Button";
 import { Dropdown } from "../../components/Dropdown/Dropdown";
+import { WidgetIcon } from "../../components/WidgetIcon/WidgetIcon";
 import {
   BUYMEACOFFEE_URL,
   CHROME_WEBSTORE_REVIEW_URL,
@@ -37,7 +42,6 @@ import {
   SIDEBAR_WIDTH,
 } from "../../config/appConfig";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
-import { WidgetKey } from "../../config/widgetConfig";
 import {
   BackgroundFilters,
   CORNER_STYLES,
@@ -95,26 +99,6 @@ const THEME_KEYS: ThemeName[] = [
   "light",
   "dark",
   "frost",
-];
-
-const WIDGET_TOGGLES: Array<{
-  key: WidgetKey;
-  icon: React.ReactElement;
-}> = [
-  { key: "time", icon: <AccessTimeFilledIcon /> },
-  { key: "date", icon: <CalendarTodayIcon /> },
-  { key: "greeting", icon: <EmojiEmotionsIcon /> },
-  { key: "info", icon: <FormatQuoteIcon /> },
-  { key: "todo", icon: <CheckBoxIcon /> },
-  { key: "quicklinks", icon: <LinkIcon /> },
-  { key: "searchbar", icon: <SearchIcon /> },
-  { key: "pomodoro", icon: <TimerIcon /> },
-  { key: "weather", icon: <WbSunnyIcon /> },
-  { key: "notes", icon: <StickyNote2Icon /> },
-  { key: "googleApps", icon: <AppsIcon /> },
-  // NOTE: bookmarks + rightSidebar are deliberately absent - they
-  // share the right edge, so a single combined tile at the end of the
-  // grid owns both (see EDGE_PANEL_KEYS below).
 ];
 
 /** The two panels that compete for the right edge. Only one can be on
@@ -246,16 +230,20 @@ export const LeftSidebar: React.FC = () => {
   // so the open-on-spotlight effect didn't re-fire. Combined with the
   // mouse-move auto-close handler below, that left the sidebar shut
   // and unreachable when navigating back through the guide.
-  // "welcome" is the opening slide: the guide is up but the sidebar
-  // must stay shut so the landing screen is the only lit thing on
-  // screen. It slides in from the next slide onward.
+  // A few guide steps intentionally keep the sidebar shut so the
+  // canvas or guide content has enough room.
+  const guideKeepsSidebarClosed =
+    sidebarSpotlight === "welcome" ||
+    sidebarSpotlight === "canvas" ||
+    sidebarSpotlight === "shortcuts";
   const guideWantsSidebar =
-    (showGuide || !!sidebarSpotlight) && sidebarSpotlight !== "welcome";
+    (showGuide || !!sidebarSpotlight) && !guideKeepsSidebarClosed;
   useEffect(() => {
     if (guideWantsSidebar) setIsOpen(true);
-    else if (sidebarSpotlight === "welcome") setIsOpen(false);
-  }, [guideWantsSidebar, sidebarSpotlight]);
+    else if (guideKeepsSidebarClosed) setIsOpen(false);
+  }, [guideKeepsSidebarClosed, guideWantsSidebar]);
   const [filters, setFilters] = useState<BackgroundFilters>(backgroundFilters);
+  useEffect(() => setFilters(backgroundFilters), [backgroundFilters]);
   const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSocialsModal, setShowSocialsModal] = useState(false);
@@ -265,6 +253,7 @@ export const LeftSidebar: React.FC = () => {
   const [settingsSection, setSettingsSection] =
     useState<SettingsSection | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
+  const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
   // Force the palette collapsible open while the welcome guide is
   // spotlighting the "palette" step so swatches are visible without
   // the user having to expand it. We don't force it closed afterward
@@ -276,8 +265,9 @@ export const LeftSidebar: React.FC = () => {
   // The guide demos this menu on the "Edit widgets" slide - it's one
   // of the three routes into editing a widget, and the least
   // discoverable, so the tour opens it for real rather than just
-  // describing it. Positioned off the toggle's own rect since there's
-  // no cursor to read coordinates from.
+  // describing it. The guide's right-click cue sits below-right of the
+  // toggle; align the real menu to that cue and begin it just underneath,
+  // matching the menu stack the illustrated click is meant to teach.
   useEffect(() => {
     const onOpen = (e: Event) => {
       const key = (e as CustomEvent).detail?.key as WidgetKey | undefined;
@@ -288,7 +278,7 @@ export const LeftSidebar: React.FC = () => {
       if (!btn) return;
       const r = btn.getBoundingClientRect();
       setMenuPermGranted(null);
-      setToggleMenu({ key, x: r.right + 6, y: r.bottom + 4 });
+      setToggleMenu({ key, x: r.right + 8, y: r.bottom + 44 });
     };
     const onClose = () => setToggleMenu(null);
     window.addEventListener("ghiblify:open-toggle-menu", onOpen);
@@ -306,19 +296,42 @@ export const LeftSidebar: React.FC = () => {
   // were all still expanded and the highlighted button was pushed off
   // screen behind them.
   const appearanceSectionRef = useRef<HTMLElement | null>(null);
+  const backgroundSectionRef = useRef<HTMLElement | null>(null);
   // Runs on every slide change for the whole tour, not just the
   // spotlit ones - otherwise stepping off Appearance onto a slide with
   // no spotlight left the palette / font / corner pickers hanging open
   // for the rest of the guide.
   useEffect(() => {
     if (!showGuide && !sidebarSpotlight) return;
-    const section =
+    const openSection =
       sidebarSpotlight === "palette" ? appearanceSectionRef.current : null;
+    const scrollSection =
+      sidebarSpotlight === "background"
+        ? backgroundSectionRef.current
+        : openSection;
     sidebarRef.current
       ?.querySelectorAll<HTMLDetailsElement>("details.filter-collapsible")
       .forEach((d) => {
-        d.open = !!section && section.contains(d);
+        d.open = !!openSection && openSection.contains(d);
       });
+    const scrollToTop =
+      sidebarSpotlight === "widgetEdit" || sidebarSpotlight === "widgets";
+    if (!scrollSection && !scrollToTop) return;
+    const frame = window.requestAnimationFrame(() => {
+      const scroller = sidebarScrollRef.current;
+      if (!scroller) return;
+      if (scrollToTop) {
+        scroller.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (!scrollSection) return;
+      const top =
+        scrollSection.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top +
+        scroller.scrollTop;
+      scroller.scrollTo({ top: Math.max(0, top - 24), behavior: "smooth" });
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [showGuide, sidebarSpotlight]);
 
   // Mirror the spotlight state onto the body so the welcome modal's
@@ -342,7 +355,7 @@ export const LeftSidebar: React.FC = () => {
   // reveal) and a sidebar that's already open stays open.
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) return;
+      if (isDragging || toggleMenu || edgeMenu) return;
       const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
       if (e.clientX < SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
       else if (isOpen && !showGuide && e.clientX > sidebarWidth)
@@ -350,7 +363,13 @@ export const LeftSidebar: React.FC = () => {
     };
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [isOpen, showGuide, isDragging]);
+  }, [edgeMenu, isOpen, showGuide, isDragging, toggleMenu]);
+
+  useEffect(() => {
+    if (isOpen) return;
+    setToggleMenu(null);
+    setEdgeMenu(null);
+  }, [isOpen]);
 
   // Keyboard shortcuts: Cmd/Ctrl+K toggles the sidebar (keyboard-accessible
   // entry point now that the visible trigger button is gone). Escape closes.
@@ -395,20 +414,6 @@ export const LeftSidebar: React.FC = () => {
     updateBackgroundFilters({ [filterType]: value });
   };
 
-  const resetFilters = () => {
-    const defaultFilters: BackgroundFilters = {
-      blur: 0,
-      brightness: 100,
-      contrast: 100,
-      saturation: 100,
-    };
-    setFilters(defaultFilters);
-    updateBackgroundFilters(defaultFilters);
-    // Also clear parallax so the "Reset background settings" button
-    // truly resets the whole panel, not just the slider values.
-    setBackgroundParallax(false);
-  };
-
   const renderFilter = (
     name: keyof BackgroundFilters,
     label: string,
@@ -441,6 +446,24 @@ export const LeftSidebar: React.FC = () => {
       </div>
     );
   };
+
+  const backgroundStatus = [
+    backgroundParallax ? t("sidebar.filters.parallax") : null,
+    filters.blur !== 0
+      ? `${t("sidebar.filters.blur")} ${filters.blur}${t("sidebar.filterUnits.px")}`
+      : null,
+    filters.brightness !== 100
+      ? `${t("sidebar.filters.brightness")} ${filters.brightness}%`
+      : null,
+    filters.contrast !== 100
+      ? `${t("sidebar.filters.contrast")} ${filters.contrast}%`
+      : null,
+    filters.saturation !== 100
+      ? `${t("sidebar.filters.saturation")} ${filters.saturation}%`
+      : null,
+  ]
+    .filter((value): value is string => !!value)
+    .join(" · ");
 
   return (
     <>
@@ -497,7 +520,7 @@ export const LeftSidebar: React.FC = () => {
               and footer divs sit outside this wrapper as flex
               siblings so they stay fixed at top/bottom of the
               sidebar regardless of how much content the user has. */}
-          <div className="sidebar-scroll">
+          <div ref={sidebarScrollRef} className="sidebar-scroll">
           <section
             className="sidebar-section"
             aria-labelledby="widgets-heading"
@@ -519,12 +542,17 @@ export const LeftSidebar: React.FC = () => {
               role="group"
               aria-labelledby="widgets-heading"
             >
-              {WIDGET_TOGGLES.map(({ key, icon }) => {
+              {LEFT_SIDEBAR_WIDGET_KEYS.map((key) => {
                 const visible = widgets[key].visible;
                 const name = t(`widgets.names.${key}`);
                 // Weather toggle gets a live Meteocons icon matching
                 // current conditions, instead of the static sun fallback.
-                const renderedIcon = key === "weather" ? liveWeatherIcon : icon;
+                const renderedIcon =
+                  key === "weather" ? (
+                    liveWeatherIcon
+                  ) : (
+                    <WidgetIcon storageKey={key} />
+                  );
                 return (
                   <Button
                     key={key}
@@ -552,6 +580,9 @@ export const LeftSidebar: React.FC = () => {
                     )}
                     aria-pressed={visible}
                     data-tooltip={name}
+                    data-guide-right-click={t(
+                      "welcome.slides.adjustTime.rightClickIconCue",
+                    )}
                   />
                 );
               })}
@@ -564,24 +595,25 @@ export const LeftSidebar: React.FC = () => {
                   (k) => widgets[k].visible,
                 );
                 const label = t("sidebar.edgePanel.label");
+                const openEdgeMenu = (target: HTMLElement) => {
+                  const rect = target.getBoundingClientRect();
+                  setEdgeMenu({ x: rect.left, y: rect.bottom + 4 });
+                };
                 return (
                   <Button
                     data-widget-toggle="rightSidebar"
                     className={`widget-icon${active ? " active" : ""}`}
                     icon={
-                      active === "bookmarks" ? (
-                        <BookmarksIcon />
-                      ) : (
-                        <VerticalSplitIcon />
-                      )
+                      <WidgetIcon storageKey={active ?? "rightSidebar"} />
                     }
                     size="medium"
                     variant="transparent"
                     onClick={(e: React.MouseEvent) => {
-                      const r = (
-                        e.currentTarget as HTMLElement
-                      ).getBoundingClientRect();
-                      setEdgeMenu({ x: r.left, y: r.bottom + 4 });
+                      openEdgeMenu(e.currentTarget as HTMLElement);
+                    }}
+                    onContextMenu={(e: React.MouseEvent) => {
+                      e.preventDefault();
+                      openEdgeMenu(e.currentTarget as HTMLElement);
                     }}
                     aria-haspopup="menu"
                     aria-expanded={!!edgeMenu}
@@ -644,7 +676,7 @@ export const LeftSidebar: React.FC = () => {
             </div>
             <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
-                <span>{t("sidebar.filters.heading")}</span>
+                <span>{t("sidebar.appearance.palette")}</span>
                 <span className="collapsible-preview" aria-hidden="true">
                   <span
                     className={`theme-swatch theme-${appearance.theme} preview-swatch`}
@@ -813,6 +845,7 @@ export const LeftSidebar: React.FC = () => {
           </section>
 
           <section
+            ref={backgroundSectionRef}
             className="sidebar-section"
             aria-labelledby="background-heading"
           >
@@ -830,7 +863,17 @@ export const LeftSidebar: React.FC = () => {
             </div>
             <details className="filter-collapsible">
               <summary className="filter-collapsible-summary">
-                <span>{t("sidebar.filters.heading")}</span>
+                <span className="filter-collapsible-summary-copy">
+                  <span>{t("sidebar.filters.heading")}</span>
+                  {backgroundStatus && (
+                    <span
+                      className="filter-collapsible-status"
+                      title={backgroundStatus}
+                    >
+                      {backgroundStatus}
+                    </span>
+                  )}
+                </span>
                 <ExpandMoreIcon
                   className="filter-collapsible-chevron"
                   fontSize="small"
@@ -886,12 +929,6 @@ export const LeftSidebar: React.FC = () => {
                   0,
                   200,
                 )}
-                <div className="filter-actions">
-                  <Button variant="dark" size="small" onClick={resetFilters}>
-                    <RestoreIcon style={{ fontSize: 16 }} />
-                    {t("sidebar.buttons.resetFilters")}
-                  </Button>
-                </div>
               </div>
             </details>
             <div className="background-actions">
@@ -1226,7 +1263,9 @@ export const LeftSidebar: React.FC = () => {
             <ContextMenu
               position={{ x: toggleMenu.x, y: toggleMenu.y }}
               items={items}
-              onClose={() => setToggleMenu(null)}
+              onClose={() => {
+                if (sidebarSpotlight !== "widgetEdit") setToggleMenu(null);
+              }}
             />
           );
         })()}

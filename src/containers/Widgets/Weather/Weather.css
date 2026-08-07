@@ -30,6 +30,146 @@
         border-radius 220ms ease, padding 220ms ease;
 }
 
+/* Semantically groups the rendered state without changing the canvas or
+   full-width layout. The half-width dock promotes it to a real flex panel. */
+.weather-body {
+    display: contents;
+}
+
+/* The canvas compact option and every dock instance share this exact
+   rail presentation. Compact changes scale and spacing only; the
+   selected Detail still decides which forecast sections render. */
+.weather-widget.weather-canvas-compact {
+    width: min(280px, 90vw);
+}
+
+.weather-widget.weather-rail-layout {
+    padding: 16px 14px;
+}
+
+.weather-rail-layout .weather-strip {
+    gap: 4px;
+    margin-top: 2px;
+    padding-bottom: 3px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.weather-rail-layout .weather-strip-cell {
+    flex: 0 0 auto;
+    min-width: 40px;
+    gap: 2px;
+    padding: 4px 5px;
+    box-sizing: border-box;
+}
+
+/* The canvas rail is a fixed 280px and the strip is always exactly six
+   hours, so on that surface the cells share the row rather than holding
+   a min width and scrolling. At 40px each they overran the rail by
+   ~10px, which clipped the last hour and made the hourly strip read as
+   wider than the daily card underneath - the two blocks are meant to
+   span the same band. The dock keeps the scrolling min-width: a
+   half-width dock column is ~150px, where six shared cells would be
+   too narrow to read. */
+.weather-canvas-compact .weather-strip-cell {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.weather-rail-layout .weather-strip-label {
+    font-size: 9px;
+}
+
+.weather-rail-layout .weather-strip-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.weather-rail-layout .weather-strip-temp {
+    font-size: 10px;
+}
+
+.weather-rail-layout .weather-strip::-webkit-scrollbar {
+    height: 6px;
+}
+
+.weather-rail-layout .weather-strip::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+}
+
+.weather-rail-layout .weather-strip::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.weather-compact-nav {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 3px;
+    padding: 2px;
+    border-radius: var(--radius-md);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.weather-compact-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 24px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: calc(var(--radius-md) - 2px);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.68);
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.weather-compact-tab:hover,
+.weather-compact-tab.is-active {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+
+.weather-compact-tab:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+}
+
+.weather-widget.weather-tabbed-compact .weather-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.weather-widget.weather-tabbed-compact .weather-body > .weather-loading {
+    flex: 1 1 auto;
+    min-height: 0;
+    justify-content: center;
+}
+
+.weather-widget.weather-tabbed-compact .weather-strip {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.weather-widget.weather-tabbed-compact .weather-body-daily .weather-days {
+    margin-top: 0;
+}
+
 /* Opt-in card surface (toggled by .weather-card-on). Each mood gets
    a CSS gradient picked to match the weather + day/night vibe.
    White text + halo from .weather-current reads on every variant.

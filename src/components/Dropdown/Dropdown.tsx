@@ -3,6 +3,10 @@ import { createPortal } from "react-dom";
 import { Z_FLOATING } from "../../utils/zLayers";
 import "./Dropdown.css";
 
+const MENU_GAP = 4;
+const VIEWPORT_MARGIN = 8;
+const MENU_MAX_HEIGHT = 300;
+
 export interface DropdownOption {
   value: string;
   /** A node, not just a string, so an option can preview what it does - *
@@ -66,6 +70,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
     left: number;
     top: number;
     width: number;
+    maxHeight: number;
+    opensUp: boolean;
   } | null>(null);
 
   const selectedOption = options.find((option) => option.value === value);
@@ -99,12 +105,45 @@ export const Dropdown: React.FC<DropdownProps> = ({
       const toggle = dropdownRef.current?.querySelector(
         ".dropdown-toggle"
       ) as HTMLElement | null;
-      if (!toggle) return;
+      const menu = menuRef.current;
+      if (!toggle || !menu) return;
       const rect = toggle.getBoundingClientRect();
-      const menuHeight = menuRef.current?.offsetHeight ?? 0;
-      const top =
-        direction === "up" ? rect.top - menuHeight - 4 : rect.bottom + 4;
-      setMenuPos({ left: rect.left, top, width: rect.width });
+      const measuredHeight = Math.min(menu.scrollHeight, MENU_MAX_HEIGHT);
+      const spaceAbove = rect.top - MENU_GAP - VIEWPORT_MARGIN;
+      const spaceBelow =
+        window.innerHeight - rect.bottom - MENU_GAP - VIEWPORT_MARGIN;
+      const opensUp =
+        direction === "up"
+          ? spaceAbove >= measuredHeight || spaceAbove >= spaceBelow
+          : spaceBelow < measuredHeight && spaceAbove > spaceBelow;
+      const availableHeight = opensUp ? spaceAbove : spaceBelow;
+      const maxHeight = Math.max(
+        48,
+        Math.min(MENU_MAX_HEIGHT, availableHeight),
+      );
+      const renderedHeight = Math.min(measuredHeight, maxHeight);
+      const unclampedTop = opensUp
+        ? rect.top - MENU_GAP - renderedHeight
+        : rect.bottom + MENU_GAP;
+      const top = Math.min(
+        Math.max(VIEWPORT_MARGIN, unclampedTop),
+        window.innerHeight - VIEWPORT_MARGIN - renderedHeight,
+      );
+      const menuWidth = Math.min(
+        280,
+        Math.max(rect.width, menu.scrollWidth),
+      );
+      const left = Math.min(
+        Math.max(VIEWPORT_MARGIN, rect.left),
+        Math.max(VIEWPORT_MARGIN, window.innerWidth - VIEWPORT_MARGIN - menuWidth),
+      );
+      setMenuPos({
+        left,
+        top,
+        width: rect.width,
+        maxHeight,
+        opensUp,
+      });
     };
     reposition();
     window.addEventListener("resize", reposition);
@@ -156,7 +195,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       ref={menuRef}
       className={`dropdown-menu ${className}${
         portal ? " dropdown-menu-portal" : ""
-      } dropdown-menu-${direction}`}
+      } dropdown-menu-${menuPos?.opensUp ? "up" : direction}`}
       role="listbox"
       style={
         portal && menuPos
@@ -171,6 +210,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
               minWidth: menuPos.width,
               width: "max-content",
               maxWidth: 280,
+              maxHeight: menuPos.maxHeight,
               zIndex: Z_FLOATING,
             }
           : undefined

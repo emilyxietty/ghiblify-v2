@@ -4,6 +4,12 @@
     align-items: center;
 }
 
+.date-container.is-calendar {
+    width: var(--date-calendar-width, 238px);
+    max-width: min(90vw, 100%);
+    font-size: var(--date-calendar-font, 11px) !important;
+}
+
 .date {
     /* Intentionally constant - Date stays white regardless of theme.
        Shadow alpha scales with --text-shadow-strength (default 1.0,
@@ -14,4 +20,88 @@
         0 2px 6px rgba(0, 0, 0, calc(0.32 * var(--text-shadow-strength, 1))),
         0 3px 16px rgba(0, 0, 0, calc(0.26 * var(--text-shadow-strength, 1)));
     user-select: none;
+}
+
+.date-calendar {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1.1em;
+    color: var(--light);
+    background: rgba(var(--dark-rgb, 31, 38, 32), 0.68);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    user-select: none;
+}
+
+.date-calendar-header {
+    margin-bottom: 0.8em;
+    font-size: 1.28em;
+    font-weight: 650;
+    line-height: 1.2;
+    text-align: left;
+}
+
+.date-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: center;
+    text-align: center;
+}
+
+.date-calendar-weekdays {
+    margin-bottom: 0.35em;
+    color: var(--light-muted);
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.date-calendar-days {
+    row-gap: 0.28em;
+}
+
+.date-calendar-day,
+.date-calendar-empty {
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-variant-numeric: tabular-nums;
+}
+
+.date-calendar-day.is-today {
+    color: var(--dark);
+    background: var(--light);
+    font-weight: 750;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--light) 28%, transparent),
+        0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.date-calendar-today-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.widget[data-widget-key="date"].has-text-highlight .date-calendar,
+.dock-widget-date.has-text-highlight .date-calendar {
+    color: var(--text-highlight-fg);
+    background: transparent;
+    border-color: color-mix(in srgb, var(--text-highlight-fg) 18%, transparent);
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.widget[data-widget-key="date"].has-text-highlight .date-calendar-day.is-today,
+.dock-widget-date.has-text-highlight .date-calendar-day.is-today {
+    color: var(--text-highlight);
+    background: var(--text-highlight-fg);
 }

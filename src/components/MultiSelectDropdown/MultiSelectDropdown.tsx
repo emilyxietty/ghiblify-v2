@@ -14,6 +14,8 @@ interface MultiSelectDropdownProps {
   onChange: (values: string[]) => void;
   placeholder?: string;
   buttonText?: string;
+  onOptionPreview?: (value: string) => void;
+  onPreviewEnd?: () => void;
   /** Render the menu into <body> at fixed coordinates. Needed inside
    *  scrolling or transformed containers - in the widget edit panel the
    *  in-flow menu was clipped by the panel's own overflow. */
@@ -26,6 +28,8 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   onChange,
   placeholder = "Select fields...",
   buttonText = "Fields",
+  onOptionPreview,
+  onPreviewEnd,
   portal = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,6 +78,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       if (dropdownRef.current?.contains(target)) return;
       if (menuRef.current?.contains(target)) return;
       setIsOpen(false);
+      onPreviewEnd?.();
     };
 
     if (isOpen) {
@@ -83,14 +88,16 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, onPreviewEnd]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isOpen) onPreviewEnd?.();
     setIsOpen(!isOpen);
   };
 
   const handleOptionToggle = (value: string) => {
+    onPreviewEnd?.();
     const newValues = selectedValues.includes(value)
       ? selectedValues.filter((v) => v !== value)
       : [...selectedValues, value];
@@ -136,6 +143,8 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 role="menuitemcheckbox"
                 aria-checked={checked}
                 className={`multi-select-option${checked ? " is-selected" : ""}`}
+                onMouseEnter={() => onOptionPreview?.(option.value)}
+                onMouseLeave={onPreviewEnd}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleOptionToggle(option.value);

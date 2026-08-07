@@ -1,13 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../../components/Button/Button";
-import { AddIcon, CancelIcon, DeleteOutlineIcon, DragIndicatorIcon, EditIcon } from "../../../components/Icons/Icons";
+import {
+  AddIcon,
+  CancelIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DeleteOutlineIcon,
+  DragIndicatorIcon,
+  EditIcon,
+} from "../../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
 } from "../../../components/ContextMenu/ContextMenu";
 import { Favicon } from "../../../components/Favicon/Favicon";
 import {
+  hexToRgbChannels,
   isHighlightTextColor,
   resolveForeground,
 } from "../../../utils/textHighlight";
@@ -105,6 +114,7 @@ export const QuickLinks: React.FC = () => {
   const [dropPos, setDropPos] = useState<"before" | "after" | null>(null);
   const dropPosRef = useRef<"before" | "after" | null>(null);
   const [addGridLink, setAddGridLink] = useState(false);
+  const [gridPage, setGridPage] = useState(0);
   // Right-click per-tile menu state - when set, ContextMenu opens
   // at (x, y) with edit/delete actions for the targeted link id.
   const [linkMenu, setLinkMenu] = useState<{
@@ -117,12 +127,40 @@ export const QuickLinks: React.FC = () => {
   // a new entry.
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const showGrid = !!quicklinksSettings.gridMode;
+  const linksPerRow = Math.min(
+    6,
+    Math.max(2, Math.round(quicklinksSettings.linksPerRow ?? 5)),
+  );
+  const visibleRows = Math.min(
+    4,
+    Math.max(1, Math.round(quicklinksSettings.visibleRows ?? 1)),
+  );
+  const pageSize = linksPerRow * visibleRows;
+  const pageCount = Math.max(
+    1,
+    Math.ceil(quicklinksSettings.links.length / pageSize),
+  );
+  const currentGridPage = Math.min(gridPage, pageCount - 1);
+  const firstVisibleLink = currentGridPage * pageSize;
+  const visibleGridLinks = quicklinksSettings.links.slice(
+    firstVisibleLink,
+    firstVisibleLink + pageSize,
+  );
+  const gridCellSize = useScaledPx(120);
+  const gridWidth =
+    linksPerRow * gridCellSize + Math.max(0, linksPerRow - 1) * 8 + 32;
+
+  useEffect(() => {
+    setGridPage(0);
+  }, [linksPerRow, visibleRows]);
+
+  useEffect(() => {
+    setGridPage((page) => Math.min(page, pageCount - 1));
+  }, [pageCount]);
 
   // The add card used to spring open by itself whenever the widget
-  // entered edit mode. It now sits over the grid, so opening it
-  // unasked hides the very tiles the user came to rearrange - and the
-  // + tile is permanently visible, so there's nothing to compensate
-  // for. Leaving edit mode still clears any half-typed entry.
+  // entered edit mode. Leaving edit mode only needs to clear any
+  // half-typed entry.
   useEffect(() => {
     if (!isEditing || !showGrid) {
       setAddGridLink(false);
@@ -147,10 +185,6 @@ export const QuickLinks: React.FC = () => {
       window.removeEventListener("ghiblify:quicklinks:add", onAdd);
   }, [showGrid]);
 
-  // settings.width/height are reference-px (1920 baseline).
-  const width = useScaledPx(quicklinksSettings.width);
-  const height = useScaledPx(quicklinksSettings.height);
-
   useEffect(() => {
     if (anchorEl) setTimeout(() => urlInputRef.current?.focus(), 0);
   }, [anchorEl]);
@@ -168,7 +202,7 @@ export const QuickLinks: React.FC = () => {
     };
     const handleClick = (e: MouseEvent) => {
       const form = document.querySelector(".ql-add-card");
-      const trigger = document.querySelector(".ql-add-cell");
+      const trigger = document.querySelector(".ql-add-chip");
       const target = e.target as Node;
       if (form?.contains(target)) return;
       if (trigger?.contains(target)) return;
@@ -221,6 +255,7 @@ export const QuickLinks: React.FC = () => {
       updateWidgetSettings("quicklinks", {
         links: [...quicklinksSettings.links, newLink],
       });
+      setGridPage(Math.floor(quicklinksSettings.links.length / pageSize));
     }
     setTitle("");
     setUrl("");
@@ -254,8 +289,7 @@ export const QuickLinks: React.FC = () => {
       : {
           draggable: true,
           onDragStart: (e: React.DragEvent) => {
-            // Yield to widget-level Shift+drag.
-            if (e.shiftKey) {
+            if (document.body.classList.contains("show-widget-outline")) {
               e.preventDefault();
               return;
             }
@@ -495,6 +529,10 @@ export const QuickLinks: React.FC = () => {
   // the floating popup), so they carry separate alphas.
   const surfaceAlpha = showGrid ? (qs.opacity ?? 0) : (qs.listOpacity ?? 75);
   const qlFrosted = resolveSurfaceFrost(qs.frosted, appearance.theme);
+  const surfaceRgb =
+    typeof qs.surfaceColor === "string"
+      ? hexToRgbChannels(qs.surfaceColor)
+      : null;
   const surfaceStyle: Record<string, string | number> = {
     "--ql-opacity": qlFrosted ? 0.14 : surfaceAlpha / 100,
     // Form fields keep a floor: the add/edit inputs need to read as
@@ -515,18 +553,10 @@ export const QuickLinks: React.FC = () => {
       if (mode === "dark") return { "--ql-ink": "#1f2420" };
       return {};
     })(),
-    ...(typeof qs.surfaceColor === "string"
+    ...(surfaceRgb
       ? {
-          "--ql-surface-rgb": qs.surfaceColor
-            .replace("#", "")
-            .match(/../g)!
-            .map((h) => parseInt(h, 16))
-            .join(", "),
-          "--dark-rgb": qs.surfaceColor
-            .replace("#", "")
-            .match(/../g)!
-            .map((h) => parseInt(h, 16))
-            .join(", "),
+          "--ql-surface-rgb": surfaceRgb,
+          "--dark-rgb": surfaceRgb,
         }
       : {}),
   };
@@ -535,14 +565,36 @@ export const QuickLinks: React.FC = () => {
     return (
       <div
         className="quicklinksSettings-grid-wrapper widget-header"
-        style={surfaceStyle as React.CSSProperties}
+        style={
+          {
+            ...surfaceStyle,
+            width: gridWidth,
+            "--ql-grid-columns": linksPerRow,
+            "--ql-grid-rows": visibleRows,
+            "--ql-grid-aspect": `${linksPerRow} / ${visibleRows}`,
+          } as React.CSSProperties
+        }
       >
         <div className="quicklinksSettings-grid-list">
-          <div
-            className="quicklinksSettings-grid-scroll"
-            style={{ width, maxHeight: height }}
+          <button
+            type="button"
+            className="ql-add-chip"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => {
+              setEditingLinkId(null);
+              setTitle("");
+              setUrl("");
+              setAddGridLink(true);
+            }}
+            aria-label={t("quicklinks.addAria")}
           >
-            {quicklinksSettings.links.map((l, index) => {
+            <AddIcon />
+            <span>{t("quicklinks.addTooltip")}</span>
+          </button>
+
+          <div className="quicklinksSettings-grid-scroll">
+            {visibleGridLinks.map((l, pageIndex) => {
+              const index = firstVisibleLink + pageIndex;
               const isDragOver =
                 draggedIndex !== null && dragOverIndex === index;
               return (
@@ -579,41 +631,39 @@ export const QuickLinks: React.FC = () => {
                     />
                     <span className="ql-grid-title">{l.title}</span>
                   </a>
-                  {/* Always rendered; CSS hides it unless Shift is held
-                      (body.show-widget-outline). */}
-                  <button
-                    type="button"
-                    className="ql-delete-overlay"
-                    aria-label={t("quicklinks.deleteAria", { title: l.title })}
-                    data-tooltip={t("quicklinks.deleteGridTooltip", { title: l.title })}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      removeLink(l.id);
-                    }}
-                  >
-                    <CancelIcon fontSize="small" />
-                  </button>
                 </div>
               );
             })}
+          </div>
+
+          {currentGridPage > 0 && (
             <button
               type="button"
-              className="ql-grid-cell ql-add-cell"
-              onClick={() => {
-                setEditingLinkId(null);
-                setTitle("");
-                setUrl("");
-                setAddGridLink(true);
+              className="ql-grid-page-button ql-grid-page-previous"
+              aria-label={t("quicklinks.previousPage")}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGridPage(currentGridPage - 1);
               }}
-              aria-label={t("quicklinks.addAria")}
             >
-              <AddIcon className="ql-add-cell-icon" />
-              <span className="ql-add-cell-label">
-                {t("quicklinks.addTile")}
-              </span>
+              <ChevronLeftIcon />
             </button>
-          </div>
+          )}
+          {currentGridPage < pageCount - 1 && (
+            <button
+              type="button"
+              className="ql-grid-page-button ql-grid-page-next"
+              aria-label={t("quicklinks.nextPage")}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGridPage(currentGridPage + 1);
+              }}
+            >
+              <ChevronRightIcon />
+            </button>
+          )}
 
           {addEditModal}
         </div>

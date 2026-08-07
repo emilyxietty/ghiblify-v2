@@ -22,6 +22,7 @@
     --ql-danger: #ff8a8a;
     --ql-danger-bg: rgba(255, 107, 107, 0.18);
     --ql-success: var(--green);
+    --ql-grid-text-shadow: var(--text-shadow-color, rgba(0, 0, 0, 0.6));
 }
 
 /* ---------------------------------------------------------------------------
@@ -40,31 +41,48 @@
     --nest-inset: 16px;
     /* Always dark surface so white tile text reads, regardless of mode. */
     --surface-rgb: var(--dark-rgb, 31, 38, 32);
+    --ql-grid-icon-min: 15px;
+    --ql-grid-icon-fluid: 33cqi;
+    --ql-grid-icon-max: 44px;
+    --ql-grid-fallback-min: 9px;
+    --ql-grid-fallback-fluid: 20cqi;
+    --ql-grid-fallback-max: 28px;
+    --ql-grid-title-min: 9px;
+    --ql-grid-title-fluid: 14cqi;
+    --ql-grid-title-max: 16px;
+    --ql-grid-columns: 5;
+    --ql-grid-rows: 1;
+    --ql-grid-aspect: 5 / 1;
+    min-width: min(240px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
 }
 
 .quicklinksSettings-grid-list {
     position: relative;
+    width: 100%;
+    min-width: 0;
 }
 
 .quicklinksSettings-grid-scroll {
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    grid-auto-flow: row;
+    grid-template-columns: repeat(var(--ql-grid-columns), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--ql-grid-rows), minmax(0, 1fr));
     gap: 8px;
-    overflow-y: auto;
-    height: auto;
-    align-content: flex-start;
+    overflow: visible;
+    aspect-ratio: var(--ql-grid-aspect);
+    align-content: stretch;
     padding: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--ql-border-strong) transparent;
 }
 
 .ql-grid-cell {
     position: relative;
     border-radius: var(--radius-nested-lg, var(--radius-md));
-    /* Force square tiles regardless of column width (columns are
-       auto-fill minmax(96px, 1fr), so they grow with the widget). */
-    aspect-ratio: 1 / 1;
+    min-width: 0;
+    min-height: 0;
     transition: background 120ms ease, transform 120ms ease;
     /* Make each cell a CSS container so its contents (favicon, title,
        padding) can size in `cqi` (% of cell inline size). Without
@@ -159,17 +177,27 @@
 }
 
 .ql-grid-favicon {
-    /* Favicon sizes to ~38% of cell inline size, with floor/ceiling so
+    /* Favicon sizes to roughly a third of cell inline size, with floor/ceiling so
        it stays icon-sized even on extreme cells. The .ql-grid-cell
        parent declares `container-type: inline-size`, so `cqi` here
        resolves against the tile's own width. */
-    width: clamp(22px, 38cqi, 72px);
-    height: clamp(22px, 38cqi, 72px);
+    width: clamp(
+        var(--ql-grid-icon-min),
+        var(--ql-grid-icon-fluid),
+        var(--ql-grid-icon-max)
+    );
+    height: clamp(
+        var(--ql-grid-icon-min),
+        var(--ql-grid-icon-fluid),
+        var(--ql-grid-icon-max)
+    );
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     border-radius: var(--radius-md);
     flex-shrink: 0;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.58))
+        drop-shadow(0 5px 8px rgba(0, 0, 0, 0.3));
 }
 
 .ql-favicon-fallback {
@@ -180,19 +208,28 @@
     color: var(--ql-text);
     font-weight: 600;
     /* Initial of the URL, sized to roughly half the favicon box. */
-    font-size: clamp(11px, 18cqi, 32px);
+    font-size: clamp(
+        var(--ql-grid-fallback-min),
+        var(--ql-grid-fallback-fluid),
+        var(--ql-grid-fallback-max)
+    );
 }
 
 .ql-grid-title {
     /* Title scales with cell width so it reads at every widget size.
        Floor keeps it legible on small grids; ceiling caps growth on
        very large tiles. */
-    font-size: clamp(10px, 13cqi, 18px);
+    font-size: clamp(
+        var(--ql-grid-title-min),
+        var(--ql-grid-title-fluid),
+        var(--ql-grid-title-max)
+    );
     line-height: 1.25;
-    /* Inherits the palette's --ql-text (which itself follows --light)
-       so the title color flips with palette mode the same way Todo
-       and SearchBar text does. No hardcoded white / drop-shadow. */
+    /* The title and its halo both follow the palette: dark text gets a
+       light halo on light themes, while light text gets a dark halo. */
     color: var(--ql-text);
+    text-shadow: 0 1px 2px var(--ql-grid-text-shadow),
+        0 2px 7px var(--ql-grid-text-shadow);
     text-align: center;
     word-break: break-word;
     /* Cap at the cell's inline width minus the horizontal padding so
@@ -202,45 +239,6 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-}
-
-/* The + add control card. Hidden by default - only shown while Shift is
-   held. Exception: when the grid is empty, show it always so the user
-   has an obvious way to add their first link. */
-/* Delete overlay on each tile - hidden by default, shown only while
-   Shift is held (body.show-widget-outline). User clicks the X to remove
-   the link. */
-.ql-delete-overlay {
-    position: absolute;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
-    border: none;
-    border-radius: var(--radius-lg);
-    color: var(--ql-danger);
-    cursor: pointer;
-    z-index: 2;
-    transition: background 120ms ease;
-}
-
-.show-widget-outline .ql-delete-overlay {
-    display: flex;
-}
-
-/* (Per-element tooltip overrides removed - the global TooltipPortal
-   handles positioning + viewport edge detection automatically.) */
-
-.ql-delete-overlay:hover,
-.ql-delete-overlay:focus-visible {
-    background: rgba(0, 0, 0, 0.78);
-    color: #ffffff;
-    outline: none;
-}
-
-.ql-delete-overlay:focus-visible {
-    box-shadow: 0 0 0 2px var(--ql-focus-ring);
 }
 
 /* ---------------------------------------------------------------------------
@@ -537,62 +535,104 @@
 
 
 /* ---------------------------------------------------------------------------
-   Grid: add tile + add card
-   ---------------------------------------------------------------------------
-   The add tile is always visible (the delete overlays stay Shift-gated):
-   adding a link is the one action a first-time user has to be able to
-   find without knowing a modifier key. */
+   Grid navigation + add card
+   --------------------------------------------------------------------------- */
 
-/* A regular grid tile, always visible and sized like every other
-   quicklink - not a floating corner button. Dashed border keeps it
-   readable as "empty slot / add here". */
-.ql-add-cell {
+.ql-add-chip {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(2px, 4cqi, 8px);
-    padding: 8px;
+    gap: 5px;
+    width: max-content;
+    min-height: 26px;
+    margin: 0 auto 8px;
+    padding: 4px 10px;
     font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--ql-text);
-    background: var(--ql-bg);
-    border: 2px dashed var(--ql-border-strong);
-    border-radius: var(--radius-nested-lg, var(--radius-md));
+    background: rgba(var(--dark-rgb), 0.78);
+    border: 1px solid var(--ql-border-strong);
+    border-radius: var(--radius-pill, 999px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
     cursor: pointer;
-    transition: background 140ms ease, border-color 140ms ease,
-        transform 140ms ease, opacity 140ms ease;
-    aspect-ratio: 1 / 1;
-    /* Hidden until the widget is hovered: a permanent dashed "+" tile
-       reads as an empty slot in the grid rather than an action, and it
-       competes with the links themselves. Kept in the layout (opacity,
-       not display) so the grid doesn't reflow on hover. */
     opacity: 0;
     pointer-events: none;
+    transition: background 140ms ease, opacity 140ms ease,
+        transform 140ms ease;
 }
 
-.quicklinksSettings-grid-wrapper:hover .ql-add-cell,
-.quicklinksSettings-grid-wrapper:focus-within .ql-add-cell,
-/* Edit mode is the "arrange your links" state, so the affordance
-   stays put there without needing a hover. */
-.widget.edit-mode .ql-add-cell {
+.ql-add-chip:hover,
+.ql-add-chip:focus-visible {
+    background: rgba(var(--dark-rgb), 0.96);
+    transform: translateY(-1px);
+}
+
+.ql-add-chip svg {
+    font-size: 15px;
+}
+
+.ql-grid-page-button {
+    position: absolute;
+    top: calc(50% + 17px);
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: var(--ql-text);
+    background: rgba(var(--dark-rgb), 0.8);
+    border: 1px solid var(--ql-border-strong);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.36);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease,
+        background 140ms ease;
+}
+
+.ql-grid-page-button:hover,
+.ql-grid-page-button:focus-visible {
+    opacity: 1;
+    background: rgba(var(--dark-rgb), 0.96);
+}
+
+.quicklinksSettings-grid-wrapper:hover .ql-add-chip,
+.quicklinksSettings-grid-wrapper:focus-within .ql-add-chip,
+.quicklinksSettings-grid-wrapper:hover .ql-grid-page-button,
+.quicklinksSettings-grid-wrapper:focus-within .ql-grid-page-button {
     opacity: 1;
     pointer-events: auto;
 }
 
-.ql-add-cell:hover {
-    background: var(--ql-bg-hover);
-    transform: scale(1.02);
+.ql-grid-page-button:focus-visible {
+    outline: 2px solid var(--ql-focus-ring);
+    outline-offset: 2px;
 }
 
-.ql-add-cell-icon {
-    font-size: clamp(20px, 26cqi, 34px);
-    filter: drop-shadow(0 1px 2px var(--text-shadow-color));
+.ql-grid-page-previous {
+    left: 1px;
+    transform: translate(-50%, -50%);
 }
 
-.ql-add-cell-label {
-    font-size: clamp(9px, 10cqi, 12px);
-    opacity: 0.8;
-    text-align: center;
+.ql-grid-page-previous:hover {
+    transform: translate(-50%, -50%) scale(1.06);
+}
+
+.ql-grid-page-next {
+    right: 1px;
+    transform: translate(50%, -50%);
+}
+
+.ql-grid-page-next:hover {
+    transform: translate(50%, -50%) scale(1.06);
+}
+
+.ql-grid-page-button svg {
+    font-size: 20px;
 }
 
 /* Full-screen modal (portalled to <body>) rather than a panel inside

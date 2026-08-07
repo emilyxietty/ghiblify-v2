@@ -80,6 +80,10 @@ export const Greeting: React.FC = () => {
             ref={inputRef}
             className="greeting-name-input"
             type="text"
+            size={Math.min(
+              Math.max(draft.length, name.length, name ? 1 : 5),
+              16,
+            )}
             value={draft}
             placeholder={t("greeting.namePlaceholder")}
             onChange={(e) => setDraft(e.target.value)}
@@ -93,7 +97,6 @@ export const Greeting: React.FC = () => {
                 cancel();
               }
             }}
-            style={{ fontSize: `${fontSize}px` }}
           />
         ) : (
           <button

@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
 import { useAppContext } from "../../../contexts/AppContext";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
 import {
+  hexToRgbChannels,
   isHighlightTextColor,
   resolveForeground,
 } from "../../../utils/textHighlight";
@@ -121,8 +123,8 @@ export const Todo: React.FC = () => {
   // bouncy "task completed" pop on the row; stripped after
   // COMPLETE_ANIM_MS so subsequent re-renders don't re-trigger it.
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
-  const { widgets, appearance } = useAppContext();
-  const todoSettings = widgets.todo.settings;
+  const { appearance } = useAppContext();
+  const { settings: todoSettings } = useWidgetSettings("todo");
   // settings.width/height are reference-px (1920 baseline); scale to
   // current-viewport px so the widget stays proportional to screen.
   const width = useScaledPx(todoSettings.width);
@@ -299,10 +301,12 @@ export const Todo: React.FC = () => {
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [dropPos, setDropPos] = useState<"before" | "after" | null>(null);
   const draggedIdRef = useRef<string | null>(null);
+  const dropTargetIdRef = useRef<string | null>(null);
   const dropPosRef = useRef<"before" | "after" | null>(null);
 
   const resetDrag = () => {
     draggedIdRef.current = null;
+    dropTargetIdRef.current = null;
     dropPosRef.current = null;
     setDraggedId(null);
     setDropTargetId(null);
@@ -313,14 +317,39 @@ export const Todo: React.FC = () => {
     draggedIdRef.current = id;
     setDraggedId(id);
   };
-  const handleDragOver = (e: React.DragEvent, id: string) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pos: "before" | "after" =
-      e.clientY - rect.top < rect.height / 2 ? "before" : "after";
+  const updateDropTarget = (id: string, pos: "before" | "after") => {
+    dropTargetIdRef.current = id;
     dropPosRef.current = pos;
     setDropTargetId(id);
     setDropPos(pos);
   };
+
+  const handleListDragOver = (e: React.DragEvent<HTMLUListElement>) => {
+    if (!draggedIdRef.current) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    const items = Array.from(
+      e.currentTarget.querySelectorAll<HTMLElement>(".todo-item"),
+    );
+    let targetId: string | null = null;
+    let targetPos: "before" | "after" = "after";
+
+    for (const item of items) {
+      const id = item.dataset.todoId;
+      if (!id) continue;
+      const rect = item.getBoundingClientRect();
+      targetId = id;
+      if (e.clientY < rect.top + rect.height / 2) {
+        targetPos = "before";
+        break;
+      }
+      targetPos = "after";
+    }
+
+    if (targetId) updateDropTarget(targetId, targetPos);
+  };
+
   const handleDrop = (id: string) => {
     const dragged = draggedIdRef.current;
     const pos = dropPosRef.current ?? "before";
@@ -360,84 +389,52 @@ export const Todo: React.FC = () => {
   const visibleTodos = todos
     .slice()
     .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
+  const frosted = resolveSurfaceFrost(
+    todoSettings.frosted,
+    appearance.theme,
+  );
+  const surfaceRgb =
+    typeof todoSettings.surfaceColor === "string"
+      ? hexToRgbChannels(todoSettings.surfaceColor)
+      : null;
+  const rowRgb =
+    typeof todoSettings.rowColor === "string"
+      ? hexToRgbChannels(todoSettings.rowColor)
+      : null;
+  const rowTextMode = isHighlightTextColor(todoSettings.rowTextColor)
+    ? todoSettings.rowTextColor
+    : "auto";
+  const rowInk =
+    typeof todoSettings.rowColor === "string"
+      ? resolveForeground(todoSettings.rowColor, rowTextMode)
+      : rowTextMode === "light"
+        ? "#f7f3ea"
+        : rowTextMode === "dark"
+          ? "#1f2420"
+          : null;
+  const todoStyle = {
+    width: `${width}px`,
+    maxHeight: `${height}px`,
+    "--todo-opacity": frosted ? 0.14 : todoSettings.opacity / 100,
+    "--input-opacity": frosted ? 0.14 : todoSettings.rowOpacity / 100,
+    "--todo-row-opacity": todoSettings.rowOpacity / 100,
+    ...(surfaceRgb ? { "--todo-surface-rgb": surfaceRgb } : {}),
+    ...(rowRgb
+      ? { "--todo-row-rgb": rowRgb, "--dark-rgb": rowRgb }
+      : {}),
+    ...(rowInk
+      ? {
+          "--todo-text": rowInk,
+          "--todo-text-muted": `color-mix(in srgb, ${rowInk} 60%, transparent)`,
+          "--light": rowInk,
+        }
+      : {}),
+  } as React.CSSProperties;
 
   return (
     <div
-      className={`todo-container widget-header${
-        resolveSurfaceFrost(
-          (todoSettings as any).frosted,
-          appearance.theme
-        )
-          ? " todo-frosted"
-          : ""
-      }`}
-      style={{
-        width: `${width}px`,
-        maxHeight: `${height}px`,
-        // Frosted: the .widget shell blurs the wallpaper (see
-        // .widget-surface-frost) and the item/input surfaces drop to
-        // a whisper of tint so the glass reads through them.
-        ["--todo-opacity" as any]: resolveSurfaceFrost(
-          (todoSettings as any).frosted,
-          appearance.theme
-        )
-          ? 0.14
-          : ((todoSettings as any).opacity ?? 50) / 100,
-        // The add-task field is furniture like a row, not part of the
-        // widget's backdrop, so it follows the ROW highlight. It used
-        // to read `opacity`, which now drives the widget background
-        // and defaults to clear - which left the input invisible.
-        ["--input-opacity" as any]: resolveSurfaceFrost(
-          (todoSettings as any).frosted,
-          appearance.theme
-        )
-          ? 0.14
-          : ((todoSettings as any).rowOpacity ?? 75) / 100,
-        // Custom surface tint - override the theme's --surface-rgb
-        // with the chosen hex as an "r, g, b" triplet.
-        ...(typeof (todoSettings as any).surfaceColor === "string"
-          ? {
-              ["--todo-surface-rgb" as any]: (
-                (todoSettings as any).surfaceColor as string
-              )
-                .replace("#", "")
-                .match(/../g)!
-                .map((h: string) => parseInt(h, 16))
-                .join(", "),
-            }
-          : {}),
-        // Ink over the surface. --todo-text is what every text rule in
-        // Todo.css reads, so overriding it here reaches all of them.
-        // An explicit light/dark applies with or without a tint; only
-        // "auto" needs a colour to reason about.
-        ...(() => {
-          const ts = todoSettings as any;
-          const mode = isHighlightTextColor(ts.textColor)
-            ? ts.textColor
-            : "auto";
-          if (typeof ts.surfaceColor === "string")
-            return {
-              ["--todo-text" as any]: resolveForeground(ts.surfaceColor, mode),
-            };
-          if (mode === "light") return { ["--todo-text" as any]: "#f7f3ea" };
-          if (mode === "dark") return { ["--todo-text" as any]: "#1f2420" };
-          return {};
-        })(),
-        // Row highlight - independent of the widget background above.
-        ["--todo-row-opacity" as any]:
-          ((todoSettings as any).rowOpacity ?? 75) / 100,
-        ...(typeof (todoSettings as any).rowColor === "string"
-          ? {
-              ["--todo-row-rgb" as any]: (
-                (todoSettings as any).rowColor as string
-              )
-                .replace("#", "")
-                .match(/../g)!
-                .map((h: string) => parseInt(h, 16))
-                .join(", "),
-            }
-          : {}),
-      }}
+      className={`todo-container widget-header${frosted ? " todo-frosted" : ""}`}
+      style={todoStyle}
     >
       <div className="todo-input-wrapper">
         <TextInput
@@ -461,50 +458,18 @@ export const Todo: React.FC = () => {
       </div>
       <ul
         className="todo-list"
-        // Edge-of-list drop: when the cursor is above the first item
-        // or below the last, the inner <li> handlers don't fire (the
-        // cursor is in empty whitespace). Snap the drop indicator to
-        // before-first / after-last so the user can drag to top or
-        // bottom without having to land precisely on the edge row.
-        onDragOver={(e) => {
-          if (!draggedIdRef.current) return;
-          const items = Array.from(
-            (e.currentTarget as HTMLElement).querySelectorAll(".todo-item")
-          ) as HTMLElement[];
-          if (items.length === 0) return;
-          const firstRect = items[0].getBoundingClientRect();
-          const lastRect = items[items.length - 1].getBoundingClientRect();
-          if (e.clientY < firstRect.top) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-            const id = visibleTodos[0]?.id;
-            if (id) {
-              dropPosRef.current = "before";
-              setDropTargetId(id);
-              setDropPos("before");
-            }
-          } else if (e.clientY > lastRect.bottom) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-            const id = visibleTodos[visibleTodos.length - 1]?.id;
-            if (id) {
-              dropPosRef.current = "after";
-              setDropTargetId(id);
-              setDropPos("after");
-            }
-          }
-        }}
+        onDragOver={handleListDragOver}
         onDrop={(e) => {
-          // Fall-through drop from the edge-of-list dragover above.
-          // The inner <li> onDrop covers the in-between cases.
-          if (!draggedIdRef.current || !dropTargetId) return;
+          const targetId = dropTargetIdRef.current;
+          if (!draggedIdRef.current || !targetId) return;
           e.preventDefault();
-          handleDrop(dropTargetId);
+          handleDrop(targetId);
         }}
       >
           {visibleTodos.map((todo) => (
             <li
               key={todo.id}
+              data-todo-id={todo.id}
               className={[
                 "todo-item",
                 todo.checked ? "checked" : "",
@@ -518,18 +483,6 @@ export const Todo: React.FC = () => {
               ]
                 .filter(Boolean)
                 .join(" ")}
-              // Only the .todo-drag-handle is draggable (see below).
-              // The <li> itself acts as the drop target.
-              onDragOver={(e) => {
-                if (!draggedIdRef.current) return;
-                e.preventDefault();
-                e.dataTransfer.dropEffect = "move";
-                handleDragOver(e, todo.id);
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                handleDrop(todo.id);
-              }}
             >
               <div className="todo-item-content">
                 <button
@@ -621,10 +574,9 @@ export const Todo: React.FC = () => {
                   // that the user shouldn't even attempt.
                   draggable={!todo.checked}
                   onDragStart={(e) => {
-                    // Shift on the handle means the user is dragging
-                    // the whole widget - bail so the widget-shell
-                    // handler wins.
-                    if (e.shiftKey) {
+                    if (
+                      document.body.classList.contains("show-widget-outline")
+                    ) {
                       e.preventDefault();
                       return;
                     }

@@ -4,18 +4,19 @@ Guidance for AI assistants working in this repo. Read this first; consult `guide
 
 ## What this is
 
-**Ghiblify** is a Chrome extension (manifest v3) that replaces the new tab page with a Studio Ghibli-themed dashboard of draggable, resizable widgets (clock, date, greeting, info, todo, avatar, quick links, search, pomodoro, bookmarks, weather, notes) over a randomized Ghibli film background.
+**Ghiblify** is a Chrome extension (manifest v3) that replaces the new tab page with a Studio Ghibli-themed dashboard of draggable, resizable widgets over a randomized film background, plus bookmark and widget side panels.
 
 - Entry point: `newtab.html` → `src/index.tsx` → `src/App.tsx`
 - Manifest: `public/manifest.json` (overrides `chrome_url_overrides.newtab`)
-- All persistence is `localStorage` (no backend, no `chrome.storage`)
+- Persistence uses `chrome.storage` with a synchronous `localStorage` mirror;
+  timer/cache state that depends on the browser `storage` event stays local-only
 
 ## Tech stack
 
 - React 19 + TypeScript (strict) + Vite 6
 - `@crxjs/vite-plugin` for Chrome extension bundling
 - `vite-plugin-svgr` (named exports, `titleProp: true`)
-- MUI is used **for icons only** (`@mui/icons-material`). `@mui/material` and `@emotion/*` are present solely to satisfy the icons package's peer-dep chain (`createSvgIcon` pulls `@mui/material/utils`). Do not import from `@mui/material` or `@emotion/*` in app code.
+- Icons are dependency-free inline SVG components in `src/components/Icons/Icons.tsx`.
 - Plain CSS, co-located per-component (no CSS modules, no Tailwind, no styled-components)
 - State: a single React Context (`src/contexts/AppContext.tsx`)
 
@@ -40,7 +41,7 @@ To load the extension: `chrome://extensions` → Developer mode → Load unpacke
 ```
 src/
 ├── index.tsx, App.tsx, App.css       # entry, root, global theme vars
-├── contexts/AppContext.tsx            # THE state hub - read this before editing widgets
+├── contexts/AppContext.tsx            # state hub - read this before editing widgets
 ├── config/
 │   ├── widgetConfig.ts                # widget registry: defaults, constraints, controls
 │   ├── avatarConfig.ts                # Ghibli character avatars
@@ -50,47 +51,46 @@ src/
 │   ├── useInfoConfig.ts               # film metadata for Info widget
 │   └── useWeather.ts                  # Open-Meteo fetch + cache for Weather widget
 ├── storage/
+│   ├── hybridStorage.ts               # chrome.storage source + local mirror
 │   ├── backgroundStorage.ts           # filters + film selection persistence
 │   └── legacyMigrations.ts            # one-shot read of v1 quickLinks blob
 ├── components/                        # stateless, reusable UI (Button, Dropdown, EditWidget, …)
 └── containers/
     ├── Background/, LeftSidebar/      # full-bleed layout pieces
-    ├── RightSidebar/                  # bookmarks slide-out panel (not a positioned widget)
+    ├── RightSidebar/                  # bookmarks slide-out panel
+    ├── RightDock/                     # dock surface + dock widget wrapper
+    ├── WidgetRenderer/                # one content renderer for canvas + dock
     ├── Widget/Widget.tsx              # universal drag/resize/edit wrapper
-    └── Widgets/                       # 12 widgets: Time, Date, Greeting, Info, Todo,
-                                       #   Avatar, QuickLinks, SearchBar, Pomodoro,
-                                       #   Weather, Notes (+ Bookmarks via RightSidebar)
+    └── Widgets/                       # 12 canvas widgets (+ Bookmarks and dock surfaces)
 ```
 
 `components/` = dumb. `containers/` = stateful, knows about layout/context.
 
 ## Adding/modifying a widget
 
-You usually touch four files:
+You usually touch three places:
 
-1. `src/config/widgetConfig.ts` - define the settings type, add to `WidgetSettingsMap`, `WIDGET_KEYS`, and `WIDGET_CONFIGS` (defaults, position, sliders, custom controls)
+1. `src/config/widgetConfig.ts` - define the settings type, add to `WidgetSettingsMap`, `WIDGET_KEYS`, `WIDGET_CONFIGS`, and the applicable placement lists (`CANVAS_WIDGET_KEYS`, `LEFT_SIDEBAR_WIDGET_KEYS`, `DOCK_WIDGET_KEYS`)
 2. `src/containers/Widgets/<Name>/<Name>.tsx` - the widget itself; reads `widgets[key].settings` from `useAppContext()`
-3. `src/containers/LeftSidebar/LeftSidebar.tsx` - visibility toggle
-4. `src/App.tsx` - conditional render (`<Widget storageKey="<key>" visible={widgets.<key>.visible}><Foo /></Widget>`)
+3. `src/containers/WidgetRenderer/WidgetRenderer.tsx` - map the key to its content once; the canvas and dock both reuse it
 
-`AppContext.tsx` does not need to change - the `WidgetsState` and `updateWidgetSettings<K>` generics pick up the new key. If the widget should default to hidden, add it to `HIDDEN_BY_DEFAULT` in `AppContext.tsx`.
+`App.tsx` and `LeftSidebar.tsx` do not need a new render branch. `AppContext.tsx` only changes if the widget should default to hidden (`HIDDEN_BY_DEFAULT`). Add a glyph to `WidgetIcon.tsx` if the widget appears in a picker.
 
-Exception: `bookmarks` lives in `WIDGET_KEYS` for visibility/sidebar plumbing but renders inside `RightSidebar` rather than via `<Widget>`. Its `position` is unused.
+Exceptions: `bookmarks` and `rightSidebar` live in `WIDGET_KEYS` for shared visibility plumbing but are not canvas widgets. Bookmarks renders in `RightSidebar`; `rightSidebar` controls the `RightDock`. Their positions are unused.
 
 See `guide/widgets.md` for the full walkthrough.
 
 ## Critical conventions (don't violate without reason)
 
 - **Positioning**: widgets use `left: Xvw; top: Yvh; transform: translate(-50%, 0)` - X is center-anchored, Y is top-anchored. Don't change this; it keeps the header stable when widget content resizes.
-- **Edit-mode trigger**: hold Shift to see widget outlines; Shift+click+drag to move. Resize handles only appear in edit mode.
-- **Drag Mode** (`dragMode` in `AppContext`) is a separate sticky mode toggled from the sidebar - left-click+drag without Shift, stays on until "Done." Mutually exclusive with edit mode. Don't conflate the two when wiring drag handlers.
+- **Drag trigger**: hold `d` to reveal widget outlines, then drag. A widget in edit mode can also be dragged directly. Resize handles only appear in edit mode.
 - **Themes & palette**: 13 themes in `THEME_NAMES` plus a `highContrast` flag, all in `AppContext`. `<html>` gets `theme-<name>`, `palette-light`/`palette-dark`, and `high-contrast` classes. Style widget surfaces against CSS variables - don't hard-code colors. Legacy theme names are remapped via `LEGACY_THEME_RENAMES`.
-- **Persistence**: one localStorage key, `ghiblify_widgets`, holding only diffs from defaults. Note that `visible` is diffed against the per-widget default (most default to true; `HIDDEN_BY_DEFAULT` widgets - searchbar, quicklinks, avatar, pomodoro, notes - default to false). A one-time migration from the legacy per-key layout runs on first load (see `guide/architecture.md`).
-- **Auto-sized / fixed widgets**: `weather` has no width/height bounds (auto-sizes to content). `notes` uses `squareLock: true` with a fixed 260×260 footprint so the cardborder.svg sits flush. Don't add resize handles to either.
-- **State flow**: `EditWidget` and widgets read/write through `useAppContext()`. There's no `window.dispatchEvent` event bus - the context drives re-renders.
+- **Persistence**: one `ghiblify_widgets` blob holds only diffs from defaults. It is written through `hybridStorage` to `chrome.storage.local` plus the synchronous mirror. Visibility is diffed against each widget's real default. A one-time migration from legacy keys runs on first load.
+- **Auto-sized / square widgets**: `weather` has no width/height bounds and auto-sizes to content. `notes` uses `squareLock: true`; its width and height resize together so `cardborder.svg` stays flush.
+- **State flow**: visual widget settings read/write through `useAppContext()` or the surface-aware `hooks/useWidgetSettings.ts`. Custom events are reserved for imperative coordination (guide demos, dock peeks, refreshes, and same-tab duplicate instances), not ordinary settings flow.
 - **Pomodoro uses leader election** across tabs via `localStorage` + `storage` events. One tab owns the interval; others mirror. Don't naively `setInterval` in the widget.
-- **No barrel files** (`index.ts` re-exports). Import the concrete file: `import Button from "../../components/Button/Button.tsx"`.
-- **Background JSON** is loaded via `chrome.runtime.getURL(...)`, not `import`. Files must be listed in `manifest.json` `web_accessible_resources`.
+- **No barrel files** (`index.ts` re-exports). Import concrete files directly.
+- **Runtime JSON** is loaded via `chrome.runtime.getURL(...)`, not imported. Keep those files in `public/` so Vite copies them into `dist/`. Resources only need `web_accessible_resources` when a non-extension page must fetch them.
 
 ## Code style
 
@@ -106,19 +106,19 @@ Conventional-commit prefixes are in use: `feat(scope):`, `fix(scope):`, `chore(s
 
 ## Testing changes
 
-There's no test suite. Verification = run `npm run dev`, reload the unpacked extension, open a new tab, and click through:
+There's no test suite. Verification = run `pnpm build`, reload the unpacked extension, open a new tab, and click through:
 
 1. Toggle the widget on from the left sidebar
-2. Shift+drag to reposition - confirm snap behavior
+2. Hold `d` and drag to reposition - confirm snap behavior
 3. Enter edit mode, exercise every control in `EditWidget`
-4. Reload the tab - confirm state restored from localStorage
+4. Reload the tab - confirm state restored from the hybrid storage mirror
 5. Open a second tab - confirm pomodoro stays in sync if relevant
 
 If you can't verify in a browser, say so explicitly.
 
 ## Deeper reading
 
-- `guide/architecture.md` - AppContext, dual persistence, leader election, custom events
+- `guide/architecture.md` - AppContext, hybrid persistence, rendering surfaces, leader election
 - `guide/widgets.md` - anatomy of a widget; how to add a new one
 - `guide/conventions.md` - file layout, naming, styling, CSS variables
 - `guide/gotchas.md` - non-obvious behaviors and traps

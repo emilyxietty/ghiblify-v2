@@ -79,6 +79,17 @@ export const normalizeHex = (input: string): string | null => {
   return null;
 };
 
+/** Convert a hex colour into the channel list consumed by rgba(var(...)). */
+export const hexToRgbChannels = (input: string): string | null => {
+  const normalized = normalizeHex(input);
+  if (!normalized) return null;
+  return [
+    parseInt(normalized.slice(1, 3), 16),
+    parseInt(normalized.slice(3, 5), 16),
+    parseInt(normalized.slice(5, 7), 16),
+  ].join(", ");
+};
+
 /**
  * Pick a legible foreground for a highlight.
  *

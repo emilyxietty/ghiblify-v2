@@ -66,7 +66,6 @@
       "languageAria": "选择语言",
       "editWidgets": "编辑模式",
       "resetAllWidgets": "重置所有小组件",
-      "resetFilters": "重置背景设置",
       "selectBackgrounds": "选择背景",
       "deleteBackground": "删除背景",
       "deleteBackgroundAria": "从轮播中移除当前背景",
@@ -103,12 +102,30 @@
   },
   "rightDock": {
     "emptyTitle": "右侧栏",
-    "emptyHint": "点击下方的「设置」按钮选择要在这里显示的小组件。它们可以同时出现在右侧栏和画布上。",
+    "emptyHint": "点击下方的“+”按钮选择要在这里显示的小组件。它们可以同时出现在右侧栏和画布上。",
     "callout": "右侧栏 — 将鼠标移到屏幕右侧打开",
     "settingsLabel": "设置",
+    "addWidgetsLabel": "添加小组件",
     "pickerLabel": "选择要在右侧栏显示的小组件",
-    "showBackgroundsLabel": "显示背景",
-    "resetLabel": "重置右侧栏",
+    "panelBackgroundLabel": "面板背景",
+    "orderLabel": "顺序",
+    "moveUpLabel": "上移",
+    "moveDownLabel": "下移",
+    "guide": {
+      "button": "右侧栏指南",
+      "title": "如何使用右侧栏",
+      "intro": "选择要显示的内容，并可独立于画布版本自定义每个小组件。",
+      "addTitle": "选择小组件",
+      "addBody": "点击“+”按钮，然后选择要放在右侧栏中的小组件。",
+      "editTitle": "打开小组件设置",
+      "editBody": "右键点击右侧栏中的任意小组件即可打开其控制项。",
+      "rightClickCue": "右键点击",
+      "orderTitle": "移动小组件",
+      "orderBody": "在“顺序”一行使用向上或向下箭头。每点击一次会移动一个位置。",
+      "sizeTitle": "选择尺寸",
+      "sizeBody": "支持尺寸调整的小组件可选择正方形半宽或长方形全宽。"
+    },
+    "resetLabel": "重置侧栏小组件",
     "resetConfirm": "重置所有右侧栏设置吗?画布上的小组件不受影响。"
   },
   "widgets": {
@@ -140,7 +157,6 @@
       "hideFromRightSidebar": "从右侧栏隐藏",
       "dockWidthFull": "整宽",
       "dockWidthHalf": "半宽",
-      "showBackground": "显示背景",
       "time12": "12 小时制",
       "time24": "24 小时制",
       "timeAnalog": "指针时钟",
@@ -179,13 +195,24 @@
       "textShadow": "文字阴影",
       "textShadowAria": "文字阴影强度",
       "noCustomization": "无可用选项",
+      "dockWidth": "小组件宽度",
       "darkModeAria": "切换深色模式",
       "timeFormatAria": "选择时钟格式",
       "timeFormat12": "12 小时",
       "timeFormat24": "24 小时",
       "timeFormatAnalog": "指针",
+      "dateFormatLabel": "日期样式",
+      "dateToday": "今天",
+      "dateFormat": {
+        "long": "完整日期",
+        "short": "短日期",
+        "slash": "斜杠格式",
+        "calendar": "迷你日历"
+      },
       "gridShow": "网格显示",
       "gridShowList": "列表显示",
+      "quicklinksPerRow": "每行链接数",
+      "quicklinksVisibleRows": "显示行数",
       "resizeTitle": "拖动以调整“{{name}}”的大小",
       "infoFields": {
         "japaneseTitle": "日文标题",
@@ -240,6 +267,10 @@
         "hourly": "逐小时",
         "full": "完整预报"
       },
+      "weatherLayoutLabel": "布局",
+      "weatherLayoutAria": "选择天气布局",
+      "weatherLayoutStandard": "标准",
+      "weatherLayoutCompact": "紧凑",
       "weatherStylePlain": "简洁",
       "weatherStyleCard": "卡片",
       "weatherAnimatedIcons": "动画图标",
@@ -265,7 +296,10 @@
       "styleFrostDark": "深色磨砂",
       "styleClear": "透明",
       "styleWeather": "天气",
+      "backgroundTune": "调整背景",
+      "backgroundTuneUnavailable": "选择背景后即可自定义",
       "highlightTune": "调整高亮",
+      "highlightTuneUnavailable": "选择高亮后即可自定义",
       "weatherLocationHint": "您的位置仅用于获取本地天气预报，除天气服务外不会发送到任何地方。",
       "guideResize": "调整大小",
       "surfaceHighlights": "高亮",
@@ -273,8 +307,7 @@
     },
     "gapps": {
       "menuAria": "Google 应用",
-      "accountAria": "Google 账号",
-      "personalize": "显示我的账号首字母"
+      "accountAria": "Google 账号"
     }
   },
   "greeting": {
@@ -321,7 +354,6 @@
     "editLink": "编辑链接",
     "deleteLink": "删除链接",
     "deleteAria": "删除 {{title}}",
-    "deleteGridTooltip": "删除 {{title}}",
     "deleteListTooltip": "删除链接",
     "removeTooltip": "移除链接",
     "doneDeleteTooltip": "完成删除",
@@ -336,7 +368,9 @@
     "previewEmpty": "新链接",
     "cancel": "取消",
     "save": "保存",
-    "addButton": "添加"
+    "addButton": "添加",
+    "previousPage": "上一页快速链接",
+    "nextPage": "下一页快速链接"
   },
   "pomodoro": {
     "modeFocus": "番茄钟",
@@ -586,18 +620,18 @@
         "body2": "同一部分还包含字体与圆角——选择整个页面的字体，以及每个表面的圆角程度。三者现已在侧边栏中展开。"
       },
       "adjustTime": {
-        "title": "编辑小组件",
-        "body1": "每个小组件都有自己的控件。上方的时间小组件正处于编辑模式 — 切换 12/24 小时制，并拖动滑块调整大小。",
-        "body2Pre": "编辑任意小组件有三种方式：在页面上右键点击它，按住 ",
-        "body2Post": "（或 Shift）并点击出现的铅笔图标，或在左侧边栏右键点击它的图标——该菜单现已打开。"
+        "title": "进入编辑模式",
+        "body1": "右键点击页面上的任意小组件，即可进入编辑模式并打开其控件。",
+        "body2": "你也可以右键点击左侧边栏中的图标，然后选择“编辑”。时间小组件现在标出了这两种方式。",
+        "rightClickWidgetCue": "右键点击小组件",
+        "rightClickIconCue": "右键点击图标"
       },
       "drag": {
-        "title": "移动小组件",
-        "body1Pre": "按住 ",
-        "body1Post": " 并拖动上方的时间小组件以重新定位。小组件会对齐到网格线。",
-        "body2": "当小组件处于编辑模式时，也可以直接拖动它本身，无需按任何键。",
-        "hint": "按住 D 或 Shift 时光标会变成抓手——这就是提示。",
-        "body1Sep": " 或 "
+        "title": "拖动、调整大小和编辑小组件",
+        "body1": "使用编辑面板更改小组件的设置。",
+        "body2": "直接拖动小组件即可移动，无需按键。",
+        "dragCue": "点击并拖动",
+        "hint": "拖动角落带阴影的控制柄来调整大小。"
       },
       "background": {
         "title": "选择背景",
@@ -609,7 +643,7 @@
         "title": "键盘快捷键",
         "openSidebar": "打开或关闭侧边栏",
         "moveWidget": "移动小组件",
-        "editWidget": "编辑单个小组件（按住 D 或 Shift，点击铅笔图标）",
+        "editWidget": "编辑、拖动和调整特定小组件的大小",
         "escape": "关闭侧边栏、弹出框、编辑模式或本指南",
         "enter": "确认编辑或退出编辑模式",
         "navigateGuide": "在本指南中翻页",
@@ -659,7 +693,7 @@
     "resetConfirmCancel": "取消",
     "section": {
       "widgets": "小组件设置",
-      "appearance": "外观设置",
+      "appearance": "调色板设置",
       "background": "背景设置",
       "cursor": "光标设置"
     },
@@ -668,8 +702,6 @@
     "backgroundTitle": "背景",
     "cursorTitle": "光标",
     "cursorSub": "将光标恢复为系统默认指针。其设置与“外观”一起存储。",
-    "dockBackgrounds": "侧栏卡片背景",
-    "dockBackgroundsSub": "在右侧停靠的小组件后面显示玻璃卡片。",
     "highContrastSub": "提高整个页面的文字对比度。",
     "parallaxSub": "背景会随光标轻微移动。",
     "resetWidgets": "重置所有小组件",
@@ -684,7 +716,7 @@
       "other": "其他"
     },
     "deleteKeyConfirm": "要从存储中删除“{{key}}”吗？其中的数据将无法恢复。",
-    "resetWidgetsConfirm": "将所有小组件恢复为默认位置、大小和设置？快捷链接和名字会保留。",
+    "resetWidgetsConfirm": "将所有小组件恢复为默认位置、大小和设置？快捷链接、名字、笔记和待办事项列表会保留。",
     "resetDockConfirm": "将右侧侧栏恢复为默认布局？",
     "resetAppearanceConfirm": "将主题、字体和对比度恢复为默认值？",
     "resetBackgroundConfirm": "将背景滤镜和视差恢复为默认值？",
@@ -699,8 +731,6 @@
       "square": "直角",
       "rounded": "标准",
       "pill": "更圆"
-    },
-    "permissionEmail": "电子邮件地址",
-    "permissionEmailSub": "用您的首字母个性化 Google 小组件的账号按钮，仅此而已。"
+    }
   }
 }

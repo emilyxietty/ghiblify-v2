@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useT } from "../../i18n/i18n";
 import { Button } from "../Button/Button";
-import { CloseIcon, ContentCopyIcon, DiscordIcon, EmailIcon } from "../Icons/Icons";
+import { DialogShell } from "../DialogShell/DialogShell";
+import { ContentCopyIcon, DiscordIcon, EmailIcon } from "../Icons/Icons";
 import "./ReportModal.css";
 
 const CONTACT_EMAIL = "emily.xietty@gmail.com";
@@ -14,27 +15,11 @@ interface ReportModalProps {
 
 export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
   const t = useT();
-  const dialogRef = useRef<HTMLDivElement | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handler, true);
-    return () => document.removeEventListener("keydown", handler, true);
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (open) dialogRef.current?.focus();
     if (!open) setCopied(false);
   }, [open]);
-
-  if (!open) return null;
 
   const handleCopy = async () => {
     try {
@@ -47,25 +32,15 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
   };
 
   return (
-    <div className="report-backdrop" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        className="report-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="report-title"
-        onClick={(e) => e.stopPropagation()}
-        tabIndex={-1}
-      >
-        <button
-          type="button"
-          className="report-close"
-          aria-label={t("modal.common.closeAria")}
-          onClick={onClose}
-        >
-          <CloseIcon fontSize="small" />
-        </button>
-
+    <DialogShell
+      open={open}
+      onClose={onClose}
+      backdropClassName="report-backdrop"
+      dialogClassName="report-dialog"
+      labelledBy="report-title"
+      closeClassName="report-close"
+      closeLabel={t("modal.common.closeAria")}
+    >
         <h2 id="report-title" className="report-title">
           {t("report.modalTitle")}
         </h2>
@@ -129,8 +104,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ open, onClose }) => {
             </span>
           </span>
         </a>
-      </div>
-    </div>
+    </DialogShell>
   );
 };
 

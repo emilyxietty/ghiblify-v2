@@ -2,26 +2,26 @@
    Welcome / Guide modal
    =========================================================================== */
 
+.guide-open::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    animation: welcome-backdrop-in 200ms ease both;
+}
+
 .welcome-backdrop {
     position: fixed;
     inset: 0;
-    /* Above both default sidebars (99999) AND the spotlight sidebar
-       (100001) so the cornered guide is never covered. The
-       spotlight pulse + ring still bleed visually past the guide
-       (it's positioned bottom-right, leaving the highlighted
-       sidebar region clear) - but if they ever overlap, the guide
-       wins. */
     z-index: 100002;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px;
     animation: welcome-backdrop-in 200ms ease both;
-    transition: background 220ms ease, backdrop-filter 220ms ease,
-        -webkit-backdrop-filter 220ms ease;
 }
 
 /* Narrow viewports during spotlight tour - the sidebar is force-
@@ -39,22 +39,16 @@
     }
 }
 
-/* Cornered mode - adjustTime + drag slides park the dialog in the
-   bottom-right of the viewport so the Time widget at top-center stays
-   fully visible above it. The backdrop drops its dim/blur so the
-   photo + widget read clearly. */
+/* Cornered mode parks the dialog in the bottom-right. The dimming
+   remains in place; relevant controls are lifted above the backdrop. */
 .welcome-backdrop.is-cornered-mode {
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     align-items: flex-end;
     justify-content: flex-end;
 }
 
-/* Drag-passthrough - the drag slide needs the user to actually
-   shift+drag the underlying widget, so the backdrop must let pointer
-   events through. The dialog itself re-claims pointer events so its
-   buttons stay clickable. */
+/* The guide demonstrates controls on the page itself, so the backdrop
+   lets pointer events through. The dialog reclaims them for its own
+   controls. */
 .welcome-backdrop.is-passthrough {
     pointer-events: none;
 }
@@ -72,12 +66,9 @@
    attention. Specificity includes `.is-cornered-mode` so it beats the
    rule above that sets cornered backdrops to transparent. */
 .welcome-backdrop.is-cornered-mode.is-welcome-slide {
-    z-index: 100000;
-    background: rgba(0, 0, 0, 0.55);
+    background: transparent;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    transition: background 220ms ease, backdrop-filter 220ms ease,
-        -webkit-backdrop-filter 220ms ease;
 }
 
 @keyframes welcome-backdrop-in {
@@ -115,6 +106,13 @@
 .welcome-backdrop.is-cornered-mode .welcome-dialog {
     width: min(420px, 100%);
     max-height: min(55vh, 540px);
+}
+
+/* Shortcut combinations need a wider first column than the prose
+   slides, especially for the alternate right-click action. */
+.welcome-backdrop.is-cornered-mode.is-shortcuts-slide .welcome-dialog {
+    width: min(620px, 100%);
+    max-height: min(75vh, 640px);
 }
 
 @keyframes welcome-dialog-in {
@@ -323,7 +321,7 @@
 
 .welcome-shortcut-list li {
     display: grid;
-    grid-template-columns: minmax(140px, auto) 1fr;
+    grid-template-columns: 230px minmax(0, 1fr);
     align-items: center;
     gap: 16px;
     padding: 10px 14px;
@@ -336,7 +334,19 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    flex-wrap: wrap;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .welcome-shortcut-list li {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .welcome-shortcut-keys {
+        white-space: normal;
+        flex-wrap: wrap;
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -457,7 +467,7 @@
    nothing and the settings never highlighted. Ringed rather than
    pulsed: the panel is a large surface, and scaling it 6% every 1.6s
    while the user is trying to click a control inside it is hostile. */
-body.guide-open .edit-panel {
+body.tutorial-edit-widget .edit-panel {
     animation: tutorial-panel-glow 1.6s ease-in-out infinite;
 }
 
@@ -474,80 +484,176 @@ body.guide-open .edit-panel {
     }
 }
 
-body.tutorial-adjust-time
+body.tutorial-edit-widget
     .widget[data-widget-key="time"]
     .widget-resize-handle {
-    animation: tutorial-time-pulse 1.6s ease-in-out infinite;
     z-index: var(--z-tutorial-pulse);
+}
+
+body.tutorial-edit-widget
+    .widget[data-widget-key="time"]
+    .widget-resize-handle::before {
+    animation: tutorial-time-grip-pulse 1.6s ease-in-out infinite;
 }
 
 /* The sidebar toggle's right-click menu, opened for real by the slide.
    Same ring as the settings panel so both "here's where you edit"
    surfaces read as one family. */
-body.tutorial-adjust-time .ctx-menu {
+body.tutorial-enter-edit .ctx-menu {
     animation: tutorial-panel-glow 1.6s ease-in-out infinite;
 }
 
-/* Printed labels next to each handle, so the slide doesn't rely on
-   the user hovering to discover what the grip and the corner do. Text
-   comes from `data-guide-label` (set in Widget.tsx from the locale
-   files) rather than being hard-coded here. Pointer-events off so a
-   label can never swallow the drag it's describing. */
-body.tutorial-adjust-time
-    .widget[data-widget-key="time"]
-    .widget-resize-handle::after {
-    content: attr(data-guide-label);
+body:is(.tutorial-enter-edit, .tutorial-edit-widget) .background-content {
+    z-index: 100001;
+}
+
+body:is(.tutorial-enter-edit, .tutorial-edit-widget)
+    .background-content
+    .widget:not([data-widget-key="time"]) {
+    opacity: 0.16 !important;
+    filter: brightness(0.35);
+    pointer-events: none !important;
+}
+
+body:is(.tutorial-enter-edit, .tutorial-edit-widget)
+    .background-content
+    .widget:not([data-widget-key="time"])
+    * {
+    pointer-events: none !important;
+}
+
+body.tutorial-enter-edit
+    :is(
+        .widget[data-widget-key="time"],
+        .widget-icon[data-widget-toggle="time"]
+    ),
+body.tutorial-enter-edit
+    :is(
+        .widget[data-widget-key="time"],
+        .widget-icon[data-widget-toggle="time"]
+    )
+    * {
+    cursor: pointer !important;
+}
+
+body.tutorial-enter-edit
+    :is(
+        .widget[data-widget-key="time"],
+        .widget-icon[data-widget-toggle="time"]
+    )::before,
+body.tutorial-edit-widget .widget[data-widget-key="time"]::before {
+    content: "";
+    display: block;
     position: absolute;
-    padding: 3px 8px;
-    background: rgba(var(--guide-glow), 0.96);
-    color: #1b2026;
+    width: 16px;
+    height: 22px;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 32'%3E%3Cpath d='M10 16V5a2.5 2.5 0 0 1 5 0v8h1V9a2.5 2.5 0 0 1 5 0v5h1v-2a2.5 2.5 0 0 1 5 0v9c0 6.6-4.4 10-11 10h-1c-3.5 0-5.8-1.4-7.8-4.4L2.4 20a2.6 2.6 0 0 1 4.1-3.2L10 20.5z' fill='%23ffffff' stroke='%23141a20' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.9));
+    pointer-events: none;
+    z-index: var(--z-tutorial-pulse);
+    animation: tutorial-right-click-cursor 1.4s ease-in-out infinite;
+}
+
+body.tutorial-enter-edit
+    :is(
+        .widget[data-widget-key="time"],
+        .widget-icon[data-widget-toggle="time"]
+    )::after,
+body.tutorial-edit-widget .widget[data-widget-key="time"]::after {
+    position: absolute;
+    min-height: 26px;
+    box-sizing: border-box;
+    padding: 5px 31px 5px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
     border-radius: var(--radius-pill);
-    font-size: 11px;
+    background-color: rgba(20, 26, 32, 0.96);
+    background-position: right 7px center;
+    background-repeat: no-repeat;
+    background-size: 16px 21px;
+    color: #ffffff;
+    font-size: 10px;
     font-weight: 700;
     line-height: 1.3;
     white-space: nowrap;
     pointer-events: none;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-    animation: tutorial-label-in 220ms ease both;
+    z-index: var(--z-tutorial-pulse);
+    animation: tutorial-right-click-label 1.4s ease-in-out infinite;
 }
 
-/* Corner grip sits bottom-right - label goes below-right so it never
-   covers the widget content the user is resizing. */
-body.tutorial-adjust-time
-    .widget[data-widget-key="time"]
-    .widget-resize-handle::after {
-    left: calc(100% + 4px);
-    top: 50%;
-    transform: translateY(-50%);
+body.tutorial-enter-edit
+    :is(
+        .widget[data-widget-key="time"],
+        .widget-icon[data-widget-toggle="time"]
+    )::after {
+    content: attr(data-guide-right-click);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 26'%3E%3Cpath d='M11 2h7v9h-7z' fill='%23f3c96b'/%3E%3Crect x='1' y='1' width='18' height='24' rx='9' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3Cpath d='M10 2v9M2 11h16' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E");
 }
 
-@keyframes tutorial-label-in {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+body.tutorial-edit-widget .widget[data-widget-key="time"]::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 26'%3E%3Cpath d='M2 2h7v9H2z' fill='%23f3c96b'/%3E%3Crect x='1' y='1' width='18' height='24' rx='9' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3Cpath d='M10 2v9M2 11h16' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E");
 }
 
-/* The edit-mode outline itself glows, so the widget reads as "this is
-   the thing that's selected" rather than the user having to infer it
-   from a thin static ring. Deliberately NO transform here: scaling the
-   shell would fight the drag/resize maths, which reads geometry
-   straight off the element. */
-body.tutorial-adjust-time .widget[data-widget-key="time"].edit-mode {
-    animation: tutorial-time-outline 1.6s ease-in-out infinite;
+body.tutorial-enter-edit .widget[data-widget-key="time"]::before {
+    left: 68%;
+    top: 55%;
 }
 
-@keyframes tutorial-time-outline {
+body.tutorial-enter-edit .widget[data-widget-key="time"]::after {
+    left: calc(68% + 16px);
+    top: calc(55% + 16px);
+}
+
+body.tutorial-enter-edit
+    .widget-icon[data-widget-toggle="time"]::before {
+    left: 58%;
+    top: 72%;
+}
+
+body.tutorial-enter-edit
+    .widget-icon[data-widget-toggle="time"]::after {
+    left: calc(100% + 8px);
+    top: calc(100% + 6px);
+}
+
+/* The drag cue mirrors the right-click treatment, but its mouse diagram
+   highlights the left button. Keep it just outside the upper-left edge so
+   neither the clock text nor its settings panel can cover it. */
+body.tutorial-edit-widget .widget[data-widget-key="time"]::before {
+    left: -18px;
+    top: -14px;
+}
+
+body.tutorial-edit-widget .widget[data-widget-key="time"]::after {
+    content: attr(data-guide-drag);
+    display: block;
+    left: 0;
+    top: 8px;
+    opacity: 1;
+}
+
+@keyframes tutorial-right-click-cursor {
     0%,
     100% {
-        outline-color: rgba(var(--guide-glow), 0.7);
-        box-shadow: 0 0 0 0 rgba(var(--guide-glow), 0.3);
+        transform: translate(0, 0);
     }
     50% {
-        outline-color: rgba(var(--guide-glow), 1);
-        box-shadow: 0 0 24px 6px rgba(var(--guide-glow), 0.4);
+        transform: translate(-2px, -2px);
+    }
+}
+
+@keyframes tutorial-right-click-label {
+    0%,
+    100% {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5),
+            0 0 0 0 rgba(var(--guide-glow), 0.25);
+    }
+    50% {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5),
+            0 0 12px 3px rgba(var(--guide-glow), 0.5);
     }
 }
 
@@ -561,24 +667,25 @@ body.guide-open .edit-panel {
     z-index: var(--z-tutorial-panel) !important;
 }
 
-body.tutorial-adjust-time .widget[data-widget-key="time"] {
+body:is(.tutorial-enter-edit, .tutorial-edit-widget)
+    .widget[data-widget-key="time"] {
     z-index: var(--z-tutorial-widget) !important;
 }
 
-@keyframes tutorial-time-pulse {
+@keyframes tutorial-time-grip-pulse {
     0%,
     100% {
-        box-shadow:
-            0 0 0 0 rgba(var(--guide-glow), 0.45),
-            0 0 0 1px rgba(var(--guide-glow), 0.4);
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.95))
+            drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))
+            drop-shadow(0 0 1px rgba(var(--guide-glow), 0.5));
         transform: scale(1);
     }
     50% {
-        box-shadow:
-            0 0 0 9px rgba(var(--guide-glow), 0),
-            0 0 18px 4px rgba(var(--guide-glow), 0.5),
-            0 0 0 1px rgba(var(--guide-glow), 0.6);
-        transform: scale(1.04);
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.95))
+            drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))
+            drop-shadow(0 0 5px rgba(var(--guide-glow), 0.95))
+            drop-shadow(0 0 9px rgba(var(--guide-glow), 0.65));
+        transform: scale(1.12);
     }
 }
 

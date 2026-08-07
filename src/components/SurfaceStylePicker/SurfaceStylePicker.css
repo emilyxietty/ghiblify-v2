@@ -1,0 +1,58 @@
+.surface-style-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.surface-style-option {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--dark, #1f2620) 25%, transparent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.surface-style-option:hover {
+    transform: scale(1.12);
+}
+
+.surface-style-option:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.surface-style-option.is-active {
+    box-shadow: 0 0 0 2px var(--light);
+}
+
+.surface-style-clear {
+    background: linear-gradient(
+        to top right,
+        transparent 42%,
+        #e05a5a 46%,
+        #e05a5a 54%,
+        transparent 58%
+    );
+}
+
+.surface-style-frost {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.75) 0 3px,
+        rgba(255, 255, 255, 0.3) 3px 6px
+    );
+}
+
+.surface-style-frostDark {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(18, 24, 30, 0.85) 0 3px,
+        rgba(18, 24, 30, 0.45) 3px 6px
+    );
+}
+
+.surface-style-weather {
+    background: linear-gradient(135deg, #78c3f0 0%, #c4aee2 52%, #f8c5d4 100%);
+}

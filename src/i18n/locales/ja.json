@@ -66,7 +66,6 @@
       "languageAria": "言語を選択",
       "editWidgets": "編集モード",
       "resetAllWidgets": "ウィジェットをリセット",
-      "resetFilters": "背景設定をリセット",
       "selectBackgrounds": "背景を選択",
       "deleteBackground": "背景を削除",
       "deleteBackgroundAria": "現在の背景をローテーションから削除",
@@ -103,12 +102,30 @@
   },
   "rightDock": {
     "emptyTitle": "右サイドバー",
-    "emptyHint": "下の設定ボタンを押して、ここに表示するウィジェットを選んでください。右サイドバーとキャンバスの両方に同時に置けます。",
+    "emptyHint": "下の＋ボタンを押して、ここに表示するウィジェットを選んでください。右サイドバーとキャンバスの両方に同時に置けます。",
     "callout": "右サイドバー — 画面の右端にカーソルを合わせると開きます",
     "settingsLabel": "設定",
+    "addWidgetsLabel": "ウィジェットを追加",
     "pickerLabel": "右サイドバーに表示するウィジェットを選択",
-    "showBackgroundsLabel": "背景を表示",
-    "resetLabel": "右サイドバーをリセット",
+    "panelBackgroundLabel": "パネルの背景",
+    "orderLabel": "順序",
+    "moveUpLabel": "上へ移動",
+    "moveDownLabel": "下へ移動",
+    "guide": {
+      "button": "右サイドバーガイド",
+      "title": "右サイドバーの使い方",
+      "intro": "ここに表示する項目を選び、キャンバス版とは別に各ウィジェットをカスタマイズできます。",
+      "addTitle": "ウィジェットを選ぶ",
+      "addBody": "＋ボタンを押し、右サイドバーに置くウィジェットを選択します。",
+      "editTitle": "ウィジェット設定を開く",
+      "editBody": "右サイドバーのウィジェットを右クリックすると、そのコントロールが開きます。",
+      "rightClickCue": "右クリック",
+      "orderTitle": "ウィジェットを移動する",
+      "orderBody": "「順序」の行で上または下の矢印を使います。クリックするたびに1つ移動します。",
+      "sizeTitle": "サイズを選ぶ",
+      "sizeBody": "対応ウィジェットでは、正方形で半幅、長方形で全幅を選べます。"
+    },
+    "resetLabel": "サイドバーのウィジェットをリセット",
     "resetConfirm": "右サイドバーの設定をすべてリセットしますか?キャンバスのウィジェットには影響しません。"
   },
   "widgets": {
@@ -140,7 +157,6 @@
       "hideFromRightSidebar": "右サイドバーから外す",
       "dockWidthFull": "全幅",
       "dockWidthHalf": "半幅",
-      "showBackground": "背景を表示",
       "time12": "12時間制",
       "time24": "24時間制",
       "timeAnalog": "アナログ",
@@ -179,13 +195,24 @@
       "textShadow": "テキストの影",
       "textShadowAria": "テキストの影の強さ",
       "noCustomization": "カスタマイズはありません",
+      "dockWidth": "ウィジェットの幅",
       "darkModeAria": "ダークモード切替",
       "timeFormatAria": "時計の表示形式を選択",
       "timeFormat12": "12時間",
       "timeFormat24": "24時間",
       "timeFormatAnalog": "アナログ",
+      "dateFormatLabel": "日付スタイル",
+      "dateToday": "今日",
+      "dateFormat": {
+        "long": "完全な日付",
+        "short": "短い日付",
+        "slash": "スラッシュ区切り",
+        "calendar": "ミニカレンダー"
+      },
       "gridShow": "グリッド表示",
       "gridShowList": "リスト表示",
+      "quicklinksPerRow": "1行のリンク数",
+      "quicklinksVisibleRows": "表示行数",
       "resizeTitle": "ドラッグして「{{name}}」のサイズを変更",
       "infoFields": {
         "japaneseTitle": "日本語タイトル",
@@ -240,6 +267,10 @@
         "hourly": "1時間ごと",
         "full": "詳細予報"
       },
+      "weatherLayoutLabel": "レイアウト",
+      "weatherLayoutAria": "天気のレイアウトを選択",
+      "weatherLayoutStandard": "標準",
+      "weatherLayoutCompact": "コンパクト",
       "weatherStylePlain": "シンプル",
       "weatherStyleCard": "カード",
       "weatherAnimatedIcons": "アイコンを動かす",
@@ -265,7 +296,10 @@
       "styleFrostDark": "ダークフロスト",
       "styleClear": "クリア",
       "styleWeather": "天気",
+      "backgroundTune": "背景を調整",
+      "backgroundTuneUnavailable": "背景を選択するとカスタマイズできます",
       "highlightTune": "ハイライトを調整",
+      "highlightTuneUnavailable": "ハイライトを選択するとカスタマイズできます",
       "weatherLocationHint": "位置情報は地域の天気予報の取得のみに使用され、天気サービス以外に送信されることはありません。",
       "guideResize": "サイズ変更",
       "surfaceHighlights": "ハイライト",
@@ -273,8 +307,7 @@
     },
     "gapps": {
       "menuAria": "Google アプリ",
-      "accountAria": "Google アカウント",
-      "personalize": "アカウントの頭文字を表示"
+      "accountAria": "Google アカウント"
     }
   },
   "greeting": {
@@ -321,7 +354,6 @@
     "editLink": "リンクを編集",
     "deleteLink": "リンクを削除",
     "deleteAria": "{{title}}を削除",
-    "deleteGridTooltip": "{{title}}を削除",
     "deleteListTooltip": "リンクを削除",
     "removeTooltip": "リンクを削除",
     "doneDeleteTooltip": "削除を終了",
@@ -336,7 +368,9 @@
     "previewEmpty": "新しいリンク",
     "cancel": "キャンセル",
     "save": "保存",
-    "addButton": "追加"
+    "addButton": "追加",
+    "previousPage": "前のクイックリンクページ",
+    "nextPage": "次のクイックリンクページ"
   },
   "pomodoro": {
     "modeFocus": "ポモドーロ",
@@ -586,18 +620,18 @@
         "body2": "同じセクションにフォントと角の丸みもあります。ページ全体の書体と、各面の丸みを選べます。3つとも今サイドバーで開いています。"
       },
       "adjustTime": {
-        "title": "ウィジェットを編集する",
-        "body1": "各ウィジェットには独自のコントロールがあります。上の時計ウィジェットは編集モードです — 12/24時間制を切替えたり、サイズを調整できます。",
-        "body2Pre": "ウィジェットを編集する方法は3つ：ページ上で右クリック、",
-        "body2Post": "（または Shift）を押しながら表示される鉛筆をクリック、または左サイドバーのアイコンを右クリック（そのメニューが今開いています）。"
+        "title": "編集モードに入る",
+        "body1": "ページ上のウィジェットを右クリックすると、編集モードになりコントロールが開きます。",
+        "body2": "左サイドバーのアイコンを右クリックして「編集」を選ぶこともできます。時計ウィジェットに両方の方法を示しています。",
+        "rightClickWidgetCue": "ウィジェットを右クリック",
+        "rightClickIconCue": "アイコンを右クリック"
       },
       "drag": {
-        "title": "ウィジェットを移動",
-        "body1Pre": "",
-        "body1Post": "を押しながら上の時計をドラッグして配置できます。ウィジェットはグリッドにスナップします。",
-        "body2": "ウィジェットが編集モードのときは、ウィジェット自体をそのままドラッグして移動できます。キーは不要です。",
-        "hint": "D または Shift を押している間、カーソルが手の形に変わります。それが合図です。",
-        "body1Sep": " または "
+        "title": "ウィジェットをドラッグ、サイズ変更、編集",
+        "body1": "編集パネルでウィジェットの設定を変更できます。",
+        "body2": "ウィジェット自体をドラッグして移動できます。キー操作は不要です。",
+        "dragCue": "クリックしてドラッグ",
+        "hint": "影の付いた隅のグリップをドラッグしてサイズを変更します。"
       },
       "background": {
         "title": "背景を選ぶ",
@@ -609,7 +643,7 @@
         "title": "キーボードショートカット",
         "openSidebar": "サイドバーを開閉",
         "moveWidget": "ウィジェットを移動",
-        "editWidget": "個別のウィジェットを編集 (DまたはShiftを押しながら鉛筆をクリック)",
+        "editWidget": "特定のウィジェットを編集、ドラッグ、サイズ変更",
         "escape": "サイドバー、ポップオーバー、編集モード、ガイドを閉じる",
         "enter": "編集を確定または編集モードを終了",
         "navigateGuide": "ガイドのスライド移動",
@@ -659,7 +693,7 @@
     "resetConfirmCancel": "キャンセル",
     "section": {
       "widgets": "ウィジェット設定",
-      "appearance": "外観設定",
+      "appearance": "パレット設定",
       "background": "背景設定",
       "cursor": "カーソル設定"
     },
@@ -668,8 +702,6 @@
     "backgroundTitle": "背景",
     "cursorTitle": "カーソル",
     "cursorSub": "カーソルを標準のシステムポインタに戻します。設定は「外観」と一緒に保存されます。",
-    "dockBackgrounds": "ドックのカード背景",
-    "dockBackgroundsSub": "右側にドックしたウィジェットの背後にガラス風カードを表示します。",
     "highContrastSub": "ページ全体の文字コントラストを強くします。",
     "parallaxSub": "カーソルに合わせて背景がゆっくり動きます。",
     "resetWidgets": "すべてのウィジェットをリセット",
@@ -684,7 +716,7 @@
       "other": "その他"
     },
     "deleteKeyConfirm": "「{{key}}」を削除しますか？含まれるデータは元に戻せません。",
-    "resetWidgetsConfirm": "すべてのウィジェットを初期の位置・サイズ・設定に戻しますか？クイックリンクと名前は保持されます。",
+    "resetWidgetsConfirm": "すべてのウィジェットを初期の位置・サイズ・設定に戻しますか？クイックリンク、名前、メモ、ToDoリストは保持されます。",
     "resetDockConfirm": "右側のドックを初期レイアウトに戻しますか？",
     "resetAppearanceConfirm": "テーマ・フォント・コントラストを初期設定に戻しますか？",
     "resetBackgroundConfirm": "背景フィルターとパララックスを初期設定に戻しますか？",
@@ -699,8 +731,6 @@
       "square": "直角",
       "rounded": "標準",
       "pill": "丸め"
-    },
-    "permissionEmail": "メールアドレス",
-    "permissionEmailSub": "Google ウィジェットのアカウントボタンに頭文字を表示します。それ以外には使いません。"
+    }
   }
 }

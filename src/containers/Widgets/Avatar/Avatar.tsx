@@ -40,7 +40,7 @@ export const Avatar: React.FC<AvatarProps> = () => {
           />
 
           {/* Credit chip. Single rendering - CSS reveals it both on
-              Shift hold AND in edit mode, so the same DOM element
+              D hold AND in edit mode, so the same DOM element
               shows in both contexts (no overlap, no duplicates). */}
           <div className="avatar-credit">
             <span className="avatar-credit-name">{avatarData.label}</span>

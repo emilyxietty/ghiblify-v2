@@ -24,7 +24,6 @@ import {
   NotesSettings,
   POMODORO_CARD_PRESETS,
   QuicklinksSettings,
-  resolveSurfaceFrost,
   TimeSettings,
   WeatherSettings,
   WidgetKey,
@@ -35,13 +34,12 @@ import { clearWeatherLocation } from "../../hooks/useWeather";
 import {
   HIGHLIGHT_OPACITY_PRESETS,
   HIGHLIGHT_PRESETS,
-  isHighlightTextColor,
   normalizeHex,
   pushRecentColor,
   readRecentColors,
-  resolveForeground,
   withAlpha,
 } from "../../utils/textHighlight";
+import { getWidgetSurfacePresentation } from "../../utils/widgetSurfacePresentation";
 import {
   POMODORO_SOUND_KEYS,
   isPomodoroSoundKey,
@@ -105,16 +103,13 @@ export const Widget: React.FC<WidgetProps> = ({
     editingWidgetKey,
     setEditingWidgetKey,
     toggleWidgetVisibility,
-    setWidgetInRightSidebar,
-    setWidgetDockWidth,
-    setWidgetShowBackground,
     appearance,
     widgetsCommitted,
     previewWidgetSettings,
   } = useAppContext();
   const t = useT();
   // The widget is "in edit mode" if either the global edit toggle is on,
-  // or this specific widget was singled out via the Shift+pencil button.
+  // or this specific widget was singled out via the D+pencil button.
   const isEditingThis = showWidgetEdits || editingWidgetKey === storageKey;
   const widgetConfig = getWidgetConfig(storageKey);
   const widgetSettings = widgets[storageKey].settings as Record<string, unknown>;
@@ -200,7 +195,7 @@ export const Widget: React.FC<WidgetProps> = ({
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [dragButton, setDragButton] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [hasMovedWhileMouseDown, setHasMovedWhileMouseDown] = useState(false);
+  const hasMovedWhileMouseDownRef = useRef(false);
   const [isResizing, setIsResizing] = useState(false);
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartY, setResizeStartY] = useState(0);
@@ -217,30 +212,11 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging(isResizing);
   }, [isResizing, setIsDragging]);
 
-  // Held-to-drag affordance - press and hold 'd' OR Shift to make
-  // widgets draggable, release either to stop. Shift was the
-  // original behavior; users coming from earlier versions tried it
-  // out of muscle memory, so it's back as an alternative to 'd'.
-  // 'd' stays the recommended key because Shift has two known
-  // gotchas: (1) Cmd+Shift+4 (macOS screenshot) can swallow the
-  // keyup → outline gets stuck on; (2) Shift held during typing
-  // capitals could trigger the affordance in non-input contexts.
-  // Both are mitigated below - see mousemove + blur + visibility
-  // handlers.
-  //
-  // Skipped when an <input>, <textarea>, <select>, or contentEditable
-  // is focused so typing in todos / notes / search doesn't
-  // accidentally enable drag.
+  // Skipped while typing so entering text cannot enable drag.
   useEffect(() => {
-    // Track both keys independently - outline stays on while EITHER
-    // is held. Refs (not state) so the listeners read the latest
-    // values without re-binding on every change.
-    const held = { d: false, shift: false };
+    let held = false;
     const apply = () => {
-      document.body.classList.toggle(
-        "show-widget-outline",
-        held.d || held.shift,
-      );
+      document.body.classList.toggle("show-widget-outline", held);
     };
     const isTypingTarget = (t: EventTarget | null) => {
       const el = t as HTMLElement | null;
@@ -258,47 +234,27 @@ export const Widget: React.FC<WidgetProps> = ({
         // Plain 'd' only - combos (Cmd+D bookmark, etc.) shouldn't
         // trigger drag.
         if (e.metaKey || e.ctrlKey || e.altKey) return;
-        held.d = true;
-        apply();
-      } else if (e.key === "Shift") {
-        held.shift = true;
+        held = true;
         apply();
       }
     }
     function handleKeyUp(e: KeyboardEvent) {
       if (e.key === "d" || e.key === "D") {
-        held.d = false;
-        apply();
-      } else if (e.key === "Shift") {
-        held.shift = false;
+        held = false;
         apply();
       }
     }
-    // Cmd+Shift+4 on macOS swallows the Shift keyup. The next
-    // mousemove that arrives with no shift-modifier pressed clears
-    // the stranded "shift held" state. Cheap, no observable cost.
-    function handleMouseMove(e: MouseEvent) {
-      if (held.shift && !e.shiftKey) {
-        held.shift = false;
-        apply();
-      }
-    }
-    // Window-focus loss / tab switch clear unconditionally so neither
-    // key can stay stuck.
     function clearAll() {
-      held.d = false;
-      held.shift = false;
+      held = false;
       apply();
     }
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("blur", clearAll);
     document.addEventListener("visibilitychange", clearAll);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("blur", clearAll);
       document.removeEventListener("visibilitychange", clearAll);
     };
@@ -450,10 +406,10 @@ export const Widget: React.FC<WidgetProps> = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Only track drag if mouse is down and dragButton is 0 (left-click, with Shift)
+      // Only track drag if mouse is down and dragButton is 0.
       if (isMouseDown && dragButton === 0 && widgetRef.current) {
-        if (!hasMovedWhileMouseDown) {
-          setHasMovedWhileMouseDown(true);
+        if (!hasMovedWhileMouseDownRef.current) {
+          hasMovedWhileMouseDownRef.current = true;
           setIsDragging(true);
         }
 
@@ -538,8 +494,8 @@ export const Widget: React.FC<WidgetProps> = ({
           updateWidgetSettings(storageKey, { fontSize: toReferencePx(newScreen) } as never);
         }
       } else if (isMouseDown && widgetRef.current) {
-        if (!hasMovedWhileMouseDown) {
-          setHasMovedWhileMouseDown(true);
+        if (!hasMovedWhileMouseDownRef.current) {
+          hasMovedWhileMouseDownRef.current = true;
           setIsDragging(true);
         }
 
@@ -575,8 +531,9 @@ export const Widget: React.FC<WidgetProps> = ({
         setIsDragging(false);
       }
       if (isMouseDown) {
+        const didMove = hasMovedWhileMouseDownRef.current;
+        hasMovedWhileMouseDownRef.current = false;
         setIsMouseDown(false);
-        setHasMovedWhileMouseDown(false);
         setIsDragging(false);
         setDragButton(null);
 
@@ -584,11 +541,11 @@ export const Widget: React.FC<WidgetProps> = ({
         // the new position and mark this widget as "just dragged" so child
         // header click handlers can ignore the immediate click that follows
         // the drag end (prevents accidental toggles).
-        if (storageKey && hasMovedWhileMouseDown && updateWidgetPosition) {
+        if (storageKey && didMove && updateWidgetPosition) {
           updateWidgetPosition(storageKey, position);
         }
 
-        if (hasMovedWhileMouseDown && widgetRef.current) {
+        if (didMove && widgetRef.current) {
           try {
             widgetRef.current.dataset.justDragged = "true";
             window.setTimeout(() => {
@@ -598,25 +555,21 @@ export const Widget: React.FC<WidgetProps> = ({
           } catch (err) {
             // ignore
           }
-          // Suppress the next click event that follows a drag so child
-          // header click handlers don't receive the synthetic click that
-          // browsers typically fire after mouseup. Use capture-phase
-          // listener so we can stop the event before React handlers run.
+          // Suppress only the immediate click that follows a drag. Its
+          // target can be outside the widget after the widget has moved,
+          // so target containment is not a reliable signal here.
           try {
+            let timeoutId: number | null = null;
             const suppressClick = (ev: MouseEvent) => {
-              try {
-                const target = ev.target as Node | null;
-                if (!target || !widgetRef.current) return;
-                // If the click landed inside this widget, prevent it.
-                if (widgetRef.current.contains(target)) {
-                  ev.stopImmediatePropagation();
-                  ev.preventDefault();
-                }
-              } finally {
-                document.removeEventListener("click", suppressClick, true);
-              }
+              ev.stopImmediatePropagation();
+              ev.preventDefault();
+              if (timeoutId !== null) window.clearTimeout(timeoutId);
+              document.removeEventListener("click", suppressClick, true);
             };
             document.addEventListener("click", suppressClick, true);
+            timeoutId = window.setTimeout(() => {
+              document.removeEventListener("click", suppressClick, true);
+            }, 250);
           } catch (err) {
             // ignore
           }
@@ -649,7 +602,6 @@ export const Widget: React.FC<WidgetProps> = ({
     setIsDragging,
     updateWidgetSettings,
     updateWidgetPosition,
-    hasMovedWhileMouseDown,
   ]);
 
   // detect whether the child rendered its own header (so we can avoid
@@ -669,7 +621,7 @@ export const Widget: React.FC<WidgetProps> = ({
     // gating below, which returns early for plain clicks.
     bringWidgetToFront(storageKey);
     // Two ways to opt into widget dragging:
-    //   1. Hold 'd' or Shift + left-click. The keydown/keyup effect
+    //   1. Hold D + left-click. The keydown/keyup effect
     //      above keeps `body.show-widget-outline` in sync with the
     //      held state, so reading the class is the cheapest
     //      authoritative check at click time.
@@ -682,9 +634,7 @@ export const Widget: React.FC<WidgetProps> = ({
     //      under the edit overlay, so there's nothing to conflict
     //      with.
     if (e.button !== 0) return;
-    // `show-widget-outline` body class is added when EITHER `d` or
-    // Shift is held (see the held-to-drag effect higher up). Both
-    // keys are valid drag activators.
+    // `show-widget-outline` is present while D is held.
     const dragKeyHeld = document.body.classList.contains(
       "show-widget-outline",
     );
@@ -716,7 +666,7 @@ export const Widget: React.FC<WidgetProps> = ({
       });
 
       setIsMouseDown(true);
-      setHasMovedWhileMouseDown(false);
+      hasMovedWhileMouseDownRef.current = false;
       setDragButton(e.button);
     }
   };
@@ -760,50 +710,14 @@ export const Widget: React.FC<WidgetProps> = ({
   // Safe to early-return now - all hooks above have already run.
   if (!shouldRender) return null;
 
-  // Surface up the widget's opacity + blur settings (when present) as
-  // shared CSS vars on the shell. Non-Frost themes use --widget-opacity
-  // for surface alpha; Frost uses --widget-blur for glass intensity.
-  // Each is set as a 0–1 fraction.
-  // Quicklinks paints a different surface per mode, so the shell reads
-  // whichever pair belongs to the active one (see QuicklinksSettings).
-  const surfaceKeys =
-    storageKey === "quicklinks" && !widgets.quicklinks.settings.gridMode
-      ? { opacity: "listOpacity", blur: "listBlur" }
-      : { opacity: "opacity", blur: "blur" };
-  const opacityFraction =
-    surfaceKeys.opacity in widgetSettings
-      ? Math.max(
-          0,
-          Math.min(1, Number(widgetSettings[surfaceKeys.opacity]) / 100),
-        )
-      : undefined;
-  const blurFraction =
-    surfaceKeys.blur in widgetSettings
-      ? Math.max(0, Math.min(1, Number(widgetSettings[surfaceKeys.blur]) / 100))
-      : undefined;
-  // Text highlight - a hex string turns it on, null/absent leaves it
-  // off. The shell only publishes the vars; which text nodes actually
-  // get painted is a per-widget selector list in Widget.css.
-  // `widgetSettings` already carries any hover preview - AppContext
-  // merges it into the render view, so nothing extra is needed here.
-  const highlight =
-    typeof widgetSettings.highlightColor === "string"
-      ? normalizeHex(widgetSettings.highlightColor)
-      : null;
-  const highlightAlpha =
-    typeof widgetSettings.highlightOpacity === "number"
-      ? widgetSettings.highlightOpacity
-      : 100;
-  const highlightBlurFraction = Math.max(
-    0,
-    Math.min(
-      1,
-      (typeof widgetSettings.highlightBlur === "number"
-        ? widgetSettings.highlightBlur
-        : 60) / 100
-    )
-  );
-  const typeIn = widgetSettings.typeIn === true;
+  const surfacePresentation = getWidgetSurfacePresentation({
+    storageKey,
+    settings: widgetSettings,
+    theme: appearance.theme,
+    allowTypeIn:
+      !(storageKey === "date" && widgetSettings.displayStyle === "calendar"),
+    typeSteps,
+  });
 
   return (
     <div
@@ -813,35 +727,15 @@ export const Widget: React.FC<WidgetProps> = ({
       } ${isResizing ? "resizing" : ""} ${
         isFadingOut ? "fade-out" : ""
       } draggable widget-align-${alignment}${
-        highlight ? " has-text-highlight" : ""
-      }${
-        highlight && widgetSettings.highlightFrost === true
-          ? " highlight-frost"
+        surfacePresentation.className
+          ? ` ${surfacePresentation.className}`
           : ""
-      }${
-        storageKey === "notes" && widgetSettings.paperFrost === true
-          ? " widget-notes-frost"
-          : ""
-      }${
-        // Quicklinks is absent on purpose: it has no frost chips, and
-        // its blur is a continuous slider instead, so the shell rule
-        // keyed on --widget-blur owns it entirely.
-        (storageKey === "todo" ||
-          storageKey === "weather" ||
-          storageKey === "googleApps") &&
-        resolveSurfaceFrost(
-          widgetSettings.frosted as boolean | undefined,
-          appearance.theme
-        ) &&
-        // An explicitly-chosen weather card wins over theme-default
-        // frost (they're the same control's mutually exclusive states).
-        !(storageKey === "weather" && widgetSettings.showCard === true)
-          ? ` widget-surface-frost${
-              widgetSettings.frostDark === true ? " frost-dark" : ""
-            }`
-          : ""
-      }${typeIn ? " has-type-in" : ""}`}
+      }`}
       data-widget-key={storageKey}
+      data-guide-right-click={t(
+        "welcome.slides.adjustTime.rightClickWidgetCue",
+      )}
+      data-guide-drag={t("welcome.slides.drag.dragCue")}
       style={{
         left: `${position.x}vw`,
         top: `${position.y}vh`,
@@ -855,30 +749,7 @@ export const Widget: React.FC<WidgetProps> = ({
         ...(typeof widgetSettings.fontSize === "number"
           ? { fontSize: `${toScreenPx(widgetSettings.fontSize)}px` }
           : {}),
-        ...(opacityFraction !== undefined
-          ? { ["--widget-opacity" as any]: opacityFraction }
-          : {}),
-        ...(blurFraction !== undefined
-          ? { ["--widget-blur" as any]: blurFraction }
-          : {}),
-        ...(typeIn
-          ? {
-              ["--type-in-steps" as any]: typeSteps,
-              ["--type-in-duration" as any]: `${typeSteps * 0.055}s`,
-            }
-          : {}),
-        ...(highlight
-          ? {
-              ["--text-highlight" as any]: withAlpha(highlight, highlightAlpha),
-              ["--text-highlight-blur" as any]: highlightBlurFraction,
-              ["--text-highlight-fg" as any]: resolveForeground(
-                highlight,
-                isHighlightTextColor(widgetSettings.highlightTextColor)
-                  ? widgetSettings.highlightTextColor
-                  : "auto"
-              ),
-            }
-          : {}),
+        ...surfacePresentation.style,
       }}
       onMouseDown={handleWidgetMouseDown}
       onContextMenu={(e) => {
@@ -936,18 +807,13 @@ export const Widget: React.FC<WidgetProps> = ({
             data-tooltip={t("widgets.edit.resizeTitle", {
               name: t(`widgets.names.${storageKey}`),
             })}
-            /* Read by the guide's CSS as a printed label beside the
-               handle (content: attr(...)), so the wording stays in the
-               locale files instead of being hard-coded in a stylesheet.
-               Inert outside the tour. */
-            data-guide-label={t("widgets.edit.guideResize")}
-          ></div>
+          />
         )}
-      {/* Quick controls - only visible while `d` or Shift is held
+      {/* Quick controls - only visible while D is held
           and the widget isn't already in edit mode. The pencil at top-
           right jumps straight into editing this widget; the minus at
           top-left hides the widget without opening any menu. CSS class
-          .show-widget-outline (toggled by the held-d effect above)
+          .show-widget-outline (toggled by the D-key effect above)
           fades both in. */}
       {!isEditingThis && (
         <button
@@ -991,9 +857,6 @@ export const Widget: React.FC<WidgetProps> = ({
             setEditingWidgetKey,
             toggleWidgetVisibility,
             updateWidgetSettings,
-            setWidgetInRightSidebar,
-            setWidgetDockWidth,
-            setWidgetShowBackground,
             isFrost: appearance.theme === "frost",
             preview: (patch) => previewWidgetSettings(storageKey, patch),
             // Straight to the OS palette - no intermediate panel. The
@@ -1040,13 +903,6 @@ const INFO_FIELD_KEYS = [
 // mode. Multi-select options become cascading submenus to keep the
 // root menu compact.
 //
-// `mode` selects the surface:
-//   "canvas" - full menu (Edit, Drag, Hide + extras). Hide toggles
-//     `visible`, removing the widget from BOTH canvas and dock.
-//   "dock"   - Edit/Drag are dropped (no-op in the dock; sizing is
-//     hard-coded). Hide only flips `inRightSidebar` so the canvas
-//     state is untouched. Settings extras come first since they're
-//     the user's primary use of right-click in the dock.
 export function buildContextMenuItems(args: {
   storageKey: WidgetKey;
   widgets: ReturnType<typeof useAppContext>["widgets"];
@@ -1056,11 +912,7 @@ export function buildContextMenuItems(args: {
   updateWidgetSettings: ReturnType<
     typeof useAppContext
   >["updateWidgetSettings"];
-  setWidgetInRightSidebar: (k: WidgetKey, value: boolean) => void;
-  setWidgetDockWidth: (k: WidgetKey, value: "half" | "full") => void;
-  setWidgetShowBackground: (k: WidgetKey, value: boolean) => void;
   isFrost: boolean;
-  mode?: "canvas" | "dock";
   /** Demo a settings patch while a row is hovered; null clears it.
    *  Rows whose effect isn't visible on the widget (multi-selects,
    *  sounds) deliberately don't use this. */
@@ -1075,11 +927,7 @@ export function buildContextMenuItems(args: {
     setEditingWidgetKey,
     toggleWidgetVisibility,
     updateWidgetSettings,
-    setWidgetInRightSidebar,
-    setWidgetDockWidth,
-    setWidgetShowBackground,
     isFrost,
-    mode = "canvas",
     preview,
     openHighlightPicker,
   } = args;
@@ -1089,23 +937,20 @@ export function buildContextMenuItems(args: {
     preview?.(active ? patch : null);
 
   const widgetName = t(`widgets.names.${storageKey}`);
-  const universal: ContextMenuItem[] =
-    mode === "canvas"
-      ? [
-          {
-            type: "action",
-            label: t("widgets.contextMenu.edit", { name: widgetName }),
-            onClick: () => setEditingWidgetKey(storageKey),
-            icon: <EditIcon style={{ fontSize: 14 }} />,
-          },
-          {
-            type: "action",
-            label: t("widgets.contextMenu.hide", { name: widgetName }),
-            onClick: () => toggleWidgetVisibility(storageKey),
-            icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
-          },
-        ]
-      : [];
+  const universal: ContextMenuItem[] = [
+    {
+      type: "action",
+      label: t("widgets.contextMenu.edit", { name: widgetName }),
+      onClick: () => setEditingWidgetKey(storageKey),
+      icon: <EditIcon style={{ fontSize: 14 }} />,
+    },
+    {
+      type: "action",
+      label: t("widgets.contextMenu.hide", { name: widgetName }),
+      onClick: () => toggleWidgetVisibility(storageKey),
+      icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
+    },
+  ];
 
   let extras: ContextMenuItem[] = [];
 
@@ -1189,11 +1034,7 @@ export function buildContextMenuItems(args: {
     // Half-width dock cells aren't wide enough for the forecast strips,
     // so the scale stops at "now" there - matching what the widget
     // actually renders on that surface.
-    const isHalfDock =
-      mode === "dock" && widgets.weather.dockWidth === "half";
-    const detailOptions = isHalfDock
-      ? (["icon", "now"] as const)
-      : WEATHER_DETAILS;
+    const detailOptions = WEATHER_DETAILS;
 
     // Read the resolved location from the weather cache so the user
     // can see what geolocation reported. The label is set by
@@ -1779,15 +1620,20 @@ export function buildContextMenuItems(args: {
   // Type-in - auto-attaches wherever the setting exists, same rule as
   // the highlight above.
   if ("typeIn" in widgetSettingsAny) {
+    const typeInDisabled =
+      storageKey === "date" && widgetSettingsAny.displayStyle === "calendar";
     extras.push({
       type: "checkbox",
       label: t("widgets.contextMenu.typeIn"),
       icon: <KeyboardIcon style={{ fontSize: 14 }} />,
-      checked: widgetSettingsAny.typeIn === true,
-      onClick: () =>
+      checked: !typeInDisabled && widgetSettingsAny.typeIn === true,
+      disabled: typeInDisabled,
+      onClick: () => {
+        if (typeInDisabled) return;
         updateWidgetSettings(storageKey, {
           typeIn: widgetSettingsAny.typeIn !== true,
-        } as never),
+        } as never);
+      },
     });
   }
 
@@ -1877,61 +1723,6 @@ export function buildContextMenuItems(args: {
     });
   }
 
-  if (mode === "dock") {
-    // Background toggle is intentionally absent now - every dock
-    // widget paints a uniform glass card via `.dock-widget` CSS so
-    // the dock reads as one consistent design. The
-    // `setWidgetShowBackground` setter is kept on the context so
-    // stored values aren't broken, but the toggle no longer
-    // surfaces here.
-    void setWidgetShowBackground;
-
-    // Dock layout: settings first (the primary reason to right-click
-    // here), then a half/full width control (where allowed), then
-    // Hide.
-    //
-    // Some widgets are locked to a specific size in the dock and
-    // skip the half/full radio entirely:
-    //   Todo/Info - content-dense, half-cell breaks them.
-    //   Avatar   - small image tile, full-row reads as empty space.
-    const FULL_WIDTH_ONLY: WidgetKey[] = ["todo", "info"];
-    const HALF_WIDTH_ONLY: WidgetKey[] = ["avatar"];
-    const allowHalf =
-      !FULL_WIDTH_ONLY.includes(storageKey) &&
-      !HALF_WIDTH_ONLY.includes(storageKey);
-    const currentDockWidth = widgets[storageKey].dockWidth;
-    const widthControls: ContextMenuItem[] = allowHalf
-      ? [
-          {
-            type: "radio",
-            label: t("widgets.contextMenu.dockWidthFull"),
-            selected: currentDockWidth === "full",
-            onClick: () => setWidgetDockWidth(storageKey, "full"),
-          },
-          {
-            type: "radio",
-            label: t("widgets.contextMenu.dockWidthHalf"),
-            selected: currentDockWidth === "half",
-            onClick: () => setWidgetDockWidth(storageKey, "half"),
-          },
-        ]
-      : [];
-    const dockHide: ContextMenuItem = {
-      type: "action",
-      label: t("widgets.contextMenu.hide", { name: widgetName }),
-      onClick: () => setWidgetInRightSidebar(storageKey, false),
-      icon: <VisibilityOffIcon style={{ fontSize: 14 }} />,
-    };
-    const out: ContextMenuItem[] = [];
-    if (extras.length) {
-      out.push(...extras, { type: "separator" });
-    }
-    if (widthControls.length) {
-      out.push(...widthControls, { type: "separator" });
-    }
-    out.push(dockHide);
-    return out;
-  }
   return extras.length
     ? [...universal, { type: "separator" }, ...extras]
     : universal;

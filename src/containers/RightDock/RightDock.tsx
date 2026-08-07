@@ -11,21 +11,37 @@
  *     reaches the right edge, hides again when the cursor moves
  *     clear of the dock. Esc also closes.
  *
- * Membership picker - a footer "Settings" button reveals a small
- * grid of widget icons (mirrors the LeftSidebar widgets row).
- * Clicking each icon toggles `inRightSidebar` for that widget. This
- * is the only place to add/remove dock widgets - keeps the per-
- * widget right-click menu short and discoverable in one spot.
+ * The compact footer separates adding widgets from panel settings.
+ * Widget-specific controls remain on each widget's right-click menu.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../components/Button/Button";
+import { ConfirmDialog } from "../../components/ConfirmDialog/ConfirmDialog";
+import { EdgePanelCallout } from "../../components/EdgePanelCallout/EdgePanelCallout";
+import {
+  AddIcon,
+  HelpOutlineIcon,
+  RestoreIcon,
+  SettingsIcon,
+} from "../../components/Icons/Icons";
+import { RightDockGuide } from "../../components/RightDockGuide/RightDockGuide";
+import {
+  SurfaceStylePicker,
+  type SurfaceStyleValue,
+} from "../../components/SurfaceStylePicker/SurfaceStylePicker";
+import { WidgetIcon } from "../../components/WidgetIcon/WidgetIcon";
+import { Time } from "../Widgets/Time/Time";
+import { DockWidget } from "./DockWidget";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
-import { WidgetKey } from "../../config/widgetConfig";
+import { DOCK_WIDGET_KEYS } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
+import {
+  RightDockGuideContext,
+  type RightDockGuideStep,
+} from "../../contexts/RightDockGuideContext";
+import { useEdgePanel } from "../../hooks/useEdgePanel";
 import { useT } from "../../i18n/i18n";
-import { FormatQuoteIcon, RestoreIcon, StickyNote2Icon, WbSunnyIcon } from "../../components/Icons/Icons";
-import { AccessTimeFilledIcon, CalendarTodayIcon, CheckBoxIcon, FaceIcon, SettingsIcon } from "../../components/Icons/Icons";
 import "./RightDock.css";
 
 // Slightly narrower than the bookmarks panel (360). The dock hosts
@@ -36,23 +52,22 @@ import "./RightDock.css";
 const DOCK_WIDTH = 350;
 const DOCK_EDGE_TRIGGER = 10;
 
-// Widgets the dock can host. Excludes:
-//  - rightSidebar (the dock toggle itself)
-//  - bookmarks (mutually exclusive with the dock at the toggle level)
-//  - greeting + quicklinks + searchbar (their canvas layouts don't
-//    compress cleanly into the dock column - name input wraps
-//    awkwardly, link grid clips, search input gets stubby).
-//  - pomodoro (the timer card has fixed internals + a wide shadow
-//    that don't reflow gracefully into the column; canvas-only).
-const PICKER_WIDGETS: Array<{ key: WidgetKey; icon: React.ReactElement }> = [
-  { key: "time", icon: <AccessTimeFilledIcon /> },
-  { key: "date", icon: <CalendarTodayIcon /> },
-  { key: "info", icon: <FormatQuoteIcon /> },
-  { key: "todo", icon: <CheckBoxIcon /> },
-  { key: "weather", icon: <WbSunnyIcon /> },
-  { key: "notes", icon: <StickyNote2Icon /> },
-  { key: "avatar", icon: <FaceIcon /> },
-];
+const panelSurfaceSettings = (style: SurfaceStyleValue) => ({
+  frosted: style === "frost" || style === "frostDark",
+  frostDark: style === "frostDark",
+});
+
+const getPanelSurface = (settings: {
+  frosted?: boolean;
+  frostDark?: boolean;
+}): SurfaceStyleValue =>
+  settings.frosted
+    ? settings.frostDark
+      ? "frostDark"
+      : "frost"
+    : "clear";
+
+type FooterPanel = "widgets" | "settings";
 
 interface RightDockProps {
   /** Drives mounting + the first-toggle hint callout. */
@@ -72,91 +87,62 @@ export const RightDock: React.FC<RightDockProps> = ({
   const {
     isDragging,
     widgets,
+    widgetsCommitted,
+    previewWidgetSettings,
     setWidgetInRightSidebar,
+    updateWidgetSettings,
     resetRightSidebar,
-    dockShowBackgrounds,
-    setDockShowBackgrounds,
   } = useAppContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const dockRef = useRef<HTMLElement | null>(null);
+  const [footerPanel, setFooterPanel] = useState<FooterPanel | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideStep, setGuideStep] = useState<RightDockGuideStep>("edit");
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const {
+    isOpen,
+    setIsOpen,
+    showCallout,
+    panelRef: dockRef,
+  } = useEdgePanel({
+    visible,
+    panelWidth: DOCK_WIDTH,
+    edgeTrigger: DOCK_EDGE_TRIGGER,
+    interactionLocked: isDragging,
+    shouldKeepOpen: () =>
+      resetConfirmOpen ||
+      guideOpen ||
+      !!document.querySelector(
+        ".ctx-menu, .edit-panel[data-edit-surface='dock']",
+      ),
+    onAutoClose: () => setFooterPanel(null),
+    onEscapeBeforeClose: () => {
+      if (guideOpen) {
+        setGuideOpen(false);
+        return true;
+      }
+      if (!footerPanel) return false;
+      setFooterPanel(null);
+      return true;
+    },
+  });
 
-  // Show a transient "swipe to right edge" hint the first time the
-  // user toggles the dock on (mirrors RightSidebar's bookmarks
-  // callout). Tracks previous visible so a reload of an
-  // already-enabled dock doesn't re-fire the hint.
-  const wasVisible = useRef(visible);
-  const [showCallout, setShowCallout] = useState(false);
-  useEffect(() => {
-    if (visible && !wasVisible.current) {
-      setShowCallout(true);
-      const id = window.setTimeout(() => setShowCallout(false), 3500);
-      wasVisible.current = visible;
-      return () => window.clearTimeout(id);
-    }
-    wasVisible.current = visible;
-  }, [visible]);
-
-  // When the widget is toggled off, also close the slide-in.
   useEffect(() => {
     if (!visible) {
-      setIsOpen(false);
-      setPickerOpen(false);
+      setFooterPanel(null);
+      setGuideOpen(false);
+      setGuideStep("edit");
+      setResetConfirmOpen(false);
     }
   }, [visible]);
 
-  // Edge-hover open + outside close. While a widget drag is in
-  // flight, suspend the edge trigger so swinging the cursor past the
-  // right edge during a drag can't hijack it with a sidebar reveal.
-  // While a right-click context menu is active anywhere, also
-  // suspend auto-close - the menu portal renders outside the dock's
-  // bounds, so moving the cursor onto its items would otherwise
-  // close the dock and unmount the menu's owner.
   useEffect(() => {
-    if (!visible) return;
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) return;
-      // Don't auto-close while any context menu is open. The
-      // ContextMenu component portals into <body> with class
-      // `.ctx-menu`; a presence check is cheaper than wiring a
-      // pubsub between every DockWidget menu and the dock.
-      if (document.querySelector(".ctx-menu")) return;
-      const w = window.innerWidth;
-      const dockWidth = Math.min(DOCK_WIDTH, w);
-      if (e.clientX > w - DOCK_EDGE_TRIGGER) setIsOpen(true);
-      else if (isOpen && e.clientX < w - dockWidth) {
-        setIsOpen(false);
-        // Auto-close the picker when the dock itself closes - keeps
-        // the next open clean rather than reopening to a stale picker.
-        setPickerOpen(false);
-      }
-    };
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [visible, isOpen, isDragging]);
+    if (footerPanel !== "settings") {
+      previewWidgetSettings("rightSidebar", null);
+    }
+  }, [footerPanel, previewWidgetSettings]);
 
-  // Escape closes the dock so keyboard users can dismiss it without
-  // chasing the cursor off-screen.
   useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (pickerOpen) setPickerOpen(false);
-        else setIsOpen(false);
-      }
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [isOpen, pickerOpen]);
-
-  // Mark the dock inert while closed so its contents don't grab
-  // keyboard focus or screen reader attention while invisible.
-  useEffect(() => {
-    const el = dockRef.current;
-    if (!el) return;
-    if (isOpen) el.removeAttribute("inert");
-    else el.setAttribute("inert", "");
-  }, [isOpen]);
+    if (guideOpen) setIsOpen(true);
+  }, [guideOpen, setIsOpen]);
 
   // Peek-open trigger - fired by AppContext.setWidgetInRightSidebar
   // whenever a widget is routed into the dock. Auto-closes after a
@@ -175,26 +161,41 @@ export const RightDock: React.FC<RightDockProps> = ({
 
   if (!visible) return null;
 
+  const showTemporaryGuideTime = guideOpen && !widgets.time.inRightSidebar;
+  const panelSurface = getPanelSurface(widgets.rightSidebar.settings);
+  const selectedPanelSurface = getPanelSurface(
+    widgetsCommitted.rightSidebar.settings,
+  );
+
   return (
-    <>
-      {showCallout && (
-        <div
-          className="right-dock-callout"
-          role="status"
-          aria-live="polite"
-        >
-          {t("rightDock.callout")}
-        </div>
-      )}
+    <RightDockGuideContext.Provider
+      value={{
+        open: guideOpen,
+        step: guideStep,
+        onWidgetEdit: (key) => {
+          if (guideOpen && guideStep === "edit" && key === "time") {
+            setGuideStep("order");
+          }
+        },
+      }}
+    >
+      <EdgePanelCallout
+        visible={showCallout}
+        message={t("rightDock.callout")}
+      />
       <aside
         ref={dockRef}
-        className={`right-dock${isOpen ? " open" : ""}`}
+        className={`right-dock${isOpen ? " open" : ""} panel-${panelSurface}`}
         aria-label={t("widgets.names.rightSidebar")}
       >
         <div className="right-dock-body">
-          {hasWidgets ? (
-            children
-          ) : (
+          {showTemporaryGuideTime && (
+            <DockWidget storageKey="time" visible guidePreview>
+              <Time />
+            </DockWidget>
+          )}
+          {hasWidgets && children}
+          {!hasWidgets && !showTemporaryGuideTime && (
             <div className="right-dock-empty" aria-hidden="true">
               <div className="right-dock-empty-title">
                 {t("rightDock.emptyTitle")}
@@ -207,99 +208,169 @@ export const RightDock: React.FC<RightDockProps> = ({
         </div>
 
         <footer className="right-dock-footer">
-          {pickerOpen && (
+          {footerPanel && (
             <div
-              className="right-dock-picker"
-              role="group"
-              aria-label={t("rightDock.pickerLabel")}
+              id="right-dock-footer-panel"
+              className={`right-dock-settings-panel panel-${footerPanel}`}
             >
-              {PICKER_WIDGETS.map(({ key, icon }) => {
-                const active = widgets[key].inRightSidebar;
-                const name = t(`widgets.names.${key}`);
-                // Mirror the LeftSidebar's avatar tile - show the
-                // chosen avatar's image instead of the generic Face
-                // glyph so the picker reflects the user's selection.
-                let renderedIcon = icon;
-                if (key === "avatar") {
-                  // Prefer the dock's selectedAvatar override (from
-                  // dockSettings) so the picker thumbnail matches
-                  // what the dock instance is actually rendering;
-                  // fall back to the canvas selection.
-                  const dockOverride = widgets.avatar.dockSettings as {
-                    selectedAvatar?: string;
-                  };
-                  const selected =
-                    dockOverride.selectedAvatar ??
-                    widgets.avatar.settings.selectedAvatar;
-                  const avatarData = AVATAR_OPTIONS.find(
-                    (a) => a.value === selected,
-                  );
-                  if (avatarData) {
-                    renderedIcon = <img src={avatarData.src} alt="" />;
-                  }
-                }
-                return (
-                  <Button
-                    key={key}
-                    className={`widget-icon${
-                      key === "avatar" ? " avatar-with-overlay" : ""
-                    }${active ? " active" : ""}`}
-                    icon={renderedIcon}
-                    size="medium"
-                    variant="transparent"
-                    onClick={() => setWidgetInRightSidebar(key, !active)}
-                    aria-pressed={active}
-                    aria-label={name}
-                    data-tooltip={name}
-                  />
-                );
-              })}
+              <div className="right-dock-panel-title">
+                {t(
+                  footerPanel === "widgets"
+                    ? "rightDock.addWidgetsLabel"
+                    : "rightDock.settingsLabel",
+                )}
+              </div>
+              {footerPanel === "widgets" ? (
+                <div
+                  className="right-dock-picker"
+                  role="group"
+                  aria-label={t("rightDock.pickerLabel")}
+                >
+                  {DOCK_WIDGET_KEYS.map((key) => {
+                    const active = widgets[key].inRightSidebar;
+                    const name = t(`widgets.names.${key}`);
+                    let renderedIcon: React.ReactElement = (
+                      <WidgetIcon storageKey={key} />
+                    );
+                    if (key === "avatar") {
+                      const dockOverride = widgets.avatar.dockSettings as {
+                        selectedAvatar?: string;
+                      };
+                      const selected =
+                        dockOverride.selectedAvatar ??
+                        widgets.avatar.settings.selectedAvatar;
+                      const avatarData = AVATAR_OPTIONS.find(
+                        (avatar) => avatar.value === selected,
+                      );
+                      if (avatarData) {
+                        renderedIcon = <img src={avatarData.src} alt="" />;
+                      }
+                    }
+                    return (
+                      <Button
+                        key={key}
+                        className={`widget-icon${
+                          key === "avatar" ? " avatar-with-overlay" : ""
+                        }${active ? " active" : ""}`}
+                        icon={renderedIcon}
+                        size="medium"
+                        variant="transparent"
+                        onClick={() => setWidgetInRightSidebar(key, !active)}
+                        aria-pressed={active}
+                        aria-label={name}
+                        data-tooltip={name}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="right-dock-settings-list">
+                  <div className="right-dock-setting-row">
+                    <span>{t("rightDock.panelBackgroundLabel")}</span>
+                    <SurfaceStylePicker
+                      value={selectedPanelSurface}
+                      options={["clear", "frost", "frostDark"]}
+                      ariaLabel={t("rightDock.panelBackgroundLabel")}
+                      onChange={(style) =>
+                        updateWidgetSettings(
+                          "rightSidebar",
+                          panelSurfaceSettings(style),
+                        )
+                      }
+                      onPreviewChange={(style) =>
+                        previewWidgetSettings(
+                          "rightSidebar",
+                          style ? panelSurfaceSettings(style) : null,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="right-dock-setting-row">
+                    <span>{t("rightDock.resetLabel")}</span>
+                    <Button
+                      className="right-dock-reset-btn"
+                      variant="transparent"
+                      size="small"
+                      icon={<RestoreIcon style={{ fontSize: 15 }} />}
+                      onClick={() => setResetConfirmOpen(true)}
+                      aria-label={t("rightDock.resetLabel")}
+                      data-tooltip={t("rightDock.resetLabel")}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          {pickerOpen && (
-            <>
-              <label className="contrast-toggle right-dock-toggle-row">
-                <span>{t("rightDock.showBackgroundsLabel")}</span>
-                <input
-                  type="checkbox"
-                  role="switch"
-                  checked={dockShowBackgrounds}
-                  onChange={(e) =>
-                    setDockShowBackgrounds(e.target.checked)
-                  }
-                />
-                <span className="contrast-switch" aria-hidden="true" />
-              </label>
-              <Button
-                className="right-dock-reset-btn"
-                variant="transparent"
-                size="small"
-                onClick={() => {
-                  if (window.confirm(t("rightDock.resetConfirm")))
-                    resetRightSidebar();
-                }}
-                aria-label={t("rightDock.resetLabel")}
-                data-tooltip={t("rightDock.resetLabel")}
-              >
-                <RestoreIcon style={{ fontSize: 14 }} />
-                <span>{t("rightDock.resetLabel")}</span>
-              </Button>
-            </>
-          )}
-          <Button
-            className="right-dock-settings-btn"
-            variant="transparent"
-            size="medium"
-            onClick={() => setPickerOpen((v) => !v)}
-            aria-expanded={pickerOpen}
-            aria-label={t("rightDock.settingsLabel")}
-            data-tooltip={t("rightDock.settingsLabel")}
-          >
-            <SettingsIcon style={{ fontSize: 16 }} />
-            <span>{t("rightDock.settingsLabel")}</span>
-          </Button>
+          <div className="right-dock-footer-actions">
+            <Button
+              className="right-dock-footer-btn right-dock-add-btn"
+              variant="transparent"
+              size="medium"
+              icon={<AddIcon style={{ fontSize: 20 }} />}
+              onClick={() => {
+                setGuideOpen(false);
+                setFooterPanel((panel) =>
+                  panel === "widgets" ? null : "widgets",
+                );
+              }}
+              aria-controls="right-dock-footer-panel"
+              aria-expanded={footerPanel === "widgets"}
+              aria-label={t("rightDock.addWidgetsLabel")}
+              data-tooltip={t("rightDock.addWidgetsLabel")}
+            />
+            <Button
+              className="right-dock-footer-btn"
+              variant="transparent"
+              size="medium"
+              icon={<HelpOutlineIcon style={{ fontSize: 18 }} />}
+              onClick={() => {
+                setFooterPanel(null);
+                setGuideStep("edit");
+                setGuideOpen(true);
+              }}
+              aria-haspopup="dialog"
+              aria-expanded={guideOpen}
+              aria-label={t("rightDock.guide.button")}
+              data-tooltip={t("rightDock.guide.button")}
+            />
+            <Button
+              className="right-dock-footer-btn"
+              variant="transparent"
+              size="medium"
+              icon={<SettingsIcon style={{ fontSize: 18 }} />}
+              onClick={() => {
+                setGuideOpen(false);
+                setFooterPanel((panel) =>
+                  panel === "settings" ? null : "settings",
+                );
+              }}
+              aria-controls="right-dock-footer-panel"
+              aria-expanded={footerPanel === "settings"}
+              aria-label={t("rightDock.settingsLabel")}
+              data-tooltip={t("rightDock.settingsLabel")}
+            />
+          </div>
         </footer>
       </aside>
-    </>
+      <ConfirmDialog
+        open={resetConfirmOpen}
+        title={t("rightDock.resetLabel")}
+        message={t("rightDock.resetConfirm")}
+        confirmLabel={t("rightDock.resetLabel")}
+        cancelLabel={t("settings.resetConfirmCancel")}
+        onCancel={() => setResetConfirmOpen(false)}
+        onConfirm={() => {
+          setResetConfirmOpen(false);
+          setFooterPanel(null);
+          resetRightSidebar();
+        }}
+      />
+      <RightDockGuide
+        open={guideOpen}
+        step={guideStep}
+        onStepChange={setGuideStep}
+        onClose={() => setGuideOpen(false)}
+      />
+    </RightDockGuideContext.Provider>
   );
 };

@@ -11,25 +11,17 @@ import { DockWidget } from "./containers/RightDock/DockWidget";
 import { RightDock } from "./containers/RightDock/RightDock";
 import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
 import { Widget } from "./containers/Widget/Widget";
+import {
+  WidgetRenderer,
+  type FilmInfo,
+} from "./containers/WidgetRenderer/WidgetRenderer";
 import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
 import CursorEffect from "./components/CursorEffect/CursorEffect";
-import { Avatar } from "./containers/Widgets/Avatar/Avatar";
-import { DateDisplay } from "./containers/Widgets/Date/Date";
-import { Greeting } from "./containers/Widgets/Greeting/Greeting";
-// Notes is a lightweight paper shell (static import - paints instantly);
-// it lazy-loads its own Lexical editor chunk internally, so users who
-// never enable Notes still don't download Lexical (the shell's dynamic
-// import() only fires when the widget actually mounts).
-import { Notes } from "./containers/Widgets/Notes/Notes";
-import { GoogleApps } from "./containers/Widgets/GoogleApps/GoogleApps";
-import { Info } from "./containers/Widgets/Info/Info";
-import Pomodoro from "./containers/Widgets/Pomodoro/Pomodoro";
-import QuickLinks from "./containers/Widgets/QuickLinks/QuickLinks";
-import SearchBar from "./containers/Widgets/SearchBar/SearchBar";
-import { Time } from "./containers/Widgets/Time/Time";
-import { Todo } from "./containers/Widgets/Todo/Todo";
-import Weather from "./containers/Widgets/Weather/Weather";
-import { WidgetKey } from "./config/widgetConfig";
+import {
+  CANVAS_WIDGET_KEYS,
+  DOCK_WIDGET_KEYS,
+  type CanvasWidgetKey,
+} from "./config/widgetConfig";
 import { AppProvider, useAppContext } from "./contexts/AppContext";
 import { useBackground } from "./hooks/useBackground";
 import { useInfoConfig } from "./hooks/useInfoConfig";
@@ -74,19 +66,7 @@ const AppContent: React.FC = () => {
     editingWidgetKey,
     setEditingWidgetKey,
     setCurrentBackground,
-    dockShowBackgrounds,
   } = useAppContext();
-
-  // Mirror the global "show dock backgrounds" toggle onto the body
-  // so DockWidget.css can scope the optional glass-card rule
-  // (`body.dock-show-bg .dock-widget-time`, etc) without each
-  // widget having to thread the flag.
-  useEffect(() => {
-    if (dockShowBackgrounds) {
-      document.body.classList.add("dock-show-bg");
-      return () => document.body.classList.remove("dock-show-bg");
-    }
-  }, [dockShowBackgrounds]);
 
   // Transient "you can drag this now" toast, fired when a widget
   // enters edit mode. Entering edit mode makes the whole widget the
@@ -118,7 +98,8 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (!editingWidgetKey) return;
     const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+      if (e.defaultPrevented || !(e.target instanceof Element)) return;
+      const target = e.target;
       // Stay editing if the click landed inside the editing widget itself
       // or other UI chrome.
       const widget = target.closest(".widget") as HTMLElement | null;
@@ -147,6 +128,21 @@ const AppContent: React.FC = () => {
     };
   }, [editingWidgetKey, setEditingWidgetKey]);
 
+  const filmInfo: FilmInfo = { titlejp, title, year, screentime, quote };
+  const filmWidgetsReady = !bgLoading && !infoLoading;
+  const dockedWidgetKeys = DOCK_WIDGET_KEYS.filter(
+    (key) =>
+      widgets[key].inRightSidebar &&
+      (!(key === "info" || key === "avatar") || filmWidgetsReady),
+  ).sort((a, b) => widgets[a].dockOrder - widgets[b].dockOrder);
+  const isCanvasWidgetVisible = (key: CanvasWidgetKey): boolean => {
+    if (key === "time") return widgets.time.visible || showGuide;
+    if (key === "info" || key === "avatar") {
+      return widgets[key].visible && filmWidgetsReady;
+    }
+    return widgets[key].visible;
+  };
+
   return (
     <>
       {showOfflineCallout && (
@@ -169,71 +165,17 @@ const AppContent: React.FC = () => {
       )}
       <LeftSidebar />
       <RightSidebar visible={widgets.bookmarks.visible} />
-      {(() => {
-        // The dock surface is independent of the canvas: a widget can
-        // appear in the dock, on the canvas, in both, or in neither.
-        // We render whatever has `inRightSidebar: true` here and
-        // leave canvas placement (driven by `visible`) untouched.
-        // RightDock is always mounted (gated internally on `visible`)
-        // so it can detect the off→on transition and fire its hint
-        // callout, the same way the bookmarks RightSidebar does.
-        // Excludes greeting, quicklinks, searchbar, and pomodoro -
-        // their canvas-tuned layouts don't compress cleanly into the
-        // dock column, so they're canvas-only by design.
-        const dockEntries: Array<{
-          key: WidgetKey;
-          element: React.ReactNode;
-        }> = [
-          { key: "time", element: <Time /> },
-          { key: "date", element: <DateDisplay /> },
-          { key: "todo", element: <Todo /> },
-          {
-            key: "info",
-            element:
-              !bgLoading && !infoLoading ? (
-                <Info
-                  titlejp={titlejp}
-                  title={title}
-                  year={year}
-                  screentime={screentime}
-                  quote={quote}
-                />
-              ) : null,
-          },
-          {
-            key: "avatar",
-            element: !bgLoading && !infoLoading ? <Avatar /> : null,
-          },
-          { key: "weather", element: <Weather /> },
-          {
-            key: "notes",
-            element: <Notes />,
-          },
-        ];
-        const docked = dockEntries
-          .filter((e) => widgets[e.key].inRightSidebar && e.element)
-          // Render in user-defined order. dockOrder is an integer
-          // assigned by `reorderDockedWidgets` after a drag, or the
-          // canonical WIDGET_KEYS index when the user hasn't dragged
-          // yet - both produce a stable sort.
-          .sort(
-            (a, b) =>
-              widgets[a.key].dockOrder - widgets[b.key].dockOrder,
-          );
-        return (
-          <RightDock
-            visible={widgets.rightSidebar.visible}
-            hasWidgets={docked.length > 0}
-          >
-            {docked.map((e) => (
-              <DockWidget key={e.key} storageKey={e.key} visible={true}>
-                {e.element}
-              </DockWidget>
-            ))}
-          </RightDock>
-        );
-      })()}
-      {(showWidgetEdits || editingWidgetKey) && (
+      <RightDock
+        visible={widgets.rightSidebar.visible}
+        hasWidgets={dockedWidgetKeys.length > 0}
+      >
+        {dockedWidgetKeys.map((key) => (
+          <DockWidget key={key} storageKey={key} visible>
+            <WidgetRenderer storageKey={key} filmInfo={filmInfo} />
+          </DockWidget>
+        ))}
+      </RightDock>
+      {!showGuide && (showWidgetEdits || editingWidgetKey) && (
         <div className="edit-toggle-button">
           <Button
             variant="outline-light"
@@ -273,62 +215,15 @@ const AppContent: React.FC = () => {
         backgroundFilters={backgroundFilters}
         showWidgetEdits={showWidgetEdits}
       >
-        <Widget storageKey="quicklinks" visible={widgets.quicklinks.visible}>
-          <QuickLinks />
-        </Widget>
-        {/* Force the Time widget mounted while the welcome guide is
-            running so the adjustTime / drag demo slides
-            always have a Time widget to point at, even if the user
-            hid it via the sidebar toggles. Reverts to the user's
-            choice as soon as the guide closes. */}
-        <Widget
-          storageKey="time"
-          visible={widgets.time.visible || showGuide}
-        >
-          <Time />
-        </Widget>
-        <Widget storageKey="date" visible={widgets.date.visible}>
-          <DateDisplay />
-        </Widget>
-        <Widget storageKey="greeting" visible={widgets.greeting.visible}>
-          <Greeting />
-        </Widget>
-        <Widget storageKey="todo" visible={widgets.todo.visible}>
-          <Todo />
-        </Widget>
-        <Widget
-          storageKey="info"
-          visible={widgets.info.visible && !bgLoading && !infoLoading}
-        >
-          <Info
-            titlejp={titlejp}
-            title={title}
-            year={year}
-            screentime={screentime}
-            quote={quote}
-          />
-        </Widget>
-        <Widget
-          storageKey="avatar"
-          visible={widgets.avatar.visible && !bgLoading && !infoLoading}
-        >
-          <Avatar />
-        </Widget>
-        <Widget storageKey="searchbar" visible={widgets.searchbar.visible}>
-          <SearchBar />
-        </Widget>
-        <Widget storageKey="pomodoro" visible={widgets.pomodoro.visible}>
-          <Pomodoro />
-        </Widget>
-        <Widget storageKey="weather" visible={widgets.weather.visible}>
-          <Weather />
-        </Widget>
-        <Widget storageKey="googleApps" visible={widgets.googleApps.visible}>
-          <GoogleApps />
-        </Widget>
-        <Widget storageKey="notes" visible={widgets.notes.visible}>
-          <Notes />
-        </Widget>
+        {CANVAS_WIDGET_KEYS.map((key) => (
+          <Widget
+            key={key}
+            storageKey={key}
+            visible={isCanvasWidgetVisible(key)}
+          >
+            <WidgetRenderer storageKey={key} filmInfo={filmInfo} />
+          </Widget>
+        ))}
       </Background>
     </>
   );

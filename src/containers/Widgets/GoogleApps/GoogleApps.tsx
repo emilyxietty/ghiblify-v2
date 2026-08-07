@@ -3,15 +3,12 @@ import { AccountCircleIcon, AppsIcon } from "../../../components/Icons/Icons";
 import { useT } from "../../../i18n/i18n";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
 import {
+  hexToRgbChannels,
   isHighlightTextColor,
   resolveForeground,
 } from "../../../utils/textHighlight";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
-import {
-  hasPermission,
-  requestPermission,
-} from "../../../utils/chromePermissions";
 import "./GoogleApps.css";
 
 // Google-corner widget - a recreation of the waffle (apps menu) +
@@ -25,11 +22,6 @@ import "./GoogleApps.css";
 // came back as grey globes. Google's public favicon service is the
 // primary source (real product icons, no history required); the
 // local cache is the offline fallback; a neutral dot is the floor.
-//
-// Account button: the "80%" avatar - `identity.email` (no OAuth, no
-// consent screen) gives the signed-in profile's email, rendered as a
-// Google-style letter circle. Signed out / restricted → the classic
-// blank-profile silhouette.
 
 // A curated shortlist rather than Google's full waffle: the real
 // launcher is a 24-tile wall most people use eight of, and a shorter
@@ -49,27 +41,6 @@ const GOOGLE_APPS: Array<{ name: string; url: string; slug: string }> = [
 ];
 
 const ACCOUNT_URL = "https://myaccount.google.com";
-
-// Google's letter-avatar palette (approximately) - the email hashes to
-// a stable colour so it doesn't reroll every load.
-const LETTER_COLORS = [
-  "#7cb342",
-  "#f06292",
-  "#4fc3f7",
-  "#ffb74d",
-  "#9575cd",
-  "#4db6ac",
-  "#e57373",
-  "#64b5f6",
-];
-
-const letterColorFor = (email: string): string => {
-  let hash = 0;
-  for (let i = 0; i < email.length; i++) {
-    hash = (hash * 31 + email.charCodeAt(i)) | 0;
-  }
-  return LETTER_COLORS[Math.abs(hash) % LETTER_COLORS.length];
-};
 
 /** Network-first favicon (real product icons), local cache fallback. */
 const networkFavicon = (url: string): string => {
@@ -140,38 +111,7 @@ export const GoogleApps: React.FC = () => {
   const { settings } = useWidgetSettings("googleApps");
   const { appearance } = useAppContext();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
-
-  // `identity.email` is an OPTIONAL grant (it carries an install
-  // warning, and adding those as required in an update auto-disables
-  // the extension for existing users). granted === null means "still
-  // checking".
-  const [emailGranted, setEmailGranted] = useState<boolean | null>(null);
-
-  const loadEmail = () => {
-    try {
-      const ns: any = typeof chrome !== "undefined" ? chrome : undefined;
-      ns?.identity?.getProfileUserInfo?.(
-        { accountStatus: "ANY" },
-        (info: { email?: string }) => setEmail(info?.email || null)
-      );
-    } catch {
-      setEmail(null);
-    }
-  };
-
-  useEffect(() => {
-    let cancelled = false;
-    void hasPermission("identity.email").then((granted) => {
-      if (cancelled) return;
-      setEmailGranted(granted);
-      if (granted) loadEmail();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Outside click / Escape closes the grid, like the real waffle.
   useEffect(() => {
@@ -201,6 +141,10 @@ export const GoogleApps: React.FC = () => {
   const gInk = isHighlightTextColor(settings.textColor)
     ? settings.textColor
     : "auto";
+  const surfaceRgb =
+    typeof settings.surfaceColor === "string"
+      ? hexToRgbChannels(settings.surfaceColor)
+      : null;
   const surfaceStyle: Record<string, string | number> = {
     "--gapps-opacity": gFrosted ? 0.14 : (settings.opacity ?? 75) / 100,
     ...((): Record<string, string> => {
@@ -210,13 +154,9 @@ export const GoogleApps: React.FC = () => {
       if (gInk === "dark") return { "--gapps-ink": "#1f2420" };
       return {};
     })(),
-    ...(typeof settings.surfaceColor === "string"
+    ...(surfaceRgb
       ? {
-          "--dark-rgb": settings.surfaceColor
-            .replace("#", "")
-            .match(/../g)!
-            .map((h) => parseInt(h, 16))
-            .join(", "),
+          "--dark-rgb": surfaceRgb,
         }
       : {}),
   };
@@ -245,36 +185,10 @@ export const GoogleApps: React.FC = () => {
         className="gapps-btn gapps-account"
         href={ACCOUNT_URL}
         aria-label={t("widgets.gapps.accountAria")}
-        data-tooltip={
-          email ||
-          (emailGranted === false
-            ? t("widgets.gapps.personalize")
-            : t("widgets.gapps.accountAria"))
-        }
+        data-tooltip={t("widgets.gapps.accountAria")}
         draggable={false}
-        // First click while ungranted personalizes instead of
-        // navigating: the click is the user gesture the permission
-        // request needs. Granted (or denied) clicks navigate normally.
-        onClick={(e) => {
-          if (emailGranted !== false) return;
-          e.preventDefault();
-          void requestPermission("identity.email").then((ok) => {
-            setEmailGranted(ok);
-            if (ok) loadEmail();
-          });
-        }}
       >
-        {email ? (
-          <span
-            className="gapps-letter"
-            style={{ background: letterColorFor(email) }}
-            aria-hidden="true"
-          >
-            {email[0].toUpperCase()}
-          </span>
-        ) : (
-          <AccountCircleIcon style={{ fontSize: 26 }} />
-        )}
+        <AccountCircleIcon style={{ fontSize: 26 }} />
       </a>
 
       {open && (

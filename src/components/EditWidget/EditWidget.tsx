@@ -1,10 +1,17 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../components/Button/Button";
 import {
   BlurOnIcon,
   CloseIcon,
   DragIndicatorIcon,
+  ExpandMoreIcon,
   OpacityIcon,
   PlaceIcon,
   VisibilityOffIcon,
@@ -12,6 +19,10 @@ import {
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
   AvatarSettings,
+  DATE_DISPLAY_STYLES,
+  DateSettings,
+  DOCK_WIDGET_KEYS,
+  getDockWidthPolicy,
   getWidgetConfig,
   InfoFields,
   InfoSettings,
@@ -22,12 +33,18 @@ import {
   PomodoroSettings,
   QuicklinksSettings,
   resolveWeatherDetail,
+  supportsDockAlignment,
   TimeSettings,
   WeatherSettings,
   WEATHER_DETAILS,
   type WeatherDetail,
+  type DateDisplayStyle,
 } from "../../config/widgetConfig";
-import { useAppContext } from "../../contexts/AppContext";
+import {
+  useAppContext,
+  type WidgetSurface,
+  type WidgetsState,
+} from "../../contexts/AppContext";
 import { clearWeatherLocation } from "../../hooks/useWeather";
 import { useT } from "../../i18n/i18n";
 import {
@@ -38,9 +55,13 @@ import {
   type PomodoroSoundKey,
 } from "../../utils/pomodoroChime";
 import { isHighlightTextColor, normalizeHex } from "../../utils/textHighlight";
-import { ColorPicker, HighlightTuning } from "../ColorPicker/ColorPicker";
+import { ColorPicker, ColorTuning } from "../ColorPicker/ColorPicker";
 import { Dropdown } from "../Dropdown/Dropdown";
 import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
+import {
+  SurfaceStylePicker,
+  type SurfaceStyleValue,
+} from "../SurfaceStylePicker/SurfaceStylePicker";
 import "./EditWidget.css";
 
 interface EditWidgetProps {
@@ -49,6 +70,11 @@ interface EditWidgetProps {
   storageKey?: string;
   /** The widget being edited - the panel measures it to sit alongside. */
   anchorEl?: HTMLElement | null;
+  surface?: WidgetSurface;
+  onClose?: () => void;
+  /** Renders dock-only teaching controls for a temporary guide widget
+   *  without treating that widget as persisted dock membership. */
+  dockGuidePreview?: boolean;
 }
 
 const INFO_FIELD_VALUES = [
@@ -58,6 +84,20 @@ const INFO_FIELD_VALUES = [
   "movieLength",
   "quote",
 ] as const;
+
+const infoFieldsFromValues = (fields: readonly string[]): InfoFields => ({
+  japaneseTitle: fields.includes("japaneseTitle"),
+  title: fields.includes("title"),
+  year: fields.includes("year"),
+  movieLength: fields.includes("movieLength"),
+  quote: fields.includes("quote"),
+});
+
+const weatherSurfaceSettings = (style: SurfaceStyleValue) => ({
+  showCard: style === "weather",
+  frosted: style === "frost" || style === "frostDark",
+  frostDark: style === "frostDark",
+});
 
 const PANEL_GAP = 12;
 const VIEWPORT_MARGIN = 12;
@@ -148,16 +188,52 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   isResizing,
   storageKey,
   anchorEl,
+  surface = "canvas",
+  onClose,
+  dockGuidePreview = false,
 }) => {
   const t = useT();
   const {
-    widgetsCommitted,
-    updateWidgetSettings,
-    previewWidgetSettings,
+    widgetsCommitted: committedWidgets,
+    updateWidgetSettings: updateCanvasWidgetSettings,
+    updateWidgetDockSettings,
+    previewWidgetSettings: previewSurfaceSettings,
+    previewWidgetDockLayout,
     toggleWidgetVisibility,
+    setWidgetInRightSidebar,
+    setWidgetDockWidth,
+    setWidgetDockAlignment,
+    reorderDockedWidgets,
     setEditingWidgetKey,
     appearance,
   } = useAppContext();
+  const isDock = surface === "dock";
+  const widgetsCommitted = useMemo(() => {
+    if (!isDock || !isWidgetKey(storageKey)) return committedWidgets;
+    const entry = committedWidgets[storageKey];
+    return {
+      ...committedWidgets,
+      [storageKey]: {
+        ...entry,
+        settings: { ...entry.settings, ...entry.dockSettings },
+      },
+    } as WidgetsState;
+  }, [committedWidgets, isDock, storageKey]);
+  const updateWidgetSettings = isDock
+    ? updateWidgetDockSettings
+    : updateCanvasWidgetSettings;
+  const previewWidgetSettings = (
+    key: Parameters<typeof previewSurfaceSettings>[0],
+    patch: Parameters<typeof previewSurfaceSettings>[1]
+  ) => previewSurfaceSettings(key, patch, surface);
+  const closeEditor = () => {
+    if (isWidgetKey(storageKey)) {
+      previewSurfaceSettings(storageKey, null, surface);
+      previewWidgetDockLayout(storageKey, null);
+    }
+    if (onClose) onClose();
+    else setEditingWidgetKey(null);
+  };
   const panelRef = useRef<HTMLDivElement | null>(null);
   // While a hover-preview is active, the panel must NOT re-place
   // itself. Previewing "analog" swells the Time widget, the
@@ -167,15 +243,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // panel spasming. Freezing placement for the hover's duration
   // breaks the loop; placement resumes on leave/click.
   const previewFreezeRef = useRef(false);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(
-    () => (storageKey ? movedPanels.get(storageKey) ?? null : null)
+  const panelStorageKey = storageKey
+    ? isDock
+      ? `dock:${storageKey}`
+      : storageKey
+    : null;
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(() =>
+    panelStorageKey ? movedPanels.get(panelStorageKey) ?? null : null
   );
   const [z, setZ] = useState(nextPanelZ);
   // Once the user has dragged a panel, it stays where they put it -
   // auto-placement would otherwise snap it back to the widget's side on
   // the next reflow.
   const [isCustomPlaced, setIsCustomPlaced] = useState(
-    () => !!storageKey && movedPanels.has(storageKey)
+    () => !!panelStorageKey && movedPanels.has(panelStorageKey)
   );
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
   // Whether the tuning column (opacity / blur / ink) is expanded out
@@ -189,12 +270,25 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // Todo alone has two surfaces: its own background, and the per-row
   // highlight. They tune independently, so each owns a flyout.
   const [rowTuneOpen, setRowTuneOpen] = useState(false);
+  // The side column fits ONE panel, so opening either tuning flyout
+  // closes the other instead of stacking them.
+  const openSurfaceTune = (open: boolean) => {
+    setSurfaceTuneOpen(open);
+    if (open) setRowTuneOpen(false);
+  };
+  const openRowTune = (open: boolean) => {
+    setRowTuneOpen(open);
+    if (open) setSurfaceTuneOpen(false);
+  };
 
   useEffect(() => {
     if (!isWidgetKey(storageKey)) return;
     const key = storageKey;
     setHighlightTuneOpen(false);
-    return () => previewWidgetSettings(key, null);
+    return () => {
+      previewWidgetSettings(key, null);
+      previewWidgetDockLayout(key, null);
+    };
   }, [storageKey]);
 
   const bringToFront = () => setZ(nextPanelZ());
@@ -229,7 +323,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     );
     const next = { top, left };
     setPos(next);
-    if (storageKey) movedPanels.set(storageKey, next);
+    if (panelStorageKey) movedPanels.set(panelStorageKey, next);
   };
 
   const onHandleUp = (e: React.PointerEvent) => {
@@ -273,11 +367,74 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     };
   }, [anchorEl, showWidgetEdits, storageKey, isCustomPlaced]);
 
+  useEffect(() => {
+    if (!showWidgetEdits || !onClose) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      const targetElement =
+        event.target instanceof Element ? event.target : null;
+      if (
+        !target ||
+        panelRef.current?.contains(target) ||
+        (!isDock && anchorEl?.contains(target)) ||
+        targetElement?.closest(
+          "[role='dialog'], .dropdown-menu, .multi-select-menu, .ctx-menu"
+        )
+      )
+        return;
+      onClose();
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" && event.key !== "Enter") return;
+      event.stopPropagation();
+      onClose();
+    };
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [anchorEl, isDock, onClose, showWidgetEdits]);
+
   if (!showWidgetEdits || isResizing || !isWidgetKey(storageKey)) return null;
 
   const widgetConfig = getWidgetConfig(storageKey);
   const settings = widgetsCommitted[storageKey].settings as Record<string, unknown>;
   const controls = widgetConfig.customControls;
+  const supportsDockWidth = isDock && getDockWidthPolicy(storageKey) === "flexible";
+  const supportsDockItemAlignment =
+    isDock && supportsDockAlignment(storageKey);
+  const persistedDockedWidgetKeys = isDock
+    ? DOCK_WIDGET_KEYS.filter(
+        (key) => widgetsCommitted[key].inRightSidebar,
+      ).sort(
+        (a, b) =>
+          widgetsCommitted[a].dockOrder - widgetsCommitted[b].dockOrder,
+      )
+    : [];
+  const dockedWidgetKeys =
+    isDock && dockGuidePreview && storageKey === "time"
+      ? [
+          "time" as const,
+          ...persistedDockedWidgetKeys.filter((key) => key !== "time"),
+        ]
+      : persistedDockedWidgetKeys;
+  const dockOrderIndex = dockedWidgetKeys.findIndex(
+    (key) => key === storageKey,
+  );
+  const supportsDockOrdering = isDock && dockOrderIndex >= 0;
+  const moveDockWidget = (offset: -1 | 1) => {
+    if (dockGuidePreview) return;
+    const targetIndex = dockOrderIndex + offset;
+    if (targetIndex < 0 || targetIndex >= dockedWidgetKeys.length) return;
+    const reordered = [...dockedWidgetKeys];
+    [reordered[dockOrderIndex], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[dockOrderIndex],
+    ];
+    reorderDockedWidgets(reordered);
+  };
 
   // --- Generic controls, driven by what the config declares ----------
   const isFrost = appearance.theme === "frost";
@@ -342,6 +499,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   );
 
   // Pomodoro's two surfaces, read straight off its settings.
+  // Clearing a colour restores the widget's CONFIGURED default alpha,
+  // not 0. Zeroing suits widgets that ship clear (todo, quicklinks
+  // grid, google apps) but wrecked ones whose default surface is
+  // meaningful on its own - the search bar's translucent white went
+  // fully invisible when you removed a tint.
+  const defaultAlpha = (field: string) =>
+    Number(
+      (widgetConfig.settings as Record<string, unknown>)[field] ?? 0
+    ) || 0;
+
   const pomoRead = (c: string, o: string, b: string, tc: string) => ({
     color:
       typeof surfaceSettings[c] === "string"
@@ -400,9 +567,11 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   //                 greeting / info, which for a text-only widget IS
   //                 its background)
   // Info paints a pill per line rather than one behind the widget, so
-  // it names the control after what it does.
+  // it names the canvas control after what it does. In the dock that
+  // same setting paints the complete tile, so it is a Background.
   const paintsPieces =
-    (storageKey === "quicklinks" && qlGrid) || storageKey === "info";
+    (storageKey === "quicklinks" && qlGrid) ||
+    (storageKey === "info" && !isDock);
   const surfaceLabel = paintsPieces
     ? t("widgets.edit.surfaceHighlights")
     : t("widgets.edit.surfaceStyle");
@@ -419,6 +588,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const supportsHighlight =
     "highlightColor" in (widgetConfig.settings as Record<string, unknown>);
   const supportsTypeIn =
+    surface === "canvas" &&
     "typeIn" in (widgetConfig.settings as Record<string, unknown>);
   const highlightValue =
     typeof settings.highlightColor === "string"
@@ -434,11 +604,13 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
   const hasAnyControls = !!(
     controls?.timeFormat ||
+    controls?.dateFormat ||
     controls?.avatarSelector ||
     controls?.infoFields ||
     controls?.gridMode ||
     controls?.weatherUnit ||
     controls?.weatherDetail ||
+    controls?.weatherCompact ||
     controls?.weatherStyle ||
     controls?.weatherLocation ||
     controls?.notesShowBorder ||
@@ -450,7 +622,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     supportsSlider ||
     supportsTextShadow ||
     supportsHighlight ||
-    supportsTypeIn
+    supportsTypeIn ||
+    supportsDockWidth ||
+    supportsDockItemAlignment ||
+    supportsDockOrdering
   );
 
   const timeSettings = widgetsCommitted.time.settings as TimeSettings;
@@ -459,8 +634,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     : timeSettings.is24Hour
       ? "24h"
       : "12h";
-  const quicklinksGrid = (widgetsCommitted.quicklinks.settings as QuicklinksSettings)
-    .gridMode;
+  const dateSettings = widgetsCommitted.date.settings as DateSettings;
+  const quicklinksGrid = qlSettings.gridMode;
+  const quicklinksPerRow = String(qlSettings.linksPerRow ?? 5);
+  const quicklinksVisibleRows = String(qlSettings.visibleRows ?? 1);
+  const typeInDisabled =
+    storageKey === "date" && dateSettings.displayStyle === "calendar";
   const infoFields = (widgetsCommitted.info.settings as InfoSettings).infoFields;
   const weatherSettings = widgetsCommitted.weather.settings as WeatherSettings;
   const notesShowBorder =
@@ -502,10 +681,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
    *  options where a dropdown would hide the alternatives. */
   const segmented = <T extends string>(
     ariaLabel: string,
-    options: Array<{ key: T; label: string }>,
+    options: Array<{
+      key: T;
+      label: React.ReactNode;
+      ariaLabel?: string;
+    }>,
     current: T,
     onPick: (key: T) => void,
-    previewPatch?: (key: T) => Record<string, unknown>
+    previewPatch?: (key: T) => Record<string, unknown>,
+    onPreview?: (key: T | null) => void,
+    disabled = false,
   ) => (
     <div className="edit-panel-segmented" role="radiogroup" aria-label={ariaLabel}>
       {options.map((o) => (
@@ -514,23 +699,30 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           type="button"
           role="radio"
           aria-checked={current === o.key}
+          aria-label={o.ariaLabel}
+          data-tooltip={o.ariaLabel}
+          disabled={disabled}
           className={`edit-panel-segment${
             current === o.key ? " is-active" : ""
           }`}
           onMouseEnter={() => {
-            if (previewPatch) {
+            if (previewPatch || onPreview) {
               previewFreezeRef.current = true;
-              previewWidgetSettings(storageKey, previewPatch(o.key));
+              if (previewPatch)
+                previewWidgetSettings(storageKey, previewPatch(o.key));
+              onPreview?.(o.key);
             }
           }}
           onMouseLeave={() => {
             previewFreezeRef.current = false;
-            previewWidgetSettings(storageKey, null);
+            if (previewPatch) previewWidgetSettings(storageKey, null);
+            onPreview?.(null);
           }}
           onClick={(e) => {
             e.stopPropagation();
             previewFreezeRef.current = false;
-            previewWidgetSettings(storageKey, null);
+            if (previewPatch) previewWidgetSettings(storageKey, null);
+            onPreview?.(null);
             onPick(o.key);
           }}
         >
@@ -551,6 +743,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           ? " edit-panel-expanded"
           : ""
       }`}
+      data-edit-surface={surface}
       role="dialog"
       aria-label={t("widgets.contextMenu.edit", {
         name: t(`widgets.names.${storageKey}`),
@@ -568,6 +761,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         // placement freeze along with any live preview.
         previewFreezeRef.current = false;
         previewWidgetSettings(storageKey, null);
+        previewWidgetDockLayout(storageKey, null);
       }}
       // Any press inside the panel raises it - clicking a control on a
       // half-covered panel should bring the whole thing forward, not
@@ -616,8 +810,9 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
-            toggleWidgetVisibility(storageKey);
-            setEditingWidgetKey(null);
+            if (isDock) setWidgetInRightSidebar(storageKey, false);
+            else toggleWidgetVisibility(storageKey);
+            closeEditor();
           }}
         >
           <VisibilityOffIcon style={{ fontSize: 14 }} />
@@ -629,6 +824,113 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {!hasAnyControls && (
         <p className="edit-panel-empty">{t("widgets.edit.noCustomization")}</p>
+      )}
+
+      {supportsDockOrdering && (
+        <Row label={t("rightDock.orderLabel")}>
+          <div className="edit-panel-order-control">
+            <button
+              type="button"
+              className="edit-panel-order-button edit-panel-order-up"
+              disabled={dockGuidePreview || dockOrderIndex === 0}
+              aria-label={t("rightDock.moveUpLabel")}
+              data-tooltip={t("rightDock.moveUpLabel")}
+              onClick={() => moveDockWidget(-1)}
+            >
+              <ExpandMoreIcon fontSize={18} />
+            </button>
+            <button
+              type="button"
+              className="edit-panel-order-button"
+              disabled={
+                dockGuidePreview ||
+                dockOrderIndex === dockedWidgetKeys.length - 1
+              }
+              aria-label={t("rightDock.moveDownLabel")}
+              data-tooltip={t("rightDock.moveDownLabel")}
+              onClick={() => moveDockWidget(1)}
+            >
+              <ExpandMoreIcon fontSize={18} />
+            </button>
+          </div>
+        </Row>
+      )}
+
+      {supportsDockWidth && (
+        <Row label={t("widgets.edit.dockWidth")}>
+          <div className="edit-panel-width-control">
+            {segmented(
+              t("widgets.edit.dockWidth"),
+              [
+                {
+                  key: "half" as const,
+                  label: (
+                    <span
+                      className="edit-panel-width-shape edit-panel-width-shape-half"
+                      aria-hidden="true"
+                    />
+                  ),
+                  ariaLabel: t("widgets.contextMenu.dockWidthHalf"),
+                },
+                {
+                  key: "full" as const,
+                  label: (
+                    <span
+                      className="edit-panel-width-shape edit-panel-width-shape-full"
+                      aria-hidden="true"
+                    />
+                  ),
+                  ariaLabel: t("widgets.contextMenu.dockWidthFull"),
+                },
+              ],
+              widgetsCommitted[storageKey].dockWidth,
+              (width) => setWidgetDockWidth(storageKey, width),
+              undefined,
+              (width) =>
+                previewWidgetDockLayout(
+                  storageKey,
+                  width ? { dockWidth: width } : null,
+                ),
+            )}
+          </div>
+        </Row>
+      )}
+
+      {supportsDockItemAlignment && (
+        <Row label={t("notes.toolbar.align")}>
+          {segmented(
+            t("notes.toolbar.align"),
+            (["left", "center", "right"] as const).map((alignment) => ({
+              key: alignment,
+              label: (
+                <span
+                  className={`edit-panel-align-icon edit-panel-align-${alignment}`}
+                  aria-hidden="true"
+                >
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              ),
+              ariaLabel: t(`notes.toolbar.align${
+                alignment === "left"
+                  ? "Left"
+                  : alignment === "center"
+                    ? "Center"
+                    : "Right"
+              }`),
+            })),
+            widgetsCommitted[storageKey].dockAlignment,
+            (alignment) =>
+              setWidgetDockAlignment(storageKey, alignment),
+            undefined,
+            (alignment) =>
+              previewWidgetDockLayout(
+                storageKey,
+                alignment ? { dockAlignment: alignment } : null,
+              ),
+          )}
+        </Row>
       )}
 
       {controls?.timeFormat && (
@@ -656,6 +958,33 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 ? { analog: true }
                 : { analog: false, is24Hour: fmt === "24h" }
           )}
+        </Row>
+      )}
+
+      {controls?.dateFormat && (
+        <Row label={t("widgets.edit.dateFormatLabel")}>
+          <Dropdown
+            className="edit-panel-dropdown"
+            size="small"
+            variant="outline-light"
+            portal
+            options={DATE_DISPLAY_STYLES.map((style) => ({
+              value: style,
+              label: t(`widgets.edit.dateFormat.${style}`),
+            }))}
+            value={dateSettings.displayStyle ?? "long"}
+            onChange={(style) => {
+              const displayStyle = style as DateDisplayStyle;
+              updateWidgetSettings("date", {
+                displayStyle,
+                ...(displayStyle === "calendar" ? { typeIn: false } : {}),
+              });
+            }}
+            onOptionPreview={(style) =>
+              previewWidgetSettings("date", { displayStyle: style })
+            }
+            onPreviewEnd={() => previewWidgetSettings("date", null)}
+          />
         </Row>
       )}
 
@@ -712,6 +1041,41 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
+      {controls?.gridMode && quicklinksGrid && (
+        <>
+          <Row label={t("widgets.edit.quicklinksPerRow")}>
+            {segmented(
+              t("widgets.edit.quicklinksPerRow"),
+              ["2", "3", "4", "5", "6"].map((value) => ({
+                key: value,
+                label: value,
+              })),
+              quicklinksPerRow,
+              (value) =>
+                updateWidgetSettings("quicklinks", {
+                  linksPerRow: Number(value),
+                }),
+              (value) => ({ linksPerRow: Number(value) }),
+            )}
+          </Row>
+          <Row label={t("widgets.edit.quicklinksVisibleRows")}>
+            {segmented(
+              t("widgets.edit.quicklinksVisibleRows"),
+              ["1", "2", "3", "4"].map((value) => ({
+                key: value,
+                label: value,
+              })),
+              quicklinksVisibleRows,
+              (value) =>
+                updateWidgetSettings("quicklinks", {
+                  visibleRows: Number(value),
+                }),
+              (value) => ({ visibleRows: Number(value) }),
+            )}
+          </Row>
+        </>
+      )}
+
       {controls?.infoFields && (
         <Row label={t("widgets.edit.infoFieldsLabel")}>
           <MultiSelectDropdown
@@ -726,15 +1090,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               // as an empty box.
               if (fields.length === 0) return;
               updateWidgetSettings("info", {
-                infoFields: {
-                  japaneseTitle: fields.includes("japaneseTitle"),
-                  title: fields.includes("title"),
-                  year: fields.includes("year"),
-                  movieLength: fields.includes("movieLength"),
-                  quote: fields.includes("quote"),
-                } as InfoFields,
+                infoFields: infoFieldsFromValues(fields),
               });
             }}
+            onOptionPreview={(value) => {
+              const selected = INFO_FIELD_VALUES.filter((key) => infoFields[key]);
+              const previewed = selected.some((key) => key === value)
+                ? selected.filter((key) => key !== value)
+                : [...selected, value];
+              if (previewed.length === 0) return;
+              previewWidgetSettings("info", {
+                infoFields: infoFieldsFromValues(previewed),
+              });
+            }}
+            onPreviewEnd={() => previewWidgetSettings("info", null)}
             buttonText={t("widgets.edit.infoFieldsLabel")}
           />
         </Row>
@@ -751,11 +1120,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           <span className="edit-panel-row-label">{surfaceLabel}</span>
           <ColorPicker
             color={surfaceColorValue}
+            tuningKind={paintsPieces ? "highlight" : "background"}
             textColor={surfaceInk}
             opacity={surfaceOpacityValue}
             blur={surfaceBlurValue}
             expanded={surfaceTuneOpen}
-            onExpandChange={setSurfaceTuneOpen}
+            onExpandChange={openSurfaceTune}
             onBlurChange={(v) =>
               updateWidgetSettings(storageKey, {
                 [surfaceFields.blur]: v,
@@ -773,7 +1143,11 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                   ? surfaceOpacityValue === 0
                     ? { [surfaceFields.opacity]: 25 }
                     : {}
-                  : { [surfaceFields.opacity]: 0 }),
+                  : {
+                      [surfaceFields.opacity]: defaultAlpha(
+                        surfaceFields.opacity
+                      ),
+                    }),
               } as never)
             }
             onTextColorChange={(next) =>
@@ -813,11 +1187,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           </span>
           <ColorPicker
             color={rowColorValue}
+            tuningKind="highlight"
             textColor={rowInk}
             opacity={rowOpacityValue}
             blur={rowBlurValue}
             expanded={rowTuneOpen}
-            onExpandChange={setRowTuneOpen}
+            onExpandChange={openRowTune}
             onBlurChange={(v) =>
               updateWidgetSettings(storageKey, { rowBlur: v } as never)
             }
@@ -852,76 +1227,29 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
 
       {controls?.weatherFrosted && (
-        // Weather's four surfaces as preview circles: Clear (nothing),
-        // light/dark glass, or the weather-mood card.
         <Row label={t("widgets.edit.surfaceStyle")}>
-          <div
-            className="edit-panel-swatches"
-            role="radiogroup"
-            aria-label={t("widgets.edit.surfaceStyle")}
-          >
-            {(
-              [
-                {
-                  key: "clear",
-                  labelKey: "widgets.edit.styleClear",
-                  cls: " edit-panel-swatch-clear",
-                  active:
-                    !weatherSettings.showCard &&
-                    weatherSettings.frosted !== true,
-                },
-                {
-                  key: "frost",
-                  labelKey: "widgets.edit.styleFrost",
-                  cls: " edit-panel-swatch-frost",
-                  active:
-                    !weatherSettings.showCard &&
-                    weatherSettings.frosted === true &&
-                    weatherSettings.frostDark !== true,
-                },
-                {
-                  key: "frostDark",
-                  labelKey: "widgets.edit.styleFrostDark",
-                  cls: " edit-panel-swatch-frost-dark",
-                  active:
-                    !weatherSettings.showCard &&
-                    weatherSettings.frosted === true &&
-                    weatherSettings.frostDark === true,
-                },
-                {
-                  key: "card",
-                  labelKey: "widgets.edit.styleWeather",
-                  cls: " edit-panel-swatch-weather",
-                  active: weatherSettings.showCard === true,
-                },
-              ] as const
-            ).map(({ key, labelKey, cls, active }) => {
-              const patch = {
-                showCard: key === "card",
-                frosted: key === "frost" || key === "frostDark",
-                frostDark: key === "frostDark",
-              };
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  aria-label={t(labelKey)}
-                  data-tooltip={t(labelKey)}
-                  className={`edit-panel-swatch${cls}${
-                    active ? " is-active" : ""
-                  }`}
-                  onMouseEnter={() => previewWidgetSettings("weather", patch)}
-                  onMouseLeave={() => previewWidgetSettings("weather", null)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateWidgetSettings("weather", patch);
-                  }}
-                />
-              );
-            })}
-          </div>
+          <SurfaceStylePicker
+            value={
+              weatherSettings.showCard
+                ? "weather"
+                : weatherSettings.frosted === true
+                  ? weatherSettings.frostDark === true
+                    ? "frostDark"
+                    : "frost"
+                  : "clear"
+            }
+            options={["clear", "frost", "frostDark", "weather"]}
+            ariaLabel={t("widgets.edit.surfaceStyle")}
+            onChange={(style) =>
+              updateWidgetSettings("weather", weatherSurfaceSettings(style))
+            }
+            onPreviewChange={(style) =>
+              previewWidgetSettings(
+                "weather",
+                style ? weatherSurfaceSettings(style) : null,
+              )
+            }
+          />
         </Row>
       )}
 
@@ -1069,7 +1397,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                   new CustomEvent("ghiblify:weather:refresh")
                 );
               }
-            }
+            },
+            (v) => ({ useDeviceLocation: v === "on" }),
           )}
         </Row>
       )}
@@ -1120,6 +1449,30 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
+      {controls?.weatherCompact && !isDock && (
+        <Row label={t("widgets.edit.weatherLayoutLabel")}>
+          {segmented(
+            t("widgets.edit.weatherLayoutAria"),
+            [
+              {
+                key: "standard" as const,
+                label: t("widgets.edit.weatherLayoutStandard"),
+              },
+              {
+                key: "compact" as const,
+                label: t("widgets.edit.weatherLayoutCompact"),
+              },
+            ],
+            weatherSettings.compact ? "compact" : "standard",
+            (layout) =>
+              updateWidgetSettings("weather", {
+                compact: layout === "compact",
+              }),
+            (layout) => ({ compact: layout === "compact" }),
+          )}
+        </Row>
+      )}
+
       {controls?.weatherUnit && (
         <Row label={t("widgets.edit.weatherUnitLabel")}>
           {segmented(
@@ -1155,7 +1508,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               (weatherSettings.iconStyle ?? "animated") === "animated"
                 ? "animated"
                 : "still",
-              (v) => updateWidgetSettings("weather", { iconStyle: v })
+              (v) => updateWidgetSettings("weather", { iconStyle: v }),
+              (v) => ({ iconStyle: v }),
             )}
           </Row>
         </>
@@ -1224,11 +1578,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             </span>
             <ColorPicker
               color={pomoFocus.color}
+              tuningKind="background"
               textColor={pomoFocus.ink}
               opacity={pomoFocus.opacity}
               blur={pomoFocus.blur}
               expanded={surfaceTuneOpen}
-              onExpandChange={setSurfaceTuneOpen}
+              onExpandChange={openSurfaceTune}
               onBlurChange={(v) =>
                 updateWidgetSettings(storageKey, { blur: v } as never)
               }
@@ -1259,11 +1614,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             </span>
             <ColorPicker
               color={pomoBreak.color}
+              tuningKind="background"
               textColor={pomoBreak.ink}
               opacity={pomoBreak.opacity}
               blur={pomoBreak.blur}
               expanded={rowTuneOpen}
-              onExpandChange={setRowTuneOpen}
+              onExpandChange={openRowTune}
               onBlurChange={(v) =>
                 updateWidgetSettings(storageKey, { breakBlur: v } as never)
               }
@@ -1319,12 +1675,13 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         // ~10 chips beside a side label was an unreadable squeeze.
         <div className="edit-panel-slider-row">
           <span className="edit-panel-row-label">
-            {storageKey === "info"
-              ? t("widgets.edit.surfaceHighlights")
-              : t("widgets.edit.surfaceStyle")}
+            {surfaceLabel}
           </span>
           <ColorPicker
             color={highlightValue}
+            tuningKind={
+              storageKey === "info" && !isDock ? "highlight" : "background"
+            }
             textColor={highlightTextColor}
             opacity={highlightOpacity}
             expanded={highlightTuneOpen}
@@ -1385,11 +1742,14 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 label: t("widgets.edit.weatherAnimatedOff"),
               },
             ],
-            settings.typeIn === true ? "on" : "off",
+            !typeInDisabled && settings.typeIn === true ? "on" : "off",
             (v) =>
               updateWidgetSettings(storageKey, {
                 typeIn: v === "on",
-              } as never)
+              } as never),
+            undefined,
+            undefined,
+            typeInDisabled,
           )}
         </Row>
       )}
@@ -1434,9 +1794,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {surfaceTuneOpen && storageKey === "pomodoro" && (
         <div className="edit-panel-side">
-          <HighlightTuning
+          <ColorTuning
             onClose={() => setSurfaceTuneOpen(false)}
             color={pomoFocus.color}
+            tuningKind="background"
             textColor={pomoFocus.ink}
             opacity={pomoFocus.opacity}
             blur={pomoFocus.blur}
@@ -1458,9 +1819,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {rowTuneOpen && storageKey === "pomodoro" && (
         <div className="edit-panel-side">
-          <HighlightTuning
+          <ColorTuning
             onClose={() => setRowTuneOpen(false)}
             color={pomoBreak.color}
+            tuningKind="background"
             textColor={pomoBreak.ink}
             opacity={pomoBreak.opacity}
             blur={pomoBreak.blur}
@@ -1482,9 +1844,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {rowTuneOpen && storageKey === "todo" && (
         <div className="edit-panel-side">
-          <HighlightTuning
+          <ColorTuning
             onClose={() => setRowTuneOpen(false)}
             color={rowColorValue}
+            tuningKind="highlight"
             textColor={rowInk}
             opacity={rowOpacityValue}
             blur={rowBlurValue}
@@ -1519,9 +1882,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {surfaceTuneOpen && controls?.todoFrosted && (
         <div className="edit-panel-side">
-          <HighlightTuning
+          <ColorTuning
             onClose={() => setSurfaceTuneOpen(false)}
             color={surfaceColorValue}
+            tuningKind={paintsPieces ? "highlight" : "background"}
             textColor={surfaceInk}
             opacity={surfaceOpacityValue}
             blur={surfaceBlurValue}
@@ -1537,7 +1901,11 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                   ? surfaceOpacityValue === 0
                     ? { [surfaceFields.opacity]: 25 }
                     : {}
-                  : { [surfaceFields.opacity]: 0 }),
+                  : {
+                      [surfaceFields.opacity]: defaultAlpha(
+                        surfaceFields.opacity
+                      ),
+                    }),
               } as never)
             }
             onTextColorChange={(next) =>
@@ -1564,9 +1932,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {highlightTuneOpen && supportsHighlight && highlightValue && (
         <div className="edit-panel-side">
-          <HighlightTuning
+          <ColorTuning
             onClose={() => setHighlightTuneOpen(false)}
             color={highlightValue}
+            tuningKind={storageKey === "info" ? "highlight" : "background"}
             textColor={highlightTextColor}
             opacity={highlightOpacity}
             blur={highlightBlur}

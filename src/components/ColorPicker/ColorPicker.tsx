@@ -43,6 +43,7 @@ interface PanelProps {
    *  fired clicks. */
   expanded?: boolean;
   onExpandChange?: (open: boolean) => void;
+  tuningKind?: "background" | "highlight";
 }
 
 /**
@@ -321,7 +322,7 @@ export const ColorPickerPopover: React.FC<PopoverProps> = ({
 /** Inline swatch strip for the widget edit overlay: off + the six
  *  curated presets + custom-palette pencil + a chevron that expands
  *  the edit panel's tuning column (opacity / blur / ink - see
- *  HighlightTuning, rendered by EditWidget as a second panel column
+ *  ColorTuning, rendered by EditWidget as a second panel column
  *  rather than a floating overlay, so it never overlaps content and
  *  dismisses with the panel). */
 export const ColorPicker: React.FC<PanelProps> = (props) => {
@@ -330,6 +331,17 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
   // Recents are deliberately absent; custom/recent colours live one
   // click away behind the pencil (OS palette).
   const inlinePresets = HIGHLIGHT_PRESETS;
+  const tuningKind = props.tuningKind ?? "highlight";
+  const tuneLabel = t(
+    tuningKind === "background"
+      ? "widgets.edit.backgroundTune"
+      : "widgets.edit.highlightTune"
+  );
+  const unavailableLabel = t(
+    tuningKind === "background"
+      ? "widgets.edit.backgroundTuneUnavailable"
+      : "widgets.edit.highlightTuneUnavailable"
+  );
 
   return (
     <div className="color-picker" onClick={(e) => e.stopPropagation()}>
@@ -375,19 +387,19 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
       ))}
 
 
-      {/* Chevron - expands the panel's tuning column. Only shown
-          while CLOSED (and only with a colour to tune): once open,
-          the column's own ✕ is the close affordance, so no flipped
-          chevron sits around overlapping the divider. */}
-      {props.color && props.onExpandChange && !props.expanded && (
+      {/* Keep the disclosure slot visible before a colour is chosen so
+          the strip advertises that presets have a second tuning level. */}
+      {props.onExpandChange && !props.expanded && (
         <button
           type="button"
           className="color-picker-expand"
-          aria-label={t("widgets.edit.highlightTune")}
-          data-tooltip={t("widgets.edit.highlightTune")}
+          aria-label={props.color ? tuneLabel : unavailableLabel}
+          data-tooltip={props.color ? tuneLabel : unavailableLabel}
           aria-expanded={false}
+          aria-disabled={!props.color}
           onClick={(e) => {
             e.stopPropagation();
+            if (!props.color) return;
             props.onExpandChange?.(true);
           }}
         >
@@ -401,10 +413,15 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
 /** The tuning column - live "Aa" demo of the current pill, opacity,
  *  blur, ink. Rendered by EditWidget inside the panel's expandable
  *  right column (see .edit-panel-side). */
-export const HighlightTuning: React.FC<PanelProps & { onClose?: () => void }> = (
+export const ColorTuning: React.FC<PanelProps & { onClose?: () => void }> = (
   props
 ) => {
   const t = useT();
+  const tuneLabel = t(
+    props.tuningKind === "background"
+      ? "widgets.edit.backgroundTune"
+      : "widgets.edit.highlightTune"
+  );
   const [hexDraft, setHexDraft] = useState(props.color ?? "");
   useEffect(() => {
     setHexDraft(props.color ?? "");
@@ -420,12 +437,12 @@ export const HighlightTuning: React.FC<PanelProps & { onClose?: () => void }> = 
   return (
     <div className="highlight-tuning">
       <div className="highlight-tuning-head">
-        <span>{t("widgets.edit.highlightTune")}</span>
+        <span>{tuneLabel}</span>
         {props.onClose && (
           <button
             type="button"
             className="highlight-tuning-close"
-            aria-label={t("widgets.edit.highlightTune")}
+            aria-label={tuneLabel}
             onClick={props.onClose}
           >
             ✕

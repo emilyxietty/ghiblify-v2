@@ -11,8 +11,7 @@
   ],
   "optional_permissions": [
     "bookmarks",
-    "audioCapture",
-    "identity.email"
+    "audioCapture"
   ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"

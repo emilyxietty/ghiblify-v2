@@ -6,9 +6,10 @@
  * updates are posted. Backdrop click and Esc both close.
  */
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useT } from "../../i18n/i18n";
-import { CloseIcon, DiscordIcon } from "../Icons/Icons";
+import { DialogShell } from "../DialogShell/DialogShell";
+import { DiscordIcon } from "../Icons/Icons";
 import "./ChangelogModal.css";
 
 const DISCORD_INVITE = "https://discord.gg/8re4UaZ2fX";
@@ -23,46 +24,17 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
   onClose,
 }) => {
   const t = useT();
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handler, true);
-    return () => document.removeEventListener("keydown", handler, true);
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (open) dialogRef.current?.focus();
-  }, [open]);
-
-  if (!open) return null;
 
   return (
-    <div className="changelog-backdrop" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        className="changelog-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="changelog-title"
-        onClick={(e) => e.stopPropagation()}
-        tabIndex={-1}
-      >
-        <button
-          type="button"
-          className="changelog-close"
-          aria-label={t("modal.common.closeAria")}
-          onClick={onClose}
-        >
-          <CloseIcon fontSize="small" />
-        </button>
-
+    <DialogShell
+      open={open}
+      onClose={onClose}
+      backdropClassName="changelog-backdrop"
+      dialogClassName="changelog-dialog"
+      labelledBy="changelog-title"
+      closeClassName="changelog-close"
+      closeLabel={t("modal.common.closeAria")}
+    >
         <h2 id="changelog-title" className="changelog-title">
           {t("changelog.title")}
         </h2>
@@ -81,8 +53,7 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({
             {t("changelog.joinButton")}
           </span>
         </a>
-      </div>
-    </div>
+    </DialogShell>
   );
 };
 

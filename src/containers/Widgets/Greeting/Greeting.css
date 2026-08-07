@@ -66,14 +66,15 @@
     border-bottom-color: rgba(255, 255, 255, 0.6);
 }
 
-/* The input has a fixed width while editing (room to type). */
+/* Follow the input's `size` attribute so editing starts at roughly the
+   rendered name width instead of expanding to a fixed, oversized field. */
 .greeting-name-input {
-    width: 6.5em;
+    width: auto;
+    max-width: 16em;
 }
 
-/* Cuter edit-mode input: rounded pill, soft translucent fill, dashed
-   border so it reads as a friendly editable field rather than a
-   browser <input>. Matches the button's footprint exactly. */
+/* Edit-mode input: rounded pill, soft translucent fill, dashed border
+   so it reads as an editable field rather than a browser default. */
 .greeting-name-input {
     background: rgba(255, 255, 255, 0.18);
     border: 1.5px dashed rgba(255, 255, 255, 0.85);

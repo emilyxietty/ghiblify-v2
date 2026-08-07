@@ -61,7 +61,6 @@
       "languageAria": "Escolher idioma",
       "editWidgets": "Modo edição",
       "resetAllWidgets": "Restaurar widgets",
-      "resetFilters": "Restaurar ajustes de fundo",
       "selectBackgrounds": "Selecionar planos de fundo",
       "deleteBackground": "Excluir plano de fundo",
       "deleteBackgroundAria": "Remover o plano de fundo atual da rotação",
@@ -73,7 +72,7 @@
       "refreshBackgroundAria": "Escolher um novo plano de fundo das fontes selecionadas"
     },
     "appearance": {
-      "palette": "Paleta",
+      "palette": "Paletas",
       "paletteAria": "Paleta de cores",
       "highContrast": "Alto contraste"
     },
@@ -98,12 +97,30 @@
   },
   "rightDock": {
     "emptyTitle": "Barra lateral direita",
-    "emptyHint": "Clique no botão Configurações abaixo para escolher quais widgets aparecem aqui. Eles podem aparecer na barra lateral e no canvas ao mesmo tempo.",
+    "emptyHint": "Clique no botão + abaixo para escolher quais widgets aparecem aqui. Eles podem aparecer na barra lateral e no canvas ao mesmo tempo.",
     "callout": "Barra lateral direita - passe o cursor pela borda direita para abrir",
     "settingsLabel": "Configurações",
+    "addWidgetsLabel": "Adicionar widgets",
     "pickerLabel": "Escolha os widgets a mostrar na barra lateral direita",
-    "showBackgroundsLabel": "Mostrar fundos",
-    "resetLabel": "Redefinir barra lateral",
+    "panelBackgroundLabel": "Fundo do painel",
+    "orderLabel": "Ordem",
+    "moveUpLabel": "Mover para cima",
+    "moveDownLabel": "Mover para baixo",
+    "guide": {
+      "button": "Guia da barra lateral direita",
+      "title": "Como usar a barra lateral direita",
+      "intro": "Escolha o que aparece aqui e personalize cada widget de forma independente da versão no canvas.",
+      "addTitle": "Escolher widgets",
+      "addBody": "Clique no botão + e selecione os widgets que deseja na barra lateral direita.",
+      "editTitle": "Abrir configurações do widget",
+      "editBody": "Clique com o botão direito em qualquer widget da barra lateral para abrir seus controles.",
+      "rightClickCue": "Clique direito",
+      "orderTitle": "Mover widgets",
+      "orderBody": "Na linha Ordem, use a seta para cima ou para baixo. Cada clique move o widget uma posição.",
+      "sizeTitle": "Escolher um tamanho",
+      "sizeBody": "Nos widgets compatíveis, escolha o quadrado para meia largura ou o retângulo para largura total."
+    },
+    "resetLabel": "Redefinir widgets laterais",
     "resetConfirm": "Redefinir todas as configurações da barra lateral direita? Os widgets do canvas não são afetados."
   },
   "widgets": {
@@ -134,7 +151,6 @@
       "hideFromRightSidebar": "Ocultar da barra lateral direita",
       "dockWidthFull": "Largura total",
       "dockWidthHalf": "Meia largura",
-      "showBackground": "Mostrar fundo",
       "time12": "12 horas",
       "time24": "24 horas",
       "timeAnalog": "Analógico",
@@ -173,13 +189,24 @@
       "textShadow": "Sombra do texto",
       "textShadowAria": "Intensidade da sombra do texto",
       "noCustomization": "Sem opções de personalização",
+      "dockWidth": "Largura do widget",
       "darkModeAria": "Alternar modo escuro",
       "timeFormatAria": "Escolher formato do relógio",
       "timeFormat12": "12h",
       "timeFormat24": "24h",
       "timeFormatAnalog": "Analógico",
+      "dateFormatLabel": "Estilo da data",
+      "dateToday": "Hoje",
+      "dateFormat": {
+        "long": "Data completa",
+        "short": "Data curta",
+        "slash": "Com barras",
+        "calendar": "Mini calendário"
+      },
       "gridShow": "Ver em grade",
       "gridShowList": "Ver em lista",
+      "quicklinksPerRow": "Links por linha",
+      "quicklinksVisibleRows": "Linhas visíveis",
       "resizeTitle": "Arraste para redimensionar {{name}}",
       "infoFields": {
         "japaneseTitle": "Título japonês",
@@ -234,6 +261,10 @@
         "hourly": "Por hora",
         "full": "Previsão completa"
       },
+      "weatherLayoutLabel": "Layout",
+      "weatherLayoutAria": "Escolher layout do clima",
+      "weatherLayoutStandard": "Padrão",
+      "weatherLayoutCompact": "Compacto",
       "weatherStylePlain": "Simples",
       "weatherStyleCard": "Cartão",
       "weatherAnimatedIcons": "Ícones animados",
@@ -259,7 +290,10 @@
       "styleFrostDark": "Fosco escuro",
       "styleClear": "Transparente",
       "styleWeather": "Clima",
+      "backgroundTune": "Ajustar fundo",
+      "backgroundTuneUnavailable": "Selecione um fundo para personalizá-lo",
       "highlightTune": "Ajustar destaque",
+      "highlightTuneUnavailable": "Selecione um destaque para personalizá-lo",
       "weatherLocationHint": "Sua localização é usada apenas para obter a previsão local - só sai deste dispositivo para o serviço de meteorologia.",
       "guideResize": "Redimensionar",
       "surfaceHighlights": "Destaques",
@@ -267,8 +301,7 @@
     },
     "gapps": {
       "menuAria": "Apps do Google",
-      "accountAria": "Conta do Google",
-      "personalize": "Mostrar a inicial da minha conta"
+      "accountAria": "Conta do Google"
     }
   },
   "greeting": {
@@ -314,7 +347,6 @@
     "editLink": "Editar link",
     "deleteLink": "Excluir link",
     "deleteAria": "Excluir {{title}}",
-    "deleteGridTooltip": "Excluir {{title}}",
     "deleteListTooltip": "Excluir link",
     "removeTooltip": "Remover links",
     "doneDeleteTooltip": "Concluído",
@@ -330,7 +362,9 @@
     "previewEmpty": "Novo link",
     "cancel": "Cancelar",
     "save": "Salvar",
-    "addButton": "Adicionar"
+    "addButton": "Adicionar",
+    "previousPage": "Página anterior de links rápidos",
+    "nextPage": "Próxima página de links rápidos"
   },
   "pomodoro": {
     "modeBreak": "Pausa",
@@ -579,18 +613,18 @@
         "body2": "A mesma seção traz Fonte e Cantos - escolha a tipografia de toda a página e o quanto cada superfície é arredondada. As três estão abertas na barra lateral."
       },
       "adjustTime": {
-        "title": "Editar widgets",
-        "body1": "Cada widget tem seus próprios controles. O widget de Hora acima está em modo edição - alterne 12/24 h e arraste o controle deslizante para o tamanho.",
-        "body2Pre": "Três formas de editar qualquer widget: clique com o botão direito nele, segure ",
-        "body2Post": " (ou Shift) e clique no lápis que aparece, ou clique com o botão direito no ícone dele na barra lateral - esse menu está aberto agora."
+        "title": "Entrar no modo de edição",
+        "body1": "Clique com o botão direito em qualquer widget da página para entrar no modo de edição e abrir seus controles.",
+        "body2": "Você também pode clicar com o botão direito no ícone da barra lateral e escolher Editar. As duas opções estão indicadas no widget de Hora.",
+        "rightClickWidgetCue": "Clique direito no widget",
+        "rightClickIconCue": "Clique direito no ícone"
       },
       "drag": {
-        "title": "Mova os widgets",
-        "body1Pre": "Mantenha ",
-        "body1Post": " e arraste o widget de Hora para reposicioná-lo. Os widgets se ajustam à grade.",
-        "body2": "Quando um widget está em modo de edição, você também pode simplesmente arrastá-lo - sem tecla nenhuma.",
-        "hint": "O cursor vira uma mãozinha enquanto você segura D ou Shift - esse é o sinal.",
-        "body1Sep": " ou "
+        "title": "Arraste, redimensione e edite widgets",
+        "body1": "Use o painel de edição para alterar as configurações do widget.",
+        "body2": "Arraste o próprio widget para movê-lo, sem pressionar nenhuma tecla.",
+        "dragCue": "Clique e arraste",
+        "hint": "Arraste a alça sombreada no canto para redimensionar."
       },
       "background": {
         "title": "Escolher planos de fundo",
@@ -602,7 +636,7 @@
         "title": "Atalhos de teclado",
         "openSidebar": "Abrir ou fechar a barra lateral",
         "moveWidget": "Mover um widget",
-        "editWidget": "Editar um widget (segure D ou Shift e clique no lápis)",
+        "editWidget": "Editar, arrastar e redimensionar um widget específico",
         "escape": "Fechar barra lateral, popovers, modo edição ou este guia",
         "enter": "Confirmar edição ou sair do modo edição",
         "navigateGuide": "Navegar pelos slides deste guia",
@@ -652,7 +686,7 @@
     "resetConfirmCancel": "Cancelar",
     "section": {
       "widgets": "Configurações de widgets",
-      "appearance": "Configurações de aparência",
+      "appearance": "Configurações de paletas",
       "background": "Configurações de fundo",
       "cursor": "Configurações do cursor"
     },
@@ -661,8 +695,6 @@
     "backgroundTitle": "Fundo",
     "cursorTitle": "Cursor",
     "cursorSub": "Volta o cursor ao ponteiro padrão do sistema. Sua configuração é salva junto com Aparência.",
-    "dockBackgrounds": "Fundos de cartão do dock",
-    "dockBackgroundsSub": "Mostra um cartão de vidro atrás dos widgets fixados à direita.",
     "highContrastSub": "Contraste de texto mais forte em toda a página.",
     "parallaxSub": "O fundo se move suavemente com o cursor.",
     "resetWidgets": "Redefinir todos os widgets",
@@ -677,7 +709,7 @@
       "other": "Outros"
     },
     "deleteKeyConfirm": "Excluir “{{key}}” do armazenamento? O que estiver nele será perdido.",
-    "resetWidgetsConfirm": "Voltar todos os widgets à posição, tamanho e configurações padrão? Seus links e seu nome são mantidos.",
+    "resetWidgetsConfirm": "Voltar todos os widgets à posição, tamanho e configurações padrão? Seus links rápidos, seu nome, suas notas e sua lista de tarefas são mantidos.",
     "resetDockConfirm": "Voltar o dock da direita ao layout padrão?",
     "resetAppearanceConfirm": "Voltar tema, fonte e contraste aos padrões?",
     "resetBackgroundConfirm": "Voltar os filtros de fundo e o parallax aos padrões?",
@@ -692,8 +724,6 @@
       "square": "Retos",
       "rounded": "Arredondados",
       "pill": "Suaves"
-    },
-    "permissionEmail": "Endereço de e-mail",
-    "permissionEmailSub": "Personaliza o botão de conta do widget do Google com a sua inicial. Nada mais."
+    }
   }
 }

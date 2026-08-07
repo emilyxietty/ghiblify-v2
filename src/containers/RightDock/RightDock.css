@@ -7,47 +7,6 @@
    change; widgets keep their canvas positioning regardless of dock
    open/closed state. */
 
-/* Transient callout shown when the dock is first toggled on - mirrors the
-   bookmarks panel's first-toggle callout so both
-   right-edge surfaces announce themselves the same way. */
-.right-dock-callout {
-    position: fixed;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.78);
-    color: #ffffff;
-    padding: 8px 18px;
-    border-radius: var(--radius-pill);
-    font-size: 12.5px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    z-index: var(--z-tooltip, 100300);
-    pointer-events: none;
-    animation: right-dock-callout 3.5s cubic-bezier(0.32, 0.72, 0.32, 1) both;
-}
-
-@keyframes right-dock-callout {
-    0% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-12px);
-    }
-    8% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-    80% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-8px);
-    }
-}
-
 :root {
     /* 25px wider than the bookmarks RightSidebar (SIDEBAR_WIDTH =
        360). The dock hosts full widget cards, which need more
@@ -72,14 +31,13 @@
        widget's own surface for legibility. */
     background: transparent;
     transform: translateX(100%);
-    /* Stack with the LeftSidebar tier (99999) so spotlight + portals
-       behave consistently. Edit-overlay sits below; modals stay
-       above via their own portals. */
-    z-index: 99999;
+    /* Above canvas widgets and edit dimming, below the 90k edit-panel
+       band so a dock widget's portalled right-click editor stays visible. */
+    z-index: 80000;
     transition: transform 280ms cubic-bezier(0.32, 0.72, 0.32, 1);
     display: flex;
     flex-direction: column;
-    padding: 18px 16px;
+    padding: 18px 16px 7px;
     gap: 14px;
     /* No scroll on the dock itself - scrolling is delegated to
        `.right-dock-body` so the scrollbar lives inside the body's
@@ -89,6 +47,23 @@
     box-sizing: border-box;
     color: var(--light);
     pointer-events: none;
+}
+
+.right-dock.panel-frost,
+.right-dock.panel-frostDark {
+    border-left: 1px solid rgba(253, 246, 233, 0.08);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(18px) saturate(115%);
+    -webkit-backdrop-filter: blur(18px) saturate(115%);
+}
+
+.right-dock.panel-frost {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.right-dock.panel-frostDark {
+    background: rgba(10, 14, 20, 0.6);
+    border-left-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Closed state has nothing interactive - bypassing pointer events
@@ -122,11 +97,9 @@
     flex: 1 1 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* 16px gap matches Apple's Notification Center widget stack
-       - bigger than the canvas-default 12px so each card reads as
-       its own discrete tile. align-items: stretch (the default)
-       makes half-width cells in the same row match the taller
-       sibling's height, so two halves on a row line up flush. */
+    /* 16px gap keeps each card visually distinct. Half-width tile
+       dimensions are normalized by DockWidget.css, so paired cells
+       align without inheriting one widget's content height. */
     gap: 16px;
     align-content: start;
     overflow-y: auto;
@@ -159,21 +132,37 @@
     grid-column: 1 / -1;
 }
 
-/* Footer holds the settings button and (when expanded) the widget
-   picker grid. Painted as a glass card so it reads as a control
-   surface against the otherwise transparent dock. */
+/* Keep the compact settings trigger in the bottom-right. The full
+   control surface only appears while the picker is open. */
 .right-dock-footer {
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 14px;
-    padding: 12px;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.right-dock-settings-panel {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 9px 11px;
     background: var(--sidebar-card);
     border: 1px solid rgba(253, 246, 233, 0.06);
     border-radius: var(--radius-xl, 16px);
     backdrop-filter: blur(14px) saturate(110%);
     -webkit-backdrop-filter: blur(14px) saturate(110%);
+}
+
+.right-dock-panel-title {
+    color: var(--light-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 /* Widget picker grid - mirrors the LeftSidebar widget toggle row.
@@ -186,58 +175,91 @@
     gap: 8px;
 }
 
-.right-dock-settings-btn {
+.right-dock-settings-list {
     width: 100%;
-    display: flex !important;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.right-dock-setting-row {
+    min-height: 34px;
+    box-sizing: border-box;
+    padding: 5px 6px;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    justify-content: space-between;
+    gap: 12px;
     color: var(--light);
-    padding: 10px 14px !important;
-    border-radius: var(--radius-lg, 12px);
-    transition: background 140ms ease;
-}
-
-.right-dock-settings-btn:hover {
-    background: color-mix(in srgb, var(--light) 8%, transparent);
-}
-
-/* Toggle row inside the picker footer - borrows the LeftSidebar's
-   `.contrast-toggle` switch styles for visual consistency. Padding
-   matches the surrounding picker grid so it reads as part of the
-   same settings cluster. */
-.right-dock-toggle-row {
-    padding: 4px 4px;
     font-size: 12px;
-    color: var(--light);
-}
-
-/* Reset button - only visible while the picker is expanded. Lives
-   underneath the Settings button so it reads as a secondary action
-   for "wipe my dock layout back to defaults". Smaller / muted so
-   it doesn't compete with the primary Settings toggle. */
-.right-dock-reset-btn {
-    width: 100%;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--light-muted);
-    padding: 6px 10px !important;
     border-radius: var(--radius-md, 8px);
-    transition: background 140ms ease, color 140ms ease;
+}
+
+.right-dock-setting-row + .right-dock-setting-row {
+    border-top: 1px solid color-mix(in srgb, var(--light) 8%, transparent);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.right-dock-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.42;
+    transition: opacity 160ms ease;
+}
+
+.right-dock-footer:hover .right-dock-footer-actions,
+.right-dock-footer:focus-within .right-dock-footer-actions {
+    opacity: 1;
+}
+
+.right-dock-footer-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    color: var(--light);
+    padding: 0 !important;
+    background: var(--sidebar-card);
+    border: 1px solid rgba(253, 246, 233, 0.1);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(14px) saturate(110%);
+    -webkit-backdrop-filter: blur(14px) saturate(110%);
+    transition: background 140ms ease, border-color 140ms ease,
+        transform 140ms ease;
+}
+
+.right-dock-add-btn {
+    color: color-mix(in srgb, var(--light) 92%, var(--green));
+}
+
+.right-dock-footer-btn:hover,
+.right-dock-footer-btn[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--sidebar-card) 88%, var(--light));
+    border-color: color-mix(in srgb, var(--light) 20%, transparent);
+}
+
+.right-dock-reset-btn {
+    width: 27px;
+    height: 27px;
+    min-width: 27px;
+    min-height: 27px;
+    color: color-mix(in srgb, #ffaaaa 72%, var(--light));
+    padding: 0 !important;
+    background: color-mix(in srgb, #b94444 10%, transparent);
+    border: 1px solid color-mix(in srgb, #ef7777 22%, transparent);
+    border-radius: var(--radius-md, 8px);
+    transition: background 140ms ease, border-color 140ms ease,
+        color 140ms ease;
 }
 
 .right-dock-reset-btn:hover {
-    background: color-mix(in srgb, var(--light) 6%, transparent);
-    color: var(--light);
+    background: color-mix(in srgb, #b94444 22%, transparent);
+    border-color: color-mix(in srgb, #ef7777 46%, transparent);
+    color: #ffd7d7;
 }
 
 /* Empty-state placeholder - visible until widgets get routed here.

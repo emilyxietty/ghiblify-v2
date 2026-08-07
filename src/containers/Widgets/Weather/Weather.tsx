@@ -1,9 +1,15 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
-import { useAppContext } from "../../../contexts/AppContext";
-import { useDockSurface } from "../../../contexts/DockSurfaceContext";
 import {
+  AccessTimeFilledIcon,
+  CalendarTodayIcon,
+  WbSunnyIcon,
+} from "../../../components/Icons/Icons";
+import { useAppContext } from "../../../contexts/AppContext";
+import {
+  resolveSurfaceFrost,
   resolveWeatherDetail,
-  sectionsForDetail, resolveSurfaceFrost } from "../../../config/widgetConfig";
+  sectionsForDetail,
+} from "../../../config/widgetConfig";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useWeather, WeatherDaily } from "../../../hooks/useWeather";
 import { useT } from "../../../i18n/i18n";
@@ -44,6 +50,18 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({
   />
 );
 
+/** The daily forecast's `time` is a bare "YYYY-MM-DD", which `new Date()`
+ *  reads as UTC midnight - anywhere west of Greenwich that lands on the
+ *  previous evening, so every weekday label came out a day early (today
+ *  Thursday, tomorrow labelled "Thursday" too). Building the date from
+ *  its parts gives local midnight, which is the day the API meant.
+ *  The hourly `time` carries a clock component and so parses as local
+ *  already; only the date-only values need this. */
+const localDay = (isoDate: string): Date => {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const formatHour = (iso: string, is24Hour: boolean) => {
   const d = new Date(iso);
   const h = d.getHours();
@@ -53,29 +71,41 @@ const formatHour = (iso: string, is24Hour: boolean) => {
   return h > 12 ? `${h - 12}pm` : `${h}am`;
 };
 
+type CompactWeatherSection = "now" | "hourly" | "daily";
+const COMPACT_WEATHER_SECTIONS: readonly CompactWeatherSection[] = [
+  "now",
+  "hourly",
+  "daily",
+];
+
 const Weather: React.FC = () => {
   const t = useT();
-  const { widgets, dockShowBackgrounds, updateWidgetSettings, appearance } =
-    useAppContext();
-  const { settings: rawSettings } = useWidgetSettings("weather");
-  const inDock = useDockSurface();
-  const isHalfInDock =
-    inDock && widgets.weather.dockWidth === "half";
-  // Per-surface render overrides on top of the merged settings.
-  // Stored settings are never mutated here - these only affect the
-  // current render so the canvas / full-width instance keeps its
-  // own state untouched.
-  //   - Half-width dock: forecast strips would wrap, so the detail
-  //     level is capped at "now" (an icon-only user keeps their icon).
-  //   - Dock + global "Show backgrounds" on: force showCard so the
-  //     card surface joins the rest of the dock chrome.
+  const { widgets, appearance } = useAppContext();
+  const {
+    settings: rawSettings,
+    updateSettings,
+    inDock,
+  } = useWidgetSettings("weather");
+  const isHalfInDock = inDock && widgets.weather.dockWidth === "half";
+  const isCanvasCompact = !inDock && rawSettings.compact;
   const storedDetail = resolveWeatherDetail(rawSettings);
-  const detail =
-    isHalfInDock && storedDetail !== "icon" ? "now" : storedDetail;
-  const settings = {
-    ...rawSettings,
-    ...(inDock && dockShowBackgrounds ? { showCard: true } : {}),
-  };
+  const configuredSections = sectionsForDetail(storedDetail);
+  const availableCompactSections = COMPACT_WEATHER_SECTIONS.filter(
+    (section) => section === "now" || configuredSections[section],
+  );
+  const [compactSection, setCompactSection] =
+    useState<CompactWeatherSection>("now");
+  const activeCompactSection = availableCompactSections.includes(compactSection)
+    ? compactSection
+    : "now";
+  const sections = isHalfInDock
+    ? {
+        now: activeCompactSection === "now",
+        hourly: activeCompactSection === "hourly",
+        daily: activeCompactSection === "daily",
+      }
+    : configuredSections;
+  const settings = rawSettings;
   const manualPlace = isManualPlace(settings.manualPlace)
     ? settings.manualPlace
     : null;
@@ -113,8 +143,7 @@ const Weather: React.FC = () => {
   // forecast labels match the user's clock format (no separate setting).
   const is24Hour = !!widgets.time.settings.is24Hour;
   const iconStyle = settings.iconStyle ?? "animated";
-  const sections = sectionsForDetail(detail);
-  const iconsOnly = detail === "icon";
+  const iconsOnly = storedDetail === "icon";
 
   // Both forecast strips are the same three-row cell - label, icon,
   // temperature - so they share one renderer instead of two near-copies.
@@ -186,7 +215,7 @@ const Weather: React.FC = () => {
             <span className="weather-day-label">
               {i === 0
                 ? t("weather.today")
-                : t(`weather.weekday.${new Date(d.time).getDay()}`)}
+                : t(`weather.weekday.${localDay(d.time).getDay()}`)}
             </span>
             <WeatherIcon
               code={d.weatherCode}
@@ -321,7 +350,7 @@ const Weather: React.FC = () => {
   if (loading) {
     body = (
       <div className="weather-loading" role="status" aria-live="polite">
-        {conditions}
+        {sections.now && conditions}
         {sections.hourly && strip(skeletonRows("h"), true)}
         {/* The daily placeholder mirrors the row layout, not the strip:
             a skeleton in one shape that resolves into another reads as
@@ -375,7 +404,7 @@ const Weather: React.FC = () => {
             className="weather-error-action weather-error-action-primary"
             onClick={() => {
               if (isPermission) {
-                updateWidgetSettings("weather", { useDeviceLocation: true });
+                updateSettings({ useDeviceLocation: true });
               }
               refresh();
             }}
@@ -401,7 +430,7 @@ const Weather: React.FC = () => {
   } else if (data) {
     body = (
       <>
-        {conditions}
+        {sections.now && conditions}
         {sections.hourly &&
           strip(
             data.hourly.map((h, i) => ({
@@ -427,7 +456,11 @@ const Weather: React.FC = () => {
     <div
       className={`weather-widget widget-header${
         settings.showCard ? " weather-card-on" : ""
-      }${iconsOnly ? " weather-icons-only" : ""}`}
+      }${iconsOnly ? " weather-icons-only" : ""}${
+        inDock || isCanvasCompact ? " weather-rail-layout" : ""
+      }${isCanvasCompact ? " weather-canvas-compact" : ""}${
+        isHalfInDock ? " weather-tabbed-compact" : ""
+      }`}
       data-weather-mood={mood}
       style={{
         // Frosted: the .widget shell blurs the wallpaper (see
@@ -442,7 +475,49 @@ const Weather: React.FC = () => {
         ).toString(),
       }}
     >
-      {body}
+      {isHalfInDock && availableCompactSections.length > 1 && !error && (
+        <div
+          className="weather-compact-nav"
+          role="group"
+          aria-label={t("widgets.contextMenu.weatherDetail")}
+        >
+          {availableCompactSections.map((section) => {
+            const label = t(
+              `widgets.edit.weatherDetail.${
+                section === "daily" ? "full" : section
+              }`,
+            );
+            const Icon =
+              section === "now"
+                ? WbSunnyIcon
+                : section === "hourly"
+                  ? AccessTimeFilledIcon
+                  : CalendarTodayIcon;
+            return (
+              <button
+                key={section}
+                type="button"
+                aria-pressed={activeCompactSection === section}
+                aria-label={label}
+                data-tooltip={label}
+                className={`weather-compact-tab${
+                  activeCompactSection === section ? " is-active" : ""
+                }`}
+                onClick={() => setCompactSection(section)}
+              >
+                <Icon fontSize={15} />
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div
+        className={`weather-body${
+          isHalfInDock ? ` weather-body-${activeCompactSection}` : ""
+        }`}
+      >
+        {body}
+      </div>
       {locationOpen && (
         <Suspense fallback={null}>
           <WeatherLocationModal
