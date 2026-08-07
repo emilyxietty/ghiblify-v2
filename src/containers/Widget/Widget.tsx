@@ -9,7 +9,7 @@ import {
 // being edited actually renders content. Gating on `isEditingThis`
 // below means the chunk only fetches the first time any widget enters
 // edit mode.
-const EditWidget = lazy(() => import("../../components/EditWidget/EditWidget"));
+const EditWidget = lazy(() => import("../../components/RightClickEditModal/EditWidget/EditWidget"));
 import { AddIcon, BlurOnIcon, KeyboardIcon, ListIcon, OpacityIcon, PaletteIcon, TextFieldsIcon, ThermostatIcon, ViewModuleIcon, VisibilityIcon } from "../../components/Icons/Icons";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
@@ -615,7 +615,28 @@ export const Widget: React.FC<WidgetProps> = ({
     setHasChildHeader(found);
   }, [children]);
 
+  /**
+   * Did this event actually happen inside the widget's own box?
+   *
+   * React replays events from a portal up the COMPONENT tree, not the
+   * DOM tree - so a dialog a widget renders through `createPortal`
+   * (the weather location picker, a context menu) delivers its
+   * mousedowns and right-clicks to this shell even though it paints
+   * over on `<body>`. In edit mode the whole shell is the drag
+   * surface, which meant selecting text or clicking into a field in
+   * one of those dialogs dragged the widget around behind it, and
+   * dragging preventDefaults the mousedown, so inputs never took
+   * focus at all.
+   *
+   * The edit panel is exempt from the same problem for a different
+   * reason: it's `position: fixed` but still a DOM descendant, so it
+   * passes this test and needs its own check further down.
+   */
+  const isInsideWidget = (e: React.SyntheticEvent) =>
+    e.target instanceof Node && !!widgetRef.current?.contains(e.target);
+
   const handleWidgetMouseDown = (e: React.MouseEvent) => {
+    if (!isInsideWidget(e)) return;
     // Any press (left click, drag start, right-click for the context
     // menu) surfaces this widget above its siblings - before the drag
     // gating below, which returns early for plain clicks.
@@ -753,6 +774,10 @@ export const Widget: React.FC<WidgetProps> = ({
       }}
       onMouseDown={handleWidgetMouseDown}
       onContextMenu={(e) => {
+        // Same portal caveat as the mousedown handler: a right-click
+        // inside a dialog this widget portalled out would otherwise
+        // open the widget's own context menu on top of it.
+        if (!isInsideWidget(e)) return;
         // Let the browser's native context menu (copy / cut / paste /
         // spell-check / undo) fire when the right-click is inside a
         // text input, textarea, or any contentEditable element -

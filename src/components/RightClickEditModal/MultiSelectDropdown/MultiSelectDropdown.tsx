@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Z_FLOATING } from "../../utils/zLayers";
+import { Z_FLOATING } from "../../../utils/zLayers";
 import "./MultiSelectDropdown.css";
 
 export interface MultiSelectOption {

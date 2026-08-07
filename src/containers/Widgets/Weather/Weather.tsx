@@ -4,21 +4,21 @@ import {
   CalendarTodayIcon,
   WbSunnyIcon,
 } from "../../../components/Icons/Icons";
-import { useAppContext } from "../../../contexts/AppContext";
 import {
   resolveSurfaceFrost,
   resolveWeatherDetail,
   sectionsForDetail,
 } from "../../../config/widgetConfig";
-import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
+import { useAppContext } from "../../../contexts/AppContext";
 import { useWeather, WeatherDaily } from "../../../hooks/useWeather";
+import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
 import { isManualPlace } from "../../../utils/geocoding";
+import "./Weather.css";
 // Lazy - the picker is a dialog most sessions never open.
 const WeatherLocationModal = lazy(
-  () => import("../../../components/WeatherLocationModal/WeatherLocationModal")
+  () => import("../../../components/WeatherLocationModal/WeatherLocationModal"),
 );
-import "./Weather.css";
 
 // Map a WMO weather code → a Meteocons SVG filename (without extension).
 // Meteocons by Bas Milius (https://bas.dev/work/meteocons) - MIT licensed.
@@ -113,7 +113,7 @@ const Weather: React.FC = () => {
   const { data, loading, error, refresh } = useWeather(
     settings.unit,
     manualPlace,
-    useDeviceLocation
+    useDeviceLocation,
   );
 
   // "Refresh weather" in the right-click menu can't reach this hook
@@ -139,11 +139,30 @@ const Weather: React.FC = () => {
   }, [inDock]);
 
   const unitSuffix = `°${settings.unit}`;
+  // Everything below the headline reading is bare degrees. The unit is
+  // stated once, on the current temperature at the top; repeating "F"
+  // on every hour, every high and every low is noise, and the forecast
+  // cells are narrow enough that the extra glyph costs real room.
+  const degrees = "°";
   // Borrow the Time widget's 12/24-hour preference so the hourly
   // forecast labels match the user's clock format (no separate setting).
   const is24Hour = !!widgets.time.settings.is24Hour;
   const iconStyle = settings.iconStyle ?? "animated";
   const iconsOnly = storedDetail === "icon";
+  // A canvas widget showing a forecast is a fixed-width rail (see the
+  // rail widths in Weather.css) rather than sized to its content: the
+  // hourly cells and the daily card then span the same band, and the
+  // box stays put between the loading skeleton and the data. Widgets
+  // with nothing but the current conditions - or nothing but icons -
+  // keep sizing to what they show.
+  // A forecast is a row of cells that has to line up with the daily
+  // card, which is what the fixed rail widths are for. Nothing else
+  // does: "now" is one reading, and icon detail is a couple of glyphs.
+  // Both size to their contents, so the widget is only ever as wide as
+  // what it shows. Compact gets the same treatment at its own width -
+  // see the rails in Weather.css.
+  const isCanvasRail =
+    !inDock && !iconsOnly && (sections.hourly || sections.daily);
 
   // Both forecast strips are the same three-row cell - label, icon,
   // temperature - so they share one renderer instead of two near-copies.
@@ -165,9 +184,10 @@ const Weather: React.FC = () => {
         >
           <span className="weather-strip-label">{row.label}</span>
           {row.code === undefined ? (
-            <span className="weather-strip-icon weather-icon-placeholder">
-              <span className="weather-spinner" aria-hidden="true" />
-            </span>
+            // Shimmers rather than spins - see the placeholder rules in
+            // Weather.css. Only the skeleton omits a code, so this is
+            // the loading shape.
+            <span className="weather-strip-icon weather-icon-placeholder" />
           ) : (
             <WeatherIcon
               code={row.code}
@@ -182,8 +202,11 @@ const Weather: React.FC = () => {
     </div>
   );
 
+  // Six hours and seven days - exactly what useWeather asks the API
+  // for, so the skeleton reserves the space the forecast will take and
+  // the strip doesn't resize when the data lands.
   const skeletonRows = (prefix: string): StripRow[] =>
-    Array.from({ length: 5 }, (_, i) => ({
+    Array.from({ length: 6 }, (_, i) => ({
       key: `${prefix}-${i}`,
       label: (
         <span className="weather-skeleton-line weather-skeleton-cell-label" />
@@ -225,7 +248,7 @@ const Weather: React.FC = () => {
             />
             <span className="weather-day-temp weather-day-low">
               {d.low}
-              {unitSuffix}
+              {degrees}
             </span>
             <span className="weather-range" aria-hidden="true">
               <span
@@ -254,7 +277,7 @@ const Weather: React.FC = () => {
             </span>
             <span className="weather-day-temp weather-day-high">
               {d.high}
-              {unitSuffix}
+              {degrees}
             </span>
           </div>
         ))}
@@ -290,7 +313,7 @@ const Weather: React.FC = () => {
             </div>
             <div className="weather-feels">
               {t("weather.feelsLike", {
-                temp: `${data.current.apparent}${unitSuffix}`,
+                temp: `${data.current.apparent}${degrees}`,
               })}
               {/* Today's range next to the current reading - the first
                   thing both Apple and Google put under the condition,
@@ -299,11 +322,11 @@ const Weather: React.FC = () => {
               {data.daily[0] && (
                 <span className="weather-today-range">
                   {t("weather.hi", {
-                    temp: `${data.daily[0].high}${unitSuffix}`,
+                    temp: `${data.daily[0].high}${degrees}`,
                   })}
                   {" · "}
                   {t("weather.lo", {
-                    temp: `${data.daily[0].low}${unitSuffix}`,
+                    temp: `${data.daily[0].low}${degrees}`,
                   })}
                 </span>
               )}
@@ -357,12 +380,10 @@ const Weather: React.FC = () => {
             the widget jumping. */}
         {sections.daily && (
           <div className="weather-days">
-            {Array.from({ length: 5 }, (_, i) => (
+            {Array.from({ length: 7 }, (_, i) => (
               <div className="weather-day-row weather-skeleton" key={i}>
                 <span className="weather-skeleton-line weather-skeleton-cell-label" />
-                <span className="weather-day-icon weather-icon-placeholder">
-                  <span className="weather-spinner" aria-hidden="true" />
-                </span>
+                <span className="weather-day-icon weather-icon-placeholder" />
                 <span className="weather-skeleton-line weather-skeleton-cell-temp" />
                 <span className="weather-range" />
                 <span className="weather-skeleton-line weather-skeleton-cell-temp" />
@@ -417,7 +438,7 @@ const Weather: React.FC = () => {
               className="weather-error-action"
               onClick={() =>
                 window.dispatchEvent(
-                  new CustomEvent("ghiblify:weather:choose-city")
+                  new CustomEvent("ghiblify:weather:choose-city"),
                 )
               }
             >
@@ -442,10 +463,10 @@ const Weather: React.FC = () => {
               value: (
                 <>
                   {h.temperature}
-                  {unitSuffix}
+                  {degrees}
                 </>
               ),
-            }))
+            })),
           )}
         {sections.daily && data.daily.length > 0 && dailyRows(data.daily)}
       </>
@@ -459,8 +480,8 @@ const Weather: React.FC = () => {
       }${iconsOnly ? " weather-icons-only" : ""}${
         inDock || isCanvasCompact ? " weather-rail-layout" : ""
       }${isCanvasCompact ? " weather-canvas-compact" : ""}${
-        isHalfInDock ? " weather-tabbed-compact" : ""
-      }`}
+        isCanvasRail ? " weather-canvas-rail" : ""
+      }${isHalfInDock ? " weather-tabbed-compact" : ""}`}
       data-weather-mood={mood}
       style={{
         // Frosted: the .widget shell blurs the wallpaper (see
@@ -468,7 +489,7 @@ const Weather: React.FC = () => {
         // so the glass reads through.
         ["--weather-cell-opacity" as any]: (resolveSurfaceFrost(
           settings.frosted,
-          appearance.theme
+          appearance.theme,
         ) && !settings.showCard
           ? 0.14
           : (settings.opacity ?? 35) / 100

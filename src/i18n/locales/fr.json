@@ -291,6 +291,10 @@
       "highlightTune": "Ajuster le surlignage",
       "highlightTuneUnavailable": "Sélectionnez un surlignage pour le personnaliser",
       "weatherLocationHint": "Votre position sert uniquement à récupérer la météo locale - elle ne quitte cet appareil que vers le service météo.",
+      "weatherLocationEnable": "Activer les services de localisation",
+      "weatherLocationDeviceOff": "Services de localisation désactivés",
+      "weatherLocationLocating": "Recherche de votre position…",
+      "weatherLocationChoose": "Choisir manuellement",
       "guideResize": "Redimensionner",
       "surfaceHighlights": "Surlignages",
       "pomodoroBreakColor": "Fond de la pause"

@@ -301,6 +301,10 @@
       "highlightTune": "调整高亮",
       "highlightTuneUnavailable": "选择高亮后即可自定义",
       "weatherLocationHint": "您的位置仅用于获取本地天气预报，除天气服务外不会发送到任何地方。",
+      "weatherLocationEnable": "开启定位服务",
+      "weatherLocationDeviceOff": "定位服务已关闭",
+      "weatherLocationLocating": "正在获取您的位置…",
+      "weatherLocationChoose": "手动选择",
       "guideResize": "调整大小",
       "surfaceHighlights": "高亮",
       "pomodoroBreakColor": "休息背景"

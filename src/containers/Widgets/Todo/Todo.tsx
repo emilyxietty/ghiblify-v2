@@ -303,6 +303,7 @@ export const Todo: React.FC = () => {
   const draggedIdRef = useRef<string | null>(null);
   const dropTargetIdRef = useRef<string | null>(null);
   const dropPosRef = useRef<"before" | "after" | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
 
   const resetDrag = () => {
     draggedIdRef.current = null;
@@ -324,10 +325,21 @@ export const Todo: React.FC = () => {
     setDropPos(pos);
   };
 
-  const handleListDragOver = (e: React.DragEvent<HTMLUListElement>) => {
+  // Bound to the whole widget, not to the <ul>. The list is only as
+  // tall as its rows, so releasing a hair below the last item - the
+  // most natural way to say "put it at the end" - landed outside the
+  // drop zone, and a drag that ends outside one is cancelled outright.
+  // Anywhere in the widget now completes the drop; the row-midpoint
+  // scan below already clamps to the first/last row when the cursor is
+  // above or below every one of them.
+  const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
     if (!draggedIdRef.current) return;
+    // The drop only counts as allowed while something keeps calling
+    // this. Miss one frame at the release point and the browser reverts
+    // the drag instead of firing onDrop.
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
+    autoScrollList(e.clientY);
 
     const items = Array.from(
       e.currentTarget.querySelectorAll<HTMLElement>(".todo-item"),
@@ -348,6 +360,18 @@ export const Todo: React.FC = () => {
     }
 
     if (targetId) updateDropTarget(targetId, targetPos);
+  };
+
+  // A tall list scrolls, and a native drag doesn't scroll it for you:
+  // without this, rows outside the visible window are unreachable -
+  // you can pick an item up but never carry it to where it belongs.
+  const autoScrollList = (clientY: number) => {
+    const list = listRef.current;
+    if (!list || list.scrollHeight <= list.clientHeight) return;
+    const rect = list.getBoundingClientRect();
+    const zone = 28;
+    if (clientY < rect.top + zone) list.scrollTop -= 10;
+    else if (clientY > rect.bottom - zone) list.scrollTop += 10;
   };
 
   const handleDrop = (id: string) => {
@@ -435,6 +459,13 @@ export const Todo: React.FC = () => {
     <div
       className={`todo-container widget-header${frosted ? " todo-frosted" : ""}`}
       style={todoStyle}
+      onDragOver={handleDragOver}
+      onDrop={(e) => {
+        const targetId = dropTargetIdRef.current;
+        if (!draggedIdRef.current || !targetId) return;
+        e.preventDefault();
+        handleDrop(targetId);
+      }}
     >
       <div className="todo-input-wrapper">
         <TextInput
@@ -456,16 +487,7 @@ export const Todo: React.FC = () => {
           </button>
         )}
       </div>
-      <ul
-        className="todo-list"
-        onDragOver={handleListDragOver}
-        onDrop={(e) => {
-          const targetId = dropTargetIdRef.current;
-          if (!draggedIdRef.current || !targetId) return;
-          e.preventDefault();
-          handleDrop(targetId);
-        }}
-      >
+      <ul className="todo-list" ref={listRef}>
           {visibleTodos.map((todo) => (
             <li
               key={todo.id}

@@ -1,5 +1,5 @@
 import React from "react";
-import { useT } from "../../i18n/i18n";
+import { useT } from "../../../i18n/i18n";
 import "./SurfaceStylePicker.css";
 
 export type SurfaceStyleValue = "clear" | "frost" | "frostDark" | "weather";

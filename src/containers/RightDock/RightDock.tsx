@@ -29,7 +29,7 @@ import { RightDockGuide } from "../../components/RightDockGuide/RightDockGuide";
 import {
   SurfaceStylePicker,
   type SurfaceStyleValue,
-} from "../../components/SurfaceStylePicker/SurfaceStylePicker";
+} from "../../components/RightClickEditModal/SurfaceStylePicker/SurfaceStylePicker";
 import { WidgetIcon } from "../../components/WidgetIcon/WidgetIcon";
 import { Time } from "../Widgets/Time/Time";
 import { DockWidget } from "./DockWidget";

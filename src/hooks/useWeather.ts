@@ -198,6 +198,19 @@ export const clearWeatherLocation = (): void => {
 };
 
 /**
+ * The place label the last device-location lookup resolved, if one is
+ * still cached and wasn't a hand-picked city. Lets the location dialog
+ * answer "where does it think I am?" without triggering a lookup of its
+ * own - a modal that fetches on open would ask for a position the user
+ * may be about to switch away from.
+ */
+export const getDeviceLocationLabel = (): string | null => {
+  const place = readPlace();
+  if (!place || place.manual) return null;
+  return place.label ?? null;
+};
+
+/**
  * IP-based approximate location - city-level, which is exactly the
  * precision a weather forecast needs.
  *

@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "../../components/Button/Button";
+import { Button } from "../../../components/Button/Button";
 import {
   BlurOnIcon,
   CloseIcon,
@@ -15,8 +15,8 @@ import {
   OpacityIcon,
   PlaceIcon,
   VisibilityOffIcon,
-} from "../Icons/Icons";
-import { AVATAR_OPTIONS } from "../../config/avatarConfig";
+} from "../../Icons/Icons";
+import { AVATAR_OPTIONS } from "../../../config/avatarConfig";
 import {
   AvatarSettings,
   DATE_DISPLAY_STYLES,
@@ -39,24 +39,27 @@ import {
   WEATHER_DETAILS,
   type WeatherDetail,
   type DateDisplayStyle,
-} from "../../config/widgetConfig";
+} from "../../../config/widgetConfig";
 import {
   useAppContext,
   type WidgetSurface,
   type WidgetsState,
-} from "../../contexts/AppContext";
-import { clearWeatherLocation } from "../../hooks/useWeather";
-import { useT } from "../../i18n/i18n";
+} from "../../../contexts/AppContext";
+import {
+  clearWeatherLocation,
+  getDeviceLocationLabel,
+} from "../../../hooks/useWeather";
+import { useT } from "../../../i18n/i18n";
 import {
   POMODORO_SOUND_KEYS,
   isPomodoroSoundKey,
   playPomodoroChime,
   primePomodoroAudio,
   type PomodoroSoundKey,
-} from "../../utils/pomodoroChime";
-import { isHighlightTextColor, normalizeHex } from "../../utils/textHighlight";
+} from "../../../utils/pomodoroChime";
+import { isHighlightTextColor, normalizeHex } from "../../../utils/textHighlight";
 import { ColorPicker, ColorTuning } from "../ColorPicker/ColorPicker";
-import { Dropdown } from "../Dropdown/Dropdown";
+import { Dropdown } from "../../Dropdown/Dropdown";
 import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
 import {
   SurfaceStylePicker,
@@ -270,6 +273,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // Todo alone has two surfaces: its own background, and the per-row
   // highlight. They tune independently, so each owns a flyout.
   const [rowTuneOpen, setRowTuneOpen] = useState(false);
+  // The place the last location lookup resolved, so the Location row
+  // can name it instead of saying "Auto" - "Auto" answers "how", when
+  // what the row is being read for is "where". Captured on open: the
+  // panel is short-lived, and the label lives in localStorage where the
+  // widget's own fetch writes it.
+  const [deviceLocationLabel] = useState(() => getDeviceLocationLabel());
   // The side column fits ONE panel, so opening either tuning flyout
   // closes the other instead of stacking them.
   const openSurfaceTune = (open: boolean) => {
@@ -1398,7 +1407,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 );
               }
             },
-            (v) => ({ useDeviceLocation: v === "on" }),
+            // No preview patch: every other segmented control previews
+            // on hover because it's paint-only, but this one clears the
+            // cached coordinates and re-fetches. Hovering the row is not
+            // consent to change where the weather comes from.
           )}
         </Row>
       )}
@@ -1420,8 +1432,14 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             }}
           >
             <PlaceIcon style={{ fontSize: 14 }} />
+            {/* "Auto" only means something while device location is on.
+                With it off and no city chosen there is no location at
+                all, and labelling that state "Auto" read as though the
+                widget had one - so it becomes the invitation to pick. */}
             {weatherSettings.manualPlace?.name ??
-              t("widgets.edit.weatherLocationAuto")}
+              (weatherSettings.useDeviceLocation !== false
+                ? (deviceLocationLabel ?? t("widgets.edit.weatherLocationAuto"))
+                : t("widgets.edit.weatherLocationChoose"))}
           </Button>
         </Row>
       )}

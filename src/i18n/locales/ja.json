@@ -301,6 +301,10 @@
       "highlightTune": "ハイライトを調整",
       "highlightTuneUnavailable": "ハイライトを選択するとカスタマイズできます",
       "weatherLocationHint": "位置情報は地域の天気予報の取得のみに使用され、天気サービス以外に送信されることはありません。",
+      "weatherLocationEnable": "位置情報サービスをオンにする",
+      "weatherLocationDeviceOff": "位置情報サービスはオフ",
+      "weatherLocationLocating": "現在地を取得中…",
+      "weatherLocationChoose": "手動で選ぶ",
       "guideResize": "サイズ変更",
       "surfaceHighlights": "ハイライト",
       "pomodoroBreakColor": "休憩の背景"

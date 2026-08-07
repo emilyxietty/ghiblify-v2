@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useT } from "../../i18n/i18n";
+import { useT } from "../../../i18n/i18n";
 import {
   HIGHLIGHT_OPACITY_PRESETS,
   HIGHLIGHT_PRESETS,
@@ -11,9 +11,9 @@ import {
   resolveForeground,
   withAlpha,
   type HighlightTextColor,
-} from "../../utils/textHighlight";
-import { Z_FLOATING } from "../../utils/zLayers";
-import { ChevronRightIcon, EditIcon } from "../Icons/Icons";
+} from "../../../utils/textHighlight";
+import { Z_FLOATING } from "../../../utils/zLayers";
+import { ChevronRightIcon, EditIcon } from "../../Icons/Icons";
 import "./ColorPicker.css";
 
 const VIEWPORT_MARGIN = 8;

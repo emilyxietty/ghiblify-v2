@@ -12,6 +12,20 @@
     display: flex;
 }
 
+/* The canvas shell is shrink-to-fit and .widget-content is a flex row,
+   so the weather widget is a flex item whose default flex-shrink: 1
+   quietly compresses it below the rail widths set further down - by a
+   DIFFERENT amount for the skeleton than for the loaded content, since
+   the two have different max-content sizes. That put the box at one
+   width while loading and another once data landed, and on a
+   centre-anchored shell every line slides sideways when that happens.
+   Refusing to shrink makes the rail width the one source of truth in
+   both states. Canvas-scoped: the dock's cells size their widgets
+   explicitly and never hit this. */
+.widget[data-widget-key="weather"] .widget-content > .weather-widget {
+    flex-shrink: 0;
+}
+
 .weather-widget {
     /* Auto-size: width and height shrink/grow to fit whatever the
        current `display` mode renders. No scrollbars, no clipping. */
@@ -39,8 +53,51 @@
 /* The canvas compact option and every dock instance share this exact
    rail presentation. Compact changes scale and spacing only; the
    selected Detail still decides which forecast sections render. */
-.weather-widget.weather-canvas-compact {
-    width: min(280px, 90vw);
+/* Both canvas rails are sized to their forecast rather than to a round
+   number. Compact: 322px leaves 292px of content, which is six hourly
+   cells of ~47px plus the 2px gaps. Full: 380px leaves 342px, six
+   ~50px cells plus the standard 8px gaps - the same cell, with room
+   for full-size labels and the 28px icon.
+
+   A fixed rail rather than `width: max-content` for a second reason
+   too: canvas widgets are anchored on their horizontal centre (the
+   shell's translate(-50%) in Widget.tsx), so a width change re-centres
+   the widget and every line of it slides sideways. Sizing to content
+   meant the loading skeleton - whose placeholder bars can't know how
+   wide the strings they stand in for will be - sat at one width and
+   then shoved everything over when the data landed.
+
+   Both widths hang off `weather-canvas-rail`, which Weather.tsx sets
+   only when a forecast is actually on screen. "Now"-only and
+   icons-only get neither: there's no row of cells to line up, so they
+   size to what they show rather than padding a wide box with empty
+   space. Compact keeps its own narrower rail on the same condition.
+   The dock is excluded throughout - it sizes widgets to the column. */
+.weather-widget.weather-canvas-rail {
+    width: min(380px, 90vw);
+}
+
+.weather-widget.weather-canvas-rail.weather-canvas-compact {
+    width: min(322px, 90vw);
+}
+
+/* The hourly strip and the daily card span the same band. The card
+   already carries `width: 100%`; the strip only matched it via
+   align-items stretch, which anything re-aligning the widget's cross
+   axis quietly breaks - the strip then shrinks to its cells while the
+   card stays full, and the two blocks no longer line up. Pin both.
+   Cells share the rail: their old content sizing (min-width plus
+   whatever the label measured) left the last cell hanging over the
+   edge. Both rules are canvas-scoped via `.widget`; the dock keeps its
+   scrolling min-width cells for ~150px half columns. */
+.widget .weather-widget .weather-strip {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.widget .weather-widget .weather-strip-cell {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .weather-widget.weather-rail-layout {
@@ -74,9 +131,10 @@
    span the same band. The dock keeps the scrolling min-width: a
    half-width dock column is ~150px, where six shared cells would be
    too narrow to read. */
-.weather-canvas-compact .weather-strip-cell {
-    flex: 1 1 0;
-    min-width: 0;
+.weather-canvas-compact .weather-strip {
+    /* Tighter than the full rail's 8px: the compact cells are smaller,
+       and at 8px the gaps read as wide as the cells' own padding. */
+    gap: 2px;
 }
 
 .weather-rail-layout .weather-strip-label {
@@ -151,7 +209,14 @@
     overflow: hidden;
 }
 
+/* The one surface where the skeleton must be a real box again: the
+   half-cell centres its body vertically, and only a flex item can
+   take the flex/min-height treatment that layout needs. */
 .weather-widget.weather-tabbed-compact .weather-body > .weather-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
     flex: 1 1 auto;
     min-height: 0;
     justify-content: center;
@@ -465,10 +530,15 @@
     text-align: center;
     font-size: 12.5px;
     padding: 8px 4px;
-    /* The widget is width:max-content - without a cap, a sentence
-       renders as one enormous unwrapped line. This keeps the state
-       card-sized and lets the text wrap inside it. */
-    max-width: 200px;
+    /* Without a cap, a sentence renders as one enormous unwrapped line
+       on the max-content surfaces. This keeps the state card-sized and
+       lets the text wrap inside it. On a rail, though, the cap makes
+       this block narrower than the widget, and a narrower flex child
+       sits at the start of the column - the "no location" state hung
+       off the left edge of a full-forecast widget. Auto side margins
+       centre it whatever the surrounding width is. */
+    max-width: 240px;
+    margin-inline: auto;
     white-space: normal;
     /* Same white-with-halo ink every other weather element uses.
        Nothing here set a colour, so the state inherited the page's
@@ -527,10 +597,18 @@
    circular spot for each icon where the spinner spins. Keeps the
    loading state shaped like the eventual content so first paint
    doesn't feel like a layout-jolt when data arrives. */
+/* Dissolved, exactly like the loaded `.weather-body`: the skeleton
+   blocks become children of the widget's own column flex, so they get
+   the same gap, the same stretch, and the same dock alignment rules as
+   the content they stand in for - by construction, not by imitation.
+   The previous version was a real flex box matching those properties
+   by hand, and every one it missed showed up as the skeleton sitting
+   differently from the loaded widget (left-hugging in an aligned dock
+   cell, a different footprint on the centre-anchored canvas). The
+   aria-live role survives `display: contents` - Chrome keeps the
+   element in the accessibility tree. */
 .weather-loading {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: contents;
 }
 
 /* Shimmery placeholder bar for text fields. Gradient background +
@@ -549,18 +627,24 @@
     animation: weather-skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
+/* Sized in em, not per cent: .weather-current-text is a shrink-to-fit
+   flex item, so a percentage resolves against a width that is itself
+   derived from these lines - they came out zero-wide, which is why the
+   loading block was just a spinner and why it sat somewhere the loaded
+   block doesn't. These are roughly what the real strings measure, and
+   they scale with whichever surface's font size is in play. */
 .weather-skeleton-temp {
-    width: 64%;
+    width: 6.5em;
     height: 22px;
 }
 
 .weather-skeleton-condition {
-    width: 50%;
+    width: 5.5em;
     height: 12px;
 }
 
 .weather-skeleton-feels {
-    width: 70%;
+    width: 7.5em;
     height: 11px;
 }
 
@@ -574,10 +658,10 @@
     height: 12px;
 }
 
-/* Circular spot where an icon would sit. Spinner inside provides
-   the "still loading" visual cue without being the only loading
-   element. Sized to match the live .weather-icon / .weather-strip-icon
-   so the layout doesn't jump when real data arrives. */
+/* Circular spot where an icon would sit. Sized to match the live
+   .weather-icon / .weather-strip-icon / .weather-day-icon so the layout
+   doesn't jump when real data arrives. Only the current-conditions one
+   holds a spinner - see the forecast rules below. */
 .weather-icon-placeholder {
     display: inline-flex;
     align-items: center;
@@ -586,10 +670,12 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
+/* Exactly the live .weather-icon's box, so the text block beside it
+   doesn't shift sideways the moment the real icon arrives. */
 .weather-current .weather-icon-placeholder {
-    width: 48px;
-    height: 48px;
-    flex: 0 0 48px;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
 }
 
 .weather-strip-cell .weather-icon-placeholder {
@@ -597,10 +683,27 @@
     height: 28px;
 }
 
-.weather-strip-cell .weather-icon-placeholder .weather-spinner {
-    width: 16px;
-    height: 16px;
-    border-width: 2px;
+/* The forecast slots shimmer like the text placeholders beside them
+   instead of each spinning its own spinner: six in the strip and five
+   more down the daily list read as something going wrong rather than
+   as loading, and a day row's 1.6em slot is smaller than a spinner, so
+   the daily ones overflowed their circle. The single spinner in the
+   current-conditions block carries the "still working" cue. */
+.weather-strip-cell .weather-icon-placeholder,
+.weather-day-row .weather-icon-placeholder {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.16) 50%,
+        rgba(255, 255, 255, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: weather-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.weather-day-row .weather-icon-placeholder {
+    width: 1.6em;
+    height: 1.6em;
 }
 
 @keyframes weather-skeleton-shimmer {
@@ -630,7 +733,9 @@
 
 @media (prefers-reduced-motion: reduce) {
     .weather-spinner,
-    .weather-skeleton-line {
+    .weather-skeleton-line,
+    .weather-strip-cell .weather-icon-placeholder,
+    .weather-day-row .weather-icon-placeholder {
         animation: none;
     }
 }

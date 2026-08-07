@@ -21,7 +21,7 @@ import { getWidgetSurfacePresentation } from "../../utils/widgetSurfacePresentat
 import { useT } from "../../i18n/i18n";
 import "./DockWidget.css";
 
-const EditWidget = lazy(() => import("../../components/EditWidget/EditWidget"));
+const EditWidget = lazy(() => import("../../components/RightClickEditModal/EditWidget/EditWidget"));
 
 interface DockWidgetProps {
   storageKey: DockWidgetKey;

@@ -190,7 +190,11 @@
     background: color-mix(in srgb, var(--light) 14%, transparent);
 }
 
-.weather-location-hint {
+/* Search-status lines INSIDE the results list - padded to sit on the
+   same grid as the result rows they replace. Scoped, because as a bare
+   `.weather-location-hint` this also padded the privacy line under the
+   actions, which is body copy and wants no inset at all. */
+.weather-location-result-hint {
     padding: 9px 10px;
     font-size: 12px;
     opacity: 0.65;

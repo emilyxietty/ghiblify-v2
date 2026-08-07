@@ -295,6 +295,10 @@
       "highlightTune": "Ajustar destaque",
       "highlightTuneUnavailable": "Selecione um destaque para personalizá-lo",
       "weatherLocationHint": "Sua localização é usada apenas para obter a previsão local - só sai deste dispositivo para o serviço de meteorologia.",
+      "weatherLocationEnable": "Ativar os serviços de localização",
+      "weatherLocationDeviceOff": "Serviços de localização desativados",
+      "weatherLocationLocating": "Procurando sua localização…",
+      "weatherLocationChoose": "Escolher manualmente",
       "guideResize": "Redimensionar",
       "surfaceHighlights": "Destaques",
       "pomodoroBreakColor": "Fundo da pausa"

@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { WeatherSettings } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
-import { clearWeatherLocation } from "../../hooks/useWeather";
+import {
+  clearWeatherLocation,
+  getDeviceLocationLabel,
+} from "../../hooks/useWeather";
 import { useT } from "../../i18n/i18n";
 import { GeoResult, isManualPlace, searchPlaces } from "../../utils/geocoding";
 import { DialogShell } from "../DialogShell/DialogShell";
-import {
-  MyLocationIcon,
-  PlaceIcon,
-  RefreshIcon,
-} from "../Icons/Icons";
+import { MyLocationIcon, PlaceIcon, RefreshIcon } from "../Icons/Icons";
 import "./WeatherLocationModal.css";
 
 const DEBOUNCE_MS = 300;
@@ -23,15 +22,23 @@ interface WeatherLocationModalProps {
  * Where the weather comes from.
  *
  * A modal rather than a panel inside the widget: the widget is small,
- * often docked, and a search field with six results doesn't fit in it - *
+ * often docked, and a search field with six results doesn't fit in it -
  * the old popover ended up scrolling inside a 200px card.
  *
  * Two ways to answer "where am I?":
- *   - Auto - `navigator.geolocation`, which needs the optional
- *     `geolocation` permission. The button here is what requests it.
+ *   - This device's location, resolved from the caller's IP (no
+ *     permission prompt - see getGeolocationCoords in useWeather).
  *   - A city typed by name, resolved through Open-Meteo's geocoder. That
- *     path needs no permission at all, which is the point: someone who
- *     never wants to share their location can still see their weather.
+ *     path needs no network identity at all, which is the point: someone
+ *     who never wants to share their location can still see their
+ *     weather.
+ *
+ * One screen, both offers visible: the state line says where the
+ * forecast is coming from now, the button does the one thing worth
+ * doing to that state (switch it on, switch back to it, or refresh it),
+ * and the search field below is always ready for a city. A step-by-step
+ * version of this made you navigate to reach either answer, which is a
+ * lot of ceremony for a two-option question.
  */
 export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
   open,
@@ -43,14 +50,18 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
   const manual = isManualPlace(settings.manualPlace)
     ? settings.manualPlace
     : null;
+  const deviceOn = settings.useDeviceLocation !== false;
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GeoResult[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "empty" | "error">(
-    "idle"
+    "idle",
   );
+  // Read on open rather than on every render: it comes from
+  // localStorage, and re-reading mid-render would make the label
+  // flicker as the widget's own lookup writes to the same cache.
+  const [deviceLabel, setDeviceLabel] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-
 
   // Debounced search. The AbortController matters more than the debounce:
   // a fast typist can otherwise have an early, slower response land after
@@ -86,6 +97,7 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
     setQuery("");
     setResults([]);
     setStatus("idle");
+    setDeviceLabel(getDeviceLocationLabel());
     const id = window.setTimeout(() => inputRef.current?.focus(), 0);
     return () => window.clearTimeout(id);
   }, [open]);
@@ -101,11 +113,7 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
     onClose();
   };
 
-  const useMyLocation = () => {
-    // No permission request here: `geolocation` is on Chrome's list of
-    // permissions that CANNOT be optional for extensions, so it's
-    // granted at install and the user-facing switch is purely our own
-    // setting.
+  const useDeviceLocation = () => {
     updateWidgetSettings("weather", {
       manualPlace: null,
       useDeviceLocation: true,
@@ -117,6 +125,37 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
     refreshWeather();
     onClose();
   };
+
+  // What the forecast is following right now.
+  const current = manual
+    ? manual.name
+    : deviceOn
+      ? (deviceLabel ?? t("widgets.edit.weatherLocationLocating"))
+      : t("widgets.edit.weatherLocationDeviceOff");
+
+  // The one action worth offering that state. Off: switch it on. On but
+  // following a typed city: switch back to the device. On and already
+  // following the device: there's nothing to change, so re-fetch.
+  const primary = !deviceOn
+    ? {
+        label: t("widgets.edit.weatherLocationEnable"),
+        icon: <MyLocationIcon style={{ fontSize: 15 }} />,
+        run: useDeviceLocation,
+      }
+    : manual
+      ? {
+          label: t("widgets.edit.weatherLocationUseMine"),
+          icon: <MyLocationIcon style={{ fontSize: 15 }} />,
+          run: useDeviceLocation,
+        }
+      : {
+          label: t("widgets.edit.weatherLocationRefresh"),
+          icon: <RefreshIcon style={{ fontSize: 14 }} />,
+          run: () => {
+            refreshWeather();
+            onClose();
+          },
+        };
 
   // Portalled to <body>: this renders from inside the Weather widget,
   // whose shell carries a `transform` - and a transformed ancestor makes
@@ -133,23 +172,28 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
       closeLabel={t("modal.common.closeAria")}
       portal
     >
-        <h2 id="weather-location-title" className="weather-location-title">
-          {t("widgets.contextMenu.weatherLocation")}
-        </h2>
-        <p className="weather-location-current">
-          <PlaceIcon style={{ fontSize: 14 }} />
-          {manual ? manual.name : t("widgets.edit.weatherLocationAuto")}
-        </p>
+      <h2 id="weather-location-title" className="weather-location-title">
+        {t("widgets.contextMenu.weatherLocation")}
+      </h2>
 
-        <div className="weather-location-actions">
-          <button
-            type="button"
-            className="weather-location-action weather-location-action-primary"
-            onClick={useMyLocation}
-          >
-            <MyLocationIcon style={{ fontSize: 15 }} />
-            {t("widgets.edit.weatherLocationUseMine")}
-          </button>
+      <p className="weather-location-current">
+        <PlaceIcon style={{ fontSize: 14 }} />
+        {current}
+      </p>
+
+      <div className="weather-location-actions">
+        <button
+          type="button"
+          className="weather-location-action weather-location-action-primary"
+          onClick={primary.run}
+        >
+          {primary.icon}
+          {primary.label}
+        </button>
+        {/* A second button only when it would do something the primary
+            doesn't: with the device already followed, "refresh" IS the
+            primary and a duplicate would just be noise. */}
+        {(manual || !deviceOn) && deviceOn && (
           <button
             type="button"
             className="weather-location-action"
@@ -161,50 +205,51 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
             <RefreshIcon style={{ fontSize: 14 }} />
             {t("widgets.edit.weatherLocationRefresh")}
           </button>
-        </div>
+        )}
+      </div>
 
-        <p className="weather-location-hint">
-          {t("widgets.edit.weatherLocationHint")}
-        </p>
+      <p className="weather-location-hint">
+        {t("widgets.edit.weatherLocationHint")}
+      </p>
 
-        <input
-          ref={inputRef}
-          type="search"
-          className="weather-location-input"
-          value={query}
-          placeholder={t("widgets.edit.weatherLocationPlaceholder")}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+      <input
+        ref={inputRef}
+        type="search"
+        className="weather-location-input"
+        value={query}
+        placeholder={t("widgets.edit.weatherLocationPlaceholder")}
+        onChange={(e) => setQuery(e.target.value)}
+      />
 
-        <div className="weather-location-results" role="listbox">
-          {status === "loading" && (
-            <div className="weather-location-hint">
-              {t("widgets.edit.weatherLocationSearching")}
-            </div>
-          )}
-          {status === "empty" && (
-            <div className="weather-location-hint">
-              {t("widgets.edit.weatherLocationNoResults")}
-            </div>
-          )}
-          {status === "error" && (
-            <div className="weather-location-hint">
-              {t("widgets.edit.weatherLocationError")}
-            </div>
-          )}
-          {results.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              role="option"
-              aria-selected={manual?.name === r.name}
-              className="weather-location-result"
-              onClick={() => pick(r)}
-            >
-              {r.name}
-            </button>
-          ))}
-        </div>
+      <div className="weather-location-results" role="listbox">
+        {status === "loading" && (
+          <div className="weather-location-result-hint">
+            {t("widgets.edit.weatherLocationSearching")}
+          </div>
+        )}
+        {status === "empty" && (
+          <div className="weather-location-result-hint">
+            {t("widgets.edit.weatherLocationNoResults")}
+          </div>
+        )}
+        {status === "error" && (
+          <div className="weather-location-result-hint">
+            {t("widgets.edit.weatherLocationError")}
+          </div>
+        )}
+        {results.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            role="option"
+            aria-selected={manual?.name === r.name}
+            className="weather-location-result"
+            onClick={() => pick(r)}
+          >
+            {r.name}
+          </button>
+        ))}
+      </div>
     </DialogShell>
   );
 };

@@ -54,7 +54,8 @@ src/
 │   ├── hybridStorage.ts               # chrome.storage source + local mirror
 │   ├── backgroundStorage.ts           # filters + film selection persistence
 │   └── legacyMigrations.ts            # one-shot read of v1 quickLinks blob
-├── components/                        # stateless, reusable UI (Button, Dropdown, EditWidget, …)
+├── components/                        # stateless, reusable UI (Button, Dropdown, …)
+│   └── RightClickEditModal/           # the right-click edit panel + the pickers only it uses
 └── containers/
     ├── Background/, LeftSidebar/      # full-bleed layout pieces
     ├── RightSidebar/                  # bookmarks slide-out panel

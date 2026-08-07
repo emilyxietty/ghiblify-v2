@@ -307,6 +307,10 @@
       "highlightTune": "Adjust highlight",
       "highlightTuneUnavailable": "Select a highlight to customize it",
       "weatherLocationHint": "Your location is only used to fetch the local forecast - it never leaves this device except to the weather service.",
+      "weatherLocationEnable": "Enable location services",
+      "weatherLocationDeviceOff": "Location services off",
+      "weatherLocationLocating": "Finding your location…",
+      "weatherLocationChoose": "Select manually",
       "guideResize": "Resize",
       "surfaceHighlights": "Highlights",
       "pomodoroBreakColor": "Break background"

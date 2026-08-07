@@ -83,7 +83,7 @@ Holding `d` toggles `body.show-widget-outline`, which reveals outlines and quick
 
 Canvas exit handling lives in `App.tsx`; the shared editor handles the same exits when a dock `onClose` callback is supplied.
 
-`EditWidget` (in `components/EditWidget/`) is rendered as an overlay by either wrapper. It reads the widget's config entry and conditionally renders controls (font slider, dark mode switch, time-format toggle, avatar picker, field selector, grid-mode toggle). Widget-specific behavior is keyed off `customControls` in `widgetConfig.ts`; dock edits and previews write to `dockSettings`, while canvas edits write to `settings`.
+`EditWidget` (in `components/RightClickEditModal/EditWidget/`, alongside the pickers that exist for it) is rendered as an overlay by either wrapper. It reads the widget's config entry and conditionally renders controls (font slider, dark mode switch, time-format toggle, avatar picker, field selector, grid-mode toggle). Widget-specific behavior is keyed off `customControls` in `widgetConfig.ts`; dock edits and previews write to `dockSettings`, while canvas edits write to `settings`.
 
 ## Cross-widget signaling
 
