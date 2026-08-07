@@ -204,16 +204,26 @@ if (hasChromeStorage) {
 
 // --- One-time setup ---------------------------------------------------------
 
-// Internal worker - copy any existing localStorage values for
-// registered keys into chrome.storage. Idempotent; safe to call
-// multiple times (the only effect of a re-run is rewriting the same
-// values, which is harmless). Caller is responsible for gating.
+// Internal worker - SEED chrome.storage from the localStorage mirror:
+// copy across registered keys chrome.storage doesn't have yet, and
+// leave the ones it does have alone. Idempotent. Caller gates it.
+//
+// "Seed, don't overwrite" is the whole contract, and it matters
+// because this runs again whenever SETUP_VERSION moves - i.e. on an
+// upgrade, for users who already have data. The mirror is not
+// authoritative: it's localStorage, it only tracks remote changes
+// while a tab is open (see the onChanged listener above), so a browser
+// that was closed while another device made changes boots with a stale
+// mirror. Pushing that wholesale would hand sync the older values and
+// silently undo the other device's edits. Anything genuinely newer in
+// the mirror reaches chrome.storage through the next `write()`
+// anyway - every write goes to both layers.
 const performHybridMigration = async (): Promise<void> => {
   if (!hasChromeStorage) return;
 
-  // Bucket pending writes by area so we can issue at most two
-  // chrome.storage.set calls instead of one per key.
-  const pending: Record<Area, Record<string, unknown>> = {
+  // Bucket by area so we can issue at most two get/set pairs rather
+  // than one per key.
+  const mirrored: Record<Area, Record<string, unknown>> = {
     sync: {},
     local: {},
   };
@@ -222,13 +232,27 @@ const performHybridMigration = async (): Promise<void> => {
     const raw = localStorage.getItem(key);
     if (raw == null) continue;
     try {
-      pending[area][key] = JSON.parse(raw);
+      mirrored[area][key] = JSON.parse(raw);
     } catch {
       // Stored as a non-JSON string (legacy "true"/"false" flags).
       // Preserve as-is so the parse-on-read path still recovers it.
-      pending[area][key] = raw;
+      mirrored[area][key] = raw;
     }
   }
+
+  const getArea = (area: Area, keys: string[]) =>
+    new Promise<Record<string, unknown>>((resolve) => {
+      if (!keys.length) return resolve({});
+      try {
+        chromeNs.storage[area].get(keys, (items: Record<string, unknown>) =>
+          resolve(items ?? {}),
+        );
+      } catch {
+        // Unreadable: treat everything as already present rather than
+        // risk overwriting values we failed to look at.
+        resolve(Object.fromEntries(keys.map((k) => [k, null])));
+      }
+    });
 
   const setArea = (area: Area, payload: Record<string, unknown>) =>
     new Promise<void>((resolve) => {
@@ -240,7 +264,17 @@ const performHybridMigration = async (): Promise<void> => {
       }
     });
 
-  await Promise.all([setArea("sync", pending.sync), setArea("local", pending.local)]);
+  const seed = async (area: Area) => {
+    const keys = Object.keys(mirrored[area]);
+    const existing = await getArea(area, keys);
+    const payload: Record<string, unknown> = {};
+    for (const key of keys) {
+      if (existing[key] === undefined) payload[key] = mirrored[area][key];
+    }
+    await setArea(area, payload);
+  };
+
+  await Promise.all([seed("sync"), seed("local")]);
 };
 
 /**

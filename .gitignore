@@ -9,3 +9,6 @@
 # Embedded reference clone of the v1 repo under guide/. It carries
 # its own .git, so git treats it as a submodule unless ignored.
 /guide/ghiblify
+
+# Packaged release archives (built from /dist by hand for the Web Store).
+/*.zip
