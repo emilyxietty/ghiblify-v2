@@ -149,18 +149,14 @@ const Weather: React.FC = () => {
   const is24Hour = !!widgets.time.settings.is24Hour;
   const iconStyle = settings.iconStyle ?? "animated";
   const iconsOnly = storedDetail === "icon";
-  // A canvas widget showing a forecast is a fixed-width rail (see the
-  // rail widths in Weather.css) rather than sized to its content: the
-  // hourly cells and the daily card then span the same band, and the
-  // box stays put between the loading skeleton and the data. Widgets
-  // with nothing but the current conditions - or nothing but icons -
-  // keep sizing to what they show.
   // A forecast is a row of cells that has to line up with the daily
   // card, which is what the fixed rail widths are for. Nothing else
   // does: "now" is one reading, and icon detail is a couple of glyphs.
   // Both size to their contents, so the widget is only ever as wide as
   // what it shows. Compact gets the same treatment at its own width -
-  // see the rails in Weather.css.
+  // see the rails in Weather.css. It also keeps the box a constant
+  // width across the loading skeleton and the data, which matters on a
+  // canvas widget anchored by its centre.
   const isCanvasRail =
     !inDock && !iconsOnly && (sections.hourly || sections.daily);
 
