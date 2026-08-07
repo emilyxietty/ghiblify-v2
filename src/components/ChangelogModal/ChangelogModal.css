@@ -132,3 +132,57 @@
     font-weight: 600;
     letter-spacing: -0.005em;
 }
+
+/* Release notes. Scrolls independently of the dialog so the Discord
+   card underneath is always reachable - the dialog is height-capped
+   and the list is the only part that can outgrow it. */
+.changelog-releases {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent)
+        transparent;
+}
+
+.changelog-release-version {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+/* Custom markers rather than list-style: a disc sits on the text
+   baseline and drifts as lines wrap. This one hangs at a fixed offset
+   from the first line and stays put. */
+.changelog-release-items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.changelog-release-items li {
+    position: relative;
+    padding-left: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--light) 88%, transparent);
+}
+
+.changelog-release-items li::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0.58em;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--light) 45%, transparent);
+}

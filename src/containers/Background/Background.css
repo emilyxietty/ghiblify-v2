@@ -5,6 +5,11 @@
     overflow: hidden;
 }
 
+/* Fades in over the pre-painted wallpaper on <body> (see prepaint.js).
+   Every load picks a fresh photo, so the two images differ and the
+   handover was a hard cut. Crossfading makes it read as the page
+   settling rather than as a flicker. Short enough not to feel like an
+   effect; `both` holds the end state so nothing pops at the finish. */
 .background-filter {
     position: absolute;
     top: 0;
@@ -15,6 +20,22 @@
     background-position: center;
     background-repeat: no-repeat;
     z-index: 0;
+    animation: background-fade-in 280ms ease both;
+}
+
+@keyframes background-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .background-filter {
+        animation: none;
+    }
 }
 
 /* Cursor-driven parallax (toggled by `background.parallax`).
