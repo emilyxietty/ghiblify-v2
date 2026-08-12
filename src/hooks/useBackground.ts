@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../contexts/AppContext";
-import { readBlacklist, readFavorites } from "../storage/backgroundStorage";
+import {
+  readAnimatedBackgrounds,
+  readBlacklist,
+  readFavorites,
+} from "../storage/backgroundStorage";
 import { useOnline } from "./useOnline";
 
 // Bundled fallbacks shown when the browser is offline. All ship with
@@ -29,6 +33,13 @@ interface BackgroundItem {
 interface BackgroundSource {
   title: string;
   links: string[];
+  /** Animated stills (gif / animated webp) from the same film, kept in
+   *  their own array rather than mixed into `links` so the "animated
+   *  backgrounds" setting can drop them from the pool without touching
+   *  the per-film selection the user made. Sources that are entirely
+   *  animated ("soothing (beta)", and whatever is still unattributed)
+   *  carry an empty `links`. */
+  animated?: string[];
 }
 
 interface BackgroundData {
@@ -134,8 +145,18 @@ export const useBackground = () => {
         const allLinks: { link: string; sourceTitle: string }[] = [];
         const seen = new Set<string>();
 
+        // Animated stills join the pool only when the setting is on.
+        // They live under their own film, so a user who turns them off
+        // keeps every static still from the same film - and one who
+        // leaves them on gets real metadata in the Info widget instead
+        // of the empty "Animated" pseudo-film they used to resolve to.
+        const animatedOn = readAnimatedBackgrounds();
+
         validSources.forEach((source) => {
-          source.links.forEach((link) => {
+          const pool = animatedOn
+            ? [...source.links, ...(source.animated ?? [])]
+            : source.links;
+          pool.forEach((link) => {
             if (!blacklistSet.has(link) && !seen.has(link)) {
               allLinks.push({ link, sourceTitle: source.title });
               seen.add(link);
