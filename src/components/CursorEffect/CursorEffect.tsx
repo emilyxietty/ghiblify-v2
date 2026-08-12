@@ -15,6 +15,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
+import { assetUrl } from "../../utils/assetUrl";
 import {
   CursorName,
   normalizeCursor,
@@ -135,7 +136,7 @@ const Trail: React.FC<{ kind: CursorName }> = ({ kind }) => {
             ["--scale" as any]: p.scale,
           }}
         >
-          <img src={`/assets/cursors/${kind}.svg`} alt="" draggable={false} />
+          <img src={assetUrl(`/assets/cursors/${kind}.svg`)} alt="" draggable={false} />
         </div>
       ))}
     </div>

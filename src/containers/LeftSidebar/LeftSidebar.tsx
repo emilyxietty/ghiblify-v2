@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { assetUrl } from "../../utils/assetUrl";
 // Lazy - these dialogs only render when the user clicks their trigger,
 // so each becomes its own chunk fetched on first open. They eagerly
 // shipped ~1700 LOC of JSX/logic with the initial bundle before this.
@@ -1081,7 +1082,7 @@ export const LeftSidebar: React.FC = () => {
                     >
                       <img
                         className="preview-cursor-img"
-                        src={`/assets/cursors/${cur}.svg`}
+                        src={assetUrl(`/assets/cursors/${cur}.svg`)}
                         alt=""
                         aria-hidden="true"
                         draggable={false}
@@ -1132,7 +1133,7 @@ export const LeftSidebar: React.FC = () => {
                       </svg>
                     ) : (
                       <img
-                        src={`/assets/cursors/${name}.svg`}
+                        src={assetUrl(`/assets/cursors/${name}.svg`)}
                         alt=""
                         aria-hidden="true"
                         draggable={false}

@@ -23,9 +23,10 @@ Guidance for AI assistants working in this repo. Read this first; consult `guide
 ## Commands
 
 ```bash
-npm run dev      # vite build --watch - rebuilds dist/ on change
-npm run build    # one-shot production build
-npm run preview  # serve dist/
+npm run dev          # vite build --watch - rebuilds dist/ on change
+npm run build        # one-shot production build
+npm run preview      # serve dist/
+npm run deploy:demo  # build the web demo + copy it into the portfolio site
 ```
 
 There are no tests, no linter, and no formatter configured. Don't add CI tooling unless asked.
@@ -138,6 +139,35 @@ There's no test suite. Verification = run `pnpm build`, reload the unpacked exte
 5. Open a second tab - confirm pomodoro stays in sync if relevant
 
 If you can't verify in a browser, say so explicitly.
+
+## The web demo (second build target)
+
+The same source tree also builds an embeddable demo for the portfolio
+site (`pages/ghiblify.html` runs it in an iframe). `BUILD_TARGET=web`
+switches Vite to `base: "./"`, `outDir: dist-demo`, and a single
+`demo.html` entry; `scripts/sync-demo.mjs` copies the result to
+`../emilyxietty.github.io/ghiblify/demo` (override with argv or
+`GHIBLIFY_SITE_DIR`).
+
+`src/demo/chromeShim.ts` fakes the `chrome` namespace - in-memory
+storage, a fixed bookmark tree, permissions that read as granted,
+`search.query` that opens a new tab - and swaps `localStorage` for an
+in-memory Storage so the demo persists nothing into the host site's
+origin. `src/demo/index.tsx` must import it FIRST; hybridStorage and
+i18n capture `chrome` at module scope.
+
+Two rules this target imposes on ordinary feature work:
+
+- **Never write a root-relative asset path** (`/assets/foo.png`). It
+  resolves to the host site's root when the bundle is served from a
+  subdirectory. Use `utils/assetUrl.ts`; Vite already handles `url()`
+  in CSS via `base`.
+- **`_favicon/` is Chromium-extension-only.** Gate any use on
+  `utils/faviconCache.ts`'s `hasFaviconCache`, or the demo and the
+  Firefox build emit a 404 per link.
+
+After changing anything user-visible, `pnpm deploy:demo` so the
+embedded copy isn't stale, then commit the site repo separately.
 
 ## Deeper reading
 

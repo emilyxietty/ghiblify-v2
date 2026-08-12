@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { assetUrl } from "../../../utils/assetUrl";
 import { Button } from "../../../components/Button/Button";
 import { useAppContext } from "../../../contexts/AppContext";
 import {
@@ -700,8 +701,8 @@ const Pomodoro: React.FC = () => {
           // as the GIFs with `-still.png` suffix.
           const stillName = timerImage.replace(/\.gif$/, "-still.png");
           const src = isRunning
-            ? `/assets/pomodoro/${timerImage}`
-            : `/assets/pomodoro/${stillName}`;
+            ? assetUrl(`/assets/pomodoro/${timerImage}`)
+            : assetUrl(`/assets/pomodoro/${stillName}`);
           return (
             <img
               src={src}

@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { assetUrl } from "../../utils/assetUrl";
+import { hasFaviconCache } from "../../utils/faviconCache";
 import { EdgePanelCallout } from "../../components/EdgePanelCallout/EdgePanelCallout";
 import {
   ChevronRightIcon,
@@ -131,7 +133,7 @@ const useChromeBookmarks = (active: boolean) => {
 const getFavicon = (rawUrl: string, size = 32) => {
   if (!rawUrl) return "";
   const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
-  if (chromeNs?.runtime?.getURL) {
+  if (hasFaviconCache && chromeNs?.runtime?.getURL) {
     try {
       const faviconUrl = new URL(chromeNs.runtime.getURL("/_favicon/"));
       faviconUrl.searchParams.set("pageUrl", rawUrl);
@@ -1125,7 +1127,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
         {!error && topLevel.length > 0 && !hasResults && (
           <div className="bookmarks-no-results" role="status" aria-live="polite">
             <img
-              src="/assets/avatars/boh.webp"
+              src={assetUrl("/assets/avatars/boh.webp")}
               alt=""
               aria-hidden="true"
               className="bookmarks-no-results-avatar"

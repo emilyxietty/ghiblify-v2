@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { assetUrl } from "../../../utils/assetUrl";
+import { hasFaviconCache } from "../../../utils/faviconCache";
 import { AccountCircleIcon, AppsIcon } from "../../../components/Icons/Icons";
 import { useT } from "../../../i18n/i18n";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
@@ -52,7 +54,7 @@ const networkFavicon = (url: string): string => {
 const localFavicon = (url: string): string | null => {
   try {
     const ns = typeof chrome !== "undefined" ? chrome : undefined;
-    if (!ns?.runtime?.getURL) return null;
+    if (!hasFaviconCache || !ns?.runtime?.getURL) return null;
     const u = new URL(ns.runtime.getURL("/_favicon/"));
     u.searchParams.set("pageUrl", url);
     u.searchParams.set("size", "64");
@@ -73,7 +75,7 @@ const AppTile: React.FC<{ name: string; url: string; slug: string }> = ({
   const local = localFavicon(url);
   const src =
     stage === 0
-      ? `/assets/google/${slug}.png`
+      ? assetUrl(`/assets/google/${slug}.png`)
       : stage === 1
         ? networkFavicon(url)
         : stage === 2

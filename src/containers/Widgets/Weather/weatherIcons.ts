@@ -1,3 +1,5 @@
+import { assetUrl } from "../../../utils/assetUrl";
+
 // Shared weather-icon helpers. Lives in its own module so consumers
 // (LeftSidebar's live weather chip) don't pull the entire Weather
 // widget into the main bundle just to resolve a glyph name.
@@ -21,16 +23,16 @@ export const codeToIconName = (code: number, isDay: boolean): string => {
   return "cloudy";
 };
 
-// Inside a Chrome extension we'd want chrome.runtime.getURL, but the
-// build pipeline already serves /public at the extension root, so a
-// root-relative path resolves identically and works in dev preview
-// too. Animated SVGs sit at the top level; their static counterparts
-// are mirrored in the `still/` subfolder.
+// Resolved through assetUrl rather than left root-relative: the same
+// bundle also runs from a subdirectory in the embedded web demo, where
+// a leading slash points at the host site's root instead of ours.
+// Animated SVGs sit at the top level; their static counterparts are
+// mirrored in the `still/` subfolder.
 export const iconUrl = (
   name: string,
   style: "animated" | "still",
 ): string => {
   return style === "still"
-    ? `/assets/weather/still/${name}.svg`
-    : `/assets/weather/${name}.svg`;
+    ? assetUrl(`/assets/weather/still/${name}.svg`)
+    : assetUrl(`/assets/weather/${name}.svg`);
 };
