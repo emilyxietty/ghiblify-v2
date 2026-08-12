@@ -79,7 +79,14 @@
     "appearance": {
       "palette": "パレット",
       "paletteAria": "カラーパレット",
-      "highContrast": "ハイコントラスト"
+      "highContrast": "ハイコントラスト",
+      "frostTune": "フロスト",
+      "frostAmount": "強さ",
+      "frostColor": "色",
+      "frostOpacity": "不透明度",
+      "frostClear": "クリア",
+      "frostBlack": "ブラック",
+      "frostWhite": "ホワイト"
     },
     "fonts": {
       "heading": "フォント",
@@ -409,7 +416,20 @@
     "noResultsTitle": "ブックマークが見つかりません",
     "noResultsSub": "「{{query}}」に一致する項目はありません。",
     "permissionPrompt": "ここにブックマークを表示するには、Chrome のブックマークを読み取る権限が必要です。",
-    "permissionGrant": "ブックマークへのアクセスを許可"
+    "permissionGrant": "ブックマークへのアクセスを許可",
+    "settings": {
+      "title": "表示",
+      "layout": "レイアウト",
+      "layoutTree": "ツリー",
+      "layoutDrill": "階層表示",
+      "density": "密度",
+      "densityComfortable": "標準",
+      "densityCompact": "コンパクト",
+      "sort": "並び順",
+      "sortManual": "手動",
+      "sortAz": "A–Z",
+      "sortRecent": "最近"
+    }
   },
   "notes": {
     "placeholder": "メモを書く…",
@@ -635,7 +655,8 @@
         "body1": "編集パネルでウィジェットの設定を変更できます。",
         "body2": "ウィジェット自体をドラッグして移動できます。キー操作は不要です。",
         "dragCue": "クリックしてドラッグ",
-        "hint": "影の付いた隅のグリップをドラッグしてサイズを変更します。"
+        "hint": "影の付いた隅のグリップをドラッグしてサイズを変更します。",
+        "resizeCue": "ドラッグでサイズ変更"
       },
       "background": {
         "title": "背景を選ぶ",
@@ -727,8 +748,6 @@
     "resetCursorConfirm": "カーソルを標準のシステムポインタに戻しますか？",
     "storedDataLabel": "保存データ",
     "otherSub": "インストール用フラグと、上のどのセクションにも属さないデータ。",
-    "permissionMicrophone": "マイク",
-    "permissionMicrophoneSub": "検索バーの音声検索に使います。マイクを使っている間だけ有効です。",
     "corners": "角の丸み",
     "cornersSub": "ウィジェット・メニュー・ダイアログの角の丸さ。",
     "cornerStyle": {

@@ -1,12 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { EdgePanelCallout } from "../../components/EdgePanelCallout/EdgePanelCallout";
-import { ChevronRightIcon, DeleteOutlineIcon } from "../../components/Icons/Icons";
+import {
+  ChevronRightIcon,
+  DeleteOutlineIcon,
+  LayoutDrillIcon,
+  LayoutTreeIcon,
+  SettingsIcon,
+  SortIcon,
+} from "../../components/Icons/Icons";
 import { FolderIcon } from "../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
 } from "../../components/ContextMenu/ContextMenu";
 import { useAppContext } from "../../contexts/AppContext";
+import type {
+  BookmarksDensity,
+  BookmarksLayout,
+  BookmarksSettings,
+  BookmarksSort,
+} from "../../config/widgetConfig";
 import { useEdgePanel } from "../../hooks/useEdgePanel";
 import { useT } from "../../i18n/i18n";
 import { isEditableTarget } from "../../utils/isEditableTarget";
@@ -17,6 +30,8 @@ interface BookmarkNode {
   id: string;
   title: string;
   url?: string;
+  /** Chrome's creation timestamp - only read by the "recent" sort. */
+  dateAdded?: number;
   children?: BookmarkNode[];
 }
 
@@ -143,6 +158,52 @@ const matches = (node: BookmarkNode, query: string): boolean => {
   return !!node.children?.some((c) => matches(c, q));
 };
 
+/** Display order for one folder's children: folders first, then links,
+ *  each group in the chosen order. "manual" leaves Chrome's own order
+ *  untouched, which is the order a drag writes - the other two are
+ *  display-only, and dragging is disabled while they're on so a drop
+ *  can't write a position the list isn't showing. */
+const orderChildren = (
+  children: BookmarkNode[],
+  sort: BookmarksSort
+): BookmarkNode[] => {
+  const by = (list: BookmarkNode[]) => {
+    if (sort === "az")
+      return [...list].sort((a, b) =>
+        (a.title || a.url || "").localeCompare(b.title || b.url || "")
+      );
+    if (sort === "recent")
+      return [...list].sort((a, b) => (b.dateAdded ?? 0) - (a.dateAdded ?? 0));
+    return list;
+  };
+  return [
+    ...by(children.filter((c) => !c.url)),
+    ...by(children.filter((c) => !!c.url)),
+  ];
+};
+
+/** The sort choices, in menu order. Manual is Chrome's own order and
+ *  the only one a drag can write into - the rows stop being draggable
+ *  under the other two. */
+const SORT_OPTIONS: { value: BookmarksSort; labelKey: string }[] = [
+  { value: "manual", labelKey: "bookmarks.settings.sortManual" },
+  { value: "az", labelKey: "bookmarks.settings.sortAz" },
+  { value: "recent", labelKey: "bookmarks.settings.sortRecent" },
+];
+
+/** Every link in the tree with the folder it lives in. Search in drill
+ *  mode reports matches from the whole tree - having to navigate to a
+ *  result you already searched for would defeat the search. */
+const flattenLinks = (
+  nodes: BookmarkNode[],
+  folder = ""
+): { node: BookmarkNode; folder: string }[] =>
+  nodes.flatMap((n) =>
+    n.url
+      ? [{ node: n, folder }]
+      : flattenLinks(n.children ?? [], n.title || folder)
+  );
+
 // Move a bookmark via the chrome.bookmarks API. Chrome handles the
 // index shift internally for same-parent moves and accepts an
 // omitted index to append to the end of a destination folder.
@@ -253,6 +314,7 @@ interface BookmarkFolderProps {
   parentId: string | null;
   depth: number;
   filter: string;
+  sort: BookmarksSort;
   defaultOpen?: boolean;
 }
 
@@ -261,6 +323,7 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
   parentId,
   depth,
   filter,
+  sort,
   defaultOpen = true,
 }) => {
   const t = useT();
@@ -274,9 +337,11 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
 
   const visibleChildren = useMemo(() => {
     if (!node.children) return [];
-    if (!filtering) return node.children;
-    return node.children.filter((c) => matches(c, filter));
-  }, [node.children, filter, filtering]);
+    const shown = filtering
+      ? node.children.filter((c) => matches(c, filter))
+      : node.children;
+    return orderChildren(shown, sort);
+  }, [node.children, filter, filtering, sort]);
 
   // Drop INTO this folder - append the dragged bookmark to the end.
   // stopPropagation is critical: drag events bubble, so a drop on a
@@ -383,7 +448,7 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
               <BookmarkLink
                 key={child.id}
                 node={child}
-                draggable={!filtering}
+                draggable={!filtering && sort === "manual"}
                 depth={depth + 1}
                 onDrop={() => handleChildDrop(child.id)}
               />
@@ -394,6 +459,7 @@ const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
                 parentId={node.id}
                 depth={depth + 1}
                 filter={filter}
+                sort={sort}
               />
             )
           )}
@@ -411,6 +477,10 @@ interface BookmarkLinkProps {
    *  up under its sibling folders' chevrons (which already use
    *  `paddingLeft: 8 + depth * 28`). */
   depth: number;
+  /** Where this link lives, shown under it. Only the drill layout's
+   *  search uses it: those results didn't come from navigating, so the
+   *  folder is the missing half of the answer. */
+  subtitle?: string;
 }
 
 const BookmarkLink: React.FC<BookmarkLinkProps> = ({
@@ -418,6 +488,7 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
   draggable,
   onDrop,
   depth,
+  subtitle,
 }) => {
   const t = useT();
   const drag = useBmDrag();
@@ -446,6 +517,10 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
     <li
       className={[
         "bookmarks-link-item",
+        // The grab cursor is a promise the row can't keep under a
+        // sort or a search - reordering only writes back in manual
+        // order, so anything else renders as a plain row.
+        draggable ? "is-draggable" : "",
         isDragging ? "is-dragging" : "",
         isDropTarget ? `drop-target drop-${drag.hoveredPos ?? "before"}` : "",
       ]
@@ -532,6 +607,9 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
         )}
         <span className="bookmarks-link-title">{node.title || node.url}</span>
       </a>
+      {subtitle && (
+        <span className="bookmarks-drill-hit-folder">{subtitle}</span>
+      )}
       {contextMenuPos && (
         <ContextMenu
           position={contextMenuPos}
@@ -543,14 +621,303 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
   );
 };
 
+/**
+ * Drill-down layout: one folder at a time, at full panel width.
+ *
+ * The tree indents 28px per level, which a 360px column can only
+ * afford two or three times before titles start truncating on nesting
+ * alone. Here depth costs nothing - you trade seeing the whole shape
+ * at once for every row being readable, and a back row carries you
+ * out. Folders sort above links, matching how you scan for a place
+ * before you scan for a page.
+ */
+const BookmarkDrill: React.FC<{
+  roots: BookmarkNode[];
+  filter: string;
+  sort: BookmarksSort;
+}> = ({ roots, filter, sort }) => {
+  const t = useT();
+  const drag = useBmDrag();
+  // Ids, not nodes: the tree is refetched on every bookmark change, so
+  // holding node objects would pin a stale copy of the folder.
+  const [path, setPath] = useState<string[]>([]);
+  const filtering = filter.length > 0;
+
+  const findById = (nodes: BookmarkNode[], id: string): BookmarkNode | null => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      const hit = n.children ? findById(n.children, id) : null;
+      if (hit) return hit;
+    }
+    return null;
+  };
+
+  // A folder that's been deleted (or renamed away) drops you back at
+  // the level that still exists rather than onto an empty panel.
+  const trail = useMemo(() => {
+    const out: BookmarkNode[] = [];
+    for (const id of path) {
+      const found = findById(roots, id);
+      if (!found) break;
+      out.push(found);
+    }
+    return out;
+  }, [path, roots]);
+
+  const current = trail[trail.length - 1] ?? null;
+  const children = current ? (current.children ?? []) : roots;
+  const rows = useMemo(() => orderChildren(children, sort), [children, sort]);
+
+  // Searching leaves the current folder behind and reports every match
+  // in the tree, each labelled with where it lives.
+  const searchHits = useMemo(
+    () =>
+      filtering
+        ? flattenLinks(roots).filter(({ node }) => matches(node, filter))
+        : [],
+    [roots, filter, filtering]
+  );
+
+  const handleChildDrop = (childId: string) => {
+    const dragged = drag.draggedRef.current;
+    const hover = drag.hoveredRef.current;
+    const parent = current;
+    if (
+      !dragged ||
+      dragged === childId ||
+      filtering ||
+      !parent?.children ||
+      hover?.kind !== "link"
+    ) {
+      drag.endDrag();
+      return;
+    }
+    // Index in the FOLDER's own order, not in the sorted rows above -
+    // Chrome stores positions, and the drop targets a real neighbour.
+    const targetIdx = parent.children.findIndex((c) => c.id === childId);
+    if (targetIdx < 0) {
+      drag.endDrag();
+      return;
+    }
+    moveBookmark(dragged, parent.id, hover.pos === "after" ? targetIdx + 1 : targetIdx);
+    drag.endDrag();
+  };
+
+  if (filtering) {
+    return (
+      <ul className="bookmarks-list bookmarks-drill-list">
+        {searchHits.map(({ node, folder }) => (
+          <BookmarkLink
+            key={node.id}
+            node={node}
+            draggable={false}
+            depth={0}
+            subtitle={folder || undefined}
+            onDrop={() => {}}
+          />
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <div className="bookmarks-drill">
+      {current && (
+        <button
+          type="button"
+          className="bookmarks-drill-back"
+          onClick={() => setPath((p) => p.slice(0, -1))}
+        >
+          <ChevronRightIcon className="bookmarks-drill-back-icon" fontSize="small" />
+          <span className="bookmarks-drill-back-name">
+            {current.title || t("bookmarks.heading")}
+          </span>
+        </button>
+      )}
+      <ul className="bookmarks-list bookmarks-drill-list">
+        {rows.map((child) =>
+          child.url ? (
+            <BookmarkLink
+              key={child.id}
+              node={child}
+              draggable={!!current && sort === "manual"}
+              depth={0}
+              onDrop={() => handleChildDrop(child.id)}
+            />
+          ) : (
+            <li
+              key={child.id}
+              className={`bookmarks-folder bookmarks-drill-folder${
+                drag.hoveredKind === "folder" && drag.hoveredId === child.id
+                  ? " is-folder-drop-target"
+                  : ""
+              }`}
+              onDragOver={(e) => {
+                if (!drag.draggedId || drag.draggedId === child.id) return;
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = "move";
+                drag.hoverFolder(child.id);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const dragged = drag.draggedRef.current;
+                if (dragged && dragged !== child.id) moveBookmark(dragged, child.id);
+                drag.endDrag();
+              }}
+            >
+              <button
+                type="button"
+                className="bookmarks-folder-toggle bookmarks-drill-row"
+                onClick={() => setPath((p) => [...p, child.id])}
+              >
+                <FolderIcon fontSize="small" className="bookmarks-folder-icon" />
+                <span className="bookmarks-folder-name">
+                  {child.title || t("bookmarks.heading")}
+                </span>
+                <span className="bookmarks-drill-count">
+                  {child.children?.length ?? 0}
+                </span>
+                <ChevronRightIcon
+                  className="bookmarks-drill-chevron"
+                  fontSize="small"
+                />
+              </button>
+            </li>
+          )
+        )}
+      </ul>
+    </div>
+  );
+};
+
+/** The gear popup on the panel heading. Three display choices, each a
+ *  segmented row - flat, no submenus, and every option visible at
+ *  once rather than hidden behind a dropdown. */
+const BookmarksSettingsPopover: React.FC<{
+  settings: BookmarksSettings;
+  onChange: (patch: Partial<BookmarksSettings>) => void;
+  onClose: () => void;
+}> = ({ settings, onChange, onClose }) => {
+  const t = useT();
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (ref.current?.contains(e.target as Node)) return;
+      // The gear itself lives outside this panel; let its own click
+      // handler do the toggling instead of closing and reopening.
+      if ((e.target as HTMLElement)?.closest?.(".bookmarks-settings-btn"))
+        return;
+      onClose();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey, true);
+    };
+  }, [onClose]);
+
+  const row = <K extends keyof BookmarksSettings>(
+    labelKey: string,
+    field: K,
+    options: {
+      value: BookmarksSettings[K];
+      labelKey: string;
+      /** Layout draws itself - "Tree" and "Drill-down" are names for
+       *  shapes, and the shape is the thing you're choosing. */
+      icon?: React.ReactNode;
+    }[]
+  ) => {
+    const withIcons = options.some((opt) => opt.icon);
+    return (
+      <div className="bookmarks-settings-row">
+        <span className="bookmarks-settings-label">{t(labelKey)}</span>
+        <div
+          className={`bookmarks-segmented${withIcons ? " has-icons" : ""}`}
+          role="radiogroup"
+          aria-label={t(labelKey)}
+        >
+          {options.map((opt) => (
+            <button
+              key={String(opt.value)}
+              type="button"
+              role="radio"
+              aria-checked={settings[field] === opt.value}
+              className={`bookmarks-segment${
+                settings[field] === opt.value ? " is-active" : ""
+              }`}
+              onClick={() =>
+                onChange({ [field]: opt.value } as Partial<BookmarksSettings>)
+              }
+            >
+              {opt.icon}
+              <span>{t(opt.labelKey)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="bookmarks-settings-panel"
+      role="dialog"
+      aria-label={t("bookmarks.settings.title")}
+    >
+      {row("bookmarks.settings.layout", "layout", [
+        {
+          value: "tree" as BookmarksLayout,
+          labelKey: "bookmarks.settings.layoutTree",
+          icon: <LayoutTreeIcon style={{ fontSize: 18 }} />,
+        },
+        {
+          value: "drill" as BookmarksLayout,
+          labelKey: "bookmarks.settings.layoutDrill",
+          icon: <LayoutDrillIcon style={{ fontSize: 18 }} />,
+        },
+      ])}
+      {row("bookmarks.settings.density", "density", [
+        {
+          value: "comfortable" as BookmarksDensity,
+          labelKey: "bookmarks.settings.densityComfortable",
+        },
+        {
+          value: "compact" as BookmarksDensity,
+          labelKey: "bookmarks.settings.densityCompact",
+        },
+      ])}
+    </div>
+  );
+};
+
 interface RightSidebarProps {
   visible: boolean;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   const t = useT();
-  const { isDragging } = useAppContext();
+  const { isDragging, widgets, updateWidgetSettings } = useAppContext();
   const [filter, setFilter] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sortMenuPos, setSortMenuPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const bookmarkSettings = widgets.bookmarks.settings as BookmarksSettings;
+  const layout: BookmarksLayout = bookmarkSettings.layout ?? "tree";
+  const density: BookmarksDensity = bookmarkSettings.density ?? "comfortable";
+  const sort: BookmarksSort = bookmarkSettings.sort ?? "manual";
   const {
     isOpen,
     setIsOpen,
@@ -621,9 +988,41 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
       className={`right-sidebar ${isOpen ? "open" : ""}`}
       aria-label={t("bookmarks.ariaLabel")}
     >
-      <div className="right-sidebar-content">
+      <div className={`right-sidebar-content density-${density}`}>
         <header className="bookmarks-header">
-          <h4>{t("bookmarks.heading")}</h4>
+          {/* Title and gear share a row of their own so the gear can
+              centre on the TEXT. The heading's underline used to live
+              inside the <h4> as an ::after block, which made the h4 box
+              text + gap + rule tall and left the gear aligned to that
+              whole stack instead of the words. */}
+          <div className="bookmarks-header-row">
+            <h4>{t("bookmarks.heading")}</h4>
+            {/* Hover (or keyboard focus) reveals the gear - the
+                heading is the panel's own row, so its settings belong
+                on it rather than in a corner of the sidebar. It stays
+                visible while its popup is open, otherwise the control
+                you just clicked would vanish under your cursor. */}
+            <button
+              type="button"
+              className={`bookmarks-settings-btn${
+                settingsOpen ? " is-open" : ""
+              }`}
+              aria-haspopup="dialog"
+              aria-expanded={settingsOpen}
+              aria-label={t("bookmarks.settings.title")}
+              data-tooltip={t("bookmarks.settings.title")}
+              onClick={() => setSettingsOpen((v) => !v)}
+            >
+              <SettingsIcon style={{ fontSize: 15 }} />
+            </button>
+          </div>
+          {settingsOpen && (
+            <BookmarksSettingsPopover
+              settings={{ layout, density, sort }}
+              onChange={(patch) => updateWidgetSettings("bookmarks", patch)}
+              onClose={() => setSettingsOpen(false)}
+            />
+          )}
         </header>
 
         {bookmarksGranted === false ? (
@@ -641,15 +1040,53 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
           </div>
         ) : (
           <>
-            <input
-              id="bookmarks-search"
-              type="search"
-              className="bookmarks-search"
-              placeholder={t("bookmarks.searchPlaceholder")}
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              aria-label={t("bookmarks.searchAria")}
-            />
+            <div className="bookmarks-search-row">
+              <input
+                id="bookmarks-search"
+                type="search"
+                className="bookmarks-search"
+                placeholder={t("bookmarks.searchPlaceholder")}
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                aria-label={t("bookmarks.searchAria")}
+              />
+              {/* Sort sits with the search field, not in the gear: both
+                  act on what the list is showing right now, while the
+                  gear holds the choices you set once and forget. */}
+              <button
+                type="button"
+                className={`bookmarks-sort-btn${
+                  sort === "manual" ? "" : " is-active"
+                }`}
+                aria-haspopup="menu"
+                aria-expanded={!!sortMenuPos}
+                aria-label={t("bookmarks.settings.sort")}
+                data-tooltip={t("bookmarks.settings.sort")}
+                onClick={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  setSortMenuPos((open) =>
+                    open ? null : { x: r.right, y: r.bottom + 4 }
+                  );
+                }}
+              >
+                <SortIcon style={{ fontSize: 16 }} />
+              </button>
+            </div>
+            {sortMenuPos && (
+              <ContextMenu
+                position={sortMenuPos}
+                onClose={() => setSortMenuPos(null)}
+                items={SORT_OPTIONS.map((opt) => ({
+                  type: "radio" as const,
+                  label: t(opt.labelKey),
+                  selected: sort === opt.value,
+                  onClick: () => {
+                    updateWidgetSettings("bookmarks", { sort: opt.value });
+                    setSortMenuPos(null);
+                  },
+                }))}
+              />
+            )}
 
             {errorMessage && <p className="bookmarks-error">{errorMessage}</p>}
 
@@ -665,18 +1102,23 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
 
         {!error && topLevel.length > 0 && hasResults && (
           <BookmarkDragContext.Provider value={dragApi}>
-            <ul className="bookmarks-list bookmarks-root-list">
-              {topLevel.map((node) => (
-                <BookmarkFolder
-                  key={node.id}
-                  node={node}
-                  parentId={null}
-                  depth={0}
-                  filter={filter}
-                  defaultOpen
-                />
-              ))}
-            </ul>
+            {layout === "drill" ? (
+              <BookmarkDrill roots={topLevel} filter={filter} sort={sort} />
+            ) : (
+              <ul className="bookmarks-list bookmarks-root-list">
+                {topLevel.map((node) => (
+                  <BookmarkFolder
+                    key={node.id}
+                    node={node}
+                    parentId={null}
+                    depth={0}
+                    filter={filter}
+                    sort={sort}
+                    defaultOpen
+                  />
+                ))}
+              </ul>
+            )}
           </BookmarkDragContext.Provider>
         )}
 

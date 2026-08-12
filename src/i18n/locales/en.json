@@ -79,7 +79,14 @@
     "appearance": {
       "palette": "Palettes",
       "paletteAria": "Color palette",
-      "highContrast": "High contrast"
+      "highContrast": "High contrast",
+      "frostTune": "Frost",
+      "frostAmount": "Amount",
+      "frostColor": "Colour",
+      "frostOpacity": "Opacity",
+      "frostClear": "Clear",
+      "frostBlack": "Black",
+      "frostWhite": "White"
     },
     "fonts": {
       "heading": "Font",
@@ -417,7 +424,20 @@
     "noResultsTitle": "No bookmarks found",
     "noResultsSub": "Nothing matches \"{{query}}\". Try a shorter search?",
     "permissionPrompt": "Ghiblify needs permission to read your Chrome bookmarks before it can show them here.",
-    "permissionGrant": "Allow bookmarks access"
+    "permissionGrant": "Allow bookmarks access",
+    "settings": {
+      "title": "Display",
+      "layout": "Layout",
+      "layoutTree": "Tree",
+      "layoutDrill": "Drill-down",
+      "density": "Density",
+      "densityComfortable": "Comfortable",
+      "densityCompact": "Compact",
+      "sort": "Sort",
+      "sortManual": "Manual",
+      "sortAz": "A–Z",
+      "sortRecent": "Recent"
+    }
   },
   "notes": {
     "placeholder": "Jot something down…",
@@ -644,7 +664,8 @@
         "body1": "Use the edit panel to change the widget's settings.",
         "body2": "Drag the widget itself to move it—no key needed.",
         "dragCue": "Click + drag",
-        "hint": "Drag the shadowed corner grip to resize."
+        "hint": "Drag the shadowed corner grip to resize.",
+        "resizeCue": "Drag to resize"
       },
       "background": {
         "title": "Select backgrounds",
@@ -736,8 +757,6 @@
     "resetCursorConfirm": "Put the cursor back to the plain system pointer?",
     "storedDataLabel": "Stored data",
     "otherSub": "Install flags and anything not owned by a section above.",
-    "permissionMicrophone": "Microphone",
-    "permissionMicrophoneSub": "Lets the search bar's voice search listen. Only active while you hold the mic button's session.",
     "corners": "Corners",
     "cornersSub": "How round widgets, menus and modals are.",
     "cornerStyle": {

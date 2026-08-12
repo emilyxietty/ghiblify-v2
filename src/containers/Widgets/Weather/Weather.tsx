@@ -80,7 +80,7 @@ const COMPACT_WEATHER_SECTIONS: readonly CompactWeatherSection[] = [
 
 const Weather: React.FC = () => {
   const t = useT();
-  const { widgets, appearance } = useAppContext();
+  const { widgets } = useAppContext();
   const {
     settings: rawSettings,
     updateSettings,
@@ -485,7 +485,6 @@ const Weather: React.FC = () => {
         // so the glass reads through.
         ["--weather-cell-opacity" as any]: (resolveSurfaceFrost(
           settings.frosted,
-          appearance.theme,
         ) && !settings.showCard
           ? 0.14
           : (settings.opacity ?? 35) / 100

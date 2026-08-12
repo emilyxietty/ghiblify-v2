@@ -74,7 +74,14 @@
     "appearance": {
       "palette": "Paletas",
       "paletteAria": "Paleta de cores",
-      "highContrast": "Alto contraste"
+      "highContrast": "Alto contraste",
+      "frostTune": "Gelo",
+      "frostAmount": "Intensidade",
+      "frostColor": "Cor",
+      "frostOpacity": "Opacidade",
+      "frostClear": "Transparente",
+      "frostBlack": "Preto",
+      "frostWhite": "Branco"
     },
     "fonts": {
       "heading": "Fonte",
@@ -402,7 +409,20 @@
     "noResultsTitle": "Nenhum resultado",
     "noResultsSub": "Nada corresponde a \"{{query}}\".",
     "permissionPrompt": "O Ghiblify precisa de permissão para ler seus favoritos do Chrome antes de exibi-los aqui.",
-    "permissionGrant": "Permitir acesso aos favoritos"
+    "permissionGrant": "Permitir acesso aos favoritos",
+    "settings": {
+      "title": "Exibição",
+      "layout": "Layout",
+      "layoutTree": "Árvore",
+      "layoutDrill": "Nível a nível",
+      "density": "Densidade",
+      "densityComfortable": "Confortável",
+      "densityCompact": "Compacta",
+      "sort": "Ordem",
+      "sortManual": "Manual",
+      "sortAz": "A–Z",
+      "sortRecent": "Recentes"
+    }
   },
   "notes": {
     "placeholder": "Anote algo…",
@@ -628,7 +648,8 @@
         "body1": "Use o painel de edição para alterar as configurações do widget.",
         "body2": "Arraste o próprio widget para movê-lo, sem pressionar nenhuma tecla.",
         "dragCue": "Clique e arraste",
-        "hint": "Arraste a alça sombreada no canto para redimensionar."
+        "hint": "Arraste a alça sombreada no canto para redimensionar.",
+        "resizeCue": "Arraste para redimensionar"
       },
       "background": {
         "title": "Escolher planos de fundo",
@@ -720,8 +741,6 @@
     "resetCursorConfirm": "Voltar o cursor ao ponteiro padrão do sistema?",
     "storedDataLabel": "Dados salvos",
     "otherSub": "Sinalizadores de instalação e tudo que não pertence a uma seção acima.",
-    "permissionMicrophone": "Microfone",
-    "permissionMicrophoneSub": "Permite a busca por voz na barra de pesquisa. Ativo apenas durante a sessão do microfone.",
     "corners": "Cantos",
     "cornersSub": "O quanto widgets, menus e diálogos são arredondados.",
     "cornerStyle": {

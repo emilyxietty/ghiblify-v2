@@ -17,9 +17,16 @@
        background above. Falling back to --todo-surface-rgb meant
        choosing a background dragged the highlights along with it. */
     --todo-row-rgb: var(--surface-rgb, 31, 38, 32);
+    /* Ink. Todo.tsx overwrites these inline the moment the widget has
+       a highlight or a background of its own - the palette only gets a
+       say while the widget is still wearing the palette's surface,
+       i.e. when there's nothing else to derive contrast from. No
+       per-palette override belongs here: one lived here for Frost and
+       meant picking a palette repainted text the widget's own settings
+       were supposed to own. */
     --todo-text: var(--light);
-    --todo-text-muted: color-mix(in srgb, var(--light) 60%, transparent);
-    --todo-border: color-mix(in srgb, var(--light) 22%, transparent);
+    --todo-text-muted: color-mix(in srgb, var(--todo-text) 60%, transparent);
+    --todo-border: color-mix(in srgb, var(--todo-text) 22%, transparent);
     /* Checkmark / accent uses --green (defined per-palette) so the
        Todo doesn't read as the same warm yellow used for decorative
        headings and pulses elsewhere - green reads better as a
@@ -45,19 +52,6 @@
    flex-shrinking .todo-list becomes the scrollable region. */
 .todo-container:not(.collapsed) {
     height: auto;
-}
-
-/* Frost-specific Todo overrides - text and border tokens that
-   AREN'T derived from the global --surface-rgb token. The surface
-   itself is handled automatically via --surface-rgb (set to a
-   fixed dark slate in `.theme-frost` in App.css), so we don't
-   re-declare the background here. We just need to swap the text
-   color tokens (Frost's --light is white-on-dark) and a frost-
-   appropriate border tint. */
-.theme-frost .todo-container {
-    --todo-text: rgba(255, 255, 255, 0.96);
-    --todo-text-muted: rgba(255, 255, 255, 0.6);
-    --todo-border: rgba(255, 255, 255, 0.18);
 }
 
 /* when collapsed, keep the same widget width so header doesn't re-center */

@@ -40,7 +40,6 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
   const guide = useRightDockGuide();
   const {
     widgets,
-    appearance,
   } = useAppContext();
   const widgetRef = useRef<HTMLDivElement | null>(null);
   const guideWasOpenRef = useRef(false);
@@ -61,8 +60,8 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
   // is a 2-column grid; full widgets span both columns. Some widgets
   // are locked to a specific size regardless of stored preference.
   // Todo/Info compress poorly into a half cell so they're full-only.
-  // Avatar is a small image tile that looks lonely as a full-row
-  // surface, so it's locked to half.
+  // Avatar is flexible: half gives a small square tile, full a big
+  // one, and it fills whichever cell it lands in.
   const widthPolicy = DOCK_WIDTH_POLICIES[storageKey];
   const dockWidth =
     widthPolicy === "flexible" ? widgets[storageKey].dockWidth : widthPolicy;
@@ -73,7 +72,6 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
       ...widgets[storageKey].settings,
       ...widgets[storageKey].dockSettings,
     },
-    theme: appearance.theme,
   });
   const isGuideTarget =
     guide.open && storageKey === "time";

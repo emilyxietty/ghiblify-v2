@@ -76,18 +76,18 @@
     --radius-nested-md: max(0px, calc(var(--radius-md) - var(--nest-inset)));
 
     /* Backdrop blur for widget surfaces (Todo input, SearchBar, QuickLinks
-       tiles, Weather forecast cells). The Frost theme overrides this with
-       a much heavier value to get a frosted-glass effect. */
+       tiles, Weather forecast cells). No theme overrides these two: a
+       palette that raises them is frosting widget backgrounds by proxy,
+       which is a per-widget opt-in, not a palette's call. */
     --surface-blur: 6px;
-    /* Saturation multiplier baked into the backdrop-filter. Defaults to
-       1 (no change). Frost bumps this to make the colors behind every
-       glass surface pop more vividly, the same way macOS Liquid Glass
-       does. */
+    /* Saturation multiplier baked into the backdrop-filter. 1 = no
+       change. */
     --surface-saturate: 1;
-    /* Hard upper bound on the alpha of widget surfaces. Defaults to 1
-       (= no cap, opacity slider drives surface fully). Frost lowers
-       this so surfaces stay translucent enough for the photo + blur
-       to read through, regardless of where the user puts the slider. */
+    /* Hard upper bound on the alpha of widget surfaces. 1 = no cap, the
+       opacity slider drives the surface fully. No theme lowers it: a
+       palette must not quietly override what the user set on a widget
+       (Frost used to cap at 0.22 to keep its glass translucent). Kept
+       as a token for the per-widget frosted surfaces to use. */
     --surface-alpha-cap: 1;
 
     /* Surface RGB triple for widget cards / modals / tooltips - anything
@@ -444,10 +444,12 @@
     --sidebar-card: rgba(255, 255, 255, 0.08);
     --focus-ring: rgba(120, 150, 180, 0.85);
     --disabled-light: rgba(80, 100, 120, 0.5);
-    /* The three knobs that define the glass aesthetic. */
-    --surface-blur: 30px;
-    --surface-saturate: 1.7;
-    --surface-alpha-cap: 0.22;
+    /* No --surface-blur / --surface-saturate override. Every consumer
+       of those two is a widget surface (todo rows, the todo + search
+       inputs, weather forecast cells), so bumping them to 30px / 1.7
+       here WAS the palette frosting widget backgrounds - just one layer
+       down from the shell. They stay at the 6px / 1 baseline like every
+       other palette; per-widget glass is opt-in. */
     /* Pin the surface tint to a fixed dark slate so widget cards,
        modals, tooltips, dock chrome, etc. all read as Frost's dark
        glass automatically - no per-component .theme-frost override

@@ -6,7 +6,24 @@
     /* No overflow:hidden - nav arrows live just outside the image
        bounds and would otherwise be clipped. */
     overflow: visible;
+    /* Optional surface, driven by the widget's own Background control.
+       --avatar-opacity is 0 unless one is chosen, so this paints
+       nothing by default. The tint falls back to the palette surface,
+       like every other widget card.
+
+       No padding on purpose: the surface is exactly the sprite's box.
+       Padding outward grew the widget the moment you tinted it, and
+       padding inward shrank the sprite instead - either way the size
+       slider stopped meaning what it said. The avatar art carries its
+       own transparent margin, which is the breathing room. */
+    border-radius: var(--radius-lg);
+    background: rgba(
+        var(--avatar-surface-rgb, var(--surface-rgb, 31, 38, 32)),
+        var(--avatar-opacity, 0)
+    );
+    transition: background 160ms ease;
 }
+
 
 .avatar-image {
     object-fit: contain;

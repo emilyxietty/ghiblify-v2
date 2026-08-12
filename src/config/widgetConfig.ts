@@ -168,6 +168,16 @@ export interface TodoSettings {
 export interface AvatarSettings {
   selectedAvatar: string;
   size: number;
+  /** 0-100 alpha of the surface behind the avatar. 0 (the default) is
+   *  no background at all - the sprite sits straight on the wallpaper,
+   *  which is how this widget has always looked. */
+  opacity: number;
+  /** 0-100 backdrop blur behind that surface. */
+  blur: number;
+  /** Surface tint. null/absent = the palette's --surface-rgb. */
+  surfaceColor?: string | null;
+  /** Ink override for the credit chip that sits on the surface. */
+  textColor?: "auto" | "light" | "dark";
 }
 export interface QuicklinksSettings {
   gridMode: boolean;
@@ -346,9 +356,25 @@ export interface WeatherSettings {
 }
 // Bookmarks is a right-side sliding panel, not a positioned widget. It's in
 // WIDGET_KEYS so its visibility lives in the same state as everything else
-// and the sidebar toggle row can include it. Settings and position are
-// unused.
-export type BookmarksSettings = Record<string, never>;
+// and the sidebar toggle row can include it. Position is unused; the
+// settings below are edited from the gear on the panel's heading.
+export type BookmarksLayout = "tree" | "drill";
+export type BookmarksSort = "manual" | "az" | "recent";
+export type BookmarksDensity = "comfortable" | "compact";
+export interface BookmarksSettings {
+  /** "tree" nests folders inline with indentation (the original, and
+   *  still the default). "drill" shows one folder at a time at full
+   *  panel width with a back row - a 360px column runs out of room
+   *  fast once folders nest. */
+  layout: BookmarksLayout;
+  /** Row height + type scale. Compact fits roughly a third more links
+   *  on screen. */
+  density: BookmarksDensity;
+  /** Display order. "manual" is Chrome's own order, and the only one
+   *  that can accept a drag - reordering under a sorted view would
+   *  write a position you can't see. */
+  sort: BookmarksSort;
+}
 // Right Sidebar is a meta-widget - toggling it on enables a persistent
 // right-side dock that hosts other widgets. Its settings belong to the
 // panel itself; widget-specific appearance remains in each docked
@@ -531,7 +557,10 @@ export const DOCK_WIDTH_POLICIES: Record<DockWidgetKey, DockWidthPolicy> = {
   date: "flexible",
   info: "full",
   todo: "full",
-  avatar: "half",
+  // Half OR full - a half cell is a small square tile, a full one a
+  // big square. Both read fine now that the avatar sizes itself to
+  // its cell instead of sitting at a fixed 80px inside it.
+  avatar: "flexible",
   weather: "flexible",
   notes: "flexible",
 };
@@ -542,15 +571,13 @@ export const getDockWidthPolicy = (
   (DOCK_WIDTH_POLICIES as Partial<Record<WidgetKey, DockWidthPolicy>>)[key] ??
   null;
 
-/** Surface-frost resolution. An EXPLICIT user choice (true/false,
- *  written by the surface chips) always wins; untouched (undefined)
- *  follows the palette - the Frost theme defaults frost-capable
- *  widgets to glass, every other theme to solid. Render-time only:
- *  switching themes never rewrites anyone's stored settings. */
-export const resolveSurfaceFrost = (
-  stored: boolean | undefined,
-  theme: string
-): boolean => stored ?? theme === "frost";
+/** Surface-frost resolution. Frost is a per-widget choice written by
+ *  the surface chips - never something a palette turns on for you. The
+ *  Frost theme used to default frost-capable widgets to glass, which
+ *  meant picking that palette silently reskinned every widget
+ *  background; untouched (undefined) now means solid on every theme. */
+export const resolveSurfaceFrost = (stored: boolean | undefined): boolean =>
+  stored === true;
 
 export const isWidgetKey = (s: string | undefined): s is WidgetKey =>
   !!s && (WIDGET_KEYS as readonly string[]).includes(s);
@@ -712,9 +739,19 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
   avatar: {
     name: "Avatar",
     position: { x: 50, y: 9.914150101936801 },
-    settings: { selectedAvatar: "chihiro", size: 100 },
+    // opacity 0 = no background until asked for, same as googleApps
+    // and quicklinks. blur 0 for the same reason: a blur with no tint
+    // would smear a rectangle behind a transparent sprite.
+    settings: {
+      selectedAvatar: "chihiro",
+      size: 100,
+      opacity: 0,
+      blur: 0,
+    },
     size: { min: 50, max: 400, step: 50 },
-    customControls: { avatarSelector: true },
+    // todoFrosted = the shared surface row (colour swatch + tuning),
+    // the same control todo, quicklinks and googleApps use.
+    customControls: { avatarSelector: true, todoFrosted: true },
   },
   quicklinks: {
     name: "Quick Links",
@@ -777,7 +814,11 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // positioned tile. Visible defaults to false so existing users don't
     // suddenly get a new panel.
     position: { x: 50, y: 50 },
-    settings: {},
+    settings: {
+      layout: "tree",
+      density: "comfortable",
+      sort: "manual",
+    },
   },
   weather: {
     name: "Weather",

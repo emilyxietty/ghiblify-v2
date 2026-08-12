@@ -1,9 +1,16 @@
 /**
  * Optional Chrome permissions.
  *
- * `bookmarks` and `audioCapture` are declared under
- * `optional_permissions` in the manifest rather than `permissions`, so a
- * fresh install asks for neither.
+ * `bookmarks` is declared under `optional_permissions` in the manifest
+ * rather than `permissions`, so a fresh install asks for nothing.
+ *
+ * `audioCapture` used to sit beside it, to gate the Search widget's
+ * voice input. It is an APPS-ONLY permission: Chrome drops it at load
+ * with "'audioCapture' is only allowed for packaged apps, but this is a
+ * extension", so `request()` could never resolve true and the mic
+ * toggles were permanently off. Extension pages take the ordinary web
+ * route instead - `getUserMedia()` raises Chrome's own mic prompt for
+ * the chrome-extension:// origin - so there is no grant to track.
  *
  * `geolocation` is deliberately ABSENT from the manifest entirely.
  * Chrome refuses to make it optional (it's on the documented
@@ -26,12 +33,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type OptionalPermission =
-  | "bookmarks"
-  // Voice search. An extension page never gets the browser's mic
-  // prompt - getUserMedia is denied outright unless the extension holds
-  // `audioCapture` - so this grant is the only route to the microphone.
-  | "audioCapture";
+export type OptionalPermission = "bookmarks";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const permissionsApi = (): any => {

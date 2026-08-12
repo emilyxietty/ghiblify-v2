@@ -1,0 +1,219 @@
+/* Frost tuning popup - the panel opened by the Frost palette swatch.
+   Deliberately built from the same parts as the widget tuning column
+   (label + slider rows, native swatch with a pencil, hex field) so the
+   two read as one control language.
+
+   The panel paints with --frost-rgb / --frost-blur, the tokens it
+   edits: dragging the amount slider re-frosts the panel itself, which
+   is a truer preview than any swatch. Backdrop-filter works here
+   because the panel is portalled to <body> - a backdrop root of its
+   own, with the wallpaper behind it. */
+.frost-tuning {
+    position: fixed;
+    z-index: var(--z-portal, 100100);
+    width: 232px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: var(--radius-lg, 12px);
+    background: rgba(
+        var(--frost-rgb, 10, 14, 20),
+        calc(0.72 * var(--frost-alpha, 1))
+    );
+    -webkit-backdrop-filter: blur(var(--frost-blur, 14px)) saturate(1.15);
+    backdrop-filter: blur(var(--frost-blur, 14px)) saturate(1.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 12px 32px rgba(0, 0, 0, 0.4);
+    /* Same ink as the rest of Frost: on a pale tint this panel is a
+       pale surface too, and white-on-white would be the first thing
+       you'd notice. */
+    color: var(--frost-ink, #ffffff);
+}
+
+.frost-tuning-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.frost-tuning-close {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 12px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm, 6px);
+    cursor: pointer;
+    opacity: 0.75;
+}
+
+.frost-tuning-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.frost-tuning-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+}
+
+.frost-tuning-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--frost-ink-muted, rgba(255, 255, 255, 0.72));
+}
+
+.frost-tuning-value {
+    font-variant-numeric: tabular-nums;
+    color: var(--frost-ink-muted, rgba(255, 255, 255, 0.55));
+    opacity: 0.85;
+}
+
+.frost-tuning-row .filter-slider {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Suggested tints. Each chip carries a checkerboard so a translucent
+   or clear preset reads as translucent rather than as a muddy grey -
+   the 50% chips lay their colour OVER that check, which is exactly
+   what the glass does to the wallpaper. */
+.frost-tuning-presets {
+    display: flex;
+    gap: 6px;
+}
+
+.frost-tuning-preset {
+    /* Circular, like the palette swatches upstairs - these are colours,
+       and the palette row already taught that colours are dots. */
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    flex: 0 0 auto;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+    background-color: transparent;
+    background-image:
+        linear-gradient(var(--preset-color, transparent), var(--preset-color, transparent)),
+        linear-gradient(45deg, rgba(255, 255, 255, 0.28) 25%, transparent 25%,
+            transparent 75%, rgba(255, 255, 255, 0.28) 75%),
+        linear-gradient(45deg, rgba(255, 255, 255, 0.28) 25%, transparent 25%,
+            transparent 75%, rgba(255, 255, 255, 0.28) 75%);
+    background-size: auto, 8px 8px, 8px 8px;
+    background-position: 0 0, 0 0, 4px 4px;
+}
+
+.frost-tuning-preset:hover,
+.frost-tuning-preset:focus-visible {
+    border-color: rgba(255, 255, 255, 0.55);
+    transform: scale(1.08);
+}
+
+.frost-tuning-preset {
+    transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.frost-tuning-preset.is-active {
+    /* Ink, not white: the selected ring has to survive a pale tint. */
+    border-color: var(--frost-ink, #ffffff);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28);
+}
+
+/* Swatch + hex share one line, same as the widget tuning column. */
+.frost-tuning-color-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.frost-tuning-native-wrap {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: 30px;
+    height: 28px;
+}
+
+.frost-tuning-native {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md, 8px);
+    background: transparent;
+    cursor: pointer;
+}
+
+.frost-tuning-native-pencil {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    color: #ffffff;
+    background: color-mix(
+        in srgb,
+        var(--interaction-accent, #8fc7e8) 78%,
+        #1f2620
+    );
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+.frost-tuning-hex {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--frost-ink, #ffffff);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md, 8px);
+    outline: none;
+}
+
+.frost-tuning-hex:focus {
+    border-color: var(--focus-ring, rgba(120, 150, 180, 0.85));
+}
+
+.frost-tuning-hex.is-invalid {
+    border-color: rgba(255, 138, 138, 0.85);
+}
+
+.frost-tuning-reset {
+    align-self: flex-start;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--frost-ink, rgba(255, 255, 255, 0.85));
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: var(--radius-pill, 999px);
+    cursor: pointer;
+}
+
+.frost-tuning-reset:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--frost-ink, #ffffff);
+}

@@ -208,7 +208,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     setWidgetDockAlignment,
     reorderDockedWidgets,
     setEditingWidgetKey,
-    appearance,
   } = useAppContext();
   const isDock = surface === "dock";
   const widgetsCommitted = useMemo(() => {
@@ -409,7 +408,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   if (!showWidgetEdits || isResizing || !isWidgetKey(storageKey)) return null;
 
   const widgetConfig = getWidgetConfig(storageKey);
-  const settings = widgetsCommitted[storageKey].settings as Record<string, unknown>;
+  const settings = widgetsCommitted[storageKey].settings as unknown as Record<string, unknown>;
   const controls = widgetConfig.customControls;
   const supportsDockWidth = isDock && getDockWidthPolicy(storageKey) === "flexible";
   const supportsDockItemAlignment =
@@ -446,15 +445,17 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   };
 
   // --- Generic controls, driven by what the config declares ----------
-  const isFrost = appearance.theme === "frost";
   const isNotes = storageKey === "notes";
   const isNotesPaperFrost =
     isNotes && (settings as Record<string, unknown>).paperFrost === true;
-  // The single slider drives `blur` on Frost (the widget renders as
-  // glass with no surface alpha to tune) and `opacity` everywhere else.
-  // Notes always persists this value as opacity: solid paper uses it as
-  // alpha, while frosted paper maps it to blur strength in CSS.
-  let sliderField: string = isNotes ? "opacity" : isFrost ? "blur" : "opacity";
+  // The single slider is surface opacity on every palette. It used to
+  // become a blur slider on Frost, back when that palette forced every
+  // widget to render as glass with no surface alpha left to tune -
+  // Frost no longer touches widget backgrounds, so the control matches
+  // the rest of the themes again. Notes persists this value as opacity
+  // either way: solid paper uses it as alpha, while frosted paper maps
+  // it to blur strength in CSS.
+  let sliderField: string = "opacity";
   // Quicklinks stores a separate pair per mode - the grid's own
   // background and the list popup are different surfaces - so the
   // slider has to write whichever belongs to the mode on screen.
@@ -462,11 +463,11 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     storageKey === "quicklinks" &&
     !(widgetsCommitted.quicklinks.settings as QuicklinksSettings).gridMode
   ) {
-    sliderField = sliderField === "blur" ? "listBlur" : "listOpacity";
+    sliderField = "listOpacity";
   }
   let supportsSlider =
-    sliderField in (widgetConfig.settings as Record<string, unknown>);
-  if (supportsSlider && !isFrost && storageKey === "weather") {
+    sliderField in (widgetConfig.settings as unknown as Record<string, unknown>);
+  if (supportsSlider && storageKey === "weather") {
     // Weather's opacity only tints the forecast cells, which don't
     // exist below the "hourly" detail level.
     const detail = resolveWeatherDetail(
@@ -515,7 +516,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // fully invisible when you removed a tint.
   const defaultAlpha = (field: string) =>
     Number(
-      (widgetConfig.settings as Record<string, unknown>)[field] ?? 0
+      (widgetConfig.settings as unknown as Record<string, unknown>)[field] ?? 0
     ) || 0;
 
   const pomoRead = (c: string, o: string, b: string, tc: string) => ({
@@ -586,7 +587,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     : t("widgets.edit.surfaceStyle");
 
   const supportsTextShadow =
-    "textShadow" in (widgetConfig.settings as Record<string, unknown>);
+    "textShadow" in (widgetConfig.settings as unknown as Record<string, unknown>);
   // `??` not `||` - `||` would snap back to 100 when dragged to 0.
   const textShadowValue = Math.round(
     typeof settings.textShadow === "number" ? settings.textShadow : 100
@@ -595,10 +596,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // Presence in the *config* is the gate, so a stale stored value can't
   // make a control appear on a widget that doesn't support it.
   const supportsHighlight =
-    "highlightColor" in (widgetConfig.settings as Record<string, unknown>);
+    "highlightColor" in (widgetConfig.settings as unknown as Record<string, unknown>);
   const supportsTypeIn =
     surface === "canvas" &&
-    "typeIn" in (widgetConfig.settings as Record<string, unknown>);
+    "typeIn" in (widgetConfig.settings as unknown as Record<string, unknown>);
   const highlightValue =
     typeof settings.highlightColor === "string"
       ? normalizeHex(settings.highlightColor)
@@ -738,6 +739,80 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           {o.label}
         </button>
       ))}
+    </div>
+  );
+
+  // Built once, rendered in one of two slots - see the avatar note
+  // in the panel body below.
+  const isAvatarPanel = storageKey === "avatar";
+  {/* Quicklinks uses the highlight model instead of surface chips:
+      one swatch that opens a full tuning panel (colour, ink,
+      opacity, blur). The chip strip only ever offered a handful of
+      preset tones, and with a continuous blur slider now in play a
+      pair of frost presets alongside it was two controls fighting
+      over one property. */}
+  const surfaceRow = controls?.todoFrosted && (
+    <div className="edit-panel-slider-row">
+      <span className="edit-panel-row-label">{surfaceLabel}</span>
+      <ColorPicker
+        color={surfaceColorValue}
+        tuningKind={paintsPieces ? "highlight" : "background"}
+        textColor={surfaceInk}
+        opacity={surfaceOpacityValue}
+        blur={surfaceBlurValue}
+        expanded={surfaceTuneOpen}
+        onExpandChange={openSurfaceTune}
+        onBlurChange={(v) =>
+          updateWidgetSettings(storageKey, {
+            [surfaceFields.blur]: v,
+          } as never)
+        }
+        onChange={(next) =>
+          updateWidgetSettings(storageKey, {
+            surfaceColor: next,
+            // A colour picked while the surface is fully
+            // transparent would paint nothing and read as a broken
+            // picker; clearing it drops the alpha back so the
+            // widget doesn't keep the theme tint that first pick
+            // introduced.
+            ...(next
+              ? surfaceOpacityValue === 0
+                ? { [surfaceFields.opacity]: 25 }
+                : {}
+              : {
+                  [surfaceFields.opacity]: defaultAlpha(
+                    surfaceFields.opacity
+                  ),
+                }),
+          } as never)
+        }
+        onTextColorChange={(next) =>
+          updateWidgetSettings(storageKey, { textColor: next } as never)
+        }
+        onOpacityChange={(next) =>
+          updateWidgetSettings(storageKey, {
+            [surfaceFields.opacity]: next,
+          } as never)
+        }
+        onPreviewChange={(next) =>
+          // Mirror the commit's alpha bump, or hovering a colour on
+          // a clear surface previews nothing and the swatches look
+          // dead until you actually click one.
+          previewWidgetSettings(storageKey, {
+            surfaceColor: next,
+            ...(next && surfaceOpacityValue === 0
+              ? { [surfaceFields.opacity]: 25 }
+              : {}),
+          } as never)
+        }
+        onPreviewOpacity={(next) =>
+          previewWidgetSettings(storageKey, { [surfaceFields.opacity]: next } as never)
+        }
+        onPreviewTextColor={(next) =>
+          previewWidgetSettings(storageKey, { textColor: next } as never)
+        }
+        onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+      />
     </div>
   );
 
@@ -997,6 +1072,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
+      {/* Avatar puts its background FIRST: the picture IS the widget,
+          so the surface behind it is what you reach for before which
+          sprite or how big. Every other widget keeps the surface row
+          in its usual place further down. */}
+      {isAvatarPanel && surfaceRow}
+
       {controls?.avatarSelector && (
         <div className="edit-panel-avatar-grid" role="radiogroup" aria-label={t("widgets.contextMenu.selectAvatar")}>
           {AVATAR_OPTIONS.map((avatar) => (
@@ -1118,76 +1199,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </Row>
       )}
 
-      {/* Quicklinks uses the highlight model instead of surface chips:
-          one swatch that opens a full tuning panel (colour, ink,
-          opacity, blur). The chip strip only ever offered a handful of
-          preset tones, and with a continuous blur slider now in play a
-          pair of frost presets alongside it was two controls fighting
-          over one property. */}
-      {controls?.todoFrosted && (
-        <div className="edit-panel-slider-row">
-          <span className="edit-panel-row-label">{surfaceLabel}</span>
-          <ColorPicker
-            color={surfaceColorValue}
-            tuningKind={paintsPieces ? "highlight" : "background"}
-            textColor={surfaceInk}
-            opacity={surfaceOpacityValue}
-            blur={surfaceBlurValue}
-            expanded={surfaceTuneOpen}
-            onExpandChange={openSurfaceTune}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, {
-                [surfaceFields.blur]: v,
-              } as never)
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                surfaceColor: next,
-                // A colour picked while the surface is fully
-                // transparent would paint nothing and read as a broken
-                // picker; clearing it drops the alpha back so the
-                // widget doesn't keep the theme tint that first pick
-                // introduced.
-                ...(next
-                  ? surfaceOpacityValue === 0
-                    ? { [surfaceFields.opacity]: 25 }
-                    : {}
-                  : {
-                      [surfaceFields.opacity]: defaultAlpha(
-                        surfaceFields.opacity
-                      ),
-                    }),
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, { textColor: next } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                [surfaceFields.opacity]: next,
-              } as never)
-            }
-            onPreviewChange={(next) =>
-              // Mirror the commit's alpha bump, or hovering a colour on
-              // a clear surface previews nothing and the swatches look
-              // dead until you actually click one.
-              previewWidgetSettings(storageKey, {
-                surfaceColor: next,
-                ...(next && surfaceOpacityValue === 0
-                  ? { [surfaceFields.opacity]: 25 }
-                  : {}),
-              } as never)
-            }
-            onPreviewOpacity={(next) =>
-              previewWidgetSettings(storageKey, { [surfaceFields.opacity]: next } as never)
-            }
-            onPreviewTextColor={(next) =>
-              previewWidgetSettings(storageKey, { textColor: next } as never)
-            }
-            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
-          />
-        </div>
-      )}
+      {!isAvatarPanel && surfaceRow}
 
       {storageKey === "todo" && (
         <div className="edit-panel-slider-row">
@@ -1791,7 +1803,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         <SliderRow
           id={`widget-${storageKey}-${sliderField}`}
           label={
-            isNotesPaperFrost || (!isNotes && isFrost)
+            isNotesPaperFrost
               ? t("widgets.edit.blur")
               : t("widgets.edit.opacity")
           }
@@ -1799,7 +1811,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           min={0}
           max={100}
           ariaLabel={
-            isNotesPaperFrost || (!isNotes && isFrost)
+            isNotesPaperFrost
               ? t("widgets.edit.blurAria")
               : t("widgets.edit.opacityAria")
           }

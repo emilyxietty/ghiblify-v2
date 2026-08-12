@@ -89,18 +89,18 @@
     --radius-nested-md: max(0px, calc(var(--radius-md) - var(--nest-inset)));
 
     /* Backdrop blur for widget surfaces (Todo input, SearchBar, QuickLinks
-       tiles, Weather forecast cells). The Frost theme overrides this with
-       a much heavier value to get a frosted-glass effect. */
+       tiles, Weather forecast cells). No theme overrides these two: a
+       palette that raises them is frosting widget backgrounds by proxy,
+       which is a per-widget opt-in, not a palette's call. */
     --surface-blur: 6px;
-    /* Saturation multiplier baked into the backdrop-filter. Defaults to
-       1 (no change). Frost bumps this to make the colors behind every
-       glass surface pop more vividly, the same way macOS Liquid Glass
-       does. */
+    /* Saturation multiplier baked into the backdrop-filter. 1 = no
+       change. */
     --surface-saturate: 1;
-    /* Hard upper bound on the alpha of widget surfaces. Defaults to 1
-       (= no cap, opacity slider drives surface fully). Frost lowers
-       this so surfaces stay translucent enough for the photo + blur
-       to read through, regardless of where the user puts the slider. */
+    /* Hard upper bound on the alpha of widget surfaces. 1 = no cap, the
+       opacity slider drives the surface fully. No theme lowers it: a
+       palette must not quietly override what the user set on a widget
+       (Frost used to cap at 0.22 to keep its glass translucent). Kept
+       as a token for the per-widget frosted surfaces to use. */
     --surface-alpha-cap: 1;
 
     /* Surface RGB triple for widget cards / modals / tooltips - anything
@@ -607,86 +607,85 @@
     --green: #a8c8b0;
     --rose: #d8b8c4;
     --purple-dark: #c8c0d8;
-    /* White text - the Frost glass keeps the Ghibli photo visible
-       behind every surface, so light text + a soft dark halo reads
-       cleanest regardless of which film is showing. */
-    --light: rgba(255, 255, 255, 0.96);
-    --light-muted: rgba(255, 255, 255, 0.7);
-    --text-shadow-color: rgba(0, 0, 0, 0.55);
-    --sidebar-bg: rgba(10, 14, 20, 0.62);
+    /* Text follows the tint. White-on-glass reads cleanest over a
+       photo, which is what the fallbacks give you - but Frost is the
+       one palette whose surface colour the user picks, and white text
+       on a white tint is nothing at all. AppContext writes --frost-ink
+       (and its muted + halo companions) from the tint's luminance and
+       strength, so a pale glass flips the whole palette to ink without
+       a single per-component override. */
+    --light: var(--frost-ink, rgba(255, 255, 255, 0.96));
+    --light-muted: var(--frost-ink-muted, rgba(255, 255, 255, 0.7));
+    --text-shadow-color: var(--frost-text-shadow, rgba(0, 0, 0, 0.55));
+    /* Every glass alpha below is the shipped value TIMES --frost-alpha
+       (the opacity knob), so the hierarchy holds at any setting: a
+       dialog stays more opaque than the sidebar, and 0 leaves pure
+       blur with no tint at all. The solid pills (btn-dark/-light, the
+       QuickLinks add button) and the Pomodoro card keep fixed alphas -
+       they're controls and a widget surface, not the palette's glass. */
+    --sidebar-bg: rgba(var(--frost-rgb, 10, 14, 20), calc(0.62 * var(--frost-alpha, 1)));
     --sidebar-card: rgba(255, 255, 255, 0.08);
     --focus-ring: rgba(120, 150, 180, 0.85);
     --disabled-light: rgba(80, 100, 120, 0.5);
-    /* The three knobs that define the glass aesthetic. */
-    --surface-blur: 30px;
-    --surface-saturate: 1.7;
-    --surface-alpha-cap: 0.22;
+    /* No --surface-blur / --surface-saturate override. Every consumer
+       of those two is a widget surface (todo rows, the todo + search
+       inputs, weather forecast cells), so bumping them to 30px / 1.7
+       here WAS the palette frosting widget backgrounds - just one layer
+       down from the shell. They stay at the 6px / 1 baseline like every
+       other palette; per-widget glass is opt-in. */
     /* Pin the surface tint to a fixed dark slate so widget cards,
        modals, tooltips, dock chrome, etc. all read as Frost's dark
        glass automatically - no per-component .theme-frost override
        needed. (Without this, cards using `rgba(var(--surface-rgb),…)`
        would inherit the white --dark-rgb above and disappear.) */
-    --surface-rgb: 10, 14, 20;
+    --surface-rgb: var(--frost-rgb, 10, 14, 20);
 }
 
-/* Frost-only glass treatment.
-   ---------------------------------------------------------------------------
-   Why on .widget instead of per-cell: the .widget shell is
-   `position: fixed`, which makes it a CSS "backdrop root" - meaning a
-   `backdrop-filter` on any descendant can only blur pixels painted
-   INSIDE the widget (i.e. nothing). The widget shell itself, though,
-   is its own backdrop root and CAN blur the viewport behind it. So
-   the entire widget becomes one pane of frosted glass - which is also
-   how macOS / iOS Liquid Glass actually composites.
+/* Frost is a PALETTE, not a surface modifier: it changes colors and
+   chrome, and leaves widget backgrounds to each widget's own settings
+   (color + opacity), exactly like every other theme. Frosted glass on
+   a widget stays an opt-in per widget (`frosted`, the surface chips ->
+   .widget-surface-frost). Nothing here may add backdrop-filter to a
+   widget shell or tile.
 
-   Excludes Time / Date / Avatar / Info - those are designed as text
-   directly over the photo with their own halo, and look better
-   without a card. */
-.theme-frost .widget[data-widget-key="todo"],
-.theme-frost .widget[data-widget-key="searchbar"],
-.theme-frost .widget[data-widget-key="weather"] {
-    /* Dark, mostly-opaque wash so the white text always reads no
-       matter what photo region is behind. Slider value (0–1, set on
-       the shell as --widget-blur by Widget.tsx) drives the blur:
-       0px at 0%, 30px at 100%, default 10% ≈ 3px. */
-    background: rgba(10, 14, 20, 0.4);
-    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7);
-    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        0 8px 32px rgba(0, 0, 0, 0.35);
+   The one thing Frost does owe its widgets is a surface TINT: the
+   palette deliberately remaps --dark-rgb to white (it's a light-ink
+   palette), which would paint every widget white-on-white now that no
+   dark glass pane sits under them. Inside a widget the surface triple
+   resolves to Frost's dark slate instead. A custom tint still wins -
+   the surface chips write --dark-rgb inline on the widget element, and
+   inline beats this rule. */
+.theme-frost .widget,
+.theme-frost .dock-widget {
+    --dark-rgb: var(--surface-rgb);
 }
 
-/* On Frost, the per-cell surfaces inside a frosted widget would just
-   double-stack the tint - the shell already provides the glass.
-   Strip their backgrounds + blur so the widget reads as a single pane. */
-.theme-frost .widget[data-widget-key="todo"] .todo-item-content,
-.theme-frost .widget[data-widget-key="todo"] .todo-add-btn,
-.theme-frost .widget[data-widget-key="weather"] .weather-strip-cell,
-.theme-frost .widget .custom-input {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
-    box-shadow: none !important;
-}
+/* How much frost. --frost-blur comes from the popup on the Frost
+   swatch (AppContext writes it on <html>), and this is the one place
+   that spends it: the palette's own glass chrome, plus the dock and
+   the widgets that have OPTED IN to frost. A widget that never chose
+   frost is absent from this list on purpose - the palette doesn't get
+   to frost it, at any amount.
 
-/* QuickLinks on Frost - per-tile glass instead of one big pane.
-   Each link card gets its own frost so the grid breathes (you can
-   see the photo in the gaps between tiles), and individual tiles
-   read as discrete glass chips. Same dark wash as other widgets so
-   white text reads cleanly. */
-.theme-frost .widget[data-widget-key="quicklinks"] .ql-grid-link,
-.theme-frost .widget[data-widget-key="quicklinks"] .quicklinksSettings-item {
-    background: rgba(10, 14, 20, 0.4) !important;
-    backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7) !important;
-    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0.1) * 30px)) saturate(1.7) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        0 8px 24px rgba(0, 0, 0, 0.3) !important;
-    color: #ffffff !important;
+   The saturate() stays fixed. It's what makes the colours behind the
+   glass read as glass rather than smoked plastic, and slider-ing it
+   alongside the blur just made every intermediate value look broken.
+   14px (amount 35) is what this chrome shipped with. */
+.theme-frost .left-sidebar,
+.theme-frost .right-sidebar,
+.theme-frost .tooltip-portal,
+.theme-frost .quicklinksSettings-dropdown,
+.theme-frost .edge-panel-callout,
+.theme-frost .welcome-dialog,
+.theme-frost .socials-dialog,
+.theme-frost .report-dialog,
+.theme-frost .background-modal,
+.theme-frost .right-dock.panel-frost,
+.theme-frost .right-dock.panel-frostDark,
+.theme-frost .widget.widget-surface-frost,
+.theme-frost .dock-widget.widget-surface-frost {
+    -webkit-backdrop-filter: blur(var(--frost-blur, 14px)) saturate(1.15);
+    backdrop-filter: blur(var(--frost-blur, 14px)) saturate(1.15);
 }
 
 /* Tooltips, callouts, dropdowns on Frost - they default to using
@@ -696,8 +695,8 @@
 .theme-frost .quicklinksSettings-dropdown,
 .theme-frost .edge-panel-callout,
 .theme-frost .welcome-kbd {
-    background: rgba(10, 14, 20, 0.92) !important;
-    color: #ffffff !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), calc(0.92 * var(--frost-alpha, 1))) !important;
+    color: var(--frost-ink, #ffffff) !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
@@ -711,24 +710,24 @@
 .theme-frost .socials-dialog,
 .theme-frost .report-dialog,
 .theme-frost .background-modal {
-    background: rgba(10, 14, 20, 0.92) !important;
-    color: #ffffff !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), calc(0.92 * var(--frost-alpha, 1))) !important;
+    color: var(--frost-ink, #ffffff) !important;
     border-color: rgba(255, 255, 255, 0.18) !important;
 }
 
 .theme-frost .tooltip-portal a,
 .theme-frost .quicklinksSettings-dropdown a {
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 /* The tooltip arrow inherits var(--dark) for its border color, which
    is white on Frost - recolor to match the dark pill above. */
 .theme-frost .tooltip-portal.is-bottom::before {
-    border-bottom-color: rgba(10, 14, 20, 0.92) !important;
+    border-bottom-color: rgba(var(--frost-rgb, 10, 14, 20), calc(0.92 * var(--frost-alpha, 1))) !important;
 }
 
 .theme-frost .tooltip-portal.is-top::before {
-    border-top-color: rgba(10, 14, 20, 0.92) !important;
+    border-top-color: rgba(var(--frost-rgb, 10, 14, 20), calc(0.92 * var(--frost-alpha, 1))) !important;
 }
 
 /* D-drag callout (rendered as body::after) reads var(--dark) for
@@ -736,8 +735,8 @@
    class lives on <html> and the .show-widget-outline class lives on
    <body>, so the descendant selector is required. */
 .theme-frost body.show-widget-outline::after {
-    background: rgba(10, 14, 20, 0.92) !important;
-    color: #ffffff !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), calc(0.92 * var(--frost-alpha, 1))) !important;
+    color: var(--frost-ink, #ffffff) !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
@@ -747,20 +746,20 @@
    they stay visible against the frosted glass + photo. */
 .theme-frost .btn-dark,
 .theme-frost .btn-light {
-    background: rgba(10, 14, 20, 0.7) !important;
-    color: #ffffff !important;
-    border-color: rgba(10, 14, 20, 0.7) !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
+    color: var(--frost-ink, #ffffff) !important;
+    border-color: rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
 }
 
 .theme-frost .btn-dark:hover:not(:disabled):not(.btn-disabled),
 .theme-frost .btn-light:hover:not(:disabled):not(.btn-disabled) {
-    background: rgba(10, 14, 20, 0.88) !important;
-    border-color: rgba(10, 14, 20, 0.88) !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.88) !important;
+    border-color: rgba(var(--frost-rgb, 10, 14, 20), 0.88) !important;
 }
 
 .theme-frost .btn-dark svg,
 .theme-frost .btn-light svg {
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
     fill: currentColor;
 }
 
@@ -768,18 +767,18 @@
    Button component), so the .btn-dark override above doesn't apply.
    Match the same dark pill treatment so it's visible on Frost. */
 .theme-frost .quicklinksSettings-add-btn {
-    background: rgba(10, 14, 20, 0.7) !important;
-    color: #ffffff !important;
-    border-color: rgba(10, 14, 20, 0.7) !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
+    color: var(--frost-ink, #ffffff) !important;
+    border-color: rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
 }
 
 .theme-frost .quicklinksSettings-add-btn:hover:not(:disabled) {
-    background: rgba(10, 14, 20, 0.88) !important;
-    border-color: rgba(10, 14, 20, 0.88) !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.88) !important;
+    border-color: rgba(var(--frost-rgb, 10, 14, 20), 0.88) !important;
 }
 
 .theme-frost .quicklinksSettings-add-btn svg {
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 /* Pomodoro card on Frost - its base uses var(--purple-dark) /
@@ -794,8 +793,8 @@
 .theme-frost .welcome-dialog,
 .theme-frost .report-dialog,
 .theme-frost .background-modal {
-    background: rgba(10, 14, 20, 0.96) !important;
-    color: #ffffff !important;
+    background: rgba(var(--frost-rgb, 10, 14, 20), calc(0.96 * var(--frost-alpha, 1))) !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 .theme-frost .pomodoro-widget {
@@ -803,9 +802,9 @@
         radial-gradient(ellipse at top left,
             rgba(255, 255, 255, 0.08) 0%,
             transparent 60%),
-        rgba(10, 14, 20, 0.7) !important;
+        rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 /* Frost break mode - keep the dark glass aesthetic of the regular
@@ -824,7 +823,7 @@
             50,
             calc(0.7 * var(--pomodoro-opacity, 1))) !important;
     background-image: none !important;
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
     border-color: rgba(155, 200, 219, 0.5) !important;
     box-shadow: 0 0 0 1px rgba(155, 200, 219, 0.2),
         0 8px 24px rgba(0, 0, 0, 0.35) !important;
@@ -837,7 +836,7 @@
 
 .theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2,
 .theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 .theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
@@ -852,7 +851,7 @@
 .theme-frost .btn-outline-light,
 .theme-frost .btn-outline-dark {
     background: transparent !important;
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
     border-color: rgba(255, 255, 255, 0.55) !important;
 }
 
@@ -860,23 +859,6 @@
 .theme-frost .btn-outline-dark:hover:not(:disabled):not(.btn-disabled) {
     background: rgba(255, 255, 255, 0.12) !important;
     border-color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Hovered tiles + items inside a frost widget: replace the var(--dark)
-   wash (which is white on Frost) with a subtle transparent white. */
-.theme-frost .widget[data-widget-key="quicklinks"] .ql-grid-link:hover,
-.theme-frost .widget[data-widget-key="quicklinks"] .quicklinksSettings-item:hover,
-.theme-frost .widget[data-widget-key="todo"] .todo-item-content:hover,
-.theme-frost .widget[data-widget-key="weather"] .weather-strip-cell:hover {
-    background: rgba(255, 255, 255, 0.12) !important;
-    border-color: rgba(255, 255, 255, 0.45) !important;
-}
-
-/* Focused inputs on Frost - same outlined-white treatment. */
-.theme-frost .widget .custom-input:focus {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.85) !important;
-    color: #ffffff !important;
 }
 
 /* ---------------------------------------------------------------------------
@@ -950,7 +932,7 @@
 .high-contrast .pomodoro-widget.break-mode {
     background: #000000 !important;
     border: 1.5px solid #ffffff !important;
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 /* Force every text inside widgets to white in high contrast. The
@@ -969,7 +951,7 @@
 .high-contrast .custom-input,
 .high-contrast .custom-input-light,
 .high-contrast .custom-input-dark {
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 .high-contrast .custom-input::placeholder,
@@ -982,7 +964,7 @@
    so they don't disappear into the (now also black) sidebar background. */
 .high-contrast .left-sidebar .btn {
     background: #000000 !important;
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
     border: 1.5px solid #ffffff !important;
 }
 
@@ -995,8 +977,8 @@
    white border, regardless of theme - so they stand out on any photo
    background and any palette. */
 .edit-toggle-button .btn {
-    color: #ffffff !important;
-    border-color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
+    border-color: var(--frost-ink, #ffffff) !important;
     background: rgba(0, 0, 0, 0.55) !important;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
@@ -1005,7 +987,7 @@
 .edit-toggle-button .btn:hover:not(:disabled):not(.btn-disabled) {
     background: rgba(0, 0, 0, 0.78) !important;
     border-color: var(--interaction-accent, #8fc7e8) !important;
-    color: #ffffff !important;
+    color: var(--frost-ink, #ffffff) !important;
 }
 
 /* General sidebar buttons - add a subtle theme-aware border so on light

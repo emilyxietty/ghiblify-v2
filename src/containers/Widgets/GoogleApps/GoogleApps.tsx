@@ -7,7 +7,6 @@ import {
   isHighlightTextColor,
   resolveForeground,
 } from "../../../utils/textHighlight";
-import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import "./GoogleApps.css";
 
@@ -109,7 +108,6 @@ const AppTile: React.FC<{ name: string; url: string; slug: string }> = ({
 export const GoogleApps: React.FC = () => {
   const t = useT();
   const { settings } = useWidgetSettings("googleApps");
-  const { appearance } = useAppContext();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -137,7 +135,7 @@ export const GoogleApps: React.FC = () => {
   // triple here. Frost is drawn on the shell, so the solid fill
   // collapses to a whisper when glass is on rather than stacking two
   // surfaces.
-  const gFrosted = resolveSurfaceFrost(settings.frosted, appearance.theme);
+  const gFrosted = resolveSurfaceFrost(settings.frosted);
   const gInk = isHighlightTextColor(settings.textColor)
     ? settings.textColor
     : "auto";

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../../components/TextInput/TextInput";
 import { resolveSurfaceFrost } from "../../../config/widgetConfig";
-import { useAppContext } from "../../../contexts/AppContext";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
 import {
@@ -123,7 +122,6 @@ export const Todo: React.FC = () => {
   // bouncy "task completed" pop on the row; stripped after
   // COMPLETE_ANIM_MS so subsequent re-renders don't re-trigger it.
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
-  const { appearance } = useAppContext();
   const { settings: todoSettings } = useWidgetSettings("todo");
   // settings.width/height are reference-px (1920 baseline); scale to
   // current-viewport px so the widget stays proportional to screen.
@@ -413,10 +411,7 @@ export const Todo: React.FC = () => {
   const visibleTodos = todos
     .slice()
     .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
-  const frosted = resolveSurfaceFrost(
-    todoSettings.frosted,
-    appearance.theme,
-  );
+  const frosted = resolveSurfaceFrost(todoSettings.frosted);
   const surfaceRgb =
     typeof todoSettings.surfaceColor === "string"
       ? hexToRgbChannels(todoSettings.surfaceColor)
@@ -436,6 +431,25 @@ export const Todo: React.FC = () => {
         : rowTextMode === "dark"
           ? "#1f2420"
           : null;
+  // The BACKGROUND deliberately doesn't derive an ink. Text sits on
+  // the rows, not on the widget's backdrop - rows keep their own tone
+  // unless you tint them - so reading contrast off the background
+  // recoloured text that wasn't on it, and picking a pale backdrop
+  // turned readable white text dark over unchanged dark rows. An
+  // EXPLICIT light/dark choice still applies; only the "auto"
+  // derivation is dropped.
+  const surfaceTextMode = isHighlightTextColor(todoSettings.textColor)
+    ? todoSettings.textColor
+    : "auto";
+  const surfaceInk =
+    surfaceTextMode === "light"
+      ? "#f7f3ea"
+      : surfaceTextMode === "dark"
+        ? "#1f2420"
+        : null;
+  // Falls through to the CSS default (var(--light)) when neither the
+  // highlight nor an explicit ink choice has an opinion.
+  const ink = rowInk ?? surfaceInk;
   const todoStyle = {
     width: `${width}px`,
     maxHeight: `${height}px`,
@@ -446,11 +460,13 @@ export const Todo: React.FC = () => {
     ...(rowRgb
       ? { "--todo-row-rgb": rowRgb, "--dark-rgb": rowRgb }
       : {}),
-    ...(rowInk
+    ...(ink
       ? {
-          "--todo-text": rowInk,
-          "--todo-text-muted": `color-mix(in srgb, ${rowInk} 60%, transparent)`,
-          "--light": rowInk,
+          "--todo-text": ink,
+          "--todo-text-muted": `color-mix(in srgb, ${ink} 60%, transparent)`,
+          // Nested pieces (TextInput, buttons) read var(--light); this
+          // keeps them on the widget's ink rather than the palette's.
+          "--light": ink,
         }
       : {}),
   } as React.CSSProperties;

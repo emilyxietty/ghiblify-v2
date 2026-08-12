@@ -79,7 +79,14 @@
     "appearance": {
       "palette": "调色板",
       "paletteAria": "颜色调色板",
-      "highContrast": "高对比度"
+      "highContrast": "高对比度",
+      "frostTune": "冰霜",
+      "frostAmount": "强度",
+      "frostColor": "颜色",
+      "frostOpacity": "不透明度",
+      "frostClear": "透明",
+      "frostBlack": "黑色",
+      "frostWhite": "白色"
     },
     "fonts": {
       "heading": "字体",
@@ -409,7 +416,20 @@
     "noResultsTitle": "未找到书签",
     "noResultsSub": "没有匹配「{{query}}」的结果。",
     "permissionPrompt": "Ghiblify 需要读取 Chrome 书签的权限才能在此显示。",
-    "permissionGrant": "允许访问书签"
+    "permissionGrant": "允许访问书签",
+    "settings": {
+      "title": "显示",
+      "layout": "布局",
+      "layoutTree": "树状",
+      "layoutDrill": "逐层浏览",
+      "density": "密度",
+      "densityComfortable": "舒适",
+      "densityCompact": "紧凑",
+      "sort": "排序",
+      "sortManual": "手动",
+      "sortAz": "A–Z",
+      "sortRecent": "最近"
+    }
   },
   "notes": {
     "placeholder": "记点什么…",
@@ -635,7 +655,8 @@
         "body1": "使用编辑面板更改小组件的设置。",
         "body2": "直接拖动小组件即可移动，无需按键。",
         "dragCue": "点击并拖动",
-        "hint": "拖动角落带阴影的控制柄来调整大小。"
+        "hint": "拖动角落带阴影的控制柄来调整大小。",
+        "resizeCue": "拖动调整大小"
       },
       "background": {
         "title": "选择背景",
@@ -727,8 +748,6 @@
     "resetCursorConfirm": "将光标恢复为系统默认指针？",
     "storedDataLabel": "已存储数据",
     "otherSub": "安装标记，以及不属于上述任何部分的数据。",
-    "permissionMicrophone": "麦克风",
-    "permissionMicrophoneSub": "用于搜索栏的语音搜索，仅在使用麦克风期间生效。",
     "corners": "圆角",
     "cornersSub": "小组件、菜单和对话框的圆角程度。",
     "cornerStyle": {

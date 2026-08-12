@@ -79,7 +79,14 @@
     "appearance": {
       "palette": "팔레트",
       "paletteAria": "색상 팔레트",
-      "highContrast": "고대비"
+      "highContrast": "고대비",
+      "frostTune": "프로스트",
+      "frostAmount": "강도",
+      "frostColor": "색상",
+      "frostOpacity": "불투명도",
+      "frostClear": "투명",
+      "frostBlack": "검정",
+      "frostWhite": "흰색"
     },
     "fonts": {
       "heading": "글꼴",
@@ -409,7 +416,20 @@
     "noResultsTitle": "결과 없음",
     "noResultsSub": "「{{query}}」와 일치하는 항목이 없습니다.",
     "permissionPrompt": "북마크를 표시하려면 Chrome 북마크 읽기 권한이 필요합니다.",
-    "permissionGrant": "북마크 접근 허용"
+    "permissionGrant": "북마크 접근 허용",
+    "settings": {
+      "title": "표시",
+      "layout": "레이아웃",
+      "layoutTree": "트리",
+      "layoutDrill": "단계별",
+      "density": "밀도",
+      "densityComfortable": "보통",
+      "densityCompact": "좁게",
+      "sort": "정렬",
+      "sortManual": "수동",
+      "sortAz": "A–Z",
+      "sortRecent": "최근"
+    }
   },
   "notes": {
     "placeholder": "메모 작성…",
@@ -635,7 +655,8 @@
         "body1": "편집 패널에서 위젯 설정을 변경하세요.",
         "body2": "키를 누르지 않고 위젯 자체를 드래그해 이동할 수 있습니다.",
         "dragCue": "클릭 후 드래그",
-        "hint": "그림자가 있는 모서리 그립을 드래그해 크기를 조절하세요."
+        "hint": "그림자가 있는 모서리 그립을 드래그해 크기를 조절하세요.",
+        "resizeCue": "드래그하여 크기 조절"
       },
       "background": {
         "title": "배경 선택",
@@ -727,8 +748,6 @@
     "resetCursorConfirm": "커서를 기본 시스템 포인터로 되돌릴까요?",
     "storedDataLabel": "저장된 데이터",
     "otherSub": "설치 플래그와 위 섹션에 속하지 않는 데이터입니다.",
-    "permissionMicrophone": "마이크",
-    "permissionMicrophoneSub": "검색창의 음성 검색에 사용됩니다. 마이크를 사용하는 동안에만 작동합니다.",
     "corners": "모서리",
     "cornersSub": "위젯·메뉴·대화상자의 둥글기입니다.",
     "cornerStyle": {

@@ -381,20 +381,6 @@
     );
 }
 
-/* On Frost, keep the per-mood gradient as a soft tint but layer in
-   Frost's signature backdrop-blur + saturation so the card reads
-   as frosted glass with a hint of weather mood, instead of the
-   former full dark-glass override. The gradient's existing 0.9
-   alpha lets the photo + the frosted blur read through. */
-.theme-frost .weather-widget.weather-card-on {
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow:
-        0 12px 32px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-}
-
 /* Location + current-conditions block sits over the bare photo, so
    text is always white with a halo for legibility. The forecast strip
    cells get their own theme-tinted surface and use --light for text

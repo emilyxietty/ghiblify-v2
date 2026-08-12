@@ -99,6 +99,7 @@
 .widget[data-widget-key="weather"] .widget-content,
 .widget[data-widget-key="googleApps"] .widget-content,
 .widget[data-widget-key="quicklinks"] .widget-content,
+.widget[data-widget-key="avatar"] .widget-content,
 .widget[data-widget-key="todo"] .widget-content {
     padding: 0;
 }
@@ -114,6 +115,18 @@
    look larger than the painted timer surface. */
 .widget[data-widget-key="pomodoro"] .widget-content {
     padding: 0;
+}
+
+/* Avatar blur - same shell-hoisted rule as quicklinks below, and for
+   the same reason. The avatar's surface paints on .avatar-container,
+   whose box now coincides with the shell (widget-content padding is
+   zeroed above), so the blurred rectangle and the tinted one describe
+   the same surface. Both are 0 by default, so an avatar without a
+   background is untouched. */
+.widget[data-widget-key="avatar"]:not(.widget-surface-frost) {
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px))
+        saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px)) saturate(1.05);
 }
 
 /* Quicklinks blur. This MUST live on the shell - a backdrop-filter on

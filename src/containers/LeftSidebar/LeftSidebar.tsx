@@ -56,8 +56,8 @@ import {
 import { LANGUAGES, getLocale, setLocale, useT } from "../../i18n/i18n";
 import { isEditableTarget } from "../../utils/isEditableTarget";
 import { ContextMenu } from "../../components/ContextMenu/ContextMenu";
+import { FrostTuning } from "../../components/FrostTuning/FrostTuning";
 import {
-  hasPermission,
   removePermission,
   requestPermission,
 } from "../../utils/chromePermissions";
@@ -134,6 +134,12 @@ export const LeftSidebar: React.FC = () => {
   const [edgeMenu, setEdgeMenu] = useState<{ x: number; y: number } | null>(
     null,
   );
+  // Anchor for the Frost palette's tuning popup - set by its swatch.
+  const [frostAnchor, setFrostAnchor] = useState<{
+    x: number;
+    y: number;
+    height: number;
+  } | null>(null);
   const {
     widgets,
     toggleWidgetVisibility,
@@ -145,6 +151,7 @@ export const LeftSidebar: React.FC = () => {
     setBackgroundParallax,
     appearance,
     updateAppearance,
+    previewTheme,
     setShowGuide,
     showGuide,
     sidebarSpotlight,
@@ -222,6 +229,11 @@ export const LeftSidebar: React.FC = () => {
   );
 
   const [isOpen, setIsOpen] = useState(false);
+  // That anchor is a swatch inside the sidebar: when the sidebar goes,
+  // the popup has nothing left to point at.
+  useEffect(() => {
+    if (!isOpen) setFrostAnchor(null);
+  }, [isOpen]);
 
   // Welcome-modal tour: keep the sidebar force-open for the entire
   // duration of the guide. Tracking just `sidebarSpotlight` wasn't
@@ -566,12 +578,10 @@ export const LeftSidebar: React.FC = () => {
                     // widget (edit / show-hide / permissions).
                     onContextMenu={(e: React.MouseEvent) => {
                       e.preventDefault();
+                      // No grant to pre-read: none of the widget-icon
+                      // keys carry one (bookmarks, the only optional
+                      // permission left, lives on the edge-panel tile).
                       setMenuPermGranted(null);
-                      const perm =
-                        key === "searchbar" ? "audioCapture" : null;
-                      if (perm) {
-                        void hasPermission(perm).then(setMenuPermGranted);
-                      }
                       setToggleMenu({ key, x: e.clientX, y: e.clientY });
                     }}
                     aria-label={t(
@@ -712,7 +722,35 @@ export const LeftSidebar: React.FC = () => {
                         className={`theme-swatch theme-${name}${
                           selected ? " is-selected" : ""
                         }`}
-                        onClick={() => updateAppearance({ theme: name })}
+                        // Hovering a swatch wears the palette for a
+                        // moment: a 10-colour dot can't tell you what
+                        // a palette does to the page, and picking one
+                        // just to look at it means picking your way
+                        // back. Focus does the same so arrowing
+                        // through the radiogroup previews too.
+                        onMouseEnter={() => previewTheme(name)}
+                        onMouseLeave={() => previewTheme(null)}
+                        onFocus={() => previewTheme(name)}
+                        onBlur={() => previewTheme(null)}
+                        // Frost is the one palette with knobs of its own
+                        // (how much glass, what tint), so picking it also
+                        // opens their popup - the way committing a widget
+                        // colour expands its tuning column. Clicking the
+                        // swatch again re-opens it.
+                        aria-haspopup={name === "frost" ? "dialog" : undefined}
+                        onClick={(e: React.MouseEvent<HTMLElement>) => {
+                          updateAppearance({ theme: name });
+                          if (name !== "frost") {
+                            setFrostAnchor(null);
+                            return;
+                          }
+                          const r = e.currentTarget.getBoundingClientRect();
+                          setFrostAnchor({
+                            x: r.left,
+                            y: r.top,
+                            height: r.height,
+                          });
+                        }}
                       />
                     );
                   })}
@@ -1209,27 +1247,24 @@ export const LeftSidebar: React.FC = () => {
             ),
             onClick: () => toggleWidgetVisibility(key),
           });
-          // Chrome-grant switches, where the widget has one. The click
-          // is a real user gesture, which permissions.request needs.
-          if (key === "bookmarks" || key === "searchbar") {
-            const permName =
-              key === "bookmarks" ? ("bookmarks" as const) : ("audioCapture" as const);
+          // Chrome-grant switch, where the widget has one. The click is
+          // a real user gesture, which permissions.request needs.
+          // Bookmarks is the only optional grant left - the Search
+          // widget's mic runs off getUserMedia's own prompt, not a
+          // Chrome permission (see chromePermissions.ts).
+          if (key === "bookmarks") {
             items.push({ type: "separator" });
             items.push({
               type: "checkbox",
-              label: t(
-                key === "bookmarks"
-                  ? "settings.permissionBookmarks"
-                  : "settings.permissionMicrophone"
-              ),
+              label: t("settings.permissionBookmarks"),
               checked: menuPermGranted === true,
               onClick: () => {
                 if (menuPermGranted) {
-                  void removePermission(permName).then(
+                  void removePermission("bookmarks").then(
                     () => void setMenuPermGranted(false)
                   );
                 } else {
-                  void requestPermission(permName).then((ok) =>
+                  void requestPermission("bookmarks").then((ok) =>
                     setMenuPermGranted(ok)
                   );
                 }
@@ -1304,6 +1339,12 @@ export const LeftSidebar: React.FC = () => {
               },
             },
           ]}
+        />
+      )}
+      {frostAnchor && appearance.theme === "frost" && (
+        <FrostTuning
+          anchor={frostAnchor}
+          onClose={() => setFrostAnchor(null)}
         />
       )}
       <Suspense fallback={null}>

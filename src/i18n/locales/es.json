@@ -74,7 +74,14 @@
     "appearance": {
       "palette": "Paletas",
       "paletteAria": "Paleta de colores",
-      "highContrast": "Alto contraste"
+      "highContrast": "Alto contraste",
+      "frostTune": "Escarcha",
+      "frostAmount": "Cantidad",
+      "frostColor": "Color",
+      "frostOpacity": "Opacidad",
+      "frostClear": "Transparente",
+      "frostBlack": "Negro",
+      "frostWhite": "Blanco"
     },
     "fonts": {
       "heading": "Fuente",
@@ -403,7 +410,20 @@
     "noResultsTitle": "Sin resultados",
     "noResultsSub": "Nada coincide con \"{{query}}\".",
     "permissionPrompt": "Ghiblify necesita permiso para leer tus marcadores de Chrome antes de mostrarlos aquí.",
-    "permissionGrant": "Permitir acceso a marcadores"
+    "permissionGrant": "Permitir acceso a marcadores",
+    "settings": {
+      "title": "Visualización",
+      "layout": "Diseño",
+      "layoutTree": "Árbol",
+      "layoutDrill": "Por niveles",
+      "density": "Densidad",
+      "densityComfortable": "Cómoda",
+      "densityCompact": "Compacta",
+      "sort": "Orden",
+      "sortManual": "Manual",
+      "sortAz": "A–Z",
+      "sortRecent": "Recientes"
+    }
   },
   "notes": {
     "placeholder": "Anota algo…",
@@ -630,7 +650,8 @@
         "body1": "Usa el panel de edición para cambiar los ajustes del widget.",
         "body2": "Arrastra el widget para moverlo; no necesitas pulsar ninguna tecla.",
         "dragCue": "Clic y arrastra",
-        "hint": "Arrastra el control sombreado de la esquina para cambiar el tamaño."
+        "hint": "Arrastra el control sombreado de la esquina para cambiar el tamaño.",
+        "resizeCue": "Arrastra para ajustar"
       },
       "background": {
         "title": "Elegir fondos",
@@ -722,8 +743,6 @@
     "resetCursorConfirm": "¿Devolver el cursor al puntero normal del sistema?",
     "storedDataLabel": "Datos guardados",
     "otherSub": "Indicadores de instalación y todo lo que no pertenece a una sección anterior.",
-    "permissionMicrophone": "Micrófono",
-    "permissionMicrophoneSub": "Permite la búsqueda por voz en la barra de búsqueda. Solo se activa durante la sesión del micrófono.",
     "corners": "Esquinas",
     "cornersSub": "Cuán redondeados son widgets, menús y diálogos.",
     "cornerStyle": {

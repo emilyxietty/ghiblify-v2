@@ -256,17 +256,28 @@
     box-sizing: border-box;
 }
 
-/* Avatar - cap the image to a sensible thumbnail and pin the
-   container to the right edge so the image sits flush-right. */
-.dock-widget .avatar-image,
-.dock-widget .avatar-container img {
-    width: 80px !important;
-    height: 80px !important;
+/* Avatar - a square that fills its dock cell, so half width gives a
+   small tile and full width a big one. It used to be a fixed 80px
+   image inside a container still carrying the CANVAS size inline,
+   which is why the optional background painted a box several times
+   larger than the sprite: the container was 200px, the picture 80.
+   Sizing the container to the cell puts surface, box and image back
+   on the same rectangle. */
+.dock-widget .avatar-container {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    box-sizing: border-box;
 }
 
-.dock-widget .avatar-container {
-    align-items: flex-end !important;
-    text-align: right !important;
+.dock-widget .avatar-image,
+.dock-widget .avatar-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
 }
 
 /* Weather - let the card and its strips fill the dock cell. The

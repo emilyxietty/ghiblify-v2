@@ -141,18 +141,44 @@
     align-items: flex-end;
     gap: 5px;
     margin-top: 5px;
+    /* Anchor for the floating panel below. */
+    position: relative;
 }
 
+/* Floats above the footer buttons instead of sitting in the column
+   with them. In flow it grew the dock downward every time you opened
+   it - the widgets above jumped, and on a short dock the footer walked
+   off the bottom of the panel. Absolute keeps the dock exactly the
+   height its widgets ask for, and the panel overlays whatever is
+   behind it, which is what a popup is. */
 .right-dock-settings-panel {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 6px;
     width: 100%;
     box-sizing: border-box;
+    /* Never taller than the dock it hangs off; the picker scrolls
+       instead of running past the top of the screen. */
+    max-height: min(52vh, 420px);
+    overflow-y: auto;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 9px 11px;
-    background: var(--sidebar-card);
+    /* Opaque enough to read as a layer over the widgets behind it -
+       --sidebar-card alone let their text show through. The card tint
+       paints as an image layer ON the panel colour, since a shorthand
+       can only carry a colour in its last layer. */
+    background-color: var(--sidebar-bg);
+    background-image: linear-gradient(
+        var(--sidebar-card),
+        var(--sidebar-card)
+    );
     border: 1px solid rgba(253, 246, 233, 0.06);
     border-radius: var(--radius-xl, 16px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(14px) saturate(110%);
     -webkit-backdrop-filter: blur(14px) saturate(110%);
 }

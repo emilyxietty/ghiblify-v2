@@ -103,7 +103,6 @@ export const Widget: React.FC<WidgetProps> = ({
     editingWidgetKey,
     setEditingWidgetKey,
     toggleWidgetVisibility,
-    appearance,
     widgetsCommitted,
     previewWidgetSettings,
   } = useAppContext();
@@ -112,10 +111,10 @@ export const Widget: React.FC<WidgetProps> = ({
   // or this specific widget was singled out via the D+pencil button.
   const isEditingThis = showWidgetEdits || editingWidgetKey === storageKey;
   const widgetConfig = getWidgetConfig(storageKey);
-  const widgetSettings = widgets[storageKey].settings as Record<string, unknown>;
+  const widgetSettings = widgets[storageKey].settings as unknown as Record<string, unknown>;
   // The saved values, without any hover preview - what the picker and
   // the context menu should reflect.
-  const committedSettings = widgetsCommitted[storageKey].settings as Record<
+  const committedSettings = widgetsCommitted[storageKey].settings as unknown as Record<
     string,
     unknown
   >;
@@ -734,7 +733,6 @@ export const Widget: React.FC<WidgetProps> = ({
   const surfacePresentation = getWidgetSurfacePresentation({
     storageKey,
     settings: widgetSettings,
-    theme: appearance.theme,
     allowTypeIn:
       !(storageKey === "date" && widgetSettings.displayStyle === "calendar"),
     typeSteps,
@@ -832,6 +830,11 @@ export const Widget: React.FC<WidgetProps> = ({
             data-tooltip={t("widgets.edit.resizeTitle", {
               name: t(`widgets.names.${storageKey}`),
             })}
+            // Guide cue. The drag slide teaches move AND resize, but
+            // only move had a label - the grip just pulsed, which
+            // shows you where to look without saying what to do. The
+            // pill is drawn from this attribute (see WelcomeModal.css).
+            data-guide-resize={t("welcome.slides.drag.resizeCue")}
           />
         )}
       {/* Quick controls - only visible while D is held
@@ -882,7 +885,6 @@ export const Widget: React.FC<WidgetProps> = ({
             setEditingWidgetKey,
             toggleWidgetVisibility,
             updateWidgetSettings,
-            isFrost: appearance.theme === "frost",
             preview: (patch) => previewWidgetSettings(storageKey, patch),
             // Straight to the OS palette - no intermediate panel. The
             // hidden input below carries the current colour; changes
@@ -937,7 +939,6 @@ export function buildContextMenuItems(args: {
   updateWidgetSettings: ReturnType<
     typeof useAppContext
   >["updateWidgetSettings"];
-  isFrost: boolean;
   /** Demo a settings patch while a row is hovered; null clears it.
    *  Rows whose effect isn't visible on the widget (multi-selects,
    *  sounds) deliberately don't use this. */
@@ -952,7 +953,6 @@ export function buildContextMenuItems(args: {
     setEditingWidgetKey,
     toggleWidgetVisibility,
     updateWidgetSettings,
-    isFrost,
     preview,
     openHighlightPicker,
   } = args;
@@ -1508,7 +1508,7 @@ export function buildContextMenuItems(args: {
   // settings include `textShadow` (currently Time, Date, Greeting).
   // Adding `textShadow` to a new widget's settings interface gets
   // this submenu for free, no extra wiring.
-  const widgetSettingsAny = widgets[storageKey].settings as Record<
+  const widgetSettingsAny = widgets[storageKey].settings as unknown as Record<
     string,
     unknown
   >;
@@ -1708,7 +1708,6 @@ export function buildContextMenuItems(args: {
     weatherDetail !== "full";
   if (
     typeof widgetSettingsAny.opacity === "number" &&
-    !isFrost &&
     !weatherOpacityIsNoOp &&
     // Pomodoro's opacity lives inside its card-colour cascade - a
     // second flat entry here would fight it.
@@ -1730,7 +1729,13 @@ export function buildContextMenuItems(args: {
       })),
     });
   }
-  if (typeof widgetSettingsAny.blur === "number" && isFrost) {
+  // Blur only paints on Quick Links (the shell blur behind its tiles).
+  // The other widgets' stored `blur` fed the old Frost glass panes,
+  // which no longer exist - offering it there would tune nothing.
+  if (
+    typeof widgetSettingsAny.blur === "number" &&
+    storageKey === "quicklinks"
+  ) {
     if (extras.length > 0) extras.push({ type: "separator" });
     const current = widgetSettingsAny.blur as number;
     extras.push({

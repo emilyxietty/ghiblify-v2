@@ -15,7 +15,6 @@ import {
   removeSearchHistoryEntry,
 } from "../../../utils/searchHistory";
 import { fetchSuggestions, splitSuggestion } from "../../../utils/searchSuggest";
-import { requestPermission } from "../../../utils/chromePermissions";
 import { useScaledPx } from "../../../utils/viewportScale";
 import {
   hexToRgbChannels,
@@ -143,29 +142,26 @@ const SearchBar: React.FC = () => {
       recognitionRef.current?.stop?.();
       return;
     }
-    // Two gates, in order. First `audioCapture`: an extension page is
-    // never shown the browser's mic prompt, so without that grant
-    // getUserMedia is denied outright. Requesting it here keeps the
-    // user gesture on the stack, which chrome.permissions.request
-    // requires. Then getUserMedia itself, which is what actually opens
-    // the device - speech recognition won't start otherwise.
-    const granted = await requestPermission("audioCapture");
-    if (!granted) {
-      // Visible feedback instead of a silent no-op: flash the mic as
-      // denied for a beat. Clicking again re-prompts - the permission
-      // request always rides the click gesture.
-      setMicDenied(true);
-      window.setTimeout(() => setMicDenied(false), 1600);
-      return;
-    }
+    // One gate: getUserMedia, which raises Chrome's own mic prompt for
+    // this chrome-extension:// origin and is what actually opens the
+    // device - speech recognition won't start otherwise. This used to
+    // be fronted by a `chrome.permissions.request("audioCapture")`
+    // call, but that permission is apps-only; Chrome strips it from the
+    // manifest at load, so the request never granted and the mic button
+    // was dead. The click gesture carries through to the prompt.
     try {
       const stream = await navigator.mediaDevices?.getUserMedia({
         audio: true,
       });
       stream?.getTracks().forEach((track) => track.stop());
     } catch (err) {
+      // Visible feedback instead of a silent no-op: flash the mic as
+      // denied for a beat. Clicking again re-prompts, unless the user
+      // blocked the origin outright - then it's Chrome's site controls.
       // eslint-disable-next-line no-console
       console.debug("[SearchBar] microphone unavailable:", err);
+      setMicDenied(true);
+      window.setTimeout(() => setMicDenied(false), 1600);
       return;
     }
 

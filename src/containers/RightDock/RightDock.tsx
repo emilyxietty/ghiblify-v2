@@ -15,7 +15,7 @@
  * Widget-specific controls remain on each widget's right-click menu.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import { ConfirmDialog } from "../../components/ConfirmDialog/ConfirmDialog";
 import { EdgePanelCallout } from "../../components/EdgePanelCallout/EdgePanelCallout";
@@ -94,6 +94,7 @@ export const RightDock: React.FC<RightDockProps> = ({
     resetRightSidebar,
   } = useAppContext();
   const [footerPanel, setFooterPanel] = useState<FooterPanel | null>(null);
+  const footerRef = useRef<HTMLElement | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [guideStep, setGuideStep] = useState<RightDockGuideStep>("edit");
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
@@ -139,6 +140,21 @@ export const RightDock: React.FC<RightDockProps> = ({
       previewWidgetSettings("rightSidebar", null);
     }
   }, [footerPanel, previewWidgetSettings]);
+
+  // Click anywhere else and the panel goes away - the button that
+  // opened it was previously the only thing that could close it, which
+  // left a panel parked over the dock while you worked elsewhere. The
+  // whole footer is the "inside" region, so the buttons keep toggling
+  // themselves rather than closing and reopening on one click.
+  useEffect(() => {
+    if (!footerPanel) return;
+    const onDown = (e: MouseEvent) => {
+      if (footerRef.current?.contains(e.target as Node)) return;
+      setFooterPanel(null);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [footerPanel]);
 
   useEffect(() => {
     if (guideOpen) setIsOpen(true);
@@ -207,7 +223,7 @@ export const RightDock: React.FC<RightDockProps> = ({
           )}
         </div>
 
-        <footer className="right-dock-footer">
+        <footer className="right-dock-footer" ref={footerRef}>
           {footerPanel && (
             <div
               id="right-dock-footer-panel"

@@ -36,6 +36,38 @@
     overflow-y: auto;
 }
 
+/* Buttons and inputs don't inherit font-family - without this the
+   folder rows, the search field and the gear popup all fell back to
+   the UA font while the rest of the app wore the chosen one. */
+.right-sidebar button,
+.right-sidebar input,
+.right-sidebar select,
+.right-sidebar textarea {
+    font-family: inherit;
+}
+
+/* The heading owns its own row so the gear can sit at its right edge,
+   and anchors the settings popup below it. */
+.bookmarks-header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Title + gear on one line. Centring works here because this row
+   contains only the words and the button - the underline is the
+   header's, one level up, so it can't stretch the box the gear is
+   centring against. */
+.bookmarks-header-row {
+    display: flex;
+    align-items: center;
+    /* Gear sits directly beside the title - pushed to the far edge it
+       read as a panel-level control rather than this heading's. */
+    justify-content: flex-start;
+    gap: 6px;
+}
+
 .bookmarks-header h4 {
     margin: 0;
     font-size: 13px;
@@ -46,12 +78,11 @@
     opacity: 0.85;
 }
 
-.bookmarks-header h4::after {
+.bookmarks-header::after {
     content: "";
     display: block;
     width: 28px;
     height: 2px;
-    margin-top: 6px;
     /* --light, not a literal white: it tracks the palette, so this
        reads near-white on dark surfaces and stays visible on the light
        ones. Matches the left sidebar's heading underline. */
@@ -63,6 +94,47 @@
 /* ---------------------------------------------------------------------------
    Search
    --------------------------------------------------------------------------- */
+
+/* Search takes the row; sort rides along on its right. */
+.bookmarks-search-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bookmarks-sort-btn {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    opacity: 0.75;
+    transition: background 140ms ease, opacity 140ms ease;
+}
+
+.bookmarks-sort-btn:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--light) 16%, transparent);
+}
+
+/* A non-default sort is state you should be able to see without
+   opening the menu that set it. */
+.bookmarks-sort-btn.is-active {
+    opacity: 1;
+    color: var(--yellow);
+    border-color: color-mix(in srgb, var(--yellow) 55%, transparent);
+}
+
+.bookmarks-sort-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+}
 
 .bookmarks-search {
     width: 100%;
@@ -156,10 +228,13 @@
 .bookmarks-link-item {
     margin: 0;
     position: relative;
+}
+
+.bookmarks-link-item.is-draggable {
     cursor: grab;
 }
 
-.bookmarks-link-item:active {
+.bookmarks-link-item.is-draggable:active {
     cursor: grabbing;
 }
 
@@ -373,4 +448,238 @@
 .right-sidebar {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--light) 20%, transparent) transparent;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Heading gear + settings popup
+   --------------------------------------------------------------------------- */
+
+.bookmarks-settings-btn {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    color: var(--light);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    /* Hidden until the heading is hovered, but never display:none -
+       it has to stay reachable by Tab, and a focus ring on an element
+       that doesn't exist helps nobody. */
+    opacity: 0;
+    transition: opacity 140ms ease, background 140ms ease;
+}
+
+.bookmarks-header:hover .bookmarks-settings-btn,
+.bookmarks-header:focus-within .bookmarks-settings-btn,
+.bookmarks-settings-btn.is-open {
+    opacity: 0.75;
+}
+
+.bookmarks-settings-btn:hover,
+.bookmarks-settings-btn.is-open {
+    opacity: 1;
+    background: color-mix(in srgb, var(--light) 12%, transparent);
+}
+
+.bookmarks-settings-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    opacity: 1;
+}
+
+/* Same surface as every other popover in the app (see ContextMenu):
+   near-opaque dark, white ink, hairline border, deep shadow. The
+   translucent card treatment let the bookmark rows read straight
+   through the panel. */
+.bookmarks-settings-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 5;
+    width: 244px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(10, 14, 20, 0.96);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radius-md);
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.bookmarks-settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bookmarks-settings-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+/* Segmented row rather than a dropdown: three options fit, and seeing
+   what you didn't pick is the whole point of a display setting. */
+.bookmarks-segmented {
+    display: flex;
+    gap: 4px;
+}
+
+.bookmarks-segment {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 6px;
+    font-size: 11px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease;
+}
+
+.bookmarks-segment:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.bookmarks-segment.is-active {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.45);
+    font-weight: 600;
+}
+
+/* Layout tiles: the glyph does the explaining, the word confirms it. */
+.bookmarks-segmented.has-icons .bookmarks-segment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 6px;
+}
+
+.bookmarks-segmented.has-icons .bookmarks-segment svg {
+    opacity: 0.85;
+}
+
+.bookmarks-segmented.has-icons .bookmarks-segment.is-active svg {
+    opacity: 1;
+}
+
+.bookmarks-segment:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------------------------
+   Drill-down layout
+   --------------------------------------------------------------------------- */
+
+.bookmarks-drill {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bookmarks-drill-back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 8px;
+    color: var(--light);
+    background: color-mix(in srgb, var(--light) 7%, transparent);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bookmarks-drill-back:hover {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.bookmarks-drill-back-icon {
+    /* One icon, two directions - the chevron points back here. */
+    transform: rotate(180deg);
+    opacity: 0.7;
+}
+
+.bookmarks-drill-back-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Full-width rows: no indent to pay for, so the title gets the panel. */
+.bookmarks-drill-row {
+    padding-left: 8px !important;
+}
+
+.bookmarks-drill-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--light) 55%, transparent);
+}
+
+.bookmarks-drill-chevron {
+    flex: 0 0 auto;
+    opacity: 0.55;
+}
+
+.bookmarks-drill-list {
+    gap: 2px;
+}
+
+/* Search results say where they live, since drilling isn't what got
+   you to them. */
+.bookmarks-drill-hit-folder {
+    padding: 0 8px 4px 34px;
+    font-size: 10.5px;
+    color: color-mix(in srgb, var(--light) 50%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Density
+   --------------------------------------------------------------------------- */
+
+.density-compact .bookmarks-folder-toggle,
+.density-compact .bookmarks-link,
+.density-compact .bookmarks-drill-back {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.density-compact .bookmarks-folder-toggle,
+.density-compact .bookmarks-drill-back {
+    font-size: 12px;
+}
+
+.density-compact .bookmarks-link {
+    font-size: 11.5px;
+}
+
+.density-compact .bookmarks-favicon {
+    width: 15px;
+    height: 15px;
+}
+
+.density-compact.right-sidebar-content {
+    gap: 10px;
 }

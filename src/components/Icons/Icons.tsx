@@ -248,6 +248,23 @@ export const LinkedInIcon = makeIcon(
   "M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z",
 );
 
+/* Layout glyphs for the bookmarks display picker. Not MUI paths -
+   these draw the two layouts themselves, which is the only way a
+   24px icon can say "nested" vs "one level at a time": rows that
+   step inward, versus full-width rows with a way onward. */
+export const LayoutTreeIcon = makeIcon(
+  "M3 4h18v2H3zM8 10h13v2H8zM13 16h8v2h-8z",
+);
+
+export const LayoutDrillIcon = makeIcon(
+  "M3 4h18v2H3zM3 10h11v2H3zM3 16h18v2H3zM17 9.5L21 12L17 14.5Z",
+);
+
+// MUI "sort" - three descending rules; reads as "order this list".
+export const SortIcon = makeIcon(
+  "M3 18h6v-2H3zM3 6v2h18V6zm0 7h12v-2H3z",
+);
+
 export const ListIcon = makeIcon(
   "M3 13h2v-2H3zm0 4h2v-2H3zm0-8h2V7H3zm4 4h14v-2H7zm0 4h14v-2H7zM7 7v2h14V7z",
 );

@@ -37,6 +37,11 @@ import {
   write as writePersisted,
   writeBatch as writePersistedBatch,
 } from "../storage/hybridStorage";
+import {
+  foregroundFor,
+  hexToRgbChannels,
+  HIGHLIGHT_TEXT_DARK,
+} from "../utils/textHighlight";
 import { setProportionalScaling } from "../utils/viewportScale";
 
 const STORAGE_KEY = "ghiblify_widgets";
@@ -158,7 +163,88 @@ export interface AppearanceSettings {
   /** Corner softness for every surface. Default "rounded" is the scale
    *  the app has always shipped. */
   corners: CornerStyle;
+  /** Frost palette knobs, edited from the popup on its swatch. Every
+   *  other palette ignores them - only `.theme-frost` rules read the
+   *  two custom properties they feed. `frostAmount` is 0-100 and maps
+   *  to the blur radius (0 = clear glass, no blur); `frostColor` is the
+   *  hex tint that glass paints. They drive the palette's own glass -
+   *  sidebars, dock, tooltips, dialogs - plus any widget explicitly
+   *  switched to frost; a widget that never opted in stays untouched. */
+  frostAmount: number;
+  frostColor: string;
+  /** 0-100 tint strength. Multiplies each frost surface's shipped
+   *  alpha, so 100 is exactly what Frost has always looked like and 0
+   *  is pure blur with no tint. */
+  frostOpacity: number;
 }
+
+/** Paint a palette onto <html>. Split out of the appearance effect so
+ *  hovering a swatch can show a palette without committing it - see
+ *  `previewTheme`. Only the classes a palette owns; contrast, corners
+ *  and font are untouched, so a preview can't disturb them. */
+const applyThemeClasses = (name: ThemeName, readsAsLight = false): void => {
+  const root = document.documentElement;
+  const light = LIGHT_MODE_THEMES.has(name) || readsAsLight;
+  THEME_NAMES.forEach((t) => root.classList.remove(`theme-${t}`));
+  root.classList.add(`theme-${name}`);
+  root.classList.toggle("palette-light", light);
+  root.classList.toggle("palette-dark", !light);
+};
+
+/** Write the Frost tokens onto <html> and report whether the glass now
+ *  reads as a light surface. The single writer for all six: the commit
+ *  effect and the hover preview both go through here, so a previewed
+ *  tint can't show its colour while keeping the committed ink. */
+const applyFrostTokens = (a: AppearanceSettings): boolean => {
+  const root = document.documentElement;
+  const inkIsDark = a.theme === "frost" && frostReadsAsLight(a);
+  root.style.setProperty(
+    "--frost-rgb",
+    hexToRgbChannels(a.frostColor ?? "") ??
+      hexToRgbChannels(DEFAULT_FROST_COLOR)!
+  );
+  root.style.setProperty("--frost-blur", `${frostBlurPx(a.frostAmount ?? 35)}px`);
+  root.style.setProperty(
+    "--frost-alpha",
+    String(Math.max(0, Math.min(100, a.frostOpacity ?? 100)) / 100)
+  );
+  // `.theme-frost` reads these for --light / --light-muted /
+  // --text-shadow-color instead of hardcoding white, so a pale tint
+  // flips the whole palette's text to ink - and the halo with it,
+  // since a dark shadow under dark text is just a smudge.
+  root.style.setProperty(
+    "--frost-ink",
+    inkIsDark ? "rgba(31, 38, 32, 0.96)" : "rgba(255, 255, 255, 0.96)"
+  );
+  root.style.setProperty(
+    "--frost-ink-muted",
+    inkIsDark ? "rgba(31, 38, 32, 0.68)" : "rgba(255, 255, 255, 0.7)"
+  );
+  root.style.setProperty(
+    "--frost-text-shadow",
+    inkIsDark ? "rgba(255, 255, 255, 0.75)" : "rgba(0, 0, 0, 0.55)"
+  );
+  return inkIsDark;
+};
+
+/** Does Frost's glass read as a LIGHT surface right now?
+ *
+ *  Frost is the one palette whose surface colour is the user's to pick,
+ *  so "light palette or dark palette" stops being a constant: a white
+ *  tint at full strength is a light theme wearing a dark theme's white
+ *  text, i.e. unreadable. Two conditions, both required - the tint has
+ *  to be pale AND solid enough to actually dominate. Below that alpha
+ *  the wallpaper is what you're reading against, and white text with a
+ *  dark halo stays the safer bet on a photo. */
+const frostReadsAsLight = (a: AppearanceSettings): boolean =>
+  foregroundFor(a.frostColor ?? DEFAULT_FROST_COLOR) === HIGHLIGHT_TEXT_DARK &&
+  Math.max(0, Math.min(100, a.frostOpacity ?? 100)) >= 45;
+
+/** Slider 0-100 -> px. 35 (the default) lands on 14px, the blur the
+ *  Frost chrome has always used. */
+export const FROST_BLUR_MAX_PX = 40;
+export const frostBlurPx = (amount: number): number =>
+  Math.round((Math.max(0, Math.min(100, amount)) / 100) * FROST_BLUR_MAX_PX);
 
 /** A stored cursor that no longer exists (the retired "rainbow" trail)
  *  falls back to the plain pointer rather than leaving the picker with
@@ -168,6 +254,10 @@ export const normalizeCursor = (value: unknown): CursorName =>
     ? (value as CursorName)
     : "default";
 
+/** The tint Frost shipped with, as a hex so the colour input can show
+ *  it: rgb(10, 14, 20), the dark slate its glass has always used. */
+export const DEFAULT_FROST_COLOR = "#0a0e14";
+
 const DEFAULT_APPEARANCE: AppearanceSettings = {
   theme: "ghibli",
   highContrast: false,
@@ -175,6 +265,9 @@ const DEFAULT_APPEARANCE: AppearanceSettings = {
   font: "default",
   proportionalScaling: true,
   corners: "rounded",
+  frostAmount: 35,
+  frostColor: DEFAULT_FROST_COLOR,
+  frostOpacity: 100,
 };
 
 export interface BackgroundFilters {
@@ -281,6 +374,15 @@ interface AppContextType {
   // appearance (theme, widget opacity, contrast)
   appearance: AppearanceSettings;
   updateAppearance: (patch: Partial<AppearanceSettings>) => void;
+  /** Show a palette without committing it - the swatch row calls this
+   *  on hover/focus and passes null on the way out to restore whatever
+   *  is actually selected. Nothing is persisted. */
+  previewTheme: (name: ThemeName | null) => void;
+  /** Show a Frost tint/amount/opacity without committing it - the
+   *  swatch chips in the Frost popup call this on hover/focus and pass
+   *  null on the way out. Goes through the same writer as a commit, so
+   *  a preview flips the ink exactly the way clicking would. */
+  previewFrost: (patch: Partial<AppearanceSettings> | null) => void;
 
   // widgets - single source of truth
   /** Widget state as the app should *render* it - the committed
@@ -877,7 +979,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const [sidebarSpotlight, setSidebarSpotlight] =
     useState<SidebarSpotlight>(null);
   const [currentBackground, setCurrentBackground] = useState<string>("");
-  const [showGuide, setShowGuide] = useState(
+  const [showGuide, setShowGuideState] = useState(
     () => readPersisted<boolean>("ghiblify_guide_seen", false) !== true
   );
   useEffect(() => {
@@ -887,6 +989,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   const [editingWidgetKey, setEditingWidgetKey] = useState<WidgetKey | null>(
     null
   );
+  // Opening the guide dismisses whatever widget editing is on screen -
+  // both the single panel from right-click -> Edit and full edit mode.
+  // A hand-opened panel is deliberately lifted above the guide dialog
+  // (--z-tutorial-panel) so a tour step can point at it, so leaving it
+  // up meant the guide you just asked for opened UNDER a stray panel.
+  // The guide drives its own panel per slide from here on.
+  const setShowGuide = useCallback((next: boolean) => {
+    setShowGuideState(next);
+    if (next) {
+      setEditingWidgetKey(null);
+      setShowWidgetEdits(false);
+    }
+  }, []);
 
   const [backgroundFilters, setBackgroundFilters] = useState<BackgroundFilters>(
     () => readFilters()
@@ -921,17 +1036,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   // text contrast without each widget needing its own toggle.
   useEffect(() => {
     const root = document.documentElement;
-    THEME_NAMES.forEach((t) => root.classList.remove(`theme-${t}`));
-    root.classList.add(`theme-${appearance.theme}`);
+    applyThemeClasses(appearance.theme, applyFrostTokens(appearance));
     root.classList.toggle("high-contrast", appearance.highContrast);
-    root.classList.toggle(
-      "palette-light",
-      LIGHT_MODE_THEMES.has(appearance.theme)
-    );
-    root.classList.toggle(
-      "palette-dark",
-      !LIGHT_MODE_THEMES.has(appearance.theme)
-    );
     // Corner style - html.corners-<key> reassigns --radius-unit, which
     // the whole --radius-* scale derives from. "rounded" is the base
     // scale, so it needs no class.
@@ -1084,6 +1190,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       return next;
     });
   };
+
+  const previewTheme = useCallback(
+    (name: ThemeName | null) => {
+      const shown = name ?? appearance.theme;
+      applyThemeClasses(
+        shown,
+        shown === "frost" && frostReadsAsLight(appearance)
+      );
+    },
+    [appearance]
+  );
+
+  const previewFrost = useCallback(
+    (patch: Partial<AppearanceSettings> | null) => {
+      const shown = patch ? { ...appearance, ...patch } : appearance;
+      applyThemeClasses(shown.theme, applyFrostTokens(shown));
+    },
+    [appearance]
+  );
 
   const updateAppearance = (patch: Partial<AppearanceSettings>) => {
     setAppearance((prev) => {
@@ -1251,6 +1376,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setCurrentBackground,
         appearance,
         updateAppearance,
+        previewTheme,
+        previewFrost,
         widgets: widgetsForRender,
         widgetsCommitted: widgets,
         previewWidgetSettings,

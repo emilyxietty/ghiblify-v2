@@ -72,7 +72,14 @@
     "appearance": {
       "palette": "Palettes",
       "paletteAria": "Palette de couleurs",
-      "highContrast": "Contraste élevé"
+      "highContrast": "Contraste élevé",
+      "frostTune": "Givre",
+      "frostAmount": "Intensité",
+      "frostColor": "Couleur",
+      "frostOpacity": "Opacité",
+      "frostClear": "Transparent",
+      "frostBlack": "Noir",
+      "frostWhite": "Blanc"
     },
     "fonts": {
       "heading": "Police",
@@ -398,7 +405,20 @@
     "noResultsTitle": "Aucun résultat",
     "noResultsSub": "Rien ne correspond à « {{query}} ».",
     "permissionPrompt": "Ghiblify a besoin d'une autorisation pour lire vos favoris Chrome avant de les afficher ici.",
-    "permissionGrant": "Autoriser l'accès aux favoris"
+    "permissionGrant": "Autoriser l'accès aux favoris",
+    "settings": {
+      "title": "Affichage",
+      "layout": "Disposition",
+      "layoutTree": "Arborescence",
+      "layoutDrill": "Niveau par niveau",
+      "density": "Densité",
+      "densityComfortable": "Confortable",
+      "densityCompact": "Compacte",
+      "sort": "Tri",
+      "sortManual": "Manuel",
+      "sortAz": "A–Z",
+      "sortRecent": "Récents"
+    }
   },
   "notes": {
     "placeholder": "Notez quelque chose…",
@@ -625,7 +645,8 @@
         "body1": "Utilisez le panneau d'édition pour modifier les réglages du widget.",
         "body2": "Faites glisser le widget pour le déplacer, sans aucune touche.",
         "dragCue": "Cliquer-glisser",
-        "hint": "Faites glisser la poignée ombrée dans le coin pour le redimensionner."
+        "hint": "Faites glisser la poignée ombrée dans le coin pour le redimensionner.",
+        "resizeCue": "Glisser pour redimensionner"
       },
       "background": {
         "title": "Choisir les fonds",
@@ -717,8 +738,6 @@
     "resetCursorConfirm": "Remettre le curseur système par défaut ?",
     "storedDataLabel": "Données enregistrées",
     "otherSub": "Indicateurs d'installation et tout ce qui n'appartient à aucune section ci-dessus.",
-    "permissionMicrophone": "Microphone",
-    "permissionMicrophoneSub": "Active la recherche vocale de la barre de recherche. Uniquement pendant la session du micro.",
     "corners": "Coins",
     "cornersSub": "Arrondi des widgets, menus et fenêtres.",
     "cornerStyle": {

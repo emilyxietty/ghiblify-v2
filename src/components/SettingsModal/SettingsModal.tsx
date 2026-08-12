@@ -660,11 +660,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               label={t("settings.permissionBookmarks")}
               description={t("settings.permissionBookmarksSub")}
             />
-            <PermissionRow
-              name="audioCapture"
-              label={t("settings.permissionMicrophone")}
-              description={t("settings.permissionMicrophoneSub")}
-            />
           </section>
         )}
 

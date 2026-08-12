@@ -16,7 +16,6 @@ type SurfaceStyle = CSSProperties &
 interface WidgetSurfacePresentationOptions {
   storageKey: WidgetKey;
   settings: Record<string, unknown>;
-  theme: string;
   allowTypeIn?: boolean;
   typeSteps?: number;
 }
@@ -32,7 +31,6 @@ const fraction = (value: unknown): number =>
 export const getWidgetSurfacePresentation = ({
   storageKey,
   settings,
-  theme,
   allowTypeIn = false,
   typeSteps = 0,
 }: WidgetSurfacePresentationOptions): WidgetSurfacePresentation => {
@@ -78,7 +76,7 @@ export const getWidgetSurfacePresentation = ({
     storageKey === "googleApps";
   if (
     supportsSurfaceFrost &&
-    resolveSurfaceFrost(settings.frosted as boolean | undefined, theme) &&
+    resolveSurfaceFrost(settings.frosted as boolean | undefined) &&
     !(storageKey === "weather" && settings.showCard === true)
   ) {
     classes.push("widget-surface-frost");

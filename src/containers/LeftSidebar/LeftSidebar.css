@@ -294,14 +294,14 @@
    on Frost (see App.css). */
 .theme-frost .left-sidebar .language-picker .dropdown-toggle,
 .theme-frost .welcome-language-picker .dropdown-toggle {
-    background: rgba(10, 14, 20, 0.7);
-    color: rgba(255, 255, 255, 0.96);
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.7);
+    color: var(--frost-ink, rgba(255, 255, 255, 0.96));
     border-color: rgba(255, 255, 255, 0.18);
 }
 
 .theme-frost .left-sidebar .language-picker .dropdown-toggle:hover:not(:disabled),
 .theme-frost .welcome-language-picker .dropdown-toggle:hover:not(:disabled) {
-    background: rgba(10, 14, 20, 0.88);
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.88);
     border-color: rgba(255, 255, 255, 0.32);
 }
 
@@ -327,8 +327,8 @@
 /* Frost override - same dark-glass treatment as the toggle. */
 .theme-frost .dropdown-menu.language-picker,
 .theme-frost .dropdown-menu.welcome-language-picker {
-    background: rgba(10, 14, 20, 0.92);
-    color: rgba(255, 255, 255, 0.96);
+    background: rgba(var(--frost-rgb, 10, 14, 20), 0.92);
+    color: var(--frost-ink, rgba(255, 255, 255, 0.96));
     border-color: rgba(255, 255, 255, 0.18);
 }
 
@@ -350,7 +350,7 @@
 
 .theme-frost .dropdown-menu.language-picker .dropdown-option,
 .theme-frost .dropdown-menu.welcome-language-picker .dropdown-option {
-    color: rgba(255, 255, 255, 0.96);
+    color: var(--frost-ink, rgba(255, 255, 255, 0.96));
 }
 
 .theme-frost .dropdown-menu.language-picker .dropdown-option:hover,

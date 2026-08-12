@@ -90,7 +90,6 @@ export const QuickLinks: React.FC = () => {
     updateWidgetSettings,
     showWidgetEdits,
     editingWidgetKey,
-    appearance,
   } = useAppContext();
   // True when QuickLinks is in any kind of edit mode - global or per-widget.
   const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
@@ -528,7 +527,7 @@ export const QuickLinks: React.FC = () => {
   // Each mode paints a different surface (the grid's own background vs
   // the floating popup), so they carry separate alphas.
   const surfaceAlpha = showGrid ? (qs.opacity ?? 0) : (qs.listOpacity ?? 75);
-  const qlFrosted = resolveSurfaceFrost(qs.frosted, appearance.theme);
+  const qlFrosted = resolveSurfaceFrost(qs.frosted);
   const surfaceRgb =
     typeof qs.surfaceColor === "string"
       ? hexToRgbChannels(qs.surfaceColor)
