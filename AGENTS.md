@@ -36,6 +36,28 @@ the change is invisible in the browser.
 
 To load the extension: `chrome://extensions` → Developer mode → Load unpacked → select `dist/`.
 
+### Store builds
+
+`public/manifest.json` is the Chrome manifest. `scripts/manifest-target.mjs`
+patches the built copy in `dist/` per store; `scripts/package.mjs` zips it
+under a version-stamped name.
+
+```bash
+pnpm package:chrome    # -> ghiblify-<version>-chrome.zip
+pnpm package:edge      # identical bytes - Edge takes a Chrome MV3 package as-is
+pnpm package:firefox   # + browser_specific_settings, - the `favicon` permission
+pnpm package:all       # all three
+```
+
+Plain `pnpm build` / `pnpm dev` always leave `dist/` on the Chrome manifest,
+so a Firefox package never strands the unpacked dev build.
+
+Firefox specifics live in comments in `scripts/manifest-target.mjs` - the
+gecko ID is permanent once published, and `data_collection_permissions`
+must keep pace with anything new the app transmits. Validate a Firefox
+build with `npx web-ext lint --source-dir=dist --self-hosted` (needs
+Node >= 20).
+
 ## Directory map
 
 ```

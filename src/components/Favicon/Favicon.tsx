@@ -9,9 +9,28 @@ const normalizeUrl = (raw: string): string => {
   return `https://${t}`;
 };
 
+/**
+ * Whether this build can serve `_favicon/` at all.
+ *
+ * Only Chromium has that cache, and only when the `favicon` permission
+ * is in the manifest - the Firefox build strips it (see
+ * scripts/manifest-target.mjs). Without this check the Firefox build
+ * would still emit three `moz-extension://.../_favicon/` URLs per link,
+ * each 404ing before the chain reached the remote lookup that actually
+ * works there.
+ */
+const hasFaviconCache = (() => {
+  const ns: any = typeof chrome !== "undefined" ? chrome : undefined;
+  try {
+    return !!ns?.runtime?.getManifest?.()?.permissions?.includes("favicon");
+  } catch {
+    return false;
+  }
+})();
+
 const chromeFavicon = (pageUrl: string, size: number): string | null => {
   const ns: any = typeof chrome !== "undefined" ? chrome : undefined;
-  if (!ns?.runtime?.getURL) return null;
+  if (!hasFaviconCache || !ns?.runtime?.getURL) return null;
   try {
     const url = new URL(ns.runtime.getURL("/_favicon/"));
     url.searchParams.set("pageUrl", pageUrl);

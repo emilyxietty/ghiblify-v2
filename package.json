@@ -5,6 +5,16 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
+    "build:chrome": "vite build && node scripts/manifest-target.mjs chrome",
+    "build:edge": "vite build && node scripts/manifest-target.mjs edge",
+    "build:firefox": "vite build && node scripts/manifest-target.mjs firefox",
+    "package:chrome": "pnpm build:chrome && node scripts/package.mjs chrome",
+    "package:edge": "pnpm build:edge && node scripts/package.mjs edge",
+    "package:firefox": "pnpm build:firefox && node scripts/package.mjs firefox",
+    "package:all": "pnpm package:chrome && pnpm package:edge && pnpm package:firefox",
+    "build:demo": "BUILD_TARGET=web vite build",
+    "sync:demo": "node scripts/sync-demo.mjs",
+    "deploy:demo": "pnpm build:demo && pnpm sync:demo",
     "preview": "vite preview"
   },
   "keywords": [],

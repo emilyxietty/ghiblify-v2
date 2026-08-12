@@ -1,5 +1,6 @@
 /node_modules
 /dist
+/dist-demo
 /.env
 
 # Legacy v1 (jQuery) Ghiblify extension kept locally for reference
