@@ -68,10 +68,6 @@ import { isHighlightTextColor, normalizeHex } from "../../../utils/textHighlight
 import { ColorPicker, ColorTuning } from "../ColorPicker/ColorPicker";
 import { Dropdown } from "../../Dropdown/Dropdown";
 import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
-import {
-  SurfaceStylePicker,
-  type SurfaceStyleValue,
-} from "../SurfaceStylePicker/SurfaceStylePicker";
 import "./EditWidget.css";
 
 interface EditWidgetProps {
@@ -103,11 +99,6 @@ const infoFieldsFromValues = (fields: readonly string[]): InfoFields => ({
   quote: fields.includes("quote"),
 });
 
-const weatherSurfaceSettings = (style: SurfaceStyleValue) => ({
-  showCard: style === "weather",
-  frosted: style === "frost" || style === "frostDark",
-  frostDark: style === "frostDark",
-});
 
 const PANEL_GAP = 12;
 const VIEWPORT_MARGIN = 12;
@@ -729,14 +720,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const infoFields = (widgetsCommitted.info.settings as InfoSettings).infoFields;
   const weatherSettings = widgetsCommitted.weather.settings as WeatherSettings;
 
-  // The weather surface, as the four-way strip sees it.
-  const weatherStyle: SurfaceStyleValue = weatherSettings.showCard
-    ? "weather"
-    : weatherSettings.frosted === true
-      ? weatherSettings.frostDark === true
-        ? "frostDark"
-        : "frost"
-      : "clear";
 
   const notesShowBorder =
     (widgetsCommitted.notes.settings as NotesSettings).showBorder !== false;
@@ -1329,31 +1312,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </div>
       )}
 
-
-      {controls?.weatherFrosted && (
-        /* Weather's Background IS these four: clear, light frost,
-           smoked frost, and the weather card - which overrides the
-           others (weatherSurfaceSettings clears the frost flags when
-           the card goes on, and vice versa). No colour swatches: the
-           surface takes the palette's own tone, and a paint-any-colour
-           picker was more knob than this widget wants. */
-        <Row label={t("widgets.edit.surfaceStyle")}>
-          <SurfaceStylePicker
-            value={weatherStyle}
-            options={["clear", "frost", "frostDark", "weather"]}
-            ariaLabel={t("widgets.edit.surfaceStyle")}
-            onChange={(style) =>
-              updateWidgetSettings("weather", weatherSurfaceSettings(style))
-            }
-            onPreviewChange={(style) =>
-              previewWidgetSettings(
-                "weather",
-                style ? weatherSurfaceSettings(style) : null,
-              )
-            }
-          />
-        </Row>
-      )}
 
       {controls?.weatherLocation && (
         // Right-click on the canvas widget opens THIS panel, so the

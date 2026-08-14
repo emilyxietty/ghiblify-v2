@@ -70,14 +70,14 @@ export const getWidgetSurfacePresentation = ({
   if (storageKey === "notes" && settings.paperFrost === true)
     classes.push("widget-notes-frost");
 
+  // Weather is out of this list: its frost styles were retired with
+  // the style strip, and honouring a stored `frosted` flag would put
+  // shell glass under a surface the Background row now paints.
   const supportsSurfaceFrost =
-    storageKey === "todo" ||
-    storageKey === "weather" ||
-    storageKey === "googleApps";
+    storageKey === "todo" || storageKey === "googleApps";
   if (
     supportsSurfaceFrost &&
-    resolveSurfaceFrost(settings.frosted as boolean | undefined) &&
-    !(storageKey === "weather" && settings.showCard === true)
+    resolveSurfaceFrost(settings.frosted as boolean | undefined)
   ) {
     classes.push("widget-surface-frost");
     if (settings.frostDark === true) classes.push("frost-dark");

@@ -5,7 +5,6 @@ import {
   WbSunnyIcon,
 } from "../../../components/Icons/Icons";
 import {
-  resolveSurfaceFrost,
   resolveWeatherDetail,
   sectionsForDetail,
 } from "../../../config/widgetConfig";
@@ -27,6 +26,11 @@ const WeatherLocationModal = lazy(
 // without dragging the whole Weather widget body into the main
 // bundle). Import them locally where needed.
 import { codeToIconName, iconUrl } from "./weatherIcons";
+import {
+  hexToRgbChannels,
+  isHighlightTextColor,
+  resolveForeground,
+} from "../../../utils/textHighlight";
 
 interface WeatherIconProps {
   code: number;
@@ -469,44 +473,59 @@ const Weather: React.FC = () => {
     );
   }
 
-  const frosted = resolveSurfaceFrost(settings.frosted);
+  const surfaceRgb =
+    typeof settings.surfaceColor === "string"
+      ? hexToRgbChannels(settings.surfaceColor)
+      : null;
+  const surfaceTextMode = isHighlightTextColor(settings.textColor)
+    ? settings.textColor
+    : "auto";
+  const surfaceInk =
+    typeof settings.surfaceColor === "string"
+      ? resolveForeground(settings.surfaceColor, surfaceTextMode)
+      : surfaceTextMode === "light"
+        ? "#f7f3ea"
+        : surfaceTextMode === "dark"
+          ? "#1f2420"
+          : null;
 
   return (
     <div
       className={`weather-widget widget-header${
-        settings.showCard ? " weather-card-on" : ""
-      }${iconsOnly ? " weather-icons-only" : ""}${
+        iconsOnly ? " weather-icons-only" : ""
+      }${
         inDock || isCanvasCompact ? " weather-rail-layout" : ""
       }${isCanvasCompact ? " weather-canvas-compact" : ""}${
         isCanvasRail ? " weather-canvas-rail" : ""
       }${isHalfInDock ? " weather-tabbed-compact" : ""}`}
       data-weather-mood={mood}
       style={{
-        // Frosted: the .widget shell blurs the wallpaper (see
-        // .widget-surface-frost) and the cell tint drops to a whisper
-        // so the glass reads through.
-        ["--weather-cell-opacity" as any]: (frosted && !settings.showCard
-          ? 0.14
-          : (settings.opacity ?? 35) / 100
+        ["--weather-cell-opacity" as any]: (
+          (settings.opacity ?? 35) / 100
         ).toString(),
         // The widget's REAL surface - painted whether or not a colour
         // has been picked, exactly like the todo card. This is what the
-        // opacity slider acts on: the earlier version only painted when
+        // opacity slider acts on: an earlier version only painted when
         // a colour existed, so on an untinted widget the slider moved
-        // and nothing changed. Zeroed for the frost styles (the shell's
-        // glass is the surface there) and for the weather card, which
-        // owns its own look and takes no adjustments.
-        ["--weather-surface-alpha" as any]: (frosted || settings.showCard
-          ? 0
-          : (settings.opacity ?? 35) / 100
+        // and nothing changed.
+        ["--weather-surface-alpha" as any]: (
+          (settings.opacity ?? 35) / 100
         ).toString(),
-        // Blur likewise: on the clear/tinted surface only. The frost
-        // styles bring their own shell blur, and stacking this on top
-        // double-blurred the wallpaper.
-        ["--weather-blur" as any]: (frosted || settings.showCard
-          ? 0
-          : (settings.blur ?? 0) / 100
-        ).toString(),
+        ["--weather-blur" as any]: ((settings.blur ?? 0) / 100).toString(),
+        ...(surfaceRgb
+          ? {
+              ["--weather-surface-rgb" as any]: surfaceRgb,
+              // The forecast cells paint with --dark-rgb, so the tint
+              // carries into them too.
+              ["--dark-rgb" as any]: surfaceRgb,
+            }
+          : {}),
+        ...(surfaceInk
+          ? {
+              ["--light" as any]: surfaceInk,
+              ["--weather-ink" as any]: surfaceInk,
+            }
+          : {}),
       }}
     >
       {isHalfInDock && availableCompactSections.length > 1 && !error && (

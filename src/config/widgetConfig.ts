@@ -364,6 +364,15 @@ export const resolveWeatherDetail = (
 export interface WeatherSettings {
   /** "C" = Celsius, "F" = Fahrenheit. */
   unit: "C" | "F";
+  /** Surface tint, set from the Background row's adjustments panel. It
+   *  paints the widget's own surface (so it shows at every detail
+   *  level, not just the ones with forecast cells) and tints the cells
+   *  where there are any. null/absent = untinted. */
+  surfaceColor?: string | null;
+  /** Ink over that surface. "auto" derives it from surfaceColor when
+   *  there is one, and otherwise leaves the palette's own ink alone;
+   *  light/dark force it either way. */
+  textColor?: "auto" | "light" | "dark";
   /** How much forecast to show - see WEATHER_DETAILS. */
   detail: WeatherDetail;
   /** On the canvas, show one forecast section at a time behind the same
@@ -657,8 +666,6 @@ export interface CustomControls {
   notesPaper?: boolean;
   /** Solid/frosted surface choice for the todo list. */
   todoFrosted?: boolean;
-  /** Solid/frosted surface choice for the weather widget. */
-  weatherFrosted?: boolean;
   pomodoroSound?: boolean;
   /** Which break-time sticker shows (or random). */
   pomodoroImage?: boolean;
@@ -892,12 +899,15 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     },
     // No width/height ResizeBound - widget auto-sizes to content.
     customControls: {
+      // The generic Background control - the same colour / ink /
+      // opacity / blur row and tuning flyout every card widget uses.
+      // Weather adds nothing of its own on top of it.
+      todoFrosted: true,
       weatherUnit: true,
       weatherDetail: true,
       weatherCompact: true,
       weatherStyle: true,
       weatherLocation: true,
-      weatherFrosted: true,
     },
   },
   notes: {
