@@ -30,9 +30,14 @@
    to its dark slate for exactly this reason: every other card in the
    app reads that token and stays dark glass. The input was still on
    --dark-rgb, so it was the one surface that flipped. */
+/* Falls back THROUGH the todo row tint: Todo rebinds --dark-rgb to the
+   picked row colour, and pinning this straight to --surface-rgb threw
+   that choice away on Frost - the one theme this rule exists for. So a
+   picked colour still wins, and only the untinted input drops to
+   Frost's dark slate instead of the near-white --dark-rgb. */
 .theme-frost .custom-input {
     background: rgba(
-        var(--surface-rgb, 10, 14, 20),
+        var(--todo-row-rgb, var(--surface-rgb, 10, 14, 20)),
         min(var(--input-opacity, 0.5), var(--surface-alpha-cap, 1))
     );
 }
