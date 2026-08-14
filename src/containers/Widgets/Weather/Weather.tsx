@@ -492,8 +492,8 @@ const Weather: React.FC = () => {
   return (
     <div
       className={`weather-widget widget-header${
-        iconsOnly ? " weather-icons-only" : ""
-      }${
+        settings.showCard ? " weather-card-on" : ""
+      }${iconsOnly ? " weather-icons-only" : ""}${
         inDock || isCanvasCompact ? " weather-rail-layout" : ""
       }${isCanvasCompact ? " weather-canvas-compact" : ""}${
         isCanvasRail ? " weather-canvas-rail" : ""
@@ -501,17 +501,23 @@ const Weather: React.FC = () => {
       data-weather-mood={mood}
       style={{
         ["--weather-cell-opacity" as any]: (
-          (settings.opacity ?? 35) / 100
+          (settings.opacity ?? 0) / 100
         ).toString(),
         // The widget's REAL surface - painted whether or not a colour
         // has been picked, exactly like the todo card. This is what the
         // opacity slider acts on: an earlier version only painted when
         // a colour existed, so on an untinted widget the slider moved
         // and nothing changed.
-        ["--weather-surface-alpha" as any]: (
-          (settings.opacity ?? 35) / 100
+        // The card brings its own painted surface, so the adjustable
+        // one steps aside entirely while it is on.
+        ["--weather-surface-alpha" as any]: (settings.showCard
+          ? 0
+          : (settings.opacity ?? 0) / 100
         ).toString(),
-        ["--weather-blur" as any]: ((settings.blur ?? 0) / 100).toString(),
+        ["--weather-blur" as any]: (settings.showCard
+          ? 0
+          : (settings.blur ?? 0) / 100
+        ).toString(),
         ...(surfaceRgb
           ? {
               ["--weather-surface-rgb" as any]: surfaceRgb,

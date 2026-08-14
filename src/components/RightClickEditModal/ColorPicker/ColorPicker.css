@@ -462,3 +462,9 @@
     flex: 1;
     min-width: 0;
 }
+
+/* Weather's special chip - the mood card's own gradient, so the option
+   reads as "the weather look" rather than as one more flat colour. */
+.color-picker-inline-swatch.color-picker-weather {
+    background: linear-gradient(135deg, #78c3f0 0%, #c4aee2 52%, #f8c5d4 100%);
+}

@@ -21,6 +21,19 @@ const VIEWPORT_MARGIN = 8;
 interface PanelProps {
   /** Current colour, or null when the highlight is off. */
   color: string | null;
+  /** One extra, widget-supplied chip rendered after the colour presets
+   *  - a named look rather than a colour (weather's mood card). When
+   *  active it overrides the colours, so the caller usually passes
+   *  color: null alongside it. */
+  special?: {
+    label: string;
+    /** Extra class carrying the chip's visual (e.g. the card's
+     *  gradient). */
+    className?: string;
+    active: boolean;
+    onSelect: () => void;
+    onPreview?: (active: boolean) => void;
+  };
   /** Ink on top of the highlight - "auto" derives it from the colour. */
   textColor: HighlightTextColor;
   /** 0–100 - how solid the bar is. */
@@ -386,6 +399,25 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
         />
       ))}
 
+
+      {props.special && (
+        <button
+          type="button"
+          className={`color-picker-inline-swatch${
+            props.special.className ? ` ${props.special.className}` : ""
+          }${props.special.active ? " is-active" : ""}`}
+          aria-label={props.special.label}
+          data-tooltip={props.special.label}
+          onMouseEnter={() => props.special?.onPreview?.(true)}
+          onMouseLeave={() => props.special?.onPreview?.(false)}
+          onClick={() => {
+            props.special?.onSelect();
+            // A named look brings its own surface - the tuning column
+            // would be adjusting things it overrides.
+            props.onExpandChange?.(false);
+          }}
+        />
+      )}
 
       {/* Keep the disclosure slot visible before a colour is chosen so
           the strip advertises that presets have a second tuning level. */}

@@ -889,8 +889,11 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       unit: "C",
       detail: "now",
       compact: false,
-      opacity: 75,
-      blur: 10,
+      // Fully transparent by default, on every palette - the surface
+      // only appears once the user gives it opacity, a colour, or the
+      // weather card.
+      opacity: 0,
+      blur: 0,
       iconStyle: "animated",
       showCard: false,
       manualPlace: null,

@@ -821,7 +821,30 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     <div className="edit-panel-slider-row">
       <span className="edit-panel-row-label">{surfaceLabel}</span>
       <ColorPicker
-        color={surfaceColorValue}
+        // While the weather card is on it overrides the colours, so no
+        // colour chip reads active and the tuning chevron goes dead -
+        // the card takes no adjustments.
+        color={
+          storageKey === "weather" && weatherSettings.showCard === true
+            ? null
+            : surfaceColorValue
+        }
+        special={
+          storageKey === "weather"
+            ? {
+                label: t("widgets.edit.styleWeather"),
+                className: "color-picker-weather",
+                active: weatherSettings.showCard === true,
+                onSelect: () =>
+                  updateWidgetSettings("weather", { showCard: true }),
+                onPreview: (active) =>
+                  previewWidgetSettings(
+                    "weather",
+                    active ? { showCard: true } : null,
+                  ),
+              }
+            : undefined
+        }
         tuningKind={paintsPieces ? "highlight" : "background"}
         textColor={surfaceInk}
         opacity={surfaceOpacityValue}
@@ -836,6 +859,9 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         onChange={(next) =>
           updateWidgetSettings(storageKey, {
             surfaceColor: next,
+            // Any colour choice - or clearing back to none - takes the
+            // weather card off; it is the option the card overrides.
+            ...(storageKey === "weather" ? { showCard: false } : {}),
             // A colour picked while the surface is fully
             // transparent would paint nothing and read as a broken
             // picker; clearing it drops the alpha back so the
@@ -866,6 +892,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           // dead until you actually click one.
           previewWidgetSettings(storageKey, {
             surfaceColor: next,
+            ...(storageKey === "weather" ? { showCard: false } : {}),
             ...(next && surfaceOpacityValue === 0
               ? { [surfaceFields.opacity]: 25 }
               : {}),
