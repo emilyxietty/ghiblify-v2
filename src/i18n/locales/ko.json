@@ -241,7 +241,8 @@
       "pomodoroSizeMedium": "M",
       "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "집중 모드에서는 카드가 숨겨져 꾸밀 표면이 없습니다",
-      "pomodoroImageLabel": "휴식 스티커",
+      "weatherStyleRow": "스타일",
+      "pomodoroImageLabel": "스티커",
       "pomodoroImage": {
         "random": "무작위",
         "catbus": "고양이버스",

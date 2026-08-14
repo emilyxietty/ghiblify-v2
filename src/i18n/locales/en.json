@@ -247,7 +247,8 @@
       "pomodoroSizeMedium": "M",
       "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "Focus mode hides the card, so there is no surface to style",
-      "pomodoroImageLabel": "Break sticker",
+      "weatherStyleRow": "Style",
+      "pomodoroImageLabel": "Sticker",
       "pomodoroImage": {
         "random": "Random",
         "catbus": "Catbus",

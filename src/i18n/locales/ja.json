@@ -241,7 +241,8 @@
       "pomodoroSizeMedium": "中",
       "pomodoroSizeLarge": "大",
       "pomodoroFocusNoSurface": "集中モードではカードが非表示になるため、変更できる面がありません",
-      "pomodoroImageLabel": "休憩のスタンプ",
+      "weatherStyleRow": "スタイル",
+      "pomodoroImageLabel": "スタンプ",
       "pomodoroImage": {
         "random": "ランダム",
         "catbus": "ネコバス",

@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { assetUrl } from "../../../utils/assetUrl";
 import {
   readPomodoroFocusMode,
   readPomodoroIsBreak,
@@ -13,7 +14,6 @@ import {
 import { Button } from "../../../components/Button/Button";
 import {
   BlurOnIcon,
-  ChevronRightIcon,
   CloseIcon,
   DragIndicatorIcon,
   ExpandMoreIcon,
@@ -474,10 +474,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   }
   let supportsSlider =
     sliderField in (widgetConfig.settings as unknown as Record<string, unknown>);
-  // Weather's opacity lives in its Background adjustments panel, so the
-  // generic inline slider would be a second control writing the same
-  // setting from a different place.
-  if (storageKey === "weather") supportsSlider = false;
   const sliderValue = supportsSlider
     ? Math.round(Number(settings[sliderField]) || 0)
     : 50;
@@ -741,9 +737,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         ? "frostDark"
         : "frost"
       : "clear";
-  const weatherInk = isHighlightTextColor(weatherSettings.textColor)
-    ? weatherSettings.textColor
-    : "auto";
 
   const notesShowBorder =
     (widgetsCommitted.notes.settings as NotesSettings).showBorder !== false;
@@ -841,7 +834,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       preset tones, and with a continuous blur slider now in play a
       pair of frost presets alongside it was two controls fighting
       over one property. */}
-  const surfaceRow = controls?.todoFrosted && (
+  const surfaceRow = controls?.todoFrosted &&
+    !(storageKey === "weather" && weatherStyle === "weather") && (
     <div className="edit-panel-slider-row">
       <span className="edit-panel-row-label">{surfaceLabel}</span>
       <ColorPicker
@@ -913,7 +907,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         (highlightTuneOpen && supportsHighlight && highlightValue) ||
         (surfaceTuneOpen && controls?.todoFrosted && supportsSlider) ||
         (rowTuneOpen && storageKey === "todo") ||
-        (surfaceTuneOpen && storageKey === "weather") ||
         (surfaceTuneOpen && storageKey === "pomodoro")
           ? " edit-panel-expanded"
           : ""
@@ -1339,21 +1332,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
 
       {controls?.weatherFrosted && (
-        /* Four options, and only four: clear, light frost, smoked
-           frost, weather card. The colour swatches that briefly sat
-           beside them were a fifth way to answer the same question. The
-           disclosure opens the finer adjustments for whichever style is
-           on - except the weather card, which brings its own surface and
-           has nothing left to adjust. */
-        <Row label={t("widgets.edit.surfaceStyle")}>
+        /* The four surface STYLES - clear, light frost, smoked frost,
+           weather card. Colour / ink / opacity / blur live in the
+           generic Background row below this one (the same control every
+           card widget uses), which disappears while the weather card is
+           on: the card owns its look and takes no adjustments. */
+        <Row label={t("widgets.edit.weatherStyleRow")}>
           <SurfaceStylePicker
             value={weatherStyle}
             options={["clear", "frost", "frostDark", "weather"]}
-            ariaLabel={t("widgets.edit.surfaceStyle")}
+            ariaLabel={t("widgets.edit.weatherStyleRow")}
             onChange={(style) => {
               updateWidgetSettings("weather", weatherSurfaceSettings(style));
-              // The card owns its look, so an open panel would be
-              // adjusting something that is no longer on screen.
+              // The generic tuning flyout may be open on the surface
+              // this style change just removed.
               if (style === "weather") setSurfaceTuneOpen(false);
             }}
             onPreviewChange={(style) =>
@@ -1363,27 +1355,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               )
             }
           />
-          {!surfaceTuneOpen && (
-            <button
-              type="button"
-              className="color-picker-expand"
-              aria-label={t("widgets.edit.backgroundTune")}
-              data-tooltip={
-                weatherStyle === "weather"
-                  ? t("widgets.edit.styleWeather")
-                  : t("widgets.edit.backgroundTune")
-              }
-              aria-expanded={false}
-              aria-disabled={weatherStyle === "weather"}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (weatherStyle === "weather") return;
-                openSurfaceTune(true);
-              }}
-            >
-              <ChevronRightIcon style={{ fontSize: 15 }} />
-            </button>
-          )}
         </Row>
       )}
 
@@ -1662,6 +1633,18 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             options={POMODORO_IMAGE_KEYS.map((v) => ({
               value: v,
               label: t(`widgets.edit.pomodoroImage.${v}`),
+              // The character IS the option, so each row leads with its
+              // still. Random has no single face to show, so it keeps
+              // the plain label.
+              icon:
+                v === "random" ? undefined : (
+                  <img
+                    className="pomodoro-sticker-thumb"
+                    src={assetUrl(`/assets/pomodoro/${v}-still.png`)}
+                    alt=""
+                    loading="lazy"
+                  />
+                ),
             }))}
             value={pomodoroImage}
             onChange={(v) =>
@@ -1669,6 +1652,15 @@ const EditWidget: React.FC<EditWidgetProps> = ({
                 timerImage: isPomodoroImageKey(v) ? v : "random",
               })
             }
+            // Hovering a row swaps the sticker on the card (the widget
+            // re-resolves on any timerImage change), visible whenever
+            // the card is in break mode.
+            onOptionPreview={(v) =>
+              previewWidgetSettings("pomodoro", {
+                timerImage: isPomodoroImageKey(v) ? v : "random",
+              })
+            }
+            onPreviewEnd={() => previewWidgetSettings("pomodoro", null)}
           />
         </Row>
       )}
@@ -1846,101 +1838,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               } as never)
             }
           />
-        </div>
-      )}
-
-      {surfaceTuneOpen && storageKey === "weather" && weatherStyle !== "weather" && (
-        <div className="edit-panel-side">
-          <div className="edit-panel-side-head">
-            <span className="edit-panel-row-label">
-              {t("widgets.edit.backgroundTune")}
-            </span>
-            <button
-              type="button"
-              className="edit-panel-side-close"
-              aria-label={t("modal.common.closeAria")}
-              onClick={() => setSurfaceTuneOpen(false)}
-            >
-              <CloseIcon style={{ fontSize: 15 }} />
-            </button>
-          </div>
-          {/* Colour lives here rather than in the row: the row is the
-              four styles, and this is where the finer adjustments are. */}
-          <ColorPicker
-            color={
-              typeof weatherSettings.surfaceColor === "string"
-                ? weatherSettings.surfaceColor
-                : null
-            }
-            tuningKind="background"
-            textColor={weatherInk}
-            opacity={Math.round(Number(weatherSettings.opacity) || 0)}
-            blur={Math.round(Number(weatherSettings.blur) || 0)}
-            onChange={(next) =>
-              updateWidgetSettings("weather", { surfaceColor: next })
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings("weather", { textColor: next })
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings("weather", { opacity: next })
-            }
-            onPreviewChange={(next) =>
-              previewWidgetSettings("weather", { surfaceColor: next })
-            }
-            onPreviewClear={() => previewWidgetSettings("weather", null)}
-          />
-          <SliderRow
-            id="widget-weather-surface-opacity"
-            label={t("widgets.contextMenu.opacity")}
-            value={Math.round(Number(weatherSettings.opacity) || 0)}
-            min={0}
-            max={100}
-            step={5}
-            ariaLabel={t("widgets.edit.opacityAria")}
-            onChange={(v) => updateWidgetSettings("weather", { opacity: v })}
-          />
-          <SliderRow
-            id="widget-weather-surface-blur"
-            label={t("widgets.edit.blur")}
-            value={Math.round(Number(weatherSettings.blur) || 0)}
-            min={0}
-            max={100}
-            step={5}
-            ariaLabel={t("widgets.edit.blur")}
-            onChange={(v) => updateWidgetSettings("weather", { blur: v })}
-          />
-          {/* Ink still means something without a colour: it decides
-              whether the forecast reads light or dark over the frost. */}
-          <div className="edit-panel-slider-row">
-            <span className="edit-panel-row-label">
-              {t("widgets.edit.highlightTextColor")}
-            </span>
-            <div
-              className="color-picker-ink"
-              role="radiogroup"
-              aria-label={t("widgets.edit.highlightTextColor")}
-            >
-              {(["auto", "light", "dark"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  role="radio"
-                  aria-checked={weatherInk === mode}
-                  className={`color-picker-ink-btn ink-${mode}${
-                    weatherInk === mode ? " is-active" : ""
-                  }`}
-                  onClick={() =>
-                    updateWidgetSettings("weather", { textColor: mode })
-                  }
-                >
-                  {mode === "auto"
-                    ? t("widgets.edit.highlightTextAuto")
-                    : "Aa"}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 

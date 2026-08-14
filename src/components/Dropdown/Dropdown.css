@@ -37,6 +37,15 @@
     justify-content: center;
 }
 
+/* Sticker thumbnails in the pomodoro image picker - sized like a
+   glyph so rows stay text-height. */
+.dropdown-icon .pomodoro-sticker-thumb {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    display: block;
+}
+
 .dropdown-arrow {
     font-size: 10px;
     transition: transform 0.3s ease;

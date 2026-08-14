@@ -235,7 +235,8 @@
       "pomodoroSizeMedium": "M",
       "pomodoroSizeLarge": "G",
       "pomodoroFocusNoSurface": "O modo concentração oculta o cartão, então não há superfície para estilizar",
-      "pomodoroImageLabel": "Adesivo da pausa",
+      "weatherStyleRow": "Estilo",
+      "pomodoroImageLabel": "Adesivo",
       "pomodoroImage": {
         "random": "Aleatório",
         "catbus": "Gatobus",

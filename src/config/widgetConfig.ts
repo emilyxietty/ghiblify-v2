@@ -901,6 +901,10 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     },
     // No width/height ResizeBound - widget auto-sizes to content.
     customControls: {
+      // The generic Background control - the same colour / ink /
+      // opacity / blur row and tuning flyout every card widget uses.
+      // Weather adds nothing of its own on top of it.
+      todoFrosted: true,
       weatherUnit: true,
       weatherDetail: true,
       weatherCompact: true,

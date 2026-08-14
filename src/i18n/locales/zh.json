@@ -241,7 +241,8 @@
       "pomodoroSizeMedium": "中",
       "pomodoroSizeLarge": "大",
       "pomodoroFocusNoSurface": "专注模式下卡片会隐藏，因此没有可设置的表面",
-      "pomodoroImageLabel": "休息贴纸",
+      "weatherStyleRow": "样式",
+      "pomodoroImageLabel": "贴纸",
       "pomodoroImage": {
         "random": "随机",
         "catbus": "龙猫巴士",
