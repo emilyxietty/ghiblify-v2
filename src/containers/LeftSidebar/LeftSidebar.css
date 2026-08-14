@@ -794,6 +794,35 @@
     gap: 6px;
 }
 
+/* Reset row at the foot of the Settings card. Flat and quiet on
+   purpose: it sits under four sliders the user just tuned, so it
+   should read as an escape hatch rather than compete with them. The
+   card's own gap provides the spacing above. */
+.filter-reset {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid rgba(253, 246, 233, 0.1);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--light-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease,
+        color 160ms ease;
+}
+
+.filter-reset:hover:not(:disabled) {
+    background: rgba(253, 246, 233, 0.06);
+    border-color: rgba(253, 246, 233, 0.2);
+    color: var(--light);
+}
+
+.filter-reset:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
 .filter-control label,
 .filter-control-label {
     display: flex;

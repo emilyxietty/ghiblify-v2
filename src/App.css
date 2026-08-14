@@ -431,7 +431,7 @@
    alpha so the per-widget opacity slider keeps working. (The earlier
    `background:` shorthand with a hardcoded `#c45a85` ignored the
    opacity setting entirely on this theme.) */
-.theme-spring .pomodoro-widget.break-mode {
+.theme-spring .pomodoro-widget.break-mode:not(.custom-card) {
     background-color: rgba(196, 90, 133, var(--pomodoro-opacity, 1));
     background-image: none;
 }
@@ -456,7 +456,7 @@
    trying to re-tint each nested element. Targets .palette-dark
    (applied to <html> for any non-light-mode theme) so the fix
    covers Ghibli / Howl's / Totoro / Ponyo / Sky / Dark / Frost. */
-.palette-dark .pomodoro-widget.break-mode {
+.palette-dark .pomodoro-widget.break-mode:not(.custom-card) {
     /* rgba(...) with --pomodoro-opacity as the alpha so the opacity
        slider visibly fades the surface. Previously this rule used
        `background:` with a hardcoded `#3a6480`, which has higher
@@ -469,17 +469,17 @@
     border-color: rgba(255, 255, 255, 0.22);
 }
 
-.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header {
+.palette-dark .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.18);
 }
 
-.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2,
-.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
+.palette-dark .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2,
+.palette-dark .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2.active-mode {
     color: #ffffff;
 }
 
-.palette-dark .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
+.palette-dark .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2.active-mode {
     background: rgba(255, 255, 255, 0.16);
 }
 
@@ -797,12 +797,27 @@
     color: var(--frost-ink, #ffffff) !important;
 }
 
-.theme-frost .pomodoro-widget {
+/* :not(.custom-card) on every rule below - these palette surfaces are
+   DEFAULTS, and a rule that repaints the card regardless silently beat
+   the user's own colour. Pomodoro.css guards its break-mode rules this
+   way already; these ones were written without it, so a picked colour
+   did nothing on break mode for every palette-dark theme (most of
+   them), nothing on Bloom's break mode, and nothing at all on Frost,
+   which overrides both modes with !important.
+
+   Both alphas fold in --pomodoro-opacity, so the surface slider works
+   under Frost the way it does everywhere else. It used to be a flat
+   0.7 behind an !important, which pinned the card at one alpha and made
+   the slider look broken - break mode below already did this, and the
+   focus card was simply missed. The highlight scales too: left fixed it
+   would be the one layer still visible at opacity 0. */
+.theme-frost .pomodoro-widget:not(.custom-card) {
     background:
         radial-gradient(ellipse at top left,
-            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, calc(0.08 * var(--pomodoro-opacity, 1))) 0%,
             transparent 60%),
-        rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
+        rgba(var(--frost-rgb, 10, 14, 20),
+            calc(0.7 * var(--pomodoro-opacity, 1))) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
     color: var(--frost-ink, #ffffff) !important;
 }
@@ -812,7 +827,7 @@
    tint on the glass + a sky-blue glowing border cue the break
    state without abandoning the frosted aesthetic. White text stays
    for contrast on the dark glass. */
-.theme-frost .pomodoro-widget.break-mode {
+.theme-frost .pomodoro-widget.break-mode:not(.custom-card) {
     /* Fold --pomodoro-opacity into the alpha so the slider works on
        Frost too. The base alpha is 0.7 (the original frost-glass
        blue), multiplied by the user's opacity setting via calc().
@@ -829,17 +844,17 @@
         0 8px 24px rgba(0, 0, 0, 0.35) !important;
 }
 
-.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header {
+.theme-frost .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header {
     background: rgba(255, 255, 255, 0.08) !important;
     border-color: rgba(255, 255, 255, 0.16) !important;
 }
 
-.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2,
-.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
+.theme-frost .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2,
+.theme-frost .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2.active-mode {
     color: var(--frost-ink, #ffffff) !important;
 }
 
-.theme-frost .pomodoro-widget.break-mode .pomodoro-switch-header h2.active-mode {
+.theme-frost .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2.active-mode {
     background: rgba(155, 200, 219, 0.25) !important;
 }
 

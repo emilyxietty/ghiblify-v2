@@ -6,9 +6,14 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+  readPomodoroFocusMode,
+  readPomodoroIsBreak,
+} from "../../../utils/pomodoroMode";
 import { Button } from "../../../components/Button/Button";
 import {
   BlurOnIcon,
+  ChevronRightIcon,
   CloseIcon,
   DragIndicatorIcon,
   ExpandMoreIcon,
@@ -30,6 +35,8 @@ import {
   NOTE_PAPER_PRESETS,
   NotesSettings,
   POMODORO_CARD_PRESETS,
+  POMODORO_IMAGE_KEYS,
+  isPomodoroImageKey,
   PomodoroSettings,
   QuicklinksSettings,
   resolveWeatherDetail,
@@ -467,14 +474,10 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   }
   let supportsSlider =
     sliderField in (widgetConfig.settings as unknown as Record<string, unknown>);
-  if (supportsSlider && storageKey === "weather") {
-    // Weather's opacity only tints the forecast cells, which don't
-    // exist below the "hourly" detail level.
-    const detail = resolveWeatherDetail(
-      widgetsCommitted.weather.settings as WeatherSettings
-    );
-    if (detail !== "hourly" && detail !== "full") supportsSlider = false;
-  }
+  // Weather's opacity lives in its Background adjustments panel, so the
+  // generic inline slider would be a second control writing the same
+  // setting from a different place.
+  if (storageKey === "weather") supportsSlider = false;
   const sliderValue = supportsSlider
     ? Math.round(Number(settings[sliderField]) || 0)
     : 50;
@@ -564,6 +567,83 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   // Widgets whose Background row owns the numeric tuning. Others keep
   // the slider inline, since without a surface row there'd be nothing
   // to expand from.
+  // Which pomodoro surface the Background control is editing. The tab
+  // decides both the swatch strip AND the tuning flyout - they used to
+  // be two independent pickers with a flyout each, so pointing the
+  // strip at Break while the flyout still rendered Focus left the
+  // expanded panel showing the wrong surface (or nothing at all) and
+  // its opacity slider writing to the wrong setting.
+  const [pomoSurfaceTab, setPomoSurfaceTab] = useState<"focus" | "break">(() =>
+    readPomodoroIsBreak() ? "break" : "focus",
+  );
+  // The panel is not always remounted between opens, so a lazy initial
+  // value can be a mode ago by the time it is next shown. Re-read when
+  // the panel switches to (or reopens on) the pomodoro.
+  useEffect(() => {
+    if (storageKey !== "pomodoro") return;
+    setPomoSurfaceTab(readPomodoroIsBreak() ? "break" : "focus");
+    setPomoFocusMode(readPomodoroFocusMode());
+  }, [storageKey]);
+
+  // Concentration mode drops the card's surface entirely, so there is
+  // nothing for the colour, opacity or blur to act on. The control is
+  // greyed rather than hidden: it stays where the user expects it, and
+  // says why it is unavailable.
+  const [pomoFocusMode, setPomoFocusMode] = useState(readPomodoroFocusMode);
+  useEffect(() => {
+    const onFocus = (e: Event) => {
+      const on = (e as CustomEvent<boolean>).detail === true;
+      setPomoFocusMode(on);
+      if (on) setSurfaceTuneOpen(false);
+    };
+    window.addEventListener(
+      "ghiblify:pomodoro:focus",
+      onFocus as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        "ghiblify:pomodoro:focus",
+        onFocus as EventListener,
+      );
+  }, []);
+  // Both directions: picking a tab puts the card in that mode so you
+  // are looking at the surface you are editing, and switching the card
+  // by hand moves the tab. One event, listened to at both ends.
+  useEffect(() => {
+    const onMode = (e: Event) => {
+      const mode = (e as CustomEvent<"focus" | "break">).detail;
+      if (mode === "focus" || mode === "break") setPomoSurfaceTab(mode);
+    };
+    window.addEventListener("ghiblify:pomodoro:mode", onMode as EventListener);
+    return () =>
+      window.removeEventListener(
+        "ghiblify:pomodoro:mode",
+        onMode as EventListener,
+      );
+  }, []);
+  // The surface the tab points at, and the settings keys that write to
+  // it. Everything downstream - swatch strip, tuning flyout - reads
+  // this, so there is one answer to "which surface am I editing".
+  const pomoActive =
+    pomoSurfaceTab === "break"
+      ? {
+          src: pomoBreak,
+          keys: {
+            color: "breakColor",
+            ink: "breakTextColor",
+            opacity: "breakOpacity",
+            blur: "breakBlur",
+          },
+        }
+      : {
+          src: pomoFocus,
+          keys: {
+            color: "cardColor",
+            ink: "textColor",
+            opacity: "opacity",
+            blur: "blur",
+          },
+        };
   const surfaceOwnsTuning = !!(controls?.todoFrosted && supportsSlider);
   // Quicklinks drives its own panel from the swatch, so it never shows
   // the separate tune toggle.
@@ -626,8 +706,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     controls?.notesShowBorder ||
     controls?.notesPaper ||
     controls?.todoFrosted ||
-    controls?.pomodoroSize ||
     controls?.pomodoroSound ||
+    controls?.pomodoroImage ||
     controls?.pomodoroColor ||
     supportsSlider ||
     supportsTextShadow ||
@@ -652,6 +732,19 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     storageKey === "date" && dateSettings.displayStyle === "calendar";
   const infoFields = (widgetsCommitted.info.settings as InfoSettings).infoFields;
   const weatherSettings = widgetsCommitted.weather.settings as WeatherSettings;
+
+  // The weather surface, as the four-way strip sees it.
+  const weatherStyle: SurfaceStyleValue = weatherSettings.showCard
+    ? "weather"
+    : weatherSettings.frosted === true
+      ? weatherSettings.frostDark === true
+        ? "frostDark"
+        : "frost"
+      : "clear";
+  const weatherInk = isHighlightTextColor(weatherSettings.textColor)
+    ? weatherSettings.textColor
+    : "auto";
+
   const notesShowBorder =
     (widgetsCommitted.notes.settings as NotesSettings).showBorder !== false;
   const notesSettings = widgetsCommitted.notes.settings as NotesSettings;
@@ -676,17 +769,14 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     ? pomodoroSettings.sound
     : "musicbox";
   const pomodoroVolume = Math.round(pomodoroSettings.soundVolume ?? 70);
+  // Absent means random - the behaviour before the setting existed.
+  const pomodoroImage = isPomodoroImageKey(pomodoroSettings.timerImage)
+    ? pomodoroSettings.timerImage
+    : "random";
   const pomodoroCardColor =
     typeof pomodoroSettings.cardColor === "string"
       ? normalizeHex(pomodoroSettings.cardColor)
       : null;
-  const pomodoroSize: "small" | "medium" | "large" = (() => {
-    const raw = (widgetsCommitted.pomodoro.settings as { size?: string }).size;
-    return raw === "small" || raw === "medium" || raw === "large"
-      ? raw
-      : "medium";
-  })();
-
   /** Segmented control - for two or three short, mutually-exclusive
    *  options where a dropdown would hide the alternatives. */
   const segmented = <T extends string>(
@@ -822,7 +912,8 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       className={`edit-panel${
         (highlightTuneOpen && supportsHighlight && highlightValue) ||
         (surfaceTuneOpen && controls?.todoFrosted && supportsSlider) ||
-        (rowTuneOpen && (storageKey === "todo" || storageKey === "pomodoro")) ||
+        (rowTuneOpen && storageKey === "todo") ||
+        (surfaceTuneOpen && storageKey === "weather") ||
         (surfaceTuneOpen && storageKey === "pomodoro")
           ? " edit-panel-expanded"
           : ""
@@ -1248,22 +1339,23 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
 
       {controls?.weatherFrosted && (
+        /* Four options, and only four: clear, light frost, smoked
+           frost, weather card. The colour swatches that briefly sat
+           beside them were a fifth way to answer the same question. The
+           disclosure opens the finer adjustments for whichever style is
+           on - except the weather card, which brings its own surface and
+           has nothing left to adjust. */
         <Row label={t("widgets.edit.surfaceStyle")}>
           <SurfaceStylePicker
-            value={
-              weatherSettings.showCard
-                ? "weather"
-                : weatherSettings.frosted === true
-                  ? weatherSettings.frostDark === true
-                    ? "frostDark"
-                    : "frost"
-                  : "clear"
-            }
+            value={weatherStyle}
             options={["clear", "frost", "frostDark", "weather"]}
             ariaLabel={t("widgets.edit.surfaceStyle")}
-            onChange={(style) =>
-              updateWidgetSettings("weather", weatherSurfaceSettings(style))
-            }
+            onChange={(style) => {
+              updateWidgetSettings("weather", weatherSurfaceSettings(style));
+              // The card owns its look, so an open panel would be
+              // adjusting something that is no longer on screen.
+              if (style === "weather") setSurfaceTuneOpen(false);
+            }}
             onPreviewChange={(style) =>
               previewWidgetSettings(
                 "weather",
@@ -1271,125 +1363,27 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               )
             }
           />
-        </Row>
-      )}
-
-      {controls?.notesShowBorder && (
-        // Short "Border: Show | Hide" - the previous full "Show
-        // border" strings in both the label AND the segments made the
-        // row wider than the panel, so the control painted over the
-        // label.
-        <Row label={t("widgets.edit.notesBorder")}>
-          {segmented(
-            t("widgets.edit.notesBorder"),
-            [
-              { key: "on" as const, label: t("widgets.edit.borderShow") },
-              { key: "off" as const, label: t("widgets.edit.borderHide") },
-            ],
-            notesShowBorder ? "on" : "off",
-            (v) => updateWidgetSettings("notes", { showBorder: v === "on" }),
-            (v) => ({ showBorder: v === "on" })
-          )}
-        </Row>
-      )}
-
-      {controls?.notesPaper && (
-        <Row label={t("widgets.edit.notesPaper")}>
-          <div
-            className="edit-panel-swatches"
-            role="radiogroup"
-            aria-label={t("widgets.edit.notesPaperAria")}
-          >
+          {!surfaceTuneOpen && (
             <button
               type="button"
-              role="radio"
-              aria-checked={notesPaperNone}
-              aria-label={t("widgets.edit.notesPaperNone")}
-              className={`edit-panel-swatch edit-panel-swatch-empty${
-                notesPaperNone ? " is-active" : ""
-              }`}
-              onMouseEnter={() =>
-                previewWidgetSettings("notes", {
-                  paperColor: null,
-                  paperNone: true,
-                  paperFrost: false,
-                })
+              className="color-picker-expand"
+              aria-label={t("widgets.edit.backgroundTune")}
+              data-tooltip={
+                weatherStyle === "weather"
+                  ? t("widgets.edit.styleWeather")
+                  : t("widgets.edit.backgroundTune")
               }
-              onMouseLeave={() => previewWidgetSettings("notes", null)}
-              onClick={() =>
-                updateWidgetSettings("notes", {
-                  paperColor: null,
-                  paperNone: true,
-                  paperFrost: false,
-                })
-              }
-            />
-            {NOTE_PAPER_PRESETS.map((hex, i) => {
-              // Slot 0 is the shipped cream - stored as null so
-              // pre-feature blobs and an explicit default pick are
-              // the same state.
-              const value = i === 0 ? null : hex;
-              const isActive =
-                !notesPaperNone && !notesPaperFrost && notesPaperColor === value;
-              return (
-                <button
-                  key={hex}
-                  type="button"
-                  role="radio"
-                  aria-checked={isActive}
-                  aria-label={`${t("widgets.edit.notesPaperAria")} ${hex}`}
-                  className={`edit-panel-swatch${
-                    isActive ? " is-active" : ""
-                  }`}
-                  style={{ background: hex }}
-                  onMouseEnter={() =>
-                    previewWidgetSettings("notes", {
-                      paperColor: value,
-                      paperNone: false,
-                      paperFrost: false,
-                    })
-                  }
-                  onMouseLeave={() => previewWidgetSettings("notes", null)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateWidgetSettings("notes", {
-                      paperColor: value,
-                      paperNone: false,
-                      paperFrost: false,
-                    });
-                  }}
-                />
-              );
-            })}
-            {/* Frosted glass is just another paper - picking it wins
-                over any colour swatch. */}
-            <button
-              type="button"
-              role="radio"
-              aria-checked={notesPaperFrost}
-              aria-label={t("widgets.edit.styleFrost")}
-              title={t("widgets.edit.styleFrost")}
-              className={`edit-panel-swatch edit-panel-swatch-frost${
-                notesPaperFrost ? " is-active" : ""
-              }`}
-              onMouseEnter={() =>
-                previewWidgetSettings("notes", {
-                  paperColor: null,
-                  paperNone: false,
-                  paperFrost: true,
-                })
-              }
-              onMouseLeave={() => previewWidgetSettings("notes", null)}
+              aria-expanded={false}
+              aria-disabled={weatherStyle === "weather"}
               onClick={(e) => {
                 e.stopPropagation();
-                updateWidgetSettings("notes", {
-                  paperColor: null,
-                  paperNone: false,
-                  paperFrost: true,
-                });
+                if (weatherStyle === "weather") return;
+                openSurfaceTune(true);
               }}
-            />
-          </div>
+            >
+              <ChevronRightIcon style={{ fontSize: 15 }} />
+            </button>
+          )}
         </Row>
       )}
 
@@ -1545,31 +1539,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </>
       )}
 
-      {controls?.pomodoroSize && (
-        <Row label={t("widgets.edit.pomodoroSizeLabel")}>
-          {segmented(
-            t("widgets.edit.pomodoroSizeLabel"),
-            [
-              {
-                key: "small" as const,
-                label: t("widgets.edit.pomodoroSizeSmall"),
-              },
-              {
-                key: "medium" as const,
-                label: t("widgets.edit.pomodoroSizeMedium"),
-              },
-              {
-                key: "large" as const,
-                label: t("widgets.edit.pomodoroSizeLarge"),
-              },
-            ],
-            pomodoroSize,
-            (v) => updateWidgetSettings("pomodoro", { size: v }),
-            (v) => ({ size: v })
-          )}
-        </Row>
-      )}
-
       {controls?.pomodoroSound && (
         <Row label={t("widgets.edit.pomodoroSoundLabel")}>
           {/* Picking a sound plays it. That's the obvious preview
@@ -1578,6 +1547,12 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               rather than failing silently when the timer ends half an
               hour later. */}
           <Dropdown
+            // Same class the date and weather controls carry: it is what
+            // swaps the generic white application dropdown for the edit
+            // panel's dark glass, on both the toggle and the menu.
+            // Without it this one control rendered light against every
+            // dark palette.
+            className="edit-panel-dropdown"
             size="small"
             variant="outline-light"
             portal
@@ -1597,86 +1572,105 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       )}
 
       {controls?.pomodoroColor && (
-        <>
-          {/* Focus and break are separate surfaces: the two modes are
-              meant to read differently at a glance, so one shared
-              colour defeated the point. Each uses the same picker +
-              tuning flyout as every other Background control. */}
-          <div className="edit-panel-slider-row">
+        /* One Background control with a Focus / Break switch, rather
+           than two stacked pickers. The two modes own separate surfaces
+           and always will, but they are the same question asked twice -
+           side by side they doubled the panel's tallest row and made
+           the second one read as a different setting rather than the
+           other half of this one. */
+        <div
+          className={`edit-panel-slider-row${
+            pomoFocusMode ? " is-unavailable" : ""
+          }`}
+          aria-disabled={pomoFocusMode}
+          data-tooltip={
+            pomoFocusMode
+              ? t("widgets.edit.pomodoroFocusNoSurface")
+              : undefined
+          }
+        >
+          <div className="edit-panel-slider-head">
             <span className="edit-panel-row-label">
               {t("widgets.edit.surfaceStyle")}
             </span>
-            <ColorPicker
-              color={pomoFocus.color}
-              tuningKind="background"
-              textColor={pomoFocus.ink}
-              opacity={pomoFocus.opacity}
-              blur={pomoFocus.blur}
-              expanded={surfaceTuneOpen}
-              onExpandChange={openSurfaceTune}
-              onBlurChange={(v) =>
-                updateWidgetSettings(storageKey, { blur: v } as never)
-              }
-              onChange={(next) =>
-                updateWidgetSettings(storageKey, { cardColor: next } as never)
-              }
-              onTextColorChange={(next) =>
-                updateWidgetSettings(storageKey, { textColor: next } as never)
-              }
-              onOpacityChange={(next) =>
-                updateWidgetSettings(storageKey, { opacity: next } as never)
-              }
-              onPreviewChange={(next) =>
-                previewWidgetSettings(storageKey, { cardColor: next } as never)
-              }
-              onPreviewOpacity={(next) =>
-                previewWidgetSettings(storageKey, { opacity: next } as never)
-              }
-              onPreviewTextColor={(next) =>
-                previewWidgetSettings(storageKey, { textColor: next } as never)
-              }
-              onPreviewClear={() => previewWidgetSettings(storageKey, null)}
-            />
+            <div className="edit-panel-segmented" role="tablist">
+              {(["focus", "break"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  role="tab"
+                  aria-selected={pomoSurfaceTab === mode}
+                  className={`edit-panel-segment${
+                    pomoSurfaceTab === mode ? " is-active" : ""
+                  }`}
+                  onClick={() => {
+                    setPomoSurfaceTab(mode);
+                    window.dispatchEvent(
+                      new CustomEvent("ghiblify:pomodoro:mode", {
+                        detail: mode,
+                      }),
+                    );
+                  }}
+                >
+                  {mode === "focus"
+                    ? t("pomodoro.modeFocus")
+                    : t("pomodoro.modeBreak")}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="edit-panel-slider-row">
-            <span className="edit-panel-row-label">
-              {t("widgets.edit.pomodoroBreakColor")}
-            </span>
-            <ColorPicker
-              color={pomoBreak.color}
-              tuningKind="background"
-              textColor={pomoBreak.ink}
-              opacity={pomoBreak.opacity}
-              blur={pomoBreak.blur}
-              expanded={rowTuneOpen}
-              onExpandChange={openRowTune}
-              onBlurChange={(v) =>
-                updateWidgetSettings(storageKey, { breakBlur: v } as never)
-              }
-              onChange={(next) =>
-                updateWidgetSettings(storageKey, { breakColor: next } as never)
-              }
-              onTextColorChange={(next) =>
-                updateWidgetSettings(storageKey, {
-                  breakTextColor: next,
-                } as never)
-              }
-              onOpacityChange={(next) =>
-                updateWidgetSettings(storageKey, { breakOpacity: next } as never)
-              }
-              onPreviewChange={(next) =>
-                previewWidgetSettings(storageKey, { breakColor: next } as never)
-              }
-              onPreviewOpacity={(next) =>
-                previewWidgetSettings(storageKey, { breakOpacity: next } as never)
-              }
-              onPreviewTextColor={(next) =>
-                previewWidgetSettings(storageKey, { breakTextColor: next } as never)
-              }
-              onPreviewClear={() => previewWidgetSettings(storageKey, null)}
-            />
-          </div>
-        </>
+          {(() => {
+            const { src, keys } = pomoActive;
+            const set = (patch: Record<string, unknown>) =>
+              updateWidgetSettings(storageKey, patch as never);
+            const preview = (patch: Record<string, unknown>) =>
+              previewWidgetSettings(storageKey, patch as never);
+            return (
+              <ColorPicker
+                // Remounts per tab so the flyout opens on the tab you
+                // are actually editing rather than keeping the other
+                // one's expanded state.
+                key={pomoSurfaceTab}
+                color={src.color}
+                tuningKind="background"
+                textColor={src.ink}
+                opacity={src.opacity}
+                blur={src.blur}
+                expanded={surfaceTuneOpen}
+                onExpandChange={openSurfaceTune}
+                onBlurChange={(v) => set({ [keys.blur]: v })}
+                onChange={(next) => set({ [keys.color]: next })}
+                onTextColorChange={(next) => set({ [keys.ink]: next })}
+                onOpacityChange={(next) => set({ [keys.opacity]: next })}
+                onPreviewChange={(next) => preview({ [keys.color]: next })}
+                onPreviewOpacity={(next) => preview({ [keys.opacity]: next })}
+                onPreviewTextColor={(next) => preview({ [keys.ink]: next })}
+                onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+              />
+            );
+          })()}
+        </div>
+      )}
+
+      {controls?.pomodoroImage && (
+        <Row label={t("widgets.edit.pomodoroImageLabel")}>
+          <Dropdown
+            className="edit-panel-dropdown"
+            size="small"
+            variant="outline-light"
+            portal
+            options={POMODORO_IMAGE_KEYS.map((v) => ({
+              value: v,
+              label: t(`widgets.edit.pomodoroImage.${v}`),
+            }))}
+            value={pomodoroImage}
+            onChange={(v) =>
+              updateWidgetSettings("pomodoro", {
+                timerImage: isPomodoroImageKey(v) ? v : "random",
+              })
+            }
+          />
+        </Row>
       )}
 
       {controls?.pomodoroSound && pomodoroSound !== "none" && (
@@ -1826,49 +1820,127 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         <div className="edit-panel-side">
           <ColorTuning
             onClose={() => setSurfaceTuneOpen(false)}
-            color={pomoFocus.color}
+            color={pomoActive.src.color}
             tuningKind="background"
-            textColor={pomoFocus.ink}
-            opacity={pomoFocus.opacity}
-            blur={pomoFocus.blur}
+            textColor={pomoActive.src.ink}
+            opacity={pomoActive.src.opacity}
+            blur={pomoActive.src.blur}
             onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, { blur: v } as never)
+              updateWidgetSettings(storageKey, {
+                [pomoActive.keys.blur]: v,
+              } as never)
             }
             onChange={(next) =>
-              updateWidgetSettings(storageKey, { cardColor: next } as never)
+              updateWidgetSettings(storageKey, {
+                [pomoActive.keys.color]: next,
+              } as never)
             }
             onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, { textColor: next } as never)
+              updateWidgetSettings(storageKey, {
+                [pomoActive.keys.ink]: next,
+              } as never)
             }
             onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, { opacity: next } as never)
+              updateWidgetSettings(storageKey, {
+                [pomoActive.keys.opacity]: next,
+              } as never)
             }
           />
         </div>
       )}
 
-      {rowTuneOpen && storageKey === "pomodoro" && (
+      {surfaceTuneOpen && storageKey === "weather" && weatherStyle !== "weather" && (
         <div className="edit-panel-side">
-          <ColorTuning
-            onClose={() => setRowTuneOpen(false)}
-            color={pomoBreak.color}
-            tuningKind="background"
-            textColor={pomoBreak.ink}
-            opacity={pomoBreak.opacity}
-            blur={pomoBreak.blur}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, { breakBlur: v } as never)
+          <div className="edit-panel-side-head">
+            <span className="edit-panel-row-label">
+              {t("widgets.edit.backgroundTune")}
+            </span>
+            <button
+              type="button"
+              className="edit-panel-side-close"
+              aria-label={t("modal.common.closeAria")}
+              onClick={() => setSurfaceTuneOpen(false)}
+            >
+              <CloseIcon style={{ fontSize: 15 }} />
+            </button>
+          </div>
+          {/* Colour lives here rather than in the row: the row is the
+              four styles, and this is where the finer adjustments are. */}
+          <ColorPicker
+            color={
+              typeof weatherSettings.surfaceColor === "string"
+                ? weatherSettings.surfaceColor
+                : null
             }
+            tuningKind="background"
+            textColor={weatherInk}
+            opacity={Math.round(Number(weatherSettings.opacity) || 0)}
+            blur={Math.round(Number(weatherSettings.blur) || 0)}
             onChange={(next) =>
-              updateWidgetSettings(storageKey, { breakColor: next } as never)
+              updateWidgetSettings("weather", { surfaceColor: next })
             }
             onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, { breakTextColor: next } as never)
+              updateWidgetSettings("weather", { textColor: next })
             }
             onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, { breakOpacity: next } as never)
+              updateWidgetSettings("weather", { opacity: next })
             }
+            onPreviewChange={(next) =>
+              previewWidgetSettings("weather", { surfaceColor: next })
+            }
+            onPreviewClear={() => previewWidgetSettings("weather", null)}
           />
+          <SliderRow
+            id="widget-weather-surface-opacity"
+            label={t("widgets.contextMenu.opacity")}
+            value={Math.round(Number(weatherSettings.opacity) || 0)}
+            min={0}
+            max={100}
+            step={5}
+            ariaLabel={t("widgets.edit.opacityAria")}
+            onChange={(v) => updateWidgetSettings("weather", { opacity: v })}
+          />
+          <SliderRow
+            id="widget-weather-surface-blur"
+            label={t("widgets.edit.blur")}
+            value={Math.round(Number(weatherSettings.blur) || 0)}
+            min={0}
+            max={100}
+            step={5}
+            ariaLabel={t("widgets.edit.blur")}
+            onChange={(v) => updateWidgetSettings("weather", { blur: v })}
+          />
+          {/* Ink still means something without a colour: it decides
+              whether the forecast reads light or dark over the frost. */}
+          <div className="edit-panel-slider-row">
+            <span className="edit-panel-row-label">
+              {t("widgets.edit.highlightTextColor")}
+            </span>
+            <div
+              className="color-picker-ink"
+              role="radiogroup"
+              aria-label={t("widgets.edit.highlightTextColor")}
+            >
+              {(["auto", "light", "dark"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  role="radio"
+                  aria-checked={weatherInk === mode}
+                  className={`color-picker-ink-btn ink-${mode}${
+                    weatherInk === mode ? " is-active" : ""
+                  }`}
+                  onClick={() =>
+                    updateWidgetSettings("weather", { textColor: mode })
+                  }
+                >
+                  {mode === "auto"
+                    ? t("widgets.edit.highlightTextAuto")
+                    : "Aa"}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

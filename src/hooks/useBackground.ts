@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useAppContext } from "../contexts/AppContext";
 import {
-  readAnimatedBackgrounds,
-  readBlacklist,
+  migrateToImageSelection,
   readFavorites,
+  readImageSelection,
+  writeImageSelection,
 } from "../storage/backgroundStorage";
 import { useOnline } from "./useOnline";
 
@@ -70,6 +70,48 @@ interface MovieMetadataData {
 // the next full page load gives it another chance.
 const deadUrls = new Set<string>();
 
+// The library, kept from the last successful load. The deselect event
+// carries only a URL, and turning that into "this film, minus this
+// image" needs background.json - this hook is the one place that is
+// always mounted AND has it, so it does the resolving for everyone.
+let loadedSources: BackgroundSource[] = [];
+
+/** Which film an image belongs to, or null for a URL the library does
+ *  not know (a favorite hearted from somewhere else). */
+const sourceOf = (url: string): BackgroundSource | null =>
+  loadedSources.find(
+    (s) => s.links.includes(url) || (s.animated ?? []).includes(url),
+  ) ?? null;
+
+/** The images of `source` that rotate: its whole list unless the user
+ *  has curated that film, in which case exactly what they kept. */
+const selectedImages = (
+  source: BackgroundSource,
+  selection: Record<string, string[]>,
+): string[] => {
+  const all = [...source.links, ...(source.animated ?? [])];
+  const chosen = selection[source.title];
+  if (!chosen) return all;
+  const keep = new Set(chosen);
+  return all.filter((l) => keep.has(l));
+};
+
+/** Drop one image from the rotation, from anywhere in the app. Writes
+ *  the film's remaining images, so the film goes from "all of it" to an
+ *  explicit list the moment the user first removes something. */
+export const deselectBackground = (url: string): void => {
+  const source = sourceOf(url);
+  if (!source) return;
+  const all = [...source.links, ...(source.animated ?? [])];
+  const selection = readImageSelection();
+  const current = selection[source.title] ?? all;
+  if (!current.includes(url)) return;
+  writeImageSelection({
+    ...selection,
+    [source.title]: current.filter((l) => l !== url),
+  });
+};
+
 // Resolve true iff the browser can actually decode an image at `url`.
 // Warms the HTTP cache, so the CSS background-image that follows is
 // served instantly from cache.
@@ -85,7 +127,6 @@ export const useBackground = () => {
   const [currentBackground, setCurrentBackground] = useState<string>("");
   const [filmTitle, setFilmTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const { backgroundSelection, updateBackgroundSelection } = useAppContext();
   const online = useOnline();
 
   useEffect(() => {
@@ -116,24 +157,19 @@ export const useBackground = () => {
         const bgData: BackgroundData = await bgResponse.json();
         const metadataData: MovieMetadataData = await metadataResponse.json();
 
-        // Load persisted blacklist + filter sources according to the
-        // user's backgroundSelection preferences.
-        const blacklistSet = new Set<string>(readBlacklist());
+        loadedSources = bgData.sources;
+        // One-shot conversion of the retired blacklist / per-film
+        // switches / animated flag. Runs here because this is the first
+        // point in the app where both the stored blob and the library
+        // are in hand.
+        migrateToImageSelection(bgData.sources);
+        const imageSelection = readImageSelection();
 
-        // Filter sources according to user's backgroundSelection preferences
-        const allowedSources = bgData.sources.filter(
-          (s) =>
-            // default to true when not specified
-            (backgroundSelection && backgroundSelection[s.title]) ?? true,
-        );
-
-        // No fallback to "all sources" when allowedSources is empty -
-        // that would silently re-enable every movie when the user only
-        // wants favorites in the rotation. If both allowedSources AND
-        // favorites are empty, the self-heal block below catches the
-        // empty pool and auto-enables a source so the user is never
-        // stranded with nothing to display.
-        const sourcesToUse = allowedSources;
+        // Every film is a candidate now. Which of its images rotate is
+        // the film's entry in imageSelection - a film the user emptied
+        // contributes nothing, which is what switching one off used to
+        // mean and is now just the same choice made image by image.
+        const sourcesToUse = bgData.sources;
 
         // Only use sources that have metadata entries - prevents selecting a
         // background whose metadata is missing and falling back to the default.
@@ -141,70 +177,62 @@ export const useBackground = () => {
           (s) => !!metadataData[s.title],
         );
 
-        // Collect all non-blacklisted links with their source titles from valid sources
+        // Collect every selected link with its source title
         const allLinks: { link: string; sourceTitle: string }[] = [];
         const seen = new Set<string>();
 
-        // Animated stills join the pool only when the setting is on.
-        // They live under their own film, so a user who turns them off
-        // keeps every static still from the same film - and one who
-        // leaves them on gets real metadata in the Info widget instead
-        // of the empty "Animated" pseudo-film they used to resolve to.
-        const animatedOn = readAnimatedBackgrounds();
-
+        // Moving images are just images: they sit under their own film,
+        // carry its metadata, and are selected or not one at a time like
+        // any still. The library-wide "animated backgrounds" switch that
+        // used to gate them here is gone.
         validSources.forEach((source) => {
-          const pool = animatedOn
-            ? [...source.links, ...(source.animated ?? [])]
-            : source.links;
-          pool.forEach((link) => {
-            if (!blacklistSet.has(link) && !seen.has(link)) {
+          selectedImages(source, imageSelection).forEach((link) => {
+            if (!seen.has(link)) {
               allLinks.push({ link, sourceTitle: source.title });
               seen.add(link);
             }
           });
         });
 
-        // Favorites are always eligible - they're a personal opt-in
-        // pool that the user can't deselect. Add any favorited URLs
-        // that aren't already in the pool from a regular source.
+        // Favorites are always eligible - hearting an image pins it
+        // into the rotation, which is why the picker will not let one
+        // be deselected either. Add any favorited URL not already
+        // pulled in by its film.
         readFavorites().forEach((link) => {
-          if (!blacklistSet.has(link) && !seen.has(link)) {
-            allLinks.push({ link, sourceTitle: "__favorites__" });
-            seen.add(link);
-          }
+          if (seen.has(link)) return;
+          allLinks.push({ link, sourceTitle: "__favorites__" });
+          seen.add(link);
         });
 
         if (allLinks.length === 0) {
-          // Self-heal - when the pool is empty (no enabled movies AND
-          // no favorites), auto-enable the first available source so
-          // the user is never stranded with nothing to rotate. Picks
-          // the first source that has metadata + at least one
-          // non-blacklisted link.
-          const firstAvailableSource = bgData.sources.find(
+          // Nothing selected anywhere. This used to silently switch a
+          // film back on so the user was never stranded - which meant
+          // the app quietly undoing a deliberate choice. Now that every
+          // image is individually selectable and "Reselect all" is one
+          // click away in the picker, the honest response is to show the
+          // bundled default and change nothing.
+          const stillSelected = (s: BackgroundSource) =>
+            selectedImages(s, imageSelection);
+          // The default ships with the extension and belongs to no
+          // film's selection unless the library happens to include it.
+          const defaultDeselected = bgData.sources.some(
             (s) =>
-              !!metadataData[s.title] &&
-              s.links.some((l) => !blacklistSet.has(l)),
+              (s.links.includes(bgData.default.link) ||
+                (s.animated ?? []).includes(bgData.default.link)) &&
+              !stillSelected(s).includes(bgData.default.link),
           );
-          if (firstAvailableSource) {
-            updateBackgroundSelection(firstAvailableSource.title, true);
-            // The selection change will retrigger this effect, so we
-            // can return early - the next pass will populate the pool.
-          }
-          // If default is blacklisted too, try to find any non-blacklisted link
-          if (!blacklistSet.has(bgData.default.link)) {
+          if (!defaultDeselected) {
             setCurrentBackground(bgData.default.link);
             setFilmTitle(metadataData[bgData.default.source]?.title || "");
           } else {
-            // try to find any link across all sources that's not blacklisted
+            // Any still-selected image, from any film.
             let found: { link: string; sourceTitle?: string } | null = null;
             for (const s of bgData.sources) {
-              for (const l of s.links) {
-                if (!blacklistSet.has(l)) {
-                  found = { link: l, sourceTitle: s.title };
-                  break;
-                }
+              const keep = stillSelected(s);
+              if (keep.length) {
+                found = { link: keep[0], sourceTitle: s.title };
+                break;
               }
-              if (found) break;
             }
 
             if (found) {
@@ -212,7 +240,7 @@ export const useBackground = () => {
               setCurrentBackground(found.link);
               setFilmTitle(meta?.title || "");
             } else {
-              // No non-blacklisted backgrounds available; clear selection
+              // Nothing selected anywhere; clear selection
               setCurrentBackground("");
               setFilmTitle("");
             }
@@ -308,16 +336,25 @@ export const useBackground = () => {
 
     loadBackground();
 
-    // Re-run selection when the blacklist changes - the current image
-    // may have been removed and we need a replacement. Favorites
-    // changes are intentionally NOT a trigger: favoriting is a passive
-    // bookmark and shouldn't shuffle the displayed photo. New
-    // favorites become eligible for the next natural rotation.
+    // Re-pick when the image on screen is dropped from the rotation, or
+    // when anything asks for a refresh. Favorites changes are
+    // intentionally NOT a trigger: favoriting is a passive bookmark and
+    // shouldn't shuffle the displayed photo. New favorites become
+    // eligible for the next natural rotation.
     const reload = () => loadBackground();
-    window.addEventListener("ghiblify:blacklist:add", reload as EventListener);
+    // Deselecting from outside the picker (the sidebar's "remove this
+    // photo") sends the URL and lets this hook do the write - it is the
+    // one place that is always mounted and has the library, so it is
+    // the only one that can turn a URL into "this film, minus this
+    // image". The picker writes its own toggles directly.
+    const onDeselect = (e: Event) => {
+      const url = (e as CustomEvent<string>)?.detail;
+      if (url) deselectBackground(url);
+      loadBackground();
+    };
     window.addEventListener(
-      "ghiblify:blacklist:cleared",
-      reload as EventListener,
+      "ghiblify:background:deselect",
+      onDeselect as EventListener,
     );
     window.addEventListener(
       "ghiblify:background:refresh",
@@ -326,19 +363,15 @@ export const useBackground = () => {
 
     return () => {
       window.removeEventListener(
-        "ghiblify:blacklist:add",
-        reload as EventListener,
-      );
-      window.removeEventListener(
-        "ghiblify:blacklist:cleared",
-        reload as EventListener,
+        "ghiblify:background:deselect",
+        onDeselect as EventListener,
       );
       window.removeEventListener(
         "ghiblify:background:refresh",
         reload as EventListener,
       );
     };
-  }, [backgroundSelection, online]);
+  }, [online]);
 
   return { currentBackground, filmTitle, loading };
 };

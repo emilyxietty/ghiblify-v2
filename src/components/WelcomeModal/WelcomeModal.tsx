@@ -267,9 +267,11 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ open, onClose }) => 
                   <EditIcon style={{ fontSize: 14 }} />
                 </span>
                 <span>{t("welcome.slides.shortcuts.orSep")}</span>
-                <Key>
-                  {t("welcome.slides.adjustTime.rightClickWidgetCue")}
-                </Key>
+                {/* Its own key, not adjustTime's: that one is also the
+                    cue badge pinned to the Time widget, where it reads
+                    against "Right-click icon" and has to name what is
+                    being clicked. Here the row already says "widget". */}
+                <Key>{t("welcome.slides.shortcuts.rightClickCue")}</Key>
               </span>
               <span>{t("welcome.slides.shortcuts.editWidget")}</span>
             </li>

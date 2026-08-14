@@ -21,6 +21,16 @@ export interface QuicklinkItem {
   url: string;
 }
 
+/** The link a brand-new (or newly emptied) Quick Links falls back to.
+ *  An empty widget is indistinguishable from a broken one - it renders
+ *  as a blank strip with nothing to click - so it always carries at
+ *  least this one. Fixed id, so re-seeding cannot pile up duplicates. */
+export const QUICKLINKS_FALLBACK: QuicklinkItem = {
+  id: "quicklink-default-google",
+  title: "Google",
+  url: "https://www.google.com",
+};
+
 // Per-widget settings: only widget-specific fields. Position and visibility
 // belong to the widget shell (see WidgetEntry in AppContext), not in here.
 export interface TimeSettings {
@@ -230,8 +240,44 @@ export interface SearchBarSettings {
 // labels on controls, large gets generous breathing room).
 export type PomodoroSize = "small" | "medium" | "large";
 
+/** What each retired preset measured. The migration reads this so a
+ *  user who had picked "small" keeps a small card - now as a starting
+ *  width/height they can drag from, rather than a fixed rung. */
+export const POMODORO_LEGACY_DIMS: Record<
+  PomodoroSize,
+  { width: number; height: number }
+> = {
+  small: { width: 160, height: 200 },
+  medium: { width: 220, height: 260 },
+  large: { width: 300, height: 340 },
+};
+
+/** The break-time stickers, keyed by file. "random" (the default) picks
+ *  a fresh one each time the mode flips, which is what the widget always
+ *  did before the choice existed. */
+export const POMODORO_IMAGE_KEYS = [
+  "random",
+  "catbus",
+  "chibi",
+  "heen",
+  "mei",
+  "noface",
+  "sootsprite",
+] as const;
+export type PomodoroImageKey = (typeof POMODORO_IMAGE_KEYS)[number];
+export const isPomodoroImageKey = (v: unknown): v is PomodoroImageKey =>
+  typeof v === "string" &&
+  (POMODORO_IMAGE_KEYS as readonly string[]).includes(v);
+
 export interface PomodoroSettings {
-  size: PomodoroSize;
+  /** Free-resize footprint, driven by the canvas resize handle. */
+  width: number;
+  height: number;
+  /** Legacy: the card used to snap to three presets. Kept optional so
+   *  a saved blob can still be read, and migrated to width/height on
+   *  first render - see `POMODORO_LEGACY_DIMS` below. Nothing writes
+   *  it any more. */
+  size?: PomodoroSize;
   /** 0–100 - surface alpha, drives the card's background opacity. */
   opacity: number;
   /** Chime played when a focus or break period runs out. Synthesised
@@ -240,6 +286,9 @@ export interface PomodoroSettings {
   /** 0–100 - chime volume. Independent of `opacity`; 0 is silent and
    *  is the same end state as `sound: "none"`. */
   soundVolume: number;
+  /** Which sticker shows during a break. Absent or "random" keeps the
+   *  original behaviour: a new character every time the mode flips. */
+  timerImage?: PomodoroImageKey;
   /** FOCUS-mode background. null/absent = the theme's --purple-dark. */
   cardColor?: string | null;
   textColor?: "auto" | "light" | "dark";
@@ -315,6 +364,15 @@ export const resolveWeatherDetail = (
 export interface WeatherSettings {
   /** "C" = Celsius, "F" = Fahrenheit. */
   unit: "C" | "F";
+  /** Surface tint, set from the Background row's adjustments panel. It
+   *  paints the widget's own surface (so it shows at every detail
+   *  level, not just the ones with forecast cells) and tints the cells
+   *  where there are any. null/absent = untinted. */
+  surfaceColor?: string | null;
+  /** Ink over that surface. "auto" derives it from surfaceColor when
+   *  there is one, and otherwise leaves the palette's own ink alone;
+   *  light/dark force it either way. */
+  textColor?: "auto" | "light" | "dark";
   /** How much forecast to show - see WEATHER_DETAILS. */
   detail: WeatherDetail;
   /** On the canvas, show one forecast section at a time behind the same
@@ -610,8 +668,9 @@ export interface CustomControls {
   todoFrosted?: boolean;
   /** Solid/frosted surface choice for the weather widget. */
   weatherFrosted?: boolean;
-  pomodoroSize?: boolean;
   pomodoroSound?: boolean;
+  /** Which break-time sticker shows (or random). */
+  pomodoroImage?: boolean;
   /** Card colour swatches for the pomodoro focus card. */
   pomodoroColor?: boolean;
 }
@@ -760,7 +819,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       gridMode: true,
       linksPerRow: 5,
       visibleRows: 1,
-      links: [],
+      links: [QUICKLINKS_FALLBACK],
       opacity: 0,
       blur: 0,
       listOpacity: 95,
@@ -789,7 +848,9 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     // against the medium card's ~290px height.
     position: { x: 88, y: 37 },
     settings: {
-      size: "medium",
+      // The old "medium" preset, so nothing moves for existing users.
+      width: 220,
+      height: 260,
       opacity: 100,
       blur: 0,
       breakOpacity: 100,
@@ -798,13 +859,16 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       soundVolume: 70,
       cardColor: null,
     },
-    // No width/height ResizeBound - Pomodoro snaps to small /
-    // medium / large via the right-click size radio (or the
-    // EditWidget overlay) rather than free-resize, so each preset
-    // has its own crafted layout.
+    // Free-resize, like todo and notes. This replaced a small /
+    // medium / large radio: three rungs meant the card was almost
+    // never the size you wanted, and the layout inside is fluid
+    // (container queries) rather than three crafted breakpoints, so
+    // there is nothing left for presets to buy.
+    width: { min: 150, max: 460, step: 10 },
+    height: { min: 190, max: 520, step: 10 },
     customControls: {
-      pomodoroSize: true,
       pomodoroSound: true,
+      pomodoroImage: true,
       pomodoroColor: true,
     },
   },

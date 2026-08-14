@@ -21,10 +21,8 @@ import {
 import {
   readFilters,
   readParallax,
-  readSelection,
   writeFilters,
   writeParallax,
-  writeSelection,
 } from "../storage/backgroundStorage";
 import {
   clearLegacyQuickLinks,
@@ -189,6 +187,24 @@ const applyThemeClasses = (name: ThemeName, readsAsLight = false): void => {
   root.classList.add(`theme-${name}`);
   root.classList.toggle("palette-light", light);
   root.classList.toggle("palette-dark", !light);
+};
+
+/** Put a corner style on <html>. Same split as `applyThemeClasses`, and
+ *  for the same reason - hovering an option should be able to draw it
+ *  without committing it. "rounded" is the base scale, so it carries no
+ *  class of its own. */
+const applyCornerClass = (style: CornerStyle): void => {
+  const root = document.documentElement;
+  CORNER_STYLES.forEach((c) => root.classList.remove(`corners-${c}`));
+  if (style !== "rounded") root.classList.add(`corners-${style}`);
+};
+
+/** Put a font on <html>. "default" means the system stack, which is
+ *  what the absence of a class already means. */
+const applyFontClass = (name: FontName): void => {
+  const root = document.documentElement;
+  FONT_NAMES.forEach((f) => root.classList.remove(`font-${f}`));
+  if (name !== "default") root.classList.add(`font-${name}`);
 };
 
 /** Write the Frost tokens onto <html> and report whether the glass now
@@ -363,8 +379,6 @@ interface AppContextType {
    *  of the background prefs. */
   backgroundParallax: boolean;
   setBackgroundParallax: (on: boolean) => void;
-  backgroundSelection: Record<string, boolean>;
-  updateBackgroundSelection: (movieKey: string, value: boolean) => void;
   /** URL of the photo currently painted by `<Background>`. Set by
    *  `AppContent` whenever `useBackground` resolves a new image, so
    *  any consumer (e.g. the sidebar trash button) can act on it. */
@@ -383,6 +397,10 @@ interface AppContextType {
    *  null on the way out. Goes through the same writer as a commit, so
    *  a preview flips the ink exactly the way clicking would. */
   previewFrost: (patch: Partial<AppearanceSettings> | null) => void;
+  /** Draw a corner style / font without committing it. null restores
+   *  whatever is actually saved. Same contract as `previewTheme`. */
+  previewCorners: (style: CornerStyle | null) => void;
+  previewFont: (name: FontName | null) => void;
 
   // widgets - single source of truth
   /** Widget state as the app should *render* it - the committed
@@ -1011,10 +1029,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     () => readParallax()
   );
 
-  const [backgroundSelection, setBackgroundSelection] = useState<
-    Record<string, boolean>
-  >(() => readSelection());
-
   const [appearance, setAppearance] = useState<AppearanceSettings>(() => {
     const saved = readPersisted<Partial<AppearanceSettings>>(
       "ghiblify_appearance",
@@ -1039,18 +1053,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     applyThemeClasses(appearance.theme, applyFrostTokens(appearance));
     root.classList.toggle("high-contrast", appearance.highContrast);
     // Corner style - html.corners-<key> reassigns --radius-unit, which
-    // the whole --radius-* scale derives from. "rounded" is the base
-    // scale, so it needs no class.
-    CORNER_STYLES.forEach((c) => root.classList.remove(`corners-${c}`));
-    if ((appearance.corners ?? "rounded") !== "rounded") {
-      root.classList.add(`corners-${appearance.corners}`);
-    }
-    // Font class - "default" means the system stack so no class is
-    // applied; otherwise html.font-<key> sets --app-font via App.css.
-    FONT_NAMES.forEach((f) => root.classList.remove(`font-${f}`));
-    if (appearance.font !== "default") {
-      root.classList.add(`font-${appearance.font}`);
-    }
+    // the whole --radius-* scale derives from.
+    applyCornerClass(appearance.corners ?? "rounded");
+    // Font class - html.font-<key> sets --app-font via App.css.
+    applyFontClass(appearance.font);
     // Mirror the proportional-scaling toggle into viewportScale's
     // module-level flag. `setProportionalScaling` notifies its own
     // subscribers (via `useScaledPx`), so all widgets re-render
@@ -1183,14 +1189,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
-  const updateBackgroundSelection = (movieKey: string, value: boolean) => {
-    setBackgroundSelection((prev) => {
-      const next = { ...prev, [movieKey]: value };
-      writeSelection(next);
-      return next;
-    });
-  };
-
   const previewTheme = useCallback(
     (name: ThemeName | null) => {
       const shown = name ?? appearance.theme;
@@ -1208,6 +1206,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       applyThemeClasses(shown.theme, applyFrostTokens(shown));
     },
     [appearance]
+  );
+
+  const previewCorners = useCallback(
+    (style: CornerStyle | null) =>
+      applyCornerClass(style ?? appearance.corners ?? "rounded"),
+    [appearance.corners]
+  );
+
+  const previewFont = useCallback(
+    (name: FontName | null) => applyFontClass(name ?? appearance.font),
+    [appearance.font]
   );
 
   const updateAppearance = (patch: Partial<AppearanceSettings>) => {
@@ -1370,14 +1379,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         updateBackgroundFilters,
         backgroundParallax,
         setBackgroundParallax,
-        backgroundSelection,
-        updateBackgroundSelection,
         currentBackground,
         setCurrentBackground,
         appearance,
         updateAppearance,
         previewTheme,
         previewFrost,
+        previewCorners,
+        previewFont,
         widgets: widgetsForRender,
         widgetsCommitted: widgets,
         previewWidgetSettings,

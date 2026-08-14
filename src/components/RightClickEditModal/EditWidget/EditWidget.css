@@ -748,6 +748,38 @@
     gap: 4px;
 }
 
+/* A control that is present but has nothing to act on right now - the
+   pomodoro's Background while concentration mode is on, where the card
+   drops its surface entirely. Greyed and inert rather than removed: it
+   stays where the user left it, and the tooltip on the row says why. */
+.edit-panel-slider-row.is-unavailable {
+    opacity: 0.42;
+}
+
+.edit-panel-slider-row.is-unavailable .edit-panel-segmented,
+.edit-panel-slider-row.is-unavailable .color-picker,
+.edit-panel-slider-row.is-unavailable .color-picker-expand {
+    pointer-events: none;
+}
+
+/* Style chips and colour swatches in one strip, so a Background row
+   that offers both reads as one control rather than two that happen to
+   share a label. Wraps rather than squeezing - the colour strip is
+   ~10 swatches wide and the styles add four more. */
+.edit-panel-surface-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* A divider between the two halves, so it is clear the first four chips
+   change the KIND of surface and the rest change its colour. */
+.edit-panel-surface-strip > .surface-style-picker {
+    padding-right: 8px;
+    border-right: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
+}
+
 .edit-panel-slider-head {
     display: flex;
     align-items: baseline;

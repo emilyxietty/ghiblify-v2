@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { assetUrl } from "../../utils/assetUrl";
 import { hasFaviconCache } from "../../utils/faviconCache";
 import { EdgePanelCallout } from "../../components/EdgePanelCallout/EdgePanelCallout";
@@ -794,16 +801,62 @@ const BookmarkDrill: React.FC<{
   );
 };
 
+/** Where the gear sits, in viewport coordinates. The panel is portalled
+ *  to the body, so it positions against the screen rather than against
+ *  any ancestor. */
+interface SettingsAnchor {
+  x: number;
+  top: number;
+  bottom: number;
+}
+
+const VIEWPORT_MARGIN = 8;
+
 /** The gear popup on the panel heading. Three display choices, each a
  *  segmented row - flat, no submenus, and every option visible at
- *  once rather than hidden behind a dropdown. */
+ *  once rather than hidden behind a dropdown.
+ *
+ *  Portalled to the body, like the sort menu beside it. As an absolutely
+ *  positioned child it was clipped by `.right-sidebar-content`, which
+ *  scrolls: with a long bookmark list the scroller was tall enough to
+ *  hide the seam, but a short list left a box only as tall as its own
+ *  rows, and the panel was cut off at the last one. */
 const BookmarksSettingsPopover: React.FC<{
   settings: BookmarksSettings;
+  anchor: SettingsAnchor;
   onChange: (patch: Partial<BookmarksSettings>) => void;
   onClose: () => void;
-}> = ({ settings, onChange, onClose }) => {
+}> = ({ settings, anchor, onChange, onClose }) => {
   const t = useT();
   const ref = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState({
+    top: anchor.bottom + 8,
+    left: anchor.x,
+  });
+
+  // Measure after mount, then flip above the gear / clamp sideways so
+  // the panel always lands fully on screen.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const below = anchor.bottom + 8;
+    const top =
+      below + rect.height + VIEWPORT_MARGIN <= window.innerHeight
+        ? below
+        : Math.max(VIEWPORT_MARGIN, anchor.top - rect.height - 8);
+    // Keep it over the sidebar, not merely on screen. useEdgePanel
+    // closes the panel as soon as the pointer crosses left of the
+    // sidebar's edge, and it measures position rather than hit-testing
+    // the DOM - so a portalled popup that pokes out to the left would
+    // shut the sidebar the moment you reached for it.
+    const sidebarLeft = window.innerWidth - Math.min(SIDEBAR_WIDTH, window.innerWidth);
+    const left = Math.min(
+      Math.max(sidebarLeft + VIEWPORT_MARGIN, anchor.x),
+      window.innerWidth - rect.width - VIEWPORT_MARGIN
+    );
+    setPos({ top, left });
+  }, [anchor.x, anchor.top, anchor.bottom]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -820,11 +873,17 @@ const BookmarksSettingsPopover: React.FC<{
         onClose();
       }
     };
+    // Fixed position means the panel no longer travels with the gear.
+    // Capture, so the sidebar's own scroller counts and not just the
+    // window's.
+    const onScroll = () => onClose();
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey, true);
+    window.addEventListener("scroll", onScroll, true);
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("scroll", onScroll, true);
     };
   }, [onClose]);
 
@@ -870,12 +929,13 @@ const BookmarksSettingsPopover: React.FC<{
     );
   };
 
-  return (
+  return createPortal(
     <div
       ref={ref}
       className="bookmarks-settings-panel"
       role="dialog"
       aria-label={t("bookmarks.settings.title")}
+      style={{ top: pos.top, left: pos.left }}
     >
       {row("bookmarks.settings.layout", "layout", [
         {
@@ -899,7 +959,8 @@ const BookmarksSettingsPopover: React.FC<{
           labelKey: "bookmarks.settings.densityCompact",
         },
       ])}
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -911,7 +972,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
   const t = useT();
   const { isDragging, widgets, updateWidgetSettings } = useAppContext();
   const [filter, setFilter] = useState("");
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  // The gear's rect at the moment it was clicked - null when closed.
+  // Held rather than re-measured so the panel can't drift if the
+  // heading reflows underneath it.
+  const [settingsAnchor, setSettingsAnchor] = useState<SettingsAnchor | null>(
+    null
+  );
+  const settingsOpen = settingsAnchor !== null;
   const [sortMenuPos, setSortMenuPos] = useState<{
     x: number;
     y: number;
@@ -1013,16 +1080,22 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ visible }) => {
               aria-expanded={settingsOpen}
               aria-label={t("bookmarks.settings.title")}
               data-tooltip={t("bookmarks.settings.title")}
-              onClick={() => setSettingsOpen((v) => !v)}
+              onClick={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                setSettingsAnchor((open) =>
+                  open ? null : { x: r.left, top: r.top, bottom: r.bottom }
+                );
+              }}
             >
               <SettingsIcon style={{ fontSize: 15 }} />
             </button>
           </div>
-          {settingsOpen && (
+          {settingsAnchor && (
             <BookmarksSettingsPopover
               settings={{ layout, density, sort }}
+              anchor={settingsAnchor}
               onChange={(patch) => updateWidgetSettings("bookmarks", patch)}
-              onClose={() => setSettingsOpen(false)}
+              onClose={() => setSettingsAnchor(null)}
             />
           )}
         </header>

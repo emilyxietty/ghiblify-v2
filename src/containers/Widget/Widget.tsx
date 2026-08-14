@@ -1,6 +1,6 @@
 import React, { ReactNode, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { EditIcon } from "../../components/Icons/Icons";
-import { AccessTimeFilledIcon, CenterFocusStrongIcon, FaceIcon, FormatColorFillIcon, MusicNoteIcon, MyLocationIcon, PhotoSizeSelectSmallIcon, PlaceIcon, RefreshIcon, RemoveIcon, VisibilityOffIcon, VolumeUpIcon } from "../../components/Icons/Icons";
+import { AccessTimeFilledIcon, CenterFocusStrongIcon, FaceIcon, FormatColorFillIcon, MusicNoteIcon, MyLocationIcon, PlaceIcon, RefreshIcon, RemoveIcon, VisibilityOffIcon, VolumeUpIcon } from "../../components/Icons/Icons";
 import {
   ContextMenu,
   ContextMenuItem,
@@ -835,7 +835,16 @@ export const Widget: React.FC<WidgetProps> = ({
             // shows you where to look without saying what to do. The
             // pill is drawn from this attribute (see WelcomeModal.css).
             data-guide-resize={t("welcome.slides.drag.resizeCue")}
-          />
+          >
+            {/* The guide's hand cursor, mirroring the one the same
+                slide puts at the widget's top-left for dragging. It
+                needs a real element: the handle's ::before is the grip
+                and ::after is the label pill, so no pseudo-element is
+                free, and a background on the handle itself would clip
+                a cursor that has to overhang the corner. Inert and
+                invisible outside the tutorial. */}
+            <span className="widget-resize-guide-cursor" aria-hidden="true" />
+          </div>
         )}
       {/* Quick controls - only visible while D is held
           and the widget isn't already in edit mode. The pencil at top-
@@ -1325,15 +1334,6 @@ export function buildContextMenuItems(args: {
         ? v
         : best
     );
-    // Anything that isn't a known current size (small/medium/large)
-    // collapses to "medium" - covers legacy "compact" / "regular"
-    // labels and any other stale value, so the default experience
-    // is always medium.
-    const rawSize = pSettings.size ?? "medium";
-    const currentSize: "small" | "medium" | "large" =
-      rawSize === "small" || rawSize === "medium" || rawSize === "large"
-        ? rawSize
-        : "medium";
     // Chime settings, validated the same way Pomodoro validates them -
     // stored settings can predate the feature (undefined) or name a
     // sound key that no longer exists.
@@ -1363,25 +1363,10 @@ export function buildContextMenuItems(args: {
           ),
       },
       { type: "separator" },
-      // Size / Sound / Volume all cascade rather than sitting flat, so
-      // the root menu stays one screenful next to the generic
-      // opacity/blur entries appended below.
-      {
-        type: "submenu",
-        label: t("widgets.edit.pomodoroSizeLabel"),
-        icon: <PhotoSizeSelectSmallIcon style={{ fontSize: 14 }} />,
-        items: (["small", "medium", "large"] as const).map((v) => ({
-          type: "radio" as const,
-          label: t(
-            `widgets.contextMenu.pomodoroSize${
-              v.charAt(0).toUpperCase() + v.slice(1)
-            }`
-          ),
-          selected: currentSize === v,
-          onHover: demo({ size: v }),
-          onClick: () => updateWidgetSettings("pomodoro", { size: v }),
-        })),
-      },
+      // Sound / Volume cascade rather than sitting flat, so the root
+      // menu stays one screenful next to the generic opacity/blur
+      // entries appended below. (Size used to lead this group; the
+      // card free-resizes from its corner grip now.)
       // Each sound cascades onto its volume levels - one gesture sets
       // chime + volume together, same pattern as card colour →
       // opacity (so there's no separate flat Volume cascade). "None"

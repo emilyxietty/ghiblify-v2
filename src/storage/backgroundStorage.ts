@@ -1,8 +1,10 @@
 // Single combined entry for everything that customizes the rotating
 // photo background:
 //   favorites - URLs always kept in the rotation pool
-//   blacklist - URLs that should never appear
-//   selection - which movies the user has enabled / disabled
+//   imageSelection - per film, exactly which of its images rotate.
+//               Replaces `blacklist`, `selection` and
+//               `animatedBackgrounds`, all three of which are folded
+//               into it and deleted by migrateToImageSelection().
 //   filters   - blur / brightness / contrast / saturation sliders
 //
 // All four used to live in their own keys (background_selection,
@@ -17,6 +19,7 @@
 // the source of truth, with a localStorage mirror for synchronous
 // first-paint reads. See ../storage/hybridStorage.ts.
 
+import { foldLegacyIntoImageSelection } from "./imageSelectionMigration";
 import {
   readSync as readPersisted,
   write as writePersisted,
@@ -32,16 +35,30 @@ export interface BackgroundFilters {
 
 interface BackgroundBlob {
   favorites?: string[];
+  /** Legacy. URLs the user had removed from the rotation, kept only
+   *  long enough for migrateToImageSelection() to fold it into
+   *  `imageSelection` and delete it. Never written by new code. */
   blacklist?: string[];
+  /** Per film (keyed by the background.json source title), the exact
+   *  set of its images that rotate.
+   *
+   *  A film with NO entry is entirely selected - which is the default,
+   *  and the reason this is not simply a list of every chosen URL:
+   *  absence has to mean "all of it, including images a later release
+   *  adds", or shipping new wallpapers would silently leave them off
+   *  for everyone. An entry of [] means the user deselected the lot. */
+  imageSelection?: Record<string, string[]>;
+  /** Legacy. Per-film on/off switches from when films, not images, were
+   *  the unit of choice. Folded into `imageSelection` and deleted. */
   selection?: Record<string, boolean>;
   filters?: BackgroundFilters;
   /** When true, the photo gently shifts in response to cursor
    *  position to create a soft parallax / depth effect. Default
    *  false (static, identical to legacy behavior). */
   parallax?: boolean;
-  /** Whether animated backgrounds (the `animated` array on each film
-   *  source) join the rotation. Absent means on - they have always
-   *  rotated, so the default has to preserve that. */
+  /** Legacy. One switch for every moving image in the library, back
+   *  when they could not be picked individually. `false` is folded into
+   *  `imageSelection` (as "none of the animated ones") and deleted. */
   animatedBackgrounds?: boolean;
 }
 
@@ -135,10 +152,11 @@ migrateLegacy();
 
 // One-time remap of stored background URLs.
 //
-// The animated backgrounds moved off third-party hosts (tumblr,
-// pinterest, deviantart, tenor...) onto emilyxietty.github.io, which
-// rewrote 55 links in background.json. Both user lists here are keyed
-// by exact URL, so without this the move silently breaks them:
+// Images that moved off third-party hosts (tumblr, pinterest,
+// deviantart, tenor, wallpaperaccess, alphacoders...) onto
+// emilyxietty.github.io, which rewrote their links in background.json.
+// The stored user data here is keyed by exact URL, so without this the
+// move silently breaks it:
 //
 //   blacklist - filtered against the pool by exact match, so every
 //               animated background a user had hidden would come back.
@@ -363,6 +381,46 @@ const URL_REMAP: Record<string, string> = {
     "spirited-away/3Rd6.webp",
   "https://gifdb.com/images/high/spirited-away-chihiro-bored-ua9sddzj76kb2ouz.gif":
     "spirited-away/spirited-away-chihiro-bored-ua9sddzj76kb2ouz.webp",
+
+  // The last of the third-party stills, moved for the same reasons as
+  // the animated set above: wallpaperaccess / pinimg / alphacoders /
+  // fanpop / reddit / wallpaper.dog / itsnicethat were hotlinked, and
+  // one of them (fanpop) was plain http, which the extension's CSP
+  // refuses outright - that image had never once rendered.
+  "https://wallpaperaccess.com/full/371175.png":
+    "spirited-away/371175.webp",
+  "https://wallpaperaccess.com/full/371180.png":
+    "spirited-away/371180.webp",
+  "https://preview.redd.it/i28gaepqvlo41.png?auto=webp&s=8a698d3f1a99f85f85f62e939361fe3b5563e504":
+    "spirited-away/i28gaepqvlo41.webp",
+  "https://i.pinimg.com/originals/50/0e/e6/500ee649b512f89395f7610c8d990e03.png":
+    "spirited-away/500ee649b512f89395f7610c8d990e03.webp",
+  "https://i.pinimg.com/originals/43/17/08/431708ebb3ce54d8319a79d56a79bcaf.jpg":
+    "spirited-away/431708ebb3ce54d8319a79d56a79bcaf.webp",
+  "https://admin.itsnicethat.com/images/a6249vZRuhF1g1cM9UHo4Fb8mcU=/184017/format-webp%7Cwidth-2880/studio_ghibli_video_chat_backgrounds_animation_itsnicethat_chihiro1.jpg":
+    "spirited-away/studio_ghibli_video_chat_backgrounds_animation_itsnicethat_chihiro1.webp",
+  "https://wallpaperaccess.com/full/371119.jpg":
+    "ponyo/371119.webp",
+  "https://wallpaperaccess.com/full/370986.jpg":
+    "ponyo/370986.webp",
+  "https://wallpaperaccess.com/full/42644.jpg":
+    "ponyo/42644.webp",
+  "https://wallpaperaccess.com/full/370981.jpg":
+    "howls-moving-castle/370981.webp",
+  "https://wallpaper.dog/large/20496743.jpg":
+    "howls-moving-castle/20496743.webp",
+  "https://wallpaperaccess.com/full/42617.jpg":
+    "howls-moving-castle/42617.webp",
+  "https://images2.alphacoders.com/842/84252.jpg":
+    "howls-moving-castle/84252.webp",
+  "https://images4.alphacoders.com/121/1218.jpg":
+    "howls-moving-castle/1218.webp",
+  "https://i.pinimg.com/originals/60/a6/36/60a636b7256c3f0d6e941ead337b8f44.jpg":
+    "howls-moving-castle/60a636b7256c3f0d6e941ead337b8f44.webp",
+  "http://images6.fanpop.com/image/photos/43600000/Howl-s-Moving-Castle-Wallpaper-studio-ghibli-43697665-1920-1080.jpg":
+    "howls-moving-castle/Howl-s-Moving-Castle-Wallpaper-studio-ghibli-43697665-1920-1080.webp",
+  "https://wallpaper.dog/large/20497080.jpg":
+    "kikis-delivery-service/20497080.webp",
 };
 
 const migrateRemappedUrls = () => {
@@ -380,10 +438,24 @@ const migrateRemappedUrls = () => {
     };
     const favorites = remap(blob.favorites);
     const blacklist = remap(blob.blacklist);
+    // imageSelection lists the URLs that DO rotate, so a stale entry
+    // does not merely lose its link - the moved image stops matching
+    // anything in the list and reads as deselected. A user who had
+    // curated one of these films would find images switched off that
+    // they never touched.
+    let imageSelection = blob.imageSelection;
+    if (imageSelection) {
+      const mapped: Record<string, string[]> = {};
+      Object.entries(imageSelection).forEach(([film, urls]) => {
+        mapped[film] = remap(urls) ?? urls;
+      });
+      imageSelection = mapped;
+    }
     if (!changed) return;
     const next: BackgroundBlob = { ...blob };
     if (favorites) next.favorites = favorites;
     if (blacklist) next.blacklist = blacklist;
+    if (imageSelection) next.imageSelection = imageSelection;
     writeBlob(next);
   } catch {
     /* ignore - the stored lists stay as they were */
@@ -421,22 +493,47 @@ export const writeFavorites = (favs: string[]) => {
   writeBlob(next);
 };
 
-// Blacklist
-export const readBlacklist = (): string[] => readBlob().blacklist ?? [];
-export const writeBlacklist = (bl: string[]) => {
+// Per-film image selection
+export const readImageSelection = (): Record<string, string[]> =>
+  readBlob().imageSelection ?? {};
+export const writeImageSelection = (sel: Record<string, string[]>) => {
   const next = readBlob();
-  if (bl.length) next.blacklist = bl;
-  else delete next.blacklist;
+  // An empty map is the default (everything selected), so store nothing
+  // rather than an empty object - it keeps the blob honest and lets
+  // "reselect all" leave no trace behind.
+  if (Object.keys(sel).length) next.imageSelection = sel;
+  else delete next.imageSelection;
   writeBlob(next);
 };
 
-// Selection (per-movie enabled flags)
-export const readSelection = (): Record<string, boolean> =>
-  readBlob().selection ?? {};
-export const writeSelection = (sel: Record<string, boolean>) => {
-  const next = readBlob();
-  next.selection = sel;
-  writeBlob(next);
+/** Fold the three retired settings into `imageSelection` and delete
+ *  them: `blacklist` (images removed one by one), `selection` (whole
+ *  films switched off), and `animatedBackgrounds: false` (moving images
+ *  switched off everywhere). All three said the same thing in different
+ *  shapes - "do not rotate these" - and the picker now says it once,
+ *  per image, which is the only one of the four a user can see and undo.
+ *
+ *  Needs the library to run, so it cannot happen at module load like the
+ *  other migrations: a blacklist entry is a bare URL with no idea which
+ *  film it came from, and the new shape is per film. The caller hands it
+ *  background.json's sources once they have loaded.
+ *
+ *  Idempotent, and a no-op for the many users who never changed any of
+ *  the three and so have none of the keys.
+ *
+ *  URLs that belong to no current source are dropped rather than
+ *  preserved: the new shape can only express "not among this film's
+ *  images", so a URL with no film has nowhere to be excluded from - and
+ *  one that is no longer in background.json is not in the pool anyway. */
+export const migrateToImageSelection = (
+  sources: Array<{ title: string; links?: string[]; animated?: string[] }>,
+): void => {
+  try {
+    const next = foldLegacyIntoImageSelection({ ...readBlob() }, sources);
+    if (next) writeBlob(next as BackgroundBlob);
+  } catch {
+    /* ignore - the old keys sit unused for a load and we retry */
+  }
 };
 
 // Filters
@@ -447,20 +544,6 @@ export const readFilters = (): BackgroundFilters => ({
 export const writeFilters = (filters: BackgroundFilters) => {
   const next = readBlob();
   next.filters = filters;
-  writeBlob(next);
-};
-
-// Animated backgrounds (boolean, default ON)
-//
-// Defaults to true because animated stills already rotated before they
-// were a separate category - reading an absent flag as "off" would
-// silently shrink everyone's pool on upgrade.
-export const readAnimatedBackgrounds = (): boolean =>
-  readBlob().animatedBackgrounds !== false;
-export const writeAnimatedBackgrounds = (on: boolean) => {
-  const next = readBlob();
-  if (on) delete next.animatedBackgrounds;
-  else next.animatedBackgrounds = false;
   writeBlob(next);
 };
 

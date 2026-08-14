@@ -31,7 +31,13 @@
 
 .background-modal {
     width: min(880px, 100%);
-    max-height: min(86vh, 720px);
+    /* Definite, not just a max: <dialog> is `height: fit-content` in the
+       UA sheet, so with only a max-height the modal sizes to content and
+       the two panes never stretch. The old cap was min(86vh, 720px),
+       and the 720 arm won on every viewport taller than ~840px - the
+       modal stopped at 720px on a full-height window and left the grid
+       three rows tall with empty screen above and below it. */
+    height: min(86vh, 1040px);
     background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
     color: var(--light);
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
@@ -95,6 +101,15 @@
     margin-left: 8px;
 }
 
+/* Library-wide selected tally, beside the film count. Separated by a
+   dot rather than a second block so the header stays one line of
+   context rather than two competing labels. */
+.bg-headcount::before {
+    content: "·";
+    margin: 0 6px;
+    opacity: 0.6;
+}
+
 .modal-actions {
     display: flex;
     align-items: center;
@@ -138,7 +153,18 @@
 
 .background-modal .modal-body {
     padding: 16px 20px;
-    overflow: auto;
+    /* The rail and the grid each scroll on their own, so the body must
+       not: a scrolling body would move the film list and the filter
+       chips off screen together with the images. */
+    overflow: hidden;
+    /* Flex container, not just a flex item: the split's height has to
+       come from stretching, not from `height: 100%`, which resolves
+       against nothing on a flex-sized parent and leaves the grid its
+       full content height - clipped by the overflow above with no way
+       to scroll down to it. */
+    display: flex;
+    flex: 1;
+    min-height: 0;
     color: var(--light);
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
@@ -153,118 +179,11 @@
     border-radius: var(--radius-xs);
 }
 
-.background-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 /* ---------------------------------------------------------------------------
    Movie list item - card-like row, expanding
-   --------------------------------------------------------------------------- */
-
-.background-toggle {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--light) 4%, transparent);
-    border: 1px solid color-mix(in srgb, var(--light) 8%, transparent);
-    box-sizing: border-box;
-    overflow: hidden;
-    transition: background 160ms ease, border-color 160ms ease;
-}
-
-.background-toggle:hover {
-    background: color-mix(in srgb, var(--light) 8%, transparent);
-    border-color: color-mix(in srgb, var(--light) 18%, transparent);
-}
-
-.background-toggle[open] {
-    background: color-mix(in srgb, var(--light) 7%, transparent);
-    border-color: color-mix(in srgb, var(--yellow) 30%, transparent);
-}
-
-.background-summary {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    width: 100%;
-    user-select: none;
-}
-
-.background-summary::marker,
-.background-summary::-webkit-details-marker {
-    display: none;
-}
-
-.background-toggle input[type="checkbox"] {
-    flex: 0 0 auto;
-    width: 16px;
-    height: 16px;
-    accent-color: var(--yellow);
-    cursor: pointer;
-}
-
-.background-toggle input[type="checkbox"]:disabled {
-    cursor: not-allowed;
-}
-
-.background-title {
-    flex: 1 1 auto;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--light);
-}
-
-.background-unavailable {
-    color: var(--light-muted);
-    font-size: 11px;
-    font-style: italic;
-    margin-left: 6px;
-}
-
-.background-summary::after {
-    content: "Show ↓";
-    margin-left: auto;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--light-muted);
-    padding: 4px 10px;
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--light) 6%, transparent);
-    transition: background 140ms ease, color 140ms ease;
-}
-
-.background-summary:hover::after {
-    background: color-mix(in srgb, var(--light) 14%, transparent);
-    color: var(--light);
-}
-
-.background-toggle[open] > .background-summary::after {
-    content: "Hide ↑";
-    background: color-mix(in srgb, var(--yellow) 22%, transparent);
-    color: var(--light);
-}
-
-/* ---------------------------------------------------------------------------
+   --------------------------------------------------------------------------- *//* ---------------------------------------------------------------------------
    Thumbnails carousel
    --------------------------------------------------------------------------- */
-
-.summary-images {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    overflow-x: auto;
-    align-items: center;
-    padding: 4px 2px 10px;
-    min-width: 0;
-    max-width: 100%;
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
-    animation: bg-thumbs-fade 240ms ease;
-}
-
 @keyframes bg-thumbs-fade {
     from {
         opacity: 0;
@@ -274,15 +193,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.summary-images::-webkit-scrollbar {
-    height: 8px;
-}
-
-.summary-images::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--light) 25%, transparent);
-    border-radius: var(--radius-xs);
 }
 
 .thumb-wrap {
@@ -299,6 +209,31 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
+/* The wallpaper currently on screen.
+
+   The ring is an overlay pseudo-element, not a border and not an inset
+   shadow. A border would grow the wrapper and reflow the row every
+   time the background rotates; an inset shadow paints beneath the
+   element's own children, so the <img> would cover it. An absolutely
+   positioned ::after sits above the image, costs no layout, and
+   inherits the wrapper's radius so it follows the rounded corners.
+   --yellow is the palette accent, so it reads as "this one" on every
+   theme without hard-coding a colour. */
+.thumb-wrap.is-current::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 3px solid var(--yellow);
+    border-radius: inherit;
+    /* The buttons underneath still need their clicks. */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.thumb-wrap.is-current {
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--yellow) 35%, transparent);
+}
+
 .summary-thumb {
     height: 96px;
     width: auto;
@@ -310,53 +245,14 @@
     background: color-mix(in srgb, var(--light) 6%, transparent);
 }
 
-.thumb-delete {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 26px;
-    height: 26px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
-    padding: 0;
-    transition: opacity 140ms ease, background 140ms ease, transform 140ms ease;
-}
-
-.thumb-delete svg {
-    width: 14px;
-    height: 14px;
-}
-
-.thumb-wrap:hover .thumb-delete,
-.thumb-delete:focus-visible {
-    opacity: 1;
-}
-
-.thumb-delete:hover {
-    background: rgba(0, 0, 0, 0.85);
-    transform: scale(1.08);
-}
-
-.thumb-delete:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-}
-
-/* Heart on each thumbnail - sits in the top-left corner, mirroring
-   the trash button which sits in the top-right. Always visible when
-   the image is favorited (so users can spot favorites at a glance),
-   otherwise reveal-on-hover like the trash. */
+/* Heart on each thumbnail - sits beside the selection check in the
+   cell's corner cluster (see .bg-cellbar). Always visible when the
+   image is favorited (so users can spot favorites at a glance),
+   otherwise reveal-on-hover. */
 .thumb-fav {
     position: absolute;
     top: 6px;
-    left: 6px;
+    right: 6px;
     width: 26px;
     height: 26px;
     display: inline-flex;
@@ -407,49 +303,15 @@
    show each favorited thumbnail with a per-image unfavorite button.
    --------------------------------------------------------------------------- */
 
-.background-modal .favorites-entry .favorites-count {
-    opacity: 0.65;
-    font-weight: 500;
-    margin-left: 4px;
-}
-
 /* Small info icon next to the Favorites title - hover reveals the
    tooltip explaining that favorites always rotate. The span is the
    hover target (TooltipPortal listens at the [data-tooltip] level).
    Inline-flex centers the inline-mounted SVG vertically with the
    text without nudging the line height. */
-.background-modal .favorites-info {
-    display: inline-flex;
-    align-items: center;
-    margin-left: 2px;
-    opacity: 0.6;
-    cursor: help;
-    transition: opacity 140ms ease;
-    vertical-align: middle;
-    color: inherit;
-}
-
-.background-modal .favorites-info:hover,
-.background-modal .favorites-info:focus-visible {
-    opacity: 1;
-    outline: none;
-}
-
-.background-modal .favorites-info:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-    border-radius: 50%;
-}
 
 /* "X / Y" count next to each movie title in the summary row.
    X = images currently kept (post-blacklist), Y = full source list.
    Same muted treatment as the Favorites/Deleted counters. */
-.background-modal .background-count {
-    opacity: 0.65;
-    font-weight: 500;
-    margin-left: 4px;
-    font-variant-numeric: tabular-nums;
-}
 
 .background-modal .favorites-grid {
     display: flex;
@@ -519,80 +381,515 @@
    show every deleted thumbnail with a per-image restore button.
    --------------------------------------------------------------------------- */
 
-.background-modal .deleted-entry > .background-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding-left: 4px;
-}
-
-.background-modal .deleted-entry .deleted-count {
-    opacity: 0.65;
-    font-weight: 500;
-    margin-left: 4px;
-}
-
-.background-modal .deleted-entry .deleted-restore-all {
-    margin-left: auto;
-}
-
-.background-modal .deleted-grid {
-    /* Same layout as a normal movie's summary-images row but renders
-       deleted thumbs (desaturated + restore-on-hover). */
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.background-modal .deleted-grid .deleted-thumb-wrap {
-    position: relative;
-}
-
-.background-modal .deleted-grid .deleted-thumb {
-    /* Visually mark deleted state - desaturated and dimmed. Inherits
-       the base `.summary-thumb` size from the existing rule. */
-    filter: grayscale(0.6) brightness(0.7);
-    transition: filter 160ms ease;
-}
-
-.background-modal .deleted-grid .deleted-thumb-wrap:hover .deleted-thumb {
-    filter: grayscale(0) brightness(0.9);
-}
-
-.background-modal .deleted-thumb-restore {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.45);
-    color: #ffffff;
-    border: none;
-    cursor: pointer;
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity 140ms ease, background 140ms ease;
-}
-
-.background-modal .deleted-thumb-wrap:hover .deleted-thumb-restore,
-.background-modal .deleted-thumb-restore:focus-visible {
-    opacity: 1;
-}
-
-.background-modal .deleted-thumb-restore:hover {
-    background: rgba(0, 0, 0, 0.65);
-}
-
 /* ---------------------------------------------------------------------------
    Footer
    --------------------------------------------------------------------------- */
 
-.background-modal .modal-footer {
+/* ============ TWO-PANE LAYOUT ============
+   Left rail = the rotation control (every film at once, no expanding).
+   Right pane = the library (a wrapping grid, filters that cut across
+   films). Splitting them is the point: choosing which films rotate and
+   hunting one image among 973 want opposite densities, and the old
+   single accordion served neither. */
+.bg-split {
     display: flex;
-    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    gap: 0;
+}
+
+.bg-rail {
+    width: 252px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-    padding: 14px 20px !important;
-    border-top: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
-    background: color-mix(in srgb, var(--light) 3%, transparent);
+    padding-right: 14px;
+    border-right: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    min-height: 0;
+}
+
+.bg-rail-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
+}
+
+.bg-filmrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: var(--radius-sm, 8px);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.bg-filmrow:hover {
+    background: color-mix(in srgb, var(--light) 7%, transparent);
+}
+
+.bg-filmrow.is-selected {
+    background: color-mix(in srgb, var(--light) 14%, transparent);
+}
+
+.bg-filmrow.is-empty {
+    opacity: .45;
+}
+
+/* Is this film feeding the rotation? The count answers it in numbers,
+   but numbers need reading - this is the same answer as a mark you can
+   take in with one pass down the list:
+     solid bar   - all of it
+     half bar    - some of it
+     nothing     - none of it (and the row goes quiet)
+   A bar rather than a dot because at 5px a dot is easy to lose, and the
+   three states have to be distinguishable from each other, not just
+   present or absent. */
+.bg-filmrow {
+    position: relative;
+}
+
+.bg-filmrow.is-on::before,
+.bg-filmrow.is-partial::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--yellow);
+    pointer-events: none;
+}
+
+.bg-filmrow.is-on::before {
+    top: 6px;
+    bottom: 6px;
+}
+
+/* Half height, and dimmer, so "some" cannot be mistaken for "all" at a
+   glance or by colour alone. */
+.bg-filmrow.is-partial::before {
+    top: 25%;
+    height: 50%;
+    opacity: .55;
+}
+
+/* Every image deselected - the film contributes nothing right now.
+   This is what unchecking a film used to look like. */
+.bg-filmrow.is-off .bg-filmname,
+.bg-filmrow.is-off .bg-filmcount {
+    opacity: .45;
+}
+
+.bg-filmrow.is-off .bg-filmname {
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--light) 35%, transparent);
+}
+
+.bg-filmrow input {
+    flex: none;
+    margin: 0;
+    cursor: pointer;
+}
+
+.bg-filmname {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A film with animated images gets a dot rather than a second number -
+   the count belongs to the film, the dot says "some of these move". */
+.bg-animdot {
+    flex: none;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-warm, #d9a441);
+}
+
+.bg-filmcount {
+    flex: none;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, var(--light) 45%, transparent);
+}
+
+.bg-pane {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding-left: 14px;
+    min-height: 0;
+}
+
+.bg-filters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    /* Half the gap lives here and half in the grid's padding-top - see
+       .bg-grid. Same 12px of air, but the half below the chips belongs
+       to the scroll container, which is what stops the top row being
+       clipped when it lifts on hover. */
+    padding-bottom: 6px;
+    flex: none;
+}
+
+.bg-chip {
+    font: inherit;
+    font-size: 11.5px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--light) 20%, transparent);
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 72%, transparent);
+    transition: background 120ms ease, color 120ms ease;
+}
+
+.bg-chip:hover {
+    background: color-mix(in srgb, var(--light) 8%, transparent);
+    color: var(--light);
+}
+
+.bg-chip[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--light) 90%, transparent);
+    border-color: transparent;
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.bg-restore-all {
+    margin-left: auto;
+}
+
+/* One scroller for the whole library - every film's grid lives inside
+   it, so the pane reads as a continuous list rather than a viewer that
+   swaps one film for another. */
+.bg-pane-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    /* Room for the hover lift of the first row (see the note that used
+       to live on .bg-grid). */
+    padding-top: 6px;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
+}
+
+.bg-section {
+    /* Anchors scrollIntoView on the heading rather than the first row
+       of tiles. */
+    scroll-margin-top: 6px;
+}
+
+.bg-section + .bg-section {
+    margin-top: 18px;
+}
+
+/* Sticky, so the film the tiles belong to is always named on screen -
+   the thing a one-film-at-a-time pane never had to say. */
+.bg-section-head {
+    position: sticky;
+    top: -6px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0 8px;
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
+}
+
+.bg-section-head h5 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    color: var(--light);
+}
+
+.bg-section-count {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, var(--light) 45%, transparent);
+}
+
+.bg-section-bulk {
+    margin-left: auto;
+}
+
+.bg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    /* max-content, not the `auto` default: every row here is implicit,
+       and auto rows inside a definite-height grid share the container's
+       height between them instead of taking their content's. With ~30
+       rows in a 465px pane that is 7px a row - the cells keep their
+       aspect-ratio height and spill over each other, so each wallpaper
+       showed as a sliver. max-content sizes each row to the cell and
+       lets the pane scroll, which is what overflow-y is here for. */
+    grid-auto-rows: max-content;
+    gap: 8px;
+    align-content: start;
+    /* Room inside the scroller for the hover lift and the top of its
+       shadow. The grid clips at its own edge, so without this the first
+       row's raised edge is cut off and the tile reads as sliding under
+       the chips above it. */
+    padding-top: 6px;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent) transparent;
+}
+
+/* The cell overrides .thumb-wrap's strip sizing: in a grid the cell owns
+   its own aspect ratio, so the image fills rather than setting the row
+   height the way it did in the horizontal scroller. */
+.bg-cell {
+    aspect-ratio: 5 / 3.2;
+    border-radius: var(--radius-sm, 8px);
+    overflow: hidden;
+    width: auto;
+}
+
+.bg-cell .summary-thumb {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+}
+
+/* Bottom-left: the top-left corner is the selection check now, and the
+   badge is the one marker that never needs to be clicked. */
+.bg-badge {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    font-size: 9px;
+    letter-spacing: .06em;
+    font-weight: 700;
+    padding: 1.5px 5px;
+    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--accent-warm, #d9a441) 92%, transparent);
+    color: #221a08;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Per-image selection. The tile is the checkbox: deselected images stay
+   in place, greyed, so the grid is the film's whole library and the
+   choice is visible in it rather than hidden behind a second view.
+   --------------------------------------------------------------------------- */
+
+.bg-cell {
+    cursor: pointer;
+}
+
+/* Favourited, so the checkbox is not in play - the heart is. */
+.bg-cell.is-pinned {
+    cursor: default;
+}
+
+
+.bg-cell:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Selected: a ring around the whole tile. An overlay pseudo-element
+   rather than a real border, for the same reason .is-current uses one -
+   a border would change the box and reflow the grid every time
+   something is toggled. ::before, not ::after, so the current-wallpaper
+   ring keeps painting over it at equal z-index (tree order decides). */
+.bg-cell:not(.is-deselected)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid color-mix(in srgb, var(--light) 85%, transparent);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Pinned by the heart: the ring takes the favourite colour, so the tile
+   says why it will not untick. */
+.bg-cell.is-pinned:not(.is-deselected)::before {
+    border-color: color-mix(in srgb, #ff6b8a 90%, transparent);
+}
+
+/* The two marks that belong to one image, side by side in one corner:
+   what it is (selected) and what you think of it (favourite). Apart, in
+   opposite corners, they read as unrelated decorations. */
+.bg-cellbar {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    /* Above the selection ring, which paints at z-index 1. */
+    z-index: 2;
+}
+
+/* The badge on the picture itself. The ring answers "which of these
+   forty are on" from across the grid; this answers "is this one on"
+   while you are looking at one tile. Only ever rendered for a selected
+   tile, so there is no empty-box state to style. */
+.bg-check {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-xs);
+    box-sizing: border-box;
+    background: color-mix(in srgb, var(--light) 92%, transparent);
+    color: var(--dark);
+    pointer-events: none;
+}
+
+.bg-check svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* Pinned by the heart, not the tile: the badge takes the favourite
+   colour, so it explains why this one will not deselect. */
+.bg-cell.is-pinned .bg-check {
+    background: color-mix(in srgb, #ff6b8a 88%, transparent);
+    color: #2a0d13;
+}
+
+
+/* Static inside the cluster - the bar owns the position now. */
+.bg-cell .thumb-fav {
+    position: static;
+    width: 20px;
+    height: 20px;
+}
+
+.bg-cell .thumb-fav svg {
+    width: 13px;
+    height: 13px;
+}
+
+/* Grey rather than hide. Half the value of the grid is seeing what you
+   turned off next to what you kept, so the image stays legible - just
+   plainly not in the rotation. */
+.bg-cell.is-deselected .summary-thumb {
+    filter: grayscale(1) brightness(0.62);
+}
+
+/* Hovering a deselected image restores it completely - you are looking
+   at it to decide whether to bring it back, and a half-grey preview is
+   not the thing you would be choosing. */
+.bg-cell.is-deselected:hover .summary-thumb {
+    filter: none;
+}
+
+/* The pair sits apart from the view chips - they filter, these act. */
+.bg-bulk {
+    display: inline-flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.bg-chip:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.bg-chip:disabled:hover {
+    background: transparent;
+    color: color-mix(in srgb, var(--light) 72%, transparent);
+}
+
+.bg-empty {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    color: color-mix(in srgb, var(--light) 45%, transparent);
+}
+
+@media (max-width: 720px) {
+    .bg-split {
+        flex-direction: column;
+    }
+
+    .bg-rail {
+        width: 100%;
+        max-height: 190px;
+        padding-right: 0;
+        padding-bottom: 12px;
+        border-right: 0;
+        border-bottom: 1px solid color-mix(in srgb, var(--light) 10%, transparent);
+    }
+
+    .bg-pane {
+        padding-left: 0;
+        padding-top: 12px;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Hover-hold preview - a body-portalled blow-up of the tile under the
+   cursor. Fixed, so it is placed in viewport coordinates by the
+   component; everything here is presentation only.
+   --------------------------------------------------------------------------- */
+
+.bg-preview {
+    position: fixed;
+    /* The cursor is still over the tile, and this sits next to it - it
+       must never eat the click or the mouseleave that dismisses it. */
+    pointer-events: none;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: rgba(var(--surface-rgb, 31, 38, 32), 0.96);
+    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4);
+    animation: bg-preview-in 120ms ease both;
+}
+
+.bg-preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* A tall image would otherwise push the card past the viewport the
+       placement maths assumed. */
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+@keyframes bg-preview-in {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bg-preview {
+        animation: none;
+    }
 }

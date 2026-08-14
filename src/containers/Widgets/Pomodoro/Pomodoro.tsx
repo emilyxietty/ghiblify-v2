@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { assetUrl } from "../../../utils/assetUrl";
 import { Button } from "../../../components/Button/Button";
 import { useAppContext } from "../../../contexts/AppContext";
+import { isPomodoroImageKey } from "../../../config/widgetConfig";
+import { POMODORO_STATE_KEY } from "../../../utils/pomodoroMode";
 import {
   isHighlightTextColor,
   resolveForeground,
@@ -15,6 +17,10 @@ import {
   isPomodoroSoundKey,
   type PomodoroSoundKey,
 } from "../../../utils/pomodoroChime";
+import {
+  POMODORO_LEGACY_DIMS,
+  type PomodoroSize,
+} from "../../../config/widgetConfig";
 import "./Pomodoro.css";
 
 const DEFAULT_POMODORO_MINUTES = 25;
@@ -29,6 +35,14 @@ const POMODORO_IMAGES = [
   "sootsprite.gif",
 ];
 
+/** The sticker for this break: the one the user picked, or a fresh
+ *  random pick when they have not picked (the original behaviour, and
+ *  still the default). */
+const pickTimerImage = (choice: unknown): string =>
+  isPomodoroImageKey(choice) && choice !== "random"
+    ? `${choice}.gif`
+    : POMODORO_IMAGES[Math.floor(Math.random() * POMODORO_IMAGES.length)];
+
 // ---------------------------------------------------------------------------
 // Single-key persistence + cross-tab sync.
 // One JSON blob in localStorage replaces the 8 individual pomodoro_*
@@ -37,7 +51,9 @@ const POMODORO_IMAGES = [
 // the previous value to apply granular updates.
 // ---------------------------------------------------------------------------
 
-const POMODORO_KEY = "ghiblify_pomodoro";
+// Shared with the edit panel, which reads the mode to open its
+// Background control on the right surface.
+const POMODORO_KEY = POMODORO_STATE_KEY;
 
 interface PomodoroBlob {
   /** Tab id of the leader (the tab that runs the countdown). null = no
@@ -223,21 +239,6 @@ const Pomodoro: React.FC = () => {
   const [breakOriginalSecondsState, setBreakOriginalSecondsState] =
     useState<number>(initial.current.breakOriginal);
 
-  // Pick a random break image each break period
-  const [timerImage, settimerImage] = useState<string>(() => {
-    if (initial.current.isBreak) {
-      const idx = Math.floor(Math.random() * POMODORO_IMAGES.length);
-      return POMODORO_IMAGES[idx];
-    }
-    return "";
-  });
-
-  // When mode switches (Pomodoro <-> Break), pick a new image
-  useEffect(() => {
-    const idx = Math.floor(Math.random() * POMODORO_IMAGES.length);
-    settimerImage(POMODORO_IMAGES[idx]);
-  }, [isBreak]);
-
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60)
       .toString()
@@ -353,6 +354,11 @@ const Pomodoro: React.FC = () => {
             fireChime();
             setIsRunning(false);
             setIsBreak(false);
+            // The period ending is a mode change like any other, so the
+            // edit panel's tab follows it too.
+            window.dispatchEvent(
+              new CustomEvent("ghiblify:pomodoro:mode", { detail: "focus" }),
+            );
             setPomodoroSecondsLeft(DEFAULT_POMODORO_MINUTES * 60);
             if (readPomodoro().leader === tabId) {
               writePomodoro({ leader: null });
@@ -368,6 +374,9 @@ const Pomodoro: React.FC = () => {
             fireChime();
             setIsRunning(false);
             setIsBreak(true);
+            window.dispatchEvent(
+              new CustomEvent("ghiblify:pomodoro:mode", { detail: "break" }),
+            );
             setBreakSecondsLeft(DEFAULT_BREAK_MINUTES * 60);
             if (readPomodoro().leader === tabId) {
               writePomodoro({ leader: null });
@@ -456,6 +465,11 @@ const Pomodoro: React.FC = () => {
       document.body.classList.remove("pomodoro-focus");
     }
     writePomodoro({ focusMode });
+    // The edit panel greys its Background control while this is on -
+    // the card has no surface to colour in concentration mode.
+    window.dispatchEvent(
+      new CustomEvent("ghiblify:pomodoro:focus", { detail: focusMode }),
+    );
     return () => {
       document.body.classList.remove("pomodoro-focus");
     };
@@ -518,16 +532,14 @@ const Pomodoro: React.FC = () => {
     }
   }, [isRunning, isBreak, pomodoroSecondsLeft, breakSecondsLeft]);
 
-  // Pomodoro snaps to one of three discrete size presets - small,
-  // medium, large - picked from the right-click menu or the edit
-  // overlay. Each preset has its own crafted layout
-  // (see Pomodoro.css `.size-small` etc.), so we don't expose a
-  // free-resize handle.
-  // Stored values from before the rename ("compact" / "regular")
-  // get normalised to the new names so existing users don't see a
-  // jarring layout shift on first open after the rename.
+  // The card free-resizes from the canvas handle, like todo and notes.
+  // Everything inside is sized in container-query units against the
+  // card's own width (see Pomodoro.css), so there are no breakpoints
+  // to land on - it just scales.
   const { widgets } = useAppContext();
   const {
+    width,
+    height,
     size,
     opacity,
     sound,
@@ -537,7 +549,60 @@ const Pomodoro: React.FC = () => {
     breakColor,
     breakOpacity,
     breakTextColor,
+    timerImage: imageChoice,
   } = widgets.pomodoro.settings;
+
+  // Changing mode, in one place: the two header labels, and the edit
+  // panel's Focus / Break switch, which drives this through
+  // `ghiblify:pomodoro:mode` so the card shows the surface being
+  // edited. Refused while the timer runs - the header has always
+  // refused there, and a colour preview is not a reason to end
+  // someone's session.
+  const switchMode = React.useCallback(
+    (toBreak: boolean) => {
+      if (isRunning || toBreak === isBreak) return;
+      setIsBreak(toBreak);
+      const key = toBreak ? "break_seconds_left" : "pomodoro_seconds_left";
+      const fallback =
+        (toBreak ? DEFAULT_BREAK_MINUTES : DEFAULT_POMODORO_MINUTES) * 60;
+      const stored = localStorage.getItem(key);
+      const value = stored ? parseInt(stored) : fallback;
+      const next = value === 0 ? fallback : value;
+      if (toBreak) setBreakSecondsLeft(next);
+      else setPomodoroSecondsLeft(next);
+      localStorage.setItem(key, next.toString());
+    },
+    [isRunning, isBreak],
+  );
+
+  // The edit panel asks for a mode; the panel also listens, so a click
+  // on the card's own header moves its tab. Same event both ways.
+  useEffect(() => {
+    const onMode = (e: Event) => {
+      const mode = (e as CustomEvent<"focus" | "break">).detail;
+      if (mode === "focus" || mode === "break") switchMode(mode === "break");
+    };
+    window.addEventListener("ghiblify:pomodoro:mode", onMode as EventListener);
+    return () =>
+      window.removeEventListener(
+        "ghiblify:pomodoro:mode",
+        onMode as EventListener,
+      );
+  }, [switchMode]);
+
+  // The break sticker. A specific choice is honoured; "random" (or no
+  // choice at all) re-rolls on every mode flip, as it always did.
+  const [timerImage, settimerImage] = useState<string>(() =>
+    initial.current.isBreak ? pickTimerImage(imageChoice) : "",
+  );
+
+  // Re-resolve when the mode flips, and when the setting changes - so
+  // picking a character in the edit panel swaps the sticker on screen
+  // instead of waiting for the next break.
+  useEffect(() => {
+    settimerImage(pickTimerImage(imageChoice));
+  }, [isBreak, imageChoice]);
+
 
   // Keep the countdown effect's view of the chime settings current -
   // see chimeSettingsRef above. Validated on the way in because stored
@@ -549,34 +614,31 @@ const Pomodoro: React.FC = () => {
       volume: typeof soundVolume === "number" ? soundVolume : 70,
     };
   }, [sound, soundVolume]);
-  // Cast through string so legacy stored values from before the rename
-  // ("compact" / "regular") still match - the type system sees only the
-  // new union, but storage may carry the old labels.
-  // Anything that isn't a known current size collapses to "medium" so
-  // the default experience is medium for both fresh users (config
-  // default is "medium") and users carrying over a legacy value.
-  const sizeStr = size as unknown as string;
-  const normalizedSize: "small" | "medium" | "large" =
-    sizeStr === "small" || sizeStr === "medium" || sizeStr === "large"
-      ? sizeStr
-      : "medium";
-  const SIZE_DIMS: Record<string, { width: number; height: number }> = {
-    small: { width: 160, height: 200 },
-    medium: { width: 220, height: 260 },
-    large: { width: 300, height: 340 },
+  // Footprint. Width/height are the source of truth; `size` is only
+  // consulted for a blob written before free-resize existed, so that a
+  // user who had picked "small" opens on a small card instead of
+  // snapping to the default. Legacy names from an earlier rename
+  // ("compact" / "regular") aren't in the map and fall through to the
+  // default, which is what they normalised to anyway.
+  const legacy =
+    typeof size === "string"
+      ? POMODORO_LEGACY_DIMS[size as PomodoroSize]
+      : undefined;
+  const dims = {
+    width: typeof width === "number" ? width : (legacy?.width ?? 220),
+    height: typeof height === "number" ? height : (legacy?.height ?? 260),
   };
-  const dims = SIZE_DIMS[normalizedSize];
 
-  // Focus mode forces a single static, near-fullscreen layout regardless
-  // of the size preset - the overrides live in Pomodoro.css under
-  // `body.pomodoro-focus`, so we must NOT emit the size-* class or the
-  // inline width/height (inline styles would beat the focus stylesheet
-  // since they have higher CSS priority than non-!important rules).
+  // Focus mode forces a single static, near-fullscreen layout - the
+  // overrides live in Pomodoro.css under `body.pomodoro-focus`, so we
+  // must NOT emit the inline width/height (inline styles would beat
+  // the focus stylesheet since they have higher CSS priority than
+  // non-!important rules).
   return (
     <div
       className={`pomodoro-widget widget-header${
-        focusMode ? "" : ` size-${normalizedSize}`
-      }${isBreak ? " break-mode" : ""}${
+        isBreak ? " break-mode" : ""
+      }${
         // A user-picked card colour applies to BOTH modes - the
         // break-mode surface recolor rules skip .custom-card, so the
         // card keeps the chosen colour (and its light text) during
@@ -638,21 +700,10 @@ const Pomodoro: React.FC = () => {
           className={isBreak ? "inactive-mode" : "active-mode"}
           style={{ cursor: isRunning ? "not-allowed" : "pointer" }}
           onClick={() => {
-            // When switching to Pomodoro, reset to default
-            if (!isRunning && isBreak) {
-              setIsBreak(false);
-              const stored = localStorage.getItem("pomodoro_seconds_left");
-              const value = stored
-                ? parseInt(stored)
-                : DEFAULT_POMODORO_MINUTES * 60;
-              setPomodoroSecondsLeft(
-                value === 0 ? DEFAULT_POMODORO_MINUTES * 60 : value
-              );
-              localStorage.setItem(
-                "pomodoro_seconds_left",
-                (value === 0 ? DEFAULT_POMODORO_MINUTES * 60 : value).toString()
-              );
-            }
+            switchMode(false);
+            window.dispatchEvent(
+              new CustomEvent("ghiblify:pomodoro:mode", { detail: "focus" }),
+            );
           }}
         >
           {t("pomodoro.modeFocus")}
@@ -661,21 +712,10 @@ const Pomodoro: React.FC = () => {
           className={isBreak ? "active-mode" : "inactive-mode"}
           style={{ cursor: isRunning ? "not-allowed" : "pointer" }}
           onClick={() => {
-            // When switching to Break, reset to default
-            if (!isRunning && !isBreak) {
-              setIsBreak(true);
-              const stored = localStorage.getItem("break_seconds_left");
-              const value = stored
-                ? parseInt(stored)
-                : DEFAULT_BREAK_MINUTES * 60;
-              setBreakSecondsLeft(
-                value === 0 ? DEFAULT_BREAK_MINUTES * 60 : value
-              );
-              localStorage.setItem(
-                "break_seconds_left",
-                (value === 0 ? DEFAULT_BREAK_MINUTES * 60 : value).toString()
-              );
-            }
+            switchMode(true);
+            window.dispatchEvent(
+              new CustomEvent("ghiblify:pomodoro:mode", { detail: "break" }),
+            );
           }}
         >
           {t("pomodoro.modeBreak")}

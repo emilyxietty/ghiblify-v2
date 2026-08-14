@@ -22,7 +22,10 @@ import {
 } from "../../../utils/textHighlight";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import TextInput from "../../../components/TextInput/TextInput";
-import { resolveSurfaceFrost } from "../../../config/widgetConfig";
+import {
+  QUICKLINKS_FALLBACK,
+  resolveSurfaceFrost,
+} from "../../../config/widgetConfig";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import { useScaledPx } from "../../../utils/viewportScale";
@@ -94,6 +97,16 @@ export const QuickLinks: React.FC = () => {
   // True when QuickLinks is in any kind of edit mode - global or per-widget.
   const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
   const quicklinksSettings = widgets.quicklinks.settings;
+
+  // Never sit at zero links. An empty Quick Links renders as a blank
+  // strip with nothing to click, which reads as broken rather than as
+  // empty - so emptying it (or arriving from a version that shipped it
+  // empty) puts the default back. The fallback carries a fixed id, so
+  // this cannot stack up duplicates however often it runs.
+  useEffect(() => {
+    if (quicklinksSettings.links.length > 0) return;
+    updateWidgetSettings("quicklinks", { links: [QUICKLINKS_FALLBACK] });
+  }, [quicklinksSettings.links.length, updateWidgetSettings]);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");

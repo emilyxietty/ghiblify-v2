@@ -36,11 +36,38 @@
     width: max-content;
     max-width: 90vw;
     box-sizing: border-box;
-    background: transparent;
+    /* The widget's real surface - what the Background adjustments act
+       on. Colour falls back to the palette's own surface token (the
+       same one the todo card uses), so opacity works before any colour
+       is picked; Weather.tsx zeroes the alpha under the frost styles
+       (the shell's glass is the surface there) and under the weather
+       card, which owns its look and takes no adjustments. The blur
+       samples the wallpaper, like the forecast cells already do.
+       These MUST live here, in the base rule: an earlier stab at this
+       sat in its own .weather-widget block at the top of the file, and
+       this rule's `background: transparent` - same specificity, later
+       in the file - silently won, which is why the panel's sliders
+       moved and nothing on screen ever changed. */
+    background: rgba(
+        var(--weather-surface-rgb, var(--surface-rgb, 31, 38, 32)),
+        var(--weather-surface-alpha, 0)
+    );
+    -webkit-backdrop-filter: blur(calc(var(--weather-blur, 0) * 20px))
+        saturate(1.05);
+    backdrop-filter: blur(calc(var(--weather-blur, 0) * 20px)) saturate(1.05);
     border: 1px solid transparent;
     border-radius: var(--radius-lg);
     overflow: visible;
-    transition: background 220ms ease, box-shadow 220ms ease,
+    /* No `background` in this list. The surface is driven by custom
+       properties set inline, and the SMIL-animated weather icons force
+       a style recalc every frame - Chrome treats the var-dependent
+       background as freshly changed on each recalc and RESTARTS the
+       transition, so it sat pinned at progress 0 holding the old
+       colour forever. Verified live: a permanently-running
+       CSSTransition at currentTime 0; cancelling it made the picked
+       colour appear instantly. The mode-flip fade loses out, but a
+       fade that never finishes is not a fade. */
+    transition: box-shadow 220ms ease,
         border-radius 220ms ease, padding 220ms ease;
 }
 

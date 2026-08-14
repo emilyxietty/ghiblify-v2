@@ -30,6 +30,20 @@
     border-radius: var(--radius-control, var(--radius-pill));
     border: 1px solid rgba(255, 255, 255, 0.25);
     background: rgba(var(--sb-surface-rgb, 255, 255, 255), var(--sb-opacity, 0.9));
+    /* The widget's blur slider, which until now had no consumer: the
+       shell publishes --widget-blur (0-1) for every widget whose
+       settings carry `blur`, but only avatar and quicklinks read it, and
+       nothing here did - so the searchbar shipped with blur: 10 and a
+       slider that moved nothing.
+       Applied to the pill rather than hoisted to the shell (the usual
+       rule for frost here) because the shell's box runs 15px wider on
+       every side, so a blur up there would paint a rounded rectangle
+       floating around the pill. A transform on the shell does not stop
+       a descendant sampling the wallpaper - verified in Chrome - so the
+       pill can blur its own silhouette. */
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px))
+        saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px)) saturate(1.05);
     box-shadow: 0 1px 6px rgba(32, 33, 36, 0.18);
     color: var(--sb-ink, rgba(24, 24, 24, 0.92));
     transition: box-shadow 160ms ease, background 160ms ease,
@@ -304,8 +318,14 @@
     border-color: var(--sb-line, rgba(255, 255, 255, 0.12));
 }
 
+/* Falls back THROUGH --sb-ink-muted, like the .searchbar rule above and
+   for the same reason: this selector outranks the base placeholder rule
+   on every dark palette, so hard-coding the colour here meant the
+   surface-colour picker moved the pill and the input text but never the
+   placeholder - "Search the web..." stayed the same grey whatever the
+   background was set to. */
 :root.palette-dark .searchbar-input::placeholder {
-    color: rgba(232, 234, 237, 0.5);
+    color: var(--sb-ink-muted, rgba(232, 234, 237, 0.5));
 }
 
 :root.palette-dark .searchbar-icon-btn:hover {

@@ -26,7 +26,7 @@ import {
 } from "../../config/widgetConfig";
 import { useWeather } from "../../hooks/useWeather";
 import { isManualPlace } from "../../utils/geocoding";
-import { DeleteOutlineIcon, RefreshIcon, WbSunnyIcon } from "../../components/Icons/Icons";
+import { RefreshIcon, VisibilityOffIcon, WbSunnyIcon } from "../../components/Icons/Icons";
 import { BugReportIcon, ExpandMoreIcon, FavoriteBorderIcon, FavoriteIcon, HelpOutlineIcon, LocalCafeIcon, PersonAddIcon, SettingsIcon, StarIcon } from "../../components/Icons/Icons";
 import {
   codeToIconName,
@@ -64,9 +64,8 @@ import {
 } from "../../utils/chromePermissions";
 import { clearWeatherLocation } from "../../hooks/useWeather";
 import {
-  readBlacklist,
+  DEFAULT_FILTERS,
   readFavorites,
-  writeBlacklist,
   writeFavorites,
 } from "../../storage/backgroundStorage";
 import "./LeftSidebar.css";
@@ -153,6 +152,8 @@ export const LeftSidebar: React.FC = () => {
     appearance,
     updateAppearance,
     previewTheme,
+    previewCorners,
+    previewFont,
     setShowGuide,
     showGuide,
     sidebarSpotlight,
@@ -160,18 +161,20 @@ export const LeftSidebar: React.FC = () => {
     isDragging,
   } = useAppContext();
 
-  // Blacklist the currently displayed background. Writes to the
-  // shared ghiblify_background blob + dispatches the same event the
-  // BackgroundSettingsModal listens to, so any open modal updates
-  // and `useBackground` immediately picks a new image.
-  const deleteCurrentBackground = () => {
+  // Deselect the photo on screen - the same thing unticking its tile in
+  // the picker does, and to the same stored list. Nothing is deleted:
+  // the image sits in its film greyed out, one click from coming back.
+  //
+  // The write itself happens in useBackground, because selection is
+  // stored per film and turning a URL into "this film, minus this
+  // image" needs background.json, which that hook owns. It re-picks
+  // straight after, so the wallpaper changes the moment it is asked to.
+  const deselectCurrentBackground = () => {
     if (!currentBackground) return;
-    const set = new Set<string>(readBlacklist());
-    if (set.has(currentBackground)) return;
-    set.add(currentBackground);
-    writeBlacklist(Array.from(set));
     window.dispatchEvent(
-      new CustomEvent("ghiblify:blacklist:add", { detail: currentBackground }),
+      new CustomEvent("ghiblify:background:deselect", {
+        detail: currentBackground,
+      }),
     );
   };
 
@@ -232,9 +235,18 @@ export const LeftSidebar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   // That anchor is a swatch inside the sidebar: when the sidebar goes,
   // the popup has nothing left to point at.
+  //
+  // Closing also drops any hover preview. Escape (or the guide forcing
+  // the panel shut) can take the sidebar away without the pointer ever
+  // leaving the swatch it was over, so the mouseleave that would have
+  // restored the committed font / corners never arrives - and the page
+  // is left wearing a font nobody chose.
   useEffect(() => {
-    if (!isOpen) setFrostAnchor(null);
-  }, [isOpen]);
+    if (isOpen) return;
+    setFrostAnchor(null);
+    previewFont(null);
+    previewCorners(null);
+  }, [isOpen, previewFont, previewCorners]);
 
   // Welcome-modal tour: keep the sidebar force-open for the entire
   // duration of the guide. Tracking just `sidebarSpotlight` wasn't
@@ -425,6 +437,23 @@ export const LeftSidebar: React.FC = () => {
     const newFilters = { ...filters, [filterType]: value };
     setFilters(newFilters);
     updateBackgroundFilters({ [filterType]: value });
+  };
+
+  /** Everything the Settings card holds is already at its default, so
+   *  there is nothing for the reset to undo. */
+  const backgroundIsDefault =
+    !backgroundParallax &&
+    (Object.keys(DEFAULT_FILTERS) as (keyof BackgroundFilters)[]).every(
+      (key) => filters[key] === DEFAULT_FILTERS[key],
+    );
+
+  /** Put the whole card back: the four filters AND parallax. Same
+   *  scope as `settings.resetBackground` in the Settings modal - it
+   *  reuses that string, so the two can't describe different things. */
+  const resetBackgroundSettings = () => {
+    setFilters({ ...DEFAULT_FILTERS });
+    updateBackgroundFilters({ ...DEFAULT_FILTERS });
+    setBackgroundParallax(false);
   };
 
   const renderFilter = (
@@ -824,6 +853,16 @@ export const LeftSidebar: React.FC = () => {
                           selected ? " is-selected" : ""
                         }`}
                         style={{ fontFamily: meta.family }}
+                        // The swatch shows the font in its own name,
+                        // which tells you the letterforms but nothing
+                        // about how the clock, the greeting and the
+                        // widget copy sit in it. Hovering wears it for
+                        // real; focus does the same so arrowing through
+                        // the radiogroup previews too.
+                        onMouseEnter={() => previewFont(name)}
+                        onMouseLeave={() => previewFont(null)}
+                        onFocus={() => previewFont(name)}
+                        onBlur={() => previewFont(null)}
                         onClick={() => updateAppearance({ font: name })}
                       >
                         {label}
@@ -871,6 +910,14 @@ export const LeftSidebar: React.FC = () => {
                         className={`corner-swatch corner-swatch-${name}${
                           active ? " is-active" : ""
                         }`}
+                        // A chip is one corner at one size. Hovering
+                        // reassigns --radius-unit for real, so every
+                        // widget, menu and modal on screen redraws at
+                        // that rounding.
+                        onMouseEnter={() => previewCorners(name)}
+                        onMouseLeave={() => previewCorners(null)}
+                        onFocus={() => previewCorners(name)}
+                        onBlur={() => previewCorners(null)}
                         onClick={() => updateAppearance({ corners: name })}
                       >
                         <span className="corner-swatch-chip" aria-hidden="true" />
@@ -968,6 +1015,19 @@ export const LeftSidebar: React.FC = () => {
                   0,
                   200,
                 )}
+                {/* Last row of the card, under the sliders it undoes.
+                    Disabled rather than hidden when everything is
+                    already default - a control that vanishes as you
+                    approach it is harder to find again than one that
+                    simply greys out. */}
+                <button
+                  type="button"
+                  className="filter-reset"
+                  onClick={resetBackgroundSettings}
+                  disabled={backgroundIsDefault}
+                >
+                  {t("settings.resetBackground")}
+                </button>
               </div>
             </details>
             <div className="background-actions">
@@ -1021,13 +1081,21 @@ export const LeftSidebar: React.FC = () => {
               </Button>
               <Button
                 variant="dark"
-                onClick={deleteCurrentBackground}
-                aria-label={t("sidebar.buttons.deleteBackgroundAria")}
-                data-tooltip={t("sidebar.buttons.deleteBackground")}
-                disabled={!currentBackground}
+                onClick={deselectCurrentBackground}
+                aria-label={t("sidebar.buttons.deselectBackgroundAria")}
+                // Favourites are pinned into the rotation, so this has
+                // nothing to do to one. Disabled with the reason in the
+                // tooltip beats a button that silently does nothing -
+                // and the heart to its left is the way to release it.
+                data-tooltip={
+                  isFavorited
+                    ? t("sidebar.buttons.deselectBackgroundPinned")
+                    : t("sidebar.buttons.deselectBackground")
+                }
+                disabled={!currentBackground || isFavorited}
                 className="background-actions-delete"
               >
-                <DeleteOutlineIcon style={{ fontSize: 16 }} />
+                <VisibilityOffIcon style={{ fontSize: 16 }} />
               </Button>
             </div>
           </section>

@@ -24,7 +24,9 @@
                 calc(var(--pomodoro-opacity, 0.75) * 100%),
             transparent
         );
-    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
+    /* No outline: the card is defined by its surface, and a hairline
+       over a photo background read as a stray box around the timer. */
+    border: none;
     border-radius: var(--radius-xl);
     box-shadow:
         0 12px 32px rgba(0, 0, 0, 0.25),
@@ -33,14 +35,22 @@
     /* Two floors: the padding scale for the corner setting, and the
        card's own radius - content sitting inside a 32px curve needs to
        start further in than content inside a 16px one, or it crowds the
-       arc at the corners. max() takes whichever is larger. */
-    padding: max(calc(22px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.7))
-        max(calc(24px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.75));
+       arc at the corners. max() takes whichever is larger. The first
+       term is itself fluid, running from the old small preset's 8px to
+       the old large one's 22px as the card widens. */
+    padding: max(
+            calc(clamp(8px, 7cqw, 22px) * var(--pad-scale, 1)),
+            calc(var(--radius-xl) * 0.7)
+        )
+        max(
+            calc(clamp(10px, 8cqw, 24px) * var(--pad-scale, 1)),
+            calc(var(--radius-xl) * 0.75)
+        );
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: clamp(4px, 4cqw, 12px);
     position: relative;
     overflow: hidden;
     transition: background 200ms ease, border-color 200ms ease;
@@ -76,6 +86,22 @@
 .pomodoro-widget.custom-card,
 .pomodoro-widget.custom-card .pomodoro-switch-header h2 {
     color: var(--pomodoro-ink, inherit);
+}
+
+/* A picked colour is painted flat - no radial highlight over the top.
+   The default card wants that wash for depth, but on a chosen colour it
+   is a white veil sitting between the user and the swatch they clicked:
+   the card reads lighter and less saturated than the colour they picked,
+   and the difference grows towards the top-left corner. The opacity
+   slider still applies, as the alpha of the colour itself. */
+.pomodoro-widget.custom-card {
+    background-image: none;
+    background-color: color-mix(
+        in srgb,
+        var(--pomodoro-card)
+            calc(var(--pomodoro-opacity, 0.75) * 100%),
+        transparent
+    );
 }
 
 .pomodoro-widget.break-mode:not(.custom-card) {
@@ -119,15 +145,15 @@
     background: color-mix(in srgb, var(--light) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
     border-radius: var(--radius-pill);
-    padding: 3px;
+    padding: clamp(2px, 1cqw, 3px);
     gap: 0;
     margin-bottom: 4px;
 }
 
 .pomodoro-switch-header h2 {
-    font-size: 0.78rem;
+    font-size: clamp(9px, 4.2cqw, 12.5px);
     margin: 0;
-    padding: 5px 14px;
+    padding: clamp(3px, 1.6cqw, 5px) clamp(6px, 4.6cqw, 14px);
     border-radius: var(--radius-pill);
     transition: background 180ms ease, color 180ms ease, opacity 180ms ease;
     user-select: none;
@@ -159,10 +185,10 @@
    --------------------------------------------------------------------------- */
 
 .timer-image {
-    /* Scales between 48 and 96px depending on the widget width
-       (15% of card width), so the sticker stays readable on a
-       small card and never dominates a wide one. */
-    max-height: clamp(48px, 18cqw, 96px);
+    /* Runs from the old small preset's 28px to large's 60px, so the
+       sticker stays readable on a pocket-sized card and never
+       dominates a wide one. */
+    max-height: clamp(28px, 18cqw, 60px);
     height: auto;
     display: block;
     border-radius: var(--radius-lg);
@@ -171,137 +197,26 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Size presets - Pomodoro snaps to one of three sizes (small /
-   medium / large) picked from the right-click menu or the
-   EditWidget overlay. The default `.pomodoro-widget` styling above
-   is tuned for the LARGE preset (300×340); medium + small override
-   it with progressively tighter layouts so each preset reads as a
-   discrete design, not a fluid resize.
+   Fluid layout
+
+   The card used to snap to three presets (small / medium / large),
+   each with its own crafted block of overrides. It free-resizes now,
+   so every one of those fixed values is a clamp() against `cqw` -
+   1% of the card's own inline size, which `container-type` above
+   makes available. The endpoints are the old small and large values,
+   so both ends of the drag look like the presets they replaced and
+   everything between is interpolated rather than snapped.
+
+   Only one thing stays discrete: below ~240px the control row cannot
+   fit its text labels, so a container query drops them to icons. That
+   was a real design decision in the old small/medium presets, not
+   just a smaller number.
    --------------------------------------------------------------------------- */
 
-/* Small (160×200) - pocket-clock footprint. Icon-only controls
-   (text labels hide), tightest spacing, smaller everything. */
-.pomodoro-widget.size-small {
-    padding: max(calc(8px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.45))
-        max(calc(10px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.5));
-    gap: 4px;
-}
-
-.pomodoro-widget.size-small .pomodoro-switch-header {
-    padding: 2px;
-}
-
-.pomodoro-widget.size-small .pomodoro-switch-header h2 {
-    font-size: 9px;
-    padding: 3px 6px;
-    letter-spacing: 0.03em;
-}
-
-.pomodoro-widget.size-small .timer-image {
-    max-height: 28px;
-    margin-top: 0;
-}
-
-.pomodoro-widget.size-small .timer-display {
-    font-size: 32px;
-    line-height: 1;
-}
-
-.pomodoro-widget.size-small .timer-input-row input,
-.pomodoro-widget.size-small .timer-mins-input {
-    font-size: 26px;
-    width: 60px;
-}
-
-.pomodoro-widget.size-small .timer-mins-label {
-    font-size: 9px;
-}
-
-/* Compact controls - icon-only. The text labels inside each Button
-   (the "Play" / "Pause" word) hide so the row fits comfortably. */
-.pomodoro-widget.size-small .controls {
-    gap: 4px;
-}
-
-.pomodoro-widget.size-small .pomodoro-control-btn {
-    padding: 4px 6px !important;
-    min-width: 28px;
-    min-height: 28px;
-}
-
-.pomodoro-widget.size-small .pomodoro-control-btn span:not([class]) {
-    display: none;
-}
-
-.pomodoro-widget.size-small .pomodoro-control-btn svg {
-    font-size: 14px;
-}
-
-.pomodoro-widget.size-small .pomodoro-progress-bar-container {
-    height: 3px;
-}
-
-/* Medium (220×260) - between small and large. Still icon-only on
-   controls so the row doesn't wrap on a 220-wide card; reduced
-   padding + tighter type. */
-.pomodoro-widget.size-medium {
-    padding: max(calc(14px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.6))
-        max(calc(16px * var(--pad-scale, 1)), calc(var(--radius-xl) * 0.65));
-    gap: 8px;
-}
-
-.pomodoro-widget.size-medium .pomodoro-switch-header h2 {
-    font-size: 10px;
-    padding: 4px 10px;
-}
-
-.pomodoro-widget.size-medium .timer-image {
-    max-height: 44px;
-    margin-top: 0;
-}
-
-.pomodoro-widget.size-medium .timer-display {
-    font-size: 44px;
-    line-height: 1;
-}
-
-.pomodoro-widget.size-medium .timer-input-row input,
-.pomodoro-widget.size-medium .timer-mins-input {
-    font-size: 36px;
-    width: 90px;
-}
-
-.pomodoro-widget.size-medium .timer-mins-label {
-    font-size: 10px;
-}
-
-.pomodoro-widget.size-medium .controls {
-    gap: 6px;
-}
-
-.pomodoro-widget.size-medium .pomodoro-control-btn {
-    padding: 6px 10px !important;
-    min-width: 32px;
-    min-height: 32px;
-}
-
-.pomodoro-widget.size-medium .pomodoro-control-btn span:not([class]) {
-    display: none;
-}
-
-.pomodoro-widget.size-medium .pomodoro-control-btn svg {
-    font-size: 16px;
-}
-
-.pomodoro-widget.size-medium .pomodoro-progress-bar-container {
-    height: 4px;
-}
-
-/* Large (300×340) - uses the default .pomodoro-widget styling above
-   (no overrides needed). Slight tweak: cap the timer-image so cqw
-   doesn't push it bigger than the card design intends. */
-.pomodoro-widget.size-large .timer-image {
-    max-height: 60px;
+@container (max-width: 240px) {
+    .pomodoro-control-btn span:not([class]) {
+        display: none;
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -309,11 +224,11 @@
    --------------------------------------------------------------------------- */
 
 .timer-display {
-    /* Fluid digits - scale between 48 and 96px based on the widget's
-       width (cqw is 1% of the container's inline size). At the 240px
-       minimum width that's ~58px; at 520px max it's ~96px, so the
-       "12:34" reads big-but-readable across the full resize range. */
-    font-size: clamp(48px, 22cqw, 96px);
+    /* Fluid digits (cqw is 1% of the container's inline size). The
+       floor is the old small preset's 32px so a 150px-wide card isn't
+       all clock; the ceiling leaves room above the old large preset
+       for the wider footprints free-resize now allows. */
+    font-size: clamp(32px, 20cqw, 96px);
     color: var(--light);
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -334,7 +249,7 @@
 
 .timer-input-row input,
 .timer-mins-input {
-    font-size: 4.4rem;
+    font-size: clamp(26px, 16cqw, 70px);
     text-align: center;
     background: transparent;
     border: none;
@@ -345,7 +260,7 @@
     letter-spacing: -0.02em;
     line-height: 1;
     outline: none;
-    width: 130px;
+    width: clamp(60px, 40cqw, 130px);
     padding: 0 4px;
     font-variant-numeric: tabular-nums;
     transition: border-color 160ms ease;
@@ -366,7 +281,7 @@
 }
 
 .timer-mins-label {
-    font-size: 0.85rem;
+    font-size: clamp(9px, 4.4cqw, 13.6px);
     color: var(--light);
     margin-left: 2px;
     opacity: 0.7;
@@ -382,7 +297,7 @@
 .controls {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: clamp(4px, 3.2cqw, 10px);
     margin-top: auto;
 }
 
@@ -390,7 +305,10 @@
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
-    padding: 8px 16px !important;
+    padding: clamp(4px, 2.6cqw, 8px) clamp(6px, 5.2cqw, 16px) !important;
+    min-width: clamp(28px, 10cqw, 36px);
+    min-height: clamp(28px, 10cqw, 36px);
+    justify-content: center;
     border-radius: var(--radius-pill) !important;
     background: color-mix(in srgb, var(--light) 14%, transparent) !important;
     color: var(--light) !important;
@@ -405,7 +323,7 @@
 }
 
 .pomodoro-control-btn svg {
-    font-size: 18px;
+    font-size: clamp(14px, 6cqw, 18px);
     color: var(--light);
 }
 
@@ -443,7 +361,7 @@
 
 .pomodoro-progress-bar-container {
     width: 100%;
-    height: 6px;
+    height: clamp(3px, 2cqw, 6px);
     background: color-mix(in srgb, var(--light) 12%, transparent);
     border-radius: var(--radius-pill);
     margin: 4px 0 0;
@@ -481,15 +399,21 @@
    Pomodoro card.
    =========================================================================== */
 
-/* Soft dimming scrim over the photo background. NO blur - the photo
-   should stay crisp, just darkened so the timer reads. Sits at z-index
-   800 in the body stacking context so it covers the photo (z-index 0)
-   but stays below the lifted .background-content (see below). */
+/* Blur, no tint. This used to be a flat rgba(0,0,0,0.4) wash, which
+   recoloured the wallpaper the moment you entered concentration mode -
+   the photo went muddy and the mode looked like it had a background of
+   its own. A slight defocus separates the timer from the picture
+   without changing a single colour in it. The timer's own text-shadows
+   carry the contrast that the dimming used to.
+   Sits at z-index 800 in the body stacking context so it covers the
+   photo (z-index 0) but stays below the lifted .background-content. */
 body.pomodoro-focus::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: transparent;
+    -webkit-backdrop-filter: blur(7px) saturate(1.02);
+    backdrop-filter: blur(7px) saturate(1.02);
     z-index: 800;
     pointer-events: none;
     animation: pomodoro-focus-scrim-in 240ms ease both;
@@ -604,11 +528,26 @@ body.pomodoro-focus .widget[data-widget-key="pomodoro"] {
    typography floating over the dim scrim, scaled near-full-screen.
    Both color states (focus + break) explicitly drop their card
    surfaces so the timer reads as floating text on the scrim. */
-body.pomodoro-focus .pomodoro-widget,
-body.pomodoro-focus .pomodoro-widget.break-mode {
-    width: min(96vw, 1100px);
-    height: auto;
-    min-height: min(82vh, 720px);
+/* The class is repeated to lift specificity to 0-4-1: the surface
+   rules this must beat are also !important, so importance alone does
+   not decide - Frost's card recolour
+   (.theme-frost .pomodoro-widget.break-mode:not(.custom-card), 0-4-0)
+   was winning, and the card kept its glass background in focus mode
+   on both tabs. When every declaration is !important, specificity is
+   the tiebreak, so the drop-everything rule has to sit above every
+   palette surface rule that exists. */
+body.pomodoro-focus .pomodoro-widget.pomodoro-widget.pomodoro-widget {
+    /* Viewport-sized, with no px ceiling. The caps (1100px / 720px)
+       made concentration mode a large card on a big monitor rather than
+       the full screen it is meant to be.
+       border-box and a definite height, because nothing here sets a
+       global box-sizing: with content-box, `min-height: 88vh` plus 4vh
+       of padding top and bottom came to 96vh of card centred in 100vh
+       of viewport, which is what made the height look wrong. */
+    box-sizing: border-box;
+    width: 96vw;
+    height: 92vh;
+    min-height: 0;
     padding: 4vh 6vw;
     gap: 4vh;
     background: none !important;
@@ -698,6 +637,14 @@ body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2 {
     font-size: 1rem;
     padding: 8px 22px;
     text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* The card's internals are clamped against `cqw` with px ceilings tuned
+   for a pocket-sized card. In focus mode the card IS the screen, so
+   those ceilings are what stop it filling: the sticker in particular
+   stayed at 60px in the middle of a full-screen timer. */
+body.pomodoro-focus .pomodoro-widget .timer-image {
+    max-height: clamp(120px, 22vh, 320px);
 }
 
 /* Mode switch - translucent black pill instead of theme-colored. */

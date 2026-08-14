@@ -24,6 +24,19 @@
     border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
 }
 
+/* Frost binds --dark-rgb to a near-WHITE tint (it is the palette's
+   light surface), so the rule above painted a light input and then put
+   --light ink on top of it - white on white. Frost pins --surface-rgb
+   to its dark slate for exactly this reason: every other card in the
+   app reads that token and stays dark glass. The input was still on
+   --dark-rgb, so it was the one surface that flipped. */
+.theme-frost .custom-input {
+    background: rgba(
+        var(--surface-rgb, 10, 14, 20),
+        min(var(--input-opacity, 0.5), var(--surface-alpha-cap, 1))
+    );
+}
+
 .custom-input::placeholder {
     color: color-mix(in srgb, var(--light) 55%, transparent);
     opacity: 1;
