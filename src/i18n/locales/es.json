@@ -235,7 +235,6 @@
       "pomodoroSizeMedium": "M",
       "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "El modo concentración oculta la tarjeta, así que no hay superficie que personalizar",
-      "weatherStyleRow": "Estilo",
       "pomodoroImageLabel": "Pegatina",
       "pomodoroImage": {
         "random": "Aleatorio",

@@ -834,8 +834,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       preset tones, and with a continuous blur slider now in play a
       pair of frost presets alongside it was two controls fighting
       over one property. */}
-  const surfaceRow = controls?.todoFrosted &&
-    !(storageKey === "weather" && weatherStyle === "weather") && (
+  const surfaceRow = controls?.todoFrosted && (
     <div className="edit-panel-slider-row">
       <span className="edit-panel-row-label">{surfaceLabel}</span>
       <ColorPicker
@@ -1332,22 +1331,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
 
       {controls?.weatherFrosted && (
-        /* The four surface STYLES - clear, light frost, smoked frost,
-           weather card. Colour / ink / opacity / blur live in the
-           generic Background row below this one (the same control every
-           card widget uses), which disappears while the weather card is
-           on: the card owns its look and takes no adjustments. */
-        <Row label={t("widgets.edit.weatherStyleRow")}>
+        /* Weather's Background IS these four: clear, light frost,
+           smoked frost, and the weather card - which overrides the
+           others (weatherSurfaceSettings clears the frost flags when
+           the card goes on, and vice versa). No colour swatches: the
+           surface takes the palette's own tone, and a paint-any-colour
+           picker was more knob than this widget wants. */
+        <Row label={t("widgets.edit.surfaceStyle")}>
           <SurfaceStylePicker
             value={weatherStyle}
             options={["clear", "frost", "frostDark", "weather"]}
-            ariaLabel={t("widgets.edit.weatherStyleRow")}
-            onChange={(style) => {
-              updateWidgetSettings("weather", weatherSurfaceSettings(style));
-              // The generic tuning flyout may be open on the surface
-              // this style change just removed.
-              if (style === "weather") setSurfaceTuneOpen(false);
-            }}
+            ariaLabel={t("widgets.edit.surfaceStyle")}
+            onChange={(style) =>
+              updateWidgetSettings("weather", weatherSurfaceSettings(style))
+            }
             onPreviewChange={(style) =>
               previewWidgetSettings(
                 "weather",

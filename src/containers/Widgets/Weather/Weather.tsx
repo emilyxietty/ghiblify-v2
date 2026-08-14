@@ -27,11 +27,6 @@ const WeatherLocationModal = lazy(
 // without dragging the whole Weather widget body into the main
 // bundle). Import them locally where needed.
 import { codeToIconName, iconUrl } from "./weatherIcons";
-import {
-  hexToRgbChannels,
-  isHighlightTextColor,
-  resolveForeground,
-} from "../../../utils/textHighlight";
 
 interface WeatherIconProps {
   code: number;
@@ -475,21 +470,6 @@ const Weather: React.FC = () => {
   }
 
   const frosted = resolveSurfaceFrost(settings.frosted);
-  const surfaceRgb =
-    typeof settings.surfaceColor === "string"
-      ? hexToRgbChannels(settings.surfaceColor)
-      : null;
-  const surfaceTextMode = isHighlightTextColor(settings.textColor)
-    ? settings.textColor
-    : "auto";
-  const surfaceInk =
-    typeof settings.surfaceColor === "string"
-      ? resolveForeground(settings.surfaceColor, surfaceTextMode)
-      : surfaceTextMode === "light"
-        ? "#f7f3ea"
-        : surfaceTextMode === "dark"
-          ? "#1f2420"
-          : null;
 
   return (
     <div
@@ -527,20 +507,6 @@ const Weather: React.FC = () => {
           ? 0
           : (settings.blur ?? 0) / 100
         ).toString(),
-        ...(surfaceRgb
-          ? {
-              ["--weather-surface-rgb" as any]: surfaceRgb,
-              // The forecast cells paint with --dark-rgb, so the tint
-              // carries into them too.
-              ["--dark-rgb" as any]: surfaceRgb,
-            }
-          : {}),
-        ...(surfaceInk
-          ? {
-              ["--light" as any]: surfaceInk,
-              ["--weather-ink" as any]: surfaceInk,
-            }
-          : {}),
       }}
     >
       {isHalfInDock && availableCompactSections.length > 1 && !error && (

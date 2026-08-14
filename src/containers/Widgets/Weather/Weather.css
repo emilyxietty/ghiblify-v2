@@ -36,18 +36,17 @@
     width: max-content;
     max-width: 90vw;
     box-sizing: border-box;
-    /* The widget's real surface - what the Background adjustments act
-       on. Colour falls back to the palette's own surface token (the
-       same one the todo card uses), so opacity works before any colour
-       is picked; Weather.tsx zeroes the alpha under the frost styles
-       (the shell's glass is the surface there) and under the weather
-       card, which owns its look and takes no adjustments. The blur
-       samples the wallpaper, like the forecast cells already do.
-       These MUST live here, in the base rule: an earlier stab at this
-       sat in its own .weather-widget block at the top of the file, and
-       this rule's `background: transparent` - same specificity, later
-       in the file - silently won, which is why the panel's sliders
-       moved and nothing on screen ever changed. */
+    /* The widget's real surface - the palette's own surface token (the
+       same one the todo card uses) at the alpha the opacity slider
+       sets. Weather.tsx zeroes the alpha under the frost styles (the
+       shell's glass is the surface there) and under the weather card,
+       which owns its look and takes no adjustments. The blur samples
+       the wallpaper, like the forecast cells already do.
+       These MUST live here, in the base rule: an earlier stab sat in
+       its own .weather-widget block at the top of the file, and this
+       rule's `background: transparent` - same specificity, later in
+       the file - silently won, which is why the sliders moved and
+       nothing on screen ever changed. */
     background: rgba(
         var(--weather-surface-rgb, var(--surface-rgb, 31, 38, 32)),
         var(--weather-surface-alpha, 0)

@@ -241,7 +241,6 @@
       "pomodoroSizeMedium": "M",
       "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "집중 모드에서는 카드가 숨겨져 꾸밀 표면이 없습니다",
-      "weatherStyleRow": "스타일",
       "pomodoroImageLabel": "스티커",
       "pomodoroImage": {
         "random": "무작위",

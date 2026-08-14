@@ -231,7 +231,6 @@
       "pomodoroSizeMedium": "M",
       "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "Le mode concentration masque la carte : il n’y a plus de surface à styliser",
-      "weatherStyleRow": "Style",
       "pomodoroImageLabel": "Autocollant",
       "pomodoroImage": {
         "random": "Aléatoire",
