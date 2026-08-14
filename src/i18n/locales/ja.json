@@ -586,9 +586,9 @@
     "modal": {
       "title": "背景設定",
       "moviesCount": "{{count}}本の映画",
+      "filterAll": "すべて",
       "selectedCount": "{{total}}枚中{{selected}}枚を選択中",
       "noBackgrounds": "(背景なし)",
-      "deselectedTitle": "選択解除",
       "selectAllInFilm": "すべて選択",
       "selectNoneInFilm": "すべて選択解除",
       "selectOneAria": "この画像をローテーションに追加",

@@ -586,9 +586,9 @@
     "modal": {
       "title": "背景设置",
       "moviesCount": "{{count}} 部电影",
+      "filterAll": "全部",
       "selectedCount": "已选择 {{total}} 张中的 {{selected}} 张",
       "noBackgrounds": "（无背景）",
-      "deselectedTitle": "未选中",
       "selectAllInFilm": "全选",
       "selectNoneInFilm": "全部取消选择",
       "selectOneAria": "将这张图片加入轮播",

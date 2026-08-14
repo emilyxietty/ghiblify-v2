@@ -595,9 +595,9 @@
     "modal": {
       "title": "Background Settings",
       "moviesCount": "{{count}} movies",
+      "filterAll": "All",
       "selectedCount": "{{selected}} of {{total}} images selected",
       "noBackgrounds": "(no backgrounds)",
-      "deselectedTitle": "Deselected",
       "selectAllInFilm": "Select all",
       "selectNoneInFilm": "Deselect all",
       "selectOneAria": "Add this image to the rotation",

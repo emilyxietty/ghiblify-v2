@@ -581,9 +581,9 @@
     "modal": {
       "title": "Ajustes de fondo",
       "moviesCount": "{{count}} películas",
+      "filterAll": "Todas",
       "selectedCount": "{{selected}} de {{total}} imágenes seleccionadas",
       "noBackgrounds": "(sin fondos)",
-      "deselectedTitle": "Sin seleccionar",
       "selectAllInFilm": "Seleccionar todo",
       "selectNoneInFilm": "Deseleccionar todo",
       "selectOneAria": "Añadir esta imagen a la rotación",

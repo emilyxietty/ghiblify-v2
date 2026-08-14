@@ -586,9 +586,9 @@
     "modal": {
       "title": "배경 설정",
       "moviesCount": "영화 {{count}}편",
+      "filterAll": "전체",
       "selectedCount": "{{total}}개 중 {{selected}}개 선택됨",
       "noBackgrounds": "(배경 없음)",
-      "deselectedTitle": "선택 해제됨",
       "selectAllInFilm": "모두 선택",
       "selectNoneInFilm": "모두 선택 해제",
       "selectOneAria": "이 이미지를 로테이션에 추가",

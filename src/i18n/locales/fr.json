@@ -576,9 +576,9 @@
     "modal": {
       "title": "Paramètres d'arrière-plan",
       "moviesCount": "{{count}} films",
+      "filterAll": "Toutes",
       "selectedCount": "{{selected}} images sur {{total}} sélectionnées",
       "noBackgrounds": "(aucun fond)",
-      "deselectedTitle": "Désélectionnées",
       "selectAllInFilm": "Tout sélectionner",
       "selectNoneInFilm": "Tout désélectionner",
       "selectOneAria": "Ajouter cette image à la rotation",

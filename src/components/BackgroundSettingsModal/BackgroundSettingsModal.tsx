@@ -68,6 +68,11 @@ export const BackgroundSettingsModal: React.FC<
   React.useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (!dialogRef.current) return;
+      // The film context menu is portalled to <body>, so its clicks are
+      // "outside the dialog" as far as contains() can tell - without
+      // this, choosing Select all closed the entire modal instead of
+      // running the action.
+      if ((e.target as HTMLElement).closest?.(".ctx-menu")) return;
       if (!(dialogRef.current as any).contains(e.target as Node)) {
         setShowBackgroundSettings(false);
       }
@@ -277,7 +282,7 @@ export const BackgroundSettingsModal: React.FC<
   // single film and had nowhere to live in the old per-film accordion.
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [view, setView] = useState<
-    "film" | "favorites" | "animated" | "deselected"
+    "film" | "favorites" | "animated"
   >("film");
 
   const sourceFor = React.useCallback(
@@ -381,9 +386,7 @@ export const BackgroundSettingsModal: React.FC<
         ? favorites.has(url)
         : view === "animated"
           ? animatedSet.has(url)
-          : view === "deselected"
-            ? !isSelected(url)
-            : true;
+          : true;
     return movies
       .map((m) => {
         const all = filmImages(sourceFor(m.key));
@@ -398,15 +401,6 @@ export const BackgroundSettingsModal: React.FC<
       })
       .filter((sec) => sec.images.length > 0);
   }, [movies, sourceFor, view, favorites, animatedSet, isSelected]);
-
-  const deselectedCount = React.useMemo(
-    () =>
-      backgroundSources.reduce(
-        (n, src) => n + filmImages(src).filter((l) => !isSelected(l)).length,
-        0,
-      ),
-    [backgroundSources, isSelected],
-  );
 
   // The rail is a table of contents now: it reports which film the
   // scroller is on, and jumps to one when clicked.
@@ -571,7 +565,7 @@ export const BackgroundSettingsModal: React.FC<
               <div className="bg-filters">
                 {(
                   [
-                    ["film", t("background.modal.title"), libraryTotals.total],
+                    ["film", t("background.modal.filterAll"), libraryTotals.total],
                     [
                       "favorites",
                       t("background.modal.favoritesTitle"),
@@ -581,11 +575,6 @@ export const BackgroundSettingsModal: React.FC<
                       "animated",
                       t("background.modal.animatedTitle"),
                       animatedSet.size,
-                    ],
-                    [
-                      "deselected",
-                      t("background.modal.deselectedTitle"),
-                      deselectedCount,
                     ],
                   ] as const
                 ).map(([key, label, count]) =>
