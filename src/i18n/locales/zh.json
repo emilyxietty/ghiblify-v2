@@ -230,6 +230,9 @@
         "quote": "台词"
       },
       "infoFieldsLabel": "字段",
+      "infoFieldsDragHint": "拖动以重新排序",
+      "typeInSpeed": "打字速度",
+      "typeInSpeedAria": "打字速度",
       "notesShowBorder": "显示边框",
       "notesHideBorder": "隐藏边框",
       "notesShowBorderAria": "显示便签边框",

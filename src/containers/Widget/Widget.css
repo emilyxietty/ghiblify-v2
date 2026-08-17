@@ -10,8 +10,19 @@
     /* Shell stays transparent - widgets that need a card render their
        own .widget-card surface. */
     background: transparent;
-    /* Soft fade-in on mount when a widget is toggled visible. */
-    animation: widget-fade-in 220ms ease both;
+    /* Soft fade-in on mount when a widget is toggled visible.
+       fill-mode `backwards`, NOT `both`: with `both`, the finished
+       opacity animation kept filling forever, and Chrome treats an
+       element with a live opacity effect as an isolated compositor
+       group - every backdrop-filter INSIDE the widget could then only
+       sample the shell's own (transparent) contents, never the
+       wallpaper. That is why todo rows, the pomodoro card, weather's
+       forecast cells and the text-highlight pills all had dead blur in
+       the canvas (the dock, whose shell has no such animation, was
+       fine) - it was never `position: fixed` or the drag transform,
+       which several older comments in this codebase blame. With
+       `backwards` the fade still plays and nothing lingers after it. */
+    animation: widget-fade-in 220ms ease backwards;
 }
 
 @keyframes widget-fade-in {
@@ -124,9 +135,9 @@
    the same surface. Both are 0 by default, so an avatar without a
    background is untouched. */
 .widget[data-widget-key="avatar"]:not(.widget-surface-frost) {
-    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px))
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur) * 20px))
         saturate(1.05);
-    backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px)) saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur) * 20px)) saturate(1.05);
 }
 
 /* Quicklinks blur. This MUST live on the shell - a backdrop-filter on
@@ -136,9 +147,40 @@
    publishes as a 0-1 fraction from whichever blur setting belongs to
    the active mode, so 0 means genuinely no blur. */
 .widget[data-widget-key="quicklinks"]:not(.widget-surface-frost) {
-    -webkit-backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px))
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur) * 20px))
         saturate(1.05);
-    backdrop-filter: blur(calc(var(--widget-blur, 0) * 20px)) saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur) * 20px)) saturate(1.05);
+}
+
+/* Weather and todo: the Background row's blur, on the shell like the
+   rules above. Radius matches each widget's own rounding so the glass
+   slab stops at its corners. Widget.tsx publishes --widget-blur from
+   the blur setting - and only when it is non-zero, see the note on the
+   fade animation at the top of this file: NO fallback here on purpose,
+   an unset var leaves the filter at `none` rather than a `blur(0px)`
+   that would isolate the shell and kill the blur on the forecast cells
+   and todo rows inside. Weather's mood card zeroes the setting itself
+   (it paints its own surface). Todo's `frosted` flag still wins with
+   the fixed .widget-surface-frost glass. */
+.widget[data-widget-key="weather"],
+.dock-widget[data-widget-key="weather"],
+.widget[data-widget-key="todo"]:not(.widget-surface-frost),
+.dock-widget[data-widget-key="todo"]:not(.widget-surface-frost) {
+    border-radius: var(--radius-lg);
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur) * 20px))
+        saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur) * 20px)) saturate(1.05);
+}
+
+/* Notes: the Background row's blur behind the paper. The legacy
+   frosted-paper flag keeps its own fixed glass (.widget-notes-frost
+   below); the note's rounding is --radius-xl. */
+.widget[data-widget-key="notes"]:not(.widget-notes-frost),
+.dock-widget[data-widget-key="notes"]:not(.widget-notes-frost) {
+    border-radius: var(--radius-xl);
+    -webkit-backdrop-filter: blur(calc(var(--widget-blur) * 20px))
+        saturate(1.05);
+    backdrop-filter: blur(calc(var(--widget-blur) * 20px)) saturate(1.05);
 }
 
 /* Quick Links derives its width from the selected number of columns. Let
@@ -434,12 +476,19 @@
 
 /* Info is the exception: it stacks several independent lines (title,
    year, runtime, quote), so one pill around the whole widget reads as a
-   slab rather than as marker over the text. Each line gets its own.
-   NOTE: this forfeits the blur, which only works on the shell - the
-   shell is the backdrop root, so a backdrop-filter on a line samples
-   the empty shell interior instead of the wallpaper. */
-.widget[data-widget-key="info"].has-text-highlight {
+   slab rather than as marker over the text. Each line gets its own -
+   tint AND blur, see .info-item-typed below. The shell must carry
+   neither: a backdrop-filter here would frost the whole 700px shell box
+   behind the per-line pills (and, being a backdrop root, would also
+   stop the pills' own blur from ever reaching the wallpaper). Same
+   specificity trick as the analog clock in Time.css: four class-ish
+   selectors beat the three on the generic .highlight-frost shell rule
+   regardless of bundle order. */
+.widget[data-widget-key="info"].has-text-highlight,
+.widget[data-widget-key="info"].has-text-highlight.highlight-frost {
     background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 /* On the typed run rather than on .info-item-text, which also holds the
@@ -457,9 +506,27 @@
 /* A line waiting its turn to type has no text yet, and the pill's own
    padding would leave a stray chip of colour floating where the words
    will land. The caret is a border, so it still shows through this. */
+/* Blur rides the same inline pill as the tint - one box, one radius,
+   so crossing zero on the blur slider never changes the pill's shape.
+   The shell no longer isolates the widget (see the fade animation note
+   at the top of this file), so an inline backdrop-filter samples the
+   wallpaper. Chrome bounds the effect by the inline's line-box union,
+   so a quote that wraps gets one rounded glass rectangle spanning its
+   widest line rather than one per line - the tint still hugs each
+   line via box-decoration-break. */
+.widget[data-widget-key="info"].has-text-highlight.highlight-frost
+    .info-item-typed {
+    -webkit-backdrop-filter: blur(calc(var(--text-highlight-blur, 0.6) * 20px))
+        saturate(1.15);
+    backdrop-filter: blur(calc(var(--text-highlight-blur, 0.6) * 20px))
+        saturate(1.15);
+}
+
 .widget[data-widget-key="info"].has-text-highlight .info-item-typed:empty {
     background: none;
     padding: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 /* The pill's breathing room is CONSTANT on the text widgets - applied

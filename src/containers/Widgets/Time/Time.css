@@ -48,13 +48,13 @@
     );
 }
 
-/* The .widget shell is `position: fixed`, which makes it the backdrop
-   root for its descendants - backdrop-filter on a child can only blur
-   pixels INSIDE the widget (i.e. nothing). The shell itself IS its own
-   backdrop root and CAN blur the viewport, though, so we hoist the
-   frost onto the shell (scoped via :has(.time-analog) so only the
-   analog mode gets the treatment). Same pattern Frost uses on Todo /
-   SearchBar / Weather widgets - see the comment in App.css. */
+/* Frost hoisted onto the .widget shell (scoped via :has(.time-analog)
+   so only the analog mode gets the treatment). Historically this was
+   the ONLY place a blur could work - not, as older notes claimed,
+   because the shell is `position: fixed`, but because its fade-in
+   animation filled forever and isolated it; see the animation note at
+   the top of Widget.css. Descendant blurs work now, but the shell is
+   still the right home for a blur that should fill the whole dial. */
 .widget[data-widget-key="time"]:has(.time-analog) {
     border-radius: 50%;
     backdrop-filter: blur(6px) saturate(110%);

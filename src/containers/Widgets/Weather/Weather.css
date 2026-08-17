@@ -41,9 +41,12 @@
        same one the todo card uses), so opacity works before any colour
        is picked; Weather.tsx zeroes the alpha under the frost styles
        (the shell's glass is the surface there) and under the weather
-       card, which owns its look and takes no adjustments. The blur
-       samples the wallpaper, like the forecast cells already do.
-       These MUST live here, in the base rule: an earlier stab at this
+       card, which owns its look and takes no adjustments. The blur is
+       NOT here: it lives on the .widget shell (see
+       .widget[data-widget-key="weather"] in Widget.css, driven by
+       --widget-blur) so it never becomes a backdrop root that would
+       stop the forecast cells' own glass sampling the wallpaper.
+       The background MUST live here, in the base rule: an earlier stab
        sat in its own .weather-widget block at the top of the file, and
        this rule's `background: transparent` - same specificity, later
        in the file - silently won, which is why the panel's sliders
@@ -52,9 +55,6 @@
         var(--weather-surface-rgb, var(--surface-rgb, 31, 38, 32)),
         var(--weather-surface-alpha, 0)
     );
-    -webkit-backdrop-filter: blur(calc(var(--weather-blur, 0) * 20px))
-        saturate(1.05);
-    backdrop-filter: blur(calc(var(--weather-blur, 0) * 20px)) saturate(1.05);
     border: 1px solid transparent;
     border-radius: var(--radius-lg);
     overflow: visible;
@@ -210,15 +210,15 @@
     border: 0;
     border-radius: calc(var(--radius-md) - 2px);
     background: transparent;
-    color: rgba(255, 255, 255, 0.68);
+    color: color-mix(in srgb, var(--weather-ink, #ffffff) 68%, transparent);
     cursor: pointer;
     transition: background 140ms ease, color 140ms ease;
 }
 
 .weather-compact-tab:hover,
 .weather-compact-tab.is-active {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
+    background: color-mix(in srgb, var(--weather-ink, #ffffff) 18%, transparent);
+    color: var(--weather-ink, #ffffff);
 }
 
 .weather-compact-tab:focus-visible {
@@ -268,6 +268,13 @@
    The 360 ms `transition: background` smooths the swap when the
    weather code or day/night flips on a long-open new tab. */
 .weather-widget.weather-card-on {
+    /* Forecast sub-surfaces on the card: white glass with a white
+       hairline, whatever the mood gradient - see the tokens note above
+       .weather-strip-cell. Ink is the card's own white. */
+    --weather-cell-rgb: 255, 255, 255;
+    --weather-cell-alpha: 0.16;
+    --weather-cell-ink: #ffffff;
+    --weather-cell-line: 30%;
     /* Match the outer .widget shell's --radius-lg so the gradient
        reaches the same rounded corners as the widget outline - no
        photo bleeds through at the corners. */
@@ -409,16 +416,29 @@
 }
 
 /* Location + current-conditions block sits over the bare photo, so
-   text is always white with a halo for legibility. The forecast strip
-   cells get their own theme-tinted surface and use --light for text
-   (see .weather-strip-cell below). */
+   text defaults to white with a dark halo for legibility. The Background
+   row's ink (Auto / Light / Dark) overrides it through --weather-ink,
+   which Weather.tsx sets inline - these rules used to hard-code white
+   and the ink control moved nothing. A dark ink swaps the halo for a
+   light one (data-weather-ink), or the letters sit in their own murk.
+   The forecast strip cells get their own theme-tinted surface and use
+   --light for text (see .weather-strip-cell below). */
 .weather-location,
 .weather-current,
 .weather-current * {
-    color: #ffffff;
+    color: var(--weather-ink, #ffffff);
     text-shadow:
         0 1px 2px rgba(0, 0, 0, 0.55),
         0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.weather-widget[data-weather-ink="dark"] .weather-location,
+.weather-widget[data-weather-ink="dark"] .weather-current,
+.weather-widget[data-weather-ink="dark"] .weather-current *,
+.weather-widget[data-weather-ink="dark"] .weather-empty {
+    text-shadow:
+        0 1px 2px rgba(255, 255, 255, 0.45),
+        0 0 12px rgba(255, 255, 255, 0.3);
 }
 
 
@@ -486,6 +506,21 @@
     padding-bottom: 2px;
 }
 
+/* Sub-surface tokens - the hourly cells and the daily panel share one
+   recipe, and it follows the Background mode rather than the opacity
+   slider (which used to drive it, so at 0% the forecast lost its
+   surfaces entirely and sat as bare outlines).
+     - none:   the palette's dark tint at 36% - the widget's original
+               look, legible over any wallpaper.
+     - colour: Weather.tsx swaps --weather-cell-rgb for the surface's
+               INK at 12%, so light glass rises off a dark surface and
+               dark glass off a light one, whatever the slider is at.
+     - card:   white glass, set on .weather-card-on below.
+   Ink and hairline follow --weather-cell-ink the same way. */
+.weather-widget {
+    --weather-cell-line: 18%;
+}
+
 .weather-strip-cell {
     display: flex;
     flex-direction: column;
@@ -494,28 +529,50 @@
     padding: calc(8px * var(--pad-scale, 1)) calc(10px * var(--pad-scale, 1));
     min-width: 52px;
     border-radius: var(--radius-nested-lg, var(--radius-md));
-    /* Theme-tinted button surface. The active palette's --dark-rgb
-       supplies the color; --weather-cell-opacity (set inline from the
-       widget settings) controls the alpha. Border + text use --light
-       so contrast is guaranteed across all 14 palettes. */
     background: rgba(
-        var(--dark-rgb),
-        min(var(--weather-cell-opacity, 0.35), var(--surface-alpha-cap, 1))
+        var(--weather-cell-rgb, var(--dark-rgb)),
+        min(var(--weather-cell-alpha, 0.36), var(--surface-alpha-cap, 1))
     );
-    color: var(--light);
-    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
-    backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
+    color: var(--weather-cell-ink, var(--light));
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--weather-cell-ink, var(--light)) var(--weather-cell-line),
+            transparent
+        );
+    /* Always a little frosted, whatever the Background mode - the same
+       glass token the todo rows use. (Live in the canvas since the
+       shell's fade-in stopped isolating it - see Widget.css.) */
     -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
         saturate(var(--surface-saturate, 1));
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* The leading cell is the current hour - a touch more body so "now"
+   reads as the anchor of the strip. */
+.weather-strip-cell:first-child {
+    background: rgba(
+        var(--weather-cell-rgb, var(--dark-rgb)),
+        min(
+            calc(var(--weather-cell-alpha, 0.36) * 1.5),
+            var(--surface-alpha-cap, 1)
+        )
+    );
+}
+
+.weather-strip-cell:first-child .weather-strip-label {
+    opacity: 1;
+    font-weight: 600;
 }
 
 .weather-strip-label {
-    font-size: 11px;
+    font-size: 10.5px;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    opacity: 0.85;
+    letter-spacing: 0.06em;
+    opacity: 0.75;
 }
 
 /* Forecast strip icon - smaller Meteocons SVG. */
@@ -526,8 +583,9 @@
 }
 
 .weather-strip-temp {
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 .weather-strip-low {
@@ -557,7 +615,7 @@
        Nothing here set a colour, so the state inherited the page's
        base ink - black on most themes - while the rest of the widget
        painted white. */
-    color: #ffffff;
+    color: var(--weather-ink, #ffffff);
     text-shadow:
         0 1px 2px rgba(0, 0, 0, 0.55),
         0 0 12px rgba(0, 0, 0, 0.35);
@@ -732,8 +790,8 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.25);
-    border-top-color: #ffffff;
+    border: 2px solid color-mix(in srgb, var(--weather-ink, #ffffff) 25%, transparent);
+    border-top-color: var(--weather-ink, #ffffff);
     animation: weather-spinner-rotate 0.9s linear infinite;
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
 }
@@ -762,56 +820,70 @@
    min/max, shows how the days compare at a glance. */
 
 .weather-days {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    /* ONE grid for the whole list, rows as display: contents. Each row
+       used to be its own grid with a fixed 2.6em day column - "Today"
+       overflowed it, so that row's icon and numbers sat a few pixels
+       right of every other row's. Shared columns let the day column
+       size to the longest label (localised names included) and keep
+       every column aligned down the list. */
+    display: grid;
+    /* day | icon | low | range | high */
+    grid-template-columns: max-content 1.6em 2.4em 1fr 2.4em;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 5px;
     width: 100%;
     box-sizing: border-box;
     margin-top: 4px;
-    padding: calc(6px * var(--pad-scale, 1)) calc(10px * var(--pad-scale, 1));
+    padding: calc(8px * var(--pad-scale, 1)) calc(11px * var(--pad-scale, 1));
     border-radius: var(--radius-nested-lg, var(--radius-md));
+    font-size: 0.82em;
     /* One surface for the whole list rather than a card per row: the
        rows are a single table of days, and seven separate cards would
        fight the column alignment that makes them readable. Same
-       theme-tinted treatment as the hourly cells, driven by the same
-       --weather-cell-opacity the widget's opacity slider sets. */
+       mode-driven treatment as the hourly cells - see the tokens note
+       above .weather-strip-cell. */
     background: rgba(
-        var(--dark-rgb),
-        min(var(--weather-cell-opacity, 0.35), var(--surface-alpha-cap, 1))
+        var(--weather-cell-rgb, var(--dark-rgb)),
+        min(var(--weather-cell-alpha, 0.36), var(--surface-alpha-cap, 1))
     );
-    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
-    backdrop-filter: blur(var(--surface-blur, 6px))
-        saturate(var(--surface-saturate, 1));
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--weather-cell-ink, var(--light)) var(--weather-cell-line),
+            transparent
+        );
     -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
         saturate(var(--surface-saturate, 1));
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(var(--surface-blur, 6px))
+        saturate(var(--surface-saturate, 1));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
-/* --light is the palette's on-dark ink, so it's guaranteed to contrast
-   with the --dark-rgb tint behind it across all 14 palettes - the same
-   pairing .weather-strip-cell uses. The halo the rest of the widget
-   carries isn't needed on a surface, so it's dropped here. */
+/* Ink follows the sub-surface: --light (the palette's on-dark ink) by
+   default, the surface ink when a colour is set, white on the card.
+   The halo the rest of the widget carries isn't needed on a surface,
+   so it's dropped here. */
 .weather-days,
 .weather-days * {
-    color: var(--light);
+    color: var(--weather-cell-ink, var(--light));
     text-shadow: none;
 }
 
 .weather-day-row {
-    display: grid;
-    /* day | icon | low | range | high - fixed columns so the numbers
-       line up vertically down the list, which is the whole point of
-       rows over columns. */
-    grid-template-columns: 2.6em 1.6em 2.4em 1fr 2.4em;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 0;
-    font-size: 0.82em;
+    display: contents;
 }
 
 .weather-day-label {
     font-weight: 500;
-    opacity: 0.95;
+    opacity: 0.9;
+    white-space: nowrap;
+}
+
+/* Today leads the list. */
+.weather-day-row:first-child .weather-day-label {
+    font-weight: 600;
+    opacity: 1;
 }
 
 .weather-day-icon {
@@ -826,14 +898,22 @@
 }
 
 .weather-day-low {
-    opacity: 0.7;
+    opacity: 0.65;
+}
+
+.weather-day-high {
+    font-weight: 600;
 }
 
 .weather-range {
     position: relative;
     height: 4px;
     border-radius: var(--radius-pill, 999px);
-    background: rgba(255, 255, 255, 0.22);
+    background: color-mix(
+        in srgb,
+        var(--weather-cell-ink, var(--light)) 22%,
+        transparent
+    );
     overflow: visible;
 }
 
@@ -897,6 +977,7 @@
    surface goes with them: a wide empty panel behind a few icons reads
    as a bug. */
 .weather-widget.weather-icons-only .weather-days {
+    display: flex;
     flex-direction: row;
     justify-content: center;
     gap: 6px;

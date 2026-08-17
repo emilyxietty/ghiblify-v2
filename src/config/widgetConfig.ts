@@ -15,6 +15,70 @@ export interface InfoFields {
   quote: boolean;
 }
 
+/** Base type-in pace: 55ms a character at 100% speed - what every
+ *  type-in widget used before the pace was adjustable. */
+export const TYPE_IN_BASE_MS = 55;
+export const TYPE_IN_SPEED_MIN = 25;
+export const TYPE_IN_SPEED_MAX = 300;
+
+/** Milliseconds per typed character for a `typeInSpeed` percentage.
+ *  Anything unset or out of range reads as 100%. */
+export const typeInMsPerChar = (speed: unknown): number => {
+  const pct =
+    typeof speed === "number" && Number.isFinite(speed)
+      ? Math.min(TYPE_IN_SPEED_MAX, Math.max(TYPE_IN_SPEED_MIN, speed))
+      : 100;
+  return (TYPE_IN_BASE_MS * 100) / pct;
+};
+
+/** Modes in which a widget has nothing to type: the analog clock is a
+ *  dial and the calendar is a grid, so the type-in toggle and its
+ *  speed are unavailable (not just hidden) there - the stored `typeIn`
+ *  is left alone and comes back when the widget returns to text. One
+ *  predicate for the shell, the edit panel and the right-click menu. */
+export const isTypeInUnavailable = (
+  storageKey: WidgetKey,
+  settings: Record<string, unknown>,
+): boolean =>
+  (storageKey === "date" && settings.displayStyle === "calendar") ||
+  (storageKey === "time" && settings.analog === true);
+
+export type InfoFieldKey = keyof InfoFields;
+
+/** Every Info field, in the order the widget stacks them out of the
+ *  box. Also the canonical list the toggles iterate, so a new field
+ *  is added in exactly one place. */
+export const INFO_FIELD_KEYS: readonly InfoFieldKey[] = [
+  "japaneseTitle",
+  "title",
+  "quote",
+  "year",
+  "movieLength",
+];
+
+/** Turns a stored `infoFieldOrder` into a complete, valid order:
+ *  unknown keys and duplicates are dropped, and any field the stored
+ *  list is missing (a field added after the order was saved) is
+ *  appended in default order, so nothing can silently disappear from
+ *  the widget. */
+export const resolveInfoFieldOrder = (order: unknown): InfoFieldKey[] => {
+  const seen = new Set<InfoFieldKey>();
+  const out: InfoFieldKey[] = [];
+  if (Array.isArray(order)) {
+    for (const key of order) {
+      if (
+        (INFO_FIELD_KEYS as readonly string[]).includes(key as string) &&
+        !seen.has(key as InfoFieldKey)
+      ) {
+        seen.add(key as InfoFieldKey);
+        out.push(key as InfoFieldKey);
+      }
+    }
+  }
+  for (const key of INFO_FIELD_KEYS) if (!seen.has(key)) out.push(key);
+  return out;
+};
+
 export interface QuicklinkItem {
   id: string;
   title: string;
@@ -61,6 +125,10 @@ export interface TimeSettings {
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
+  /** Type-in pace as a percentage of the base speed (see
+   *  typeInMsPerChar): 100 = the classic 55ms a character, 200 twice
+   *  as fast, 50 half. */
+  typeInSpeed: number;
 }
 /** A highlighter bar behind the widget's text. A `#rrggbb` string turns
  *  it on and is the colour; null is off. One field rather than an
@@ -96,6 +164,10 @@ export interface DateSettings {
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
+  /** Type-in pace as a percentage of the base speed (see
+   *  typeInMsPerChar): 100 = the classic 55ms a character, 200 twice
+   *  as fast, 50 half. */
+  typeInSpeed: number;
 }
 export interface GreetingSettings {
   fontSize: number;
@@ -118,10 +190,18 @@ export interface GreetingSettings {
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
+  /** Type-in pace as a percentage of the base speed (see
+   *  typeInMsPerChar): 100 = the classic 55ms a character, 200 twice
+   *  as fast, 50 half. */
+  typeInSpeed: number;
 }
 export interface InfoSettings {
   fontSize: number;
   infoFields: InfoFields;
+  /** Top-to-bottom order of the fields (see resolveInfoFieldOrder for
+   *  how a partial or stale list is read). Reordered by dragging the
+   *  rows of the right-click Fields submenu. */
+  infoFieldOrder: InfoFieldKey[];
   textShadow: number;
   highlightColor: HighlightColor;
   /** Ink on top of the highlight. "auto" picks from the highlight's
@@ -140,6 +220,10 @@ export interface InfoSettings {
   /** Type the text out on load, one character at a time, then leave it.
    *  A once-per-tab flourish, not a loop. */
   typeIn: boolean;
+  /** Type-in pace as a percentage of the base speed (see
+   *  typeInMsPerChar): 100 = the classic 55ms a character, 200 twice
+   *  as fast, 50 half. */
+  typeInSpeed: number;
 }
 export interface TodoSettings {
   width: number;
@@ -493,6 +577,15 @@ export interface NotesSettings {
    *  it controls fill alpha; for frosted paper it controls blur strength.
    *  The ink and decorative border stay fully opaque. Default 100. */
   opacity?: number;
+  /** The generic Background row's fields - the same quartet every card
+   *  widget carries. `surfaceColor` is the paper tint (null = the
+   *  classic cream, and takes precedence over the legacy `paperColor`
+   *  when set); `blur` is wallpaper blur behind the paper on the 0-100
+   *  scale, on the .widget shell; `textColor` is the ink - "auto" keeps
+   *  the classic brown on light paper and goes white on a dark one. */
+  surfaceColor?: string | null;
+  blur?: number;
+  textColor?: "auto" | "light" | "dark";
 }
 
 export interface WidgetSettingsMap {
@@ -717,6 +810,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
+      typeInSpeed: 100,
     },
     fontSize: { min: 20, max: 250, step: 20 },
     customControls: { timeFormat: true },
@@ -733,6 +827,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
+      typeInSpeed: 100,
     },
     fontSize: { min: 10, max: 50, step: 5 },
     customControls: { dateFormat: true },
@@ -749,6 +844,7 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
+      typeInSpeed: 100,
     },
     fontSize: { min: 14, max: 60, step: 4 },
   },
@@ -764,12 +860,14 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
         movieLength: true,
         quote: true,
       },
+      infoFieldOrder: [...INFO_FIELD_KEYS],
       textShadow: 100,
       highlightColor: null,
       highlightTextColor: "auto",
       highlightOpacity: 50,
       highlightBlur: 60,
       typeIn: false,
+      typeInSpeed: 100,
     },
     fontSize: { min: 10, max: 50, step: 5 },
     customControls: { infoFields: true },
@@ -933,11 +1031,16 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       paperNone: false,
       paperFrost: false,
       opacity: 100,
+      surfaceColor: null,
+      blur: 0,
+      textColor: "auto",
     },
     width: { min: 200, max: 600, step: 20 },
     height: { min: 200, max: 600, step: 20 },
     squareLock: true,
-    customControls: { notesShowBorder: true, notesPaper: true },
+    // todoFrosted = the shared Background row (paper tint / ink /
+    // opacity / blur), with the sticky-pad colours as its palette.
+    customControls: { notesShowBorder: true, todoFrosted: true },
   },
   googleApps: {
     name: "Google apps",

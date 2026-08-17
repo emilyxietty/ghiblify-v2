@@ -73,11 +73,13 @@
    a surface even over smooth wallpaper areas where pure blur is
    imperceptible.
    The actual `backdrop-filter` lives on the .widget shell
-   (.widget.widget-notes-frost in Widget.css) because the shell is the
-   fixed-position backdrop root - a filter on this descendant samples
-   the empty shell interior, not the wallpaper. Here we only carry the
-   tint. The decorative border remains a foreground layer when selected,
-   so it stays crisp while only the wallpaper behind the note is blurred. */
+   (.widget.widget-notes-frost in Widget.css) - originally because a
+   filter here could not reach the wallpaper (the shell's fade-in
+   isolated it; see the animation note in Widget.css), and it stays
+   there so the note's blur and its paper describe one box. Here we
+   only carry the tint. The decorative border remains a foreground
+   layer when selected, so it stays crisp while only the wallpaper
+   behind the note is blurred. */
 .notes-widget.notes-frost {
     background-color: color-mix(
         in srgb,
@@ -112,13 +114,13 @@
     height: 100%;
     overflow-y: auto;
     background: transparent;
-    color: #4a3826;
+    color: var(--notes-ink, #4a3826);
     /* The widget shell sets cursor: pointer as a drag affordance and
        a contenteditable div inherits it (the old <textarea> forced
        its own I-beam via the UA stylesheet). Restore the text cursor
        + a caret that matches the ink. */
     cursor: text;
-    caret-color: #4a3826;
+    caret-color: var(--notes-ink, #4a3826);
     border: none;
     outline: none;
     resize: none;
@@ -135,7 +137,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    color: rgba(74, 56, 38, 0.45);
+    color: color-mix(in srgb, var(--notes-ink, #4a3826) 45%, transparent);
     font-size: inherit;
     line-height: 1.5;
     pointer-events: none;
@@ -243,9 +245,9 @@
 .notes-editor .ne-quote {
     margin: 0.2em 0;
     padding-left: 10px;
-    border-left: 3px solid rgba(74, 56, 38, 0.35);
+    border-left: 3px solid color-mix(in srgb, var(--notes-ink, #4a3826) 35%, transparent);
     font-style: italic;
-    color: rgba(74, 56, 38, 0.8);
+    color: color-mix(in srgb, var(--notes-ink, #4a3826) 80%, transparent);
 }
 
 .notes-editor .ne-link {
@@ -258,12 +260,12 @@
    state comes from Lexical (it stamps `selected` on the <hr>). */
 .notes-editor .ne-hr {
     border: none;
-    border-top: 1.5px solid rgba(74, 56, 38, 0.35);
+    border-top: 1.5px solid color-mix(in srgb, var(--notes-ink, #4a3826) 35%, transparent);
     margin: 8px 6px;
 }
 
 .notes-editor .ne-hr.selected {
-    border-top-color: rgba(74, 56, 38, 0.7);
+    border-top-color: color-mix(in srgb, var(--notes-ink, #4a3826) 70%, transparent);
 }
 
 /* --- Lists ------------------------------------------------------------ */
@@ -302,7 +304,7 @@
     width: 14px;
     height: 14px;
     box-sizing: border-box;
-    border: 1.5px solid rgba(74, 56, 38, 0.7);
+    border: 1.5px solid color-mix(in srgb, var(--notes-ink, #4a3826) 70%, transparent);
     border-radius: 4px;
     cursor: pointer;
 }
@@ -328,7 +330,7 @@
 
 .notes-editor .ne-li-checked {
     text-decoration: line-through;
-    color: rgba(74, 56, 38, 0.55);
+    color: color-mix(in srgb, var(--notes-ink, #4a3826) 55%, transparent);
 }
 
 /* --- Floating selection toolbar ---------------------------------------
@@ -352,7 +354,7 @@
     gap: 2px;
     padding: 4px;
     background: #fbf3df;
-    border: 1px solid rgba(74, 56, 38, 0.25);
+    border: 1px solid color-mix(in srgb, var(--notes-ink, #4a3826) 25%, transparent);
     border-radius: var(--radius-md, 10px);
     box-shadow: 0 4px 14px rgba(46, 34, 20, 0.25);
     z-index: var(--z-portal);
@@ -380,7 +382,7 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: #4a3826;
+    color: var(--notes-ink, #4a3826);
     cursor: pointer;
     /* Anchor for the data-tip hover bubble. */
     position: relative;
@@ -417,11 +419,11 @@
 }
 
 .notes-tb-btn:hover {
-    background: rgba(74, 56, 38, 0.1);
+    background: color-mix(in srgb, var(--notes-ink, #4a3826) 10%, transparent);
 }
 
 .notes-tb-btn.active {
-    background: rgba(74, 56, 38, 0.18);
+    background: color-mix(in srgb, var(--notes-ink, #4a3826) 18%, transparent);
 }
 
 .notes-tb-btn:disabled {
@@ -486,7 +488,7 @@
     min-width: 132px;
     padding: 3px;
     background: #fbf3df;
-    border: 1px solid rgba(74, 56, 38, 0.25);
+    border: 1px solid color-mix(in srgb, var(--notes-ink, #4a3826) 25%, transparent);
     border-radius: var(--radius-md, 10px);
     box-shadow: 0 4px 14px rgba(46, 34, 20, 0.25);
     z-index: 1;
@@ -507,7 +509,7 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: #4a3826;
+    color: var(--notes-ink, #4a3826);
     font-family: inherit;
     font-size: 12px;
     text-align: left;
@@ -516,11 +518,11 @@
 }
 
 .notes-tb-menu-item:hover {
-    background: rgba(74, 56, 38, 0.1);
+    background: color-mix(in srgb, var(--notes-ink, #4a3826) 10%, transparent);
 }
 
 .notes-tb-menu-item.active {
-    background: rgba(74, 56, 38, 0.18);
+    background: color-mix(in srgb, var(--notes-ink, #4a3826) 18%, transparent);
 }
 
 /* Painted stand-in for the native selection while the link popover's
@@ -559,17 +561,17 @@
     width: 100%;
     box-sizing: border-box;
     padding: 4px 7px;
-    border: 1px solid rgba(74, 56, 38, 0.3);
+    border: 1px solid color-mix(in srgb, var(--notes-ink, #4a3826) 30%, transparent);
     border-radius: 6px;
     background: #fff8ea;
-    color: #4a3826;
+    color: var(--notes-ink, #4a3826);
     font-family: inherit;
     font-size: 12px;
     outline: none;
 }
 
 .notes-tb-link-input:focus-visible {
-    border-color: rgba(74, 56, 38, 0.55);
+    border-color: color-mix(in srgb, var(--notes-ink, #4a3826) 55%, transparent);
 }
 
 /* Ink-colour "A" glyph. */
@@ -590,8 +592,8 @@
     width: 18px;
     height: 18px;
     border-radius: 5px;
-    background: rgba(74, 56, 38, 0.06);
-    border: 1px solid rgba(74, 56, 38, 0.22);
+    background: color-mix(in srgb, var(--notes-ink, #4a3826) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--notes-ink, #4a3826) 22%, transparent);
 }
 
 /* Marker-colour dots. */
@@ -599,12 +601,12 @@
     width: 13px;
     height: 13px;
     border-radius: 50%;
-    border: 1px solid rgba(74, 56, 38, 0.35);
+    border: 1px solid color-mix(in srgb, var(--notes-ink, #4a3826) 35%, transparent);
 }
 
 .notes-tb-divider {
     width: 1px;
     height: 16px;
     margin: 0 3px;
-    background: rgba(74, 56, 38, 0.2);
+    background: color-mix(in srgb, var(--notes-ink, #4a3826) 20%, transparent);
 }

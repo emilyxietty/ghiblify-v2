@@ -21,19 +21,32 @@ const VIEWPORT_MARGIN = 8;
 interface PanelProps {
   /** Current colour, or null when the highlight is off. */
   color: string | null;
-  /** One extra, widget-supplied chip rendered after the colour presets
-   *  - a named look rather than a colour (weather's mood card). When
-   *  active it overrides the colours, so the caller usually passes
-   *  color: null alongside it. */
-  special?: {
+  /** Widget-supplied chips rendered after the colour presets - named
+   *  looks rather than colours. A look is a whole surface recipe
+   *  (colour + opacity + blur, or something the widget draws itself,
+   *  like weather's mood card), so the caller owns what "active" and
+   *  "select" mean; the strip only draws and previews them. */
+  looks?: Array<{
+    key: string;
     label: string;
-    /** Extra class carrying the chip's visual (e.g. the card's
-     *  gradient). */
+    /** Extra class carrying the chip's visual (stripes, gradient). */
     className?: string;
     active: boolean;
+    /** The look carries a colour the tuning column can act on, so
+     *  picking it opens the column the way a colour pick does. Looks
+     *  that paint themselves (the weather card) leave this off and
+     *  close it instead. */
+    tunable?: boolean;
     onSelect: () => void;
     onPreview?: (active: boolean) => void;
-  };
+  }>;
+  /** Drop the six colour presets so the strip is looks only - for a
+   *  widget whose Background is a handful of recipes, not a palette. */
+  hidePresets?: boolean;
+  /** Replace the shared colour presets with a widget's own palette
+   *  (notes' sticky-pad papers). Same chip count keeps the row's
+   *  rhythm; the strip does not care what the colours are. */
+  presets?: readonly string[];
   /** Ink on top of the highlight - "auto" derives it from the colour. */
   textColor: HighlightTextColor;
   /** 0–100 - how solid the bar is. */
@@ -343,7 +356,7 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
   // FIXED chip set - a variable count made the row wrap raggedly.
   // Recents are deliberately absent; custom/recent colours live one
   // click away behind the pencil (OS palette).
-  const inlinePresets = HIGHLIGHT_PRESETS;
+  const inlinePresets = props.presets ?? HIGHLIGHT_PRESETS;
   const tuningKind = props.tuningKind ?? "highlight";
   const tuneLabel = t(
     tuningKind === "background"
@@ -356,12 +369,16 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
       : "widgets.edit.highlightTuneUnavailable"
   );
 
+  // A look that is on stands in for the colour, so "none" must not
+  // ALSO light up just because no colour hex is set.
+  const lookActive = props.looks?.some((l) => l.active) ?? false;
+
   return (
     <div className="color-picker" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
         className={`color-picker-inline-swatch color-picker-inline-off${
-          props.color ? "" : " is-active"
+          props.color || lookActive ? "" : " is-active"
         }`}
         aria-label={t("widgets.edit.highlightNone")}
         onMouseEnter={() => props.onPreviewChange?.(null)}
@@ -372,7 +389,7 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
         }}
       />
 
-      {inlinePresets.map((hex) => (
+      {!props.hidePresets && inlinePresets.map((hex) => (
         <button
           key={hex}
           type="button"
@@ -400,24 +417,26 @@ export const ColorPicker: React.FC<PanelProps> = (props) => {
       ))}
 
 
-      {props.special && (
+      {props.looks?.map((look) => (
         <button
+          key={look.key}
           type="button"
           className={`color-picker-inline-swatch${
-            props.special.className ? ` ${props.special.className}` : ""
-          }${props.special.active ? " is-active" : ""}`}
-          aria-label={props.special.label}
-          data-tooltip={props.special.label}
-          onMouseEnter={() => props.special?.onPreview?.(true)}
-          onMouseLeave={() => props.special?.onPreview?.(false)}
+            look.className ? ` ${look.className}` : ""
+          }${look.active ? " is-active" : ""}`}
+          aria-label={look.label}
+          data-tooltip={look.label}
+          onMouseEnter={() => look.onPreview?.(true)}
+          onMouseLeave={() => look.onPreview?.(false)}
           onClick={() => {
-            props.special?.onSelect();
-            // A named look brings its own surface - the tuning column
-            // would be adjusting things it overrides.
-            props.onExpandChange?.(false);
+            look.onSelect();
+            // A tunable look opens the tuning column, same as a colour
+            // pick - the controls appear when they become relevant. A
+            // self-painting look closes it: nothing there applies.
+            props.onExpandChange?.(look.tunable === true);
           }}
         />
-      )}
+      ))}
 
       {/* Keep the disclosure slot visible before a colour is chosen so
           the strip advertises that presets have a second tuning level. */}

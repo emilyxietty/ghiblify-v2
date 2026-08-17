@@ -31,6 +31,7 @@ import {
   getWidgetConfig,
   InfoFields,
   InfoSettings,
+  isTypeInUnavailable,
   isWidgetKey,
   NOTE_PAPER_PRESETS,
   NotesSettings,
@@ -39,6 +40,9 @@ import {
   isPomodoroImageKey,
   PomodoroSettings,
   QuicklinksSettings,
+  resolveInfoFieldOrder,
+  TYPE_IN_SPEED_MAX,
+  TYPE_IN_SPEED_MIN,
   resolveWeatherDetail,
   supportsDockAlignment,
   TimeSettings,
@@ -64,7 +68,11 @@ import {
   primePomodoroAudio,
   type PomodoroSoundKey,
 } from "../../../utils/pomodoroChime";
-import { isHighlightTextColor, normalizeHex } from "../../../utils/textHighlight";
+import {
+  isHighlightTextColor,
+  normalizeHex,
+  type HighlightTextColor,
+} from "../../../utils/textHighlight";
 import { ColorPicker, ColorTuning } from "../ColorPicker/ColorPicker";
 import { Dropdown } from "../../Dropdown/Dropdown";
 import { MultiSelectDropdown } from "../MultiSelectDropdown/MultiSelectDropdown";
@@ -83,14 +91,6 @@ interface EditWidgetProps {
   dockGuidePreview?: boolean;
 }
 
-const INFO_FIELD_VALUES = [
-  "japaneseTitle",
-  "title",
-  "year",
-  "movieLength",
-  "quote",
-] as const;
-
 const infoFieldsFromValues = (fields: readonly string[]): InfoFields => ({
   japaneseTitle: fields.includes("japaneseTitle"),
   title: fields.includes("title"),
@@ -102,6 +102,45 @@ const infoFieldsFromValues = (fields: readonly string[]): InfoFields => ({
 
 const PANEL_GAP = 12;
 const VIEWPORT_MARGIN = 12;
+
+/** Weather's Background is looks, not a palette: each chip is a whole
+ *  surface recipe. Blur matches the retired shell frost (14px, i.e. 70
+ *  on the widget's 20px scale) over white at ZERO alpha - white rather
+ *  than no colour so the tuning chevron applies and the glass can be
+ *  given body; ink pinned light because auto would read the white and
+ *  go dark over what is, at 0%, just the wallpaper. Dark frost is that
+ *  same glass over the old frost-dark slate; the weather look is the
+ *  mood card, which paints itself. Selecting any of them takes the
+ *  others off - the card by its flag, the frosts by their colour. */
+const WEATHER_BLUR_HEX = "#ffffff";
+const WEATHER_DARK_FROST_HEX = "#0c1014";
+const WEATHER_LOOKS = {
+  blur: {
+    showCard: false,
+    surfaceColor: WEATHER_BLUR_HEX,
+    opacity: 0,
+    blur: 70,
+    textColor: "light",
+  },
+  frostDark: {
+    showCard: false,
+    surfaceColor: WEATHER_DARK_FROST_HEX,
+    opacity: 45,
+    blur: 70,
+    textColor: "auto",
+  },
+  // The card paints itself, so the adjustable surface is reset under
+  // it - otherwise a frost's blur would keep running on the shell
+  // (where it lives, see Widget.css) behind the card, and its pinned
+  // ink would override the card's own.
+  weather: {
+    showCard: true,
+    surfaceColor: null,
+    opacity: 0,
+    blur: 0,
+    textColor: "auto",
+  },
+} as const;
 
 /**
  * Panel stacking + placement, shared across every open panel.
@@ -508,6 +547,67 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     Number(
       (widgetConfig.settings as unknown as Record<string, unknown>)[field] ?? 0
     ) || 0;
+  const configDefault = (field: string): unknown =>
+    (widgetConfig.settings as unknown as Record<string, unknown>)[field];
+
+  /** The handlers behind every colour control in the panel - Background
+   *  rows, Highlight rows, the todo row tint, pomodoro's focus / break
+   *  surfaces, and each one's tuning column. They are all the same four
+   *  settings (colour, opacity, blur, ink) under different names, so the
+   *  rules live here once:
+   *   - a colour picked on a fully transparent surface bumps the alpha,
+   *     or the pick paints nothing and the picker reads as broken;
+   *   - "None" resets ALL FOUR to the widget's configured defaults, not
+   *     just the colour - opacity / blur / ink tuned for a colour that is
+   *     gone must not linger to surprise the next pick;
+   *   - previews mirror commits, so hovering shows what clicking does.
+   *  `extra.onColor` rides along on every colour commit and preview
+   *  (weather uses it to take the mood card off); `extra.onBlur` on
+   *  every blur commit (the text highlight keeps its frost flag in step);
+   *  `extra.reset` joins the None reset. */
+  const surfaceHandlers = (
+    keys: { color: string; opacity: string; blur: string; ink: string },
+    currentOpacity: number,
+    extra: {
+      onColor?: (next: string | null) => Record<string, unknown>;
+      onBlur?: (v: number) => Record<string, unknown>;
+      reset?: Record<string, unknown>;
+    } = {},
+  ) => {
+    const inkDefault = configDefault(keys.ink);
+    const resetPatch: Record<string, unknown> = {
+      [keys.opacity]: defaultAlpha(keys.opacity),
+      [keys.blur]: defaultAlpha(keys.blur),
+      [keys.ink]: isHighlightTextColor(inkDefault) ? inkDefault : "auto",
+      ...(extra.reset ?? {}),
+    };
+    const colorPatch = (next: string | null): Record<string, unknown> => ({
+      [keys.color]: next,
+      ...(next
+        ? currentOpacity === 0
+          ? { [keys.opacity]: 25 }
+          : {}
+        : resetPatch),
+      ...(extra.onColor?.(next) ?? {}),
+    });
+    const set = (patch: Record<string, unknown>) =>
+      updateWidgetSettings(storageKey, patch as never);
+    const preview = (patch: Record<string, unknown>) =>
+      previewWidgetSettings(storageKey, patch as never);
+    return {
+      onChange: (next: string | null) => set(colorPatch(next)),
+      onBlurChange: (v: number) =>
+        set({ [keys.blur]: v, ...(extra.onBlur?.(v) ?? {}) }),
+      onOpacityChange: (next: number) => set({ [keys.opacity]: next }),
+      onTextColorChange: (next: HighlightTextColor) =>
+        set({ [keys.ink]: next }),
+      onPreviewChange: (next: string | null) => preview(colorPatch(next)),
+      onPreviewOpacity: (next: number) => preview({ [keys.opacity]: next }),
+      onPreviewTextColor: (next: HighlightTextColor) =>
+        preview({ [keys.ink]: next }),
+      onPreviewClear: () => previewWidgetSettings(storageKey, null),
+    };
+  };
 
   const pomoRead = (c: string, o: string, b: string, tc: string) => ({
     color:
@@ -537,6 +637,15 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     : "auto";
   const rowOpacityValue = Math.round(Number(surfaceSettings.rowOpacity) || 0);
   const rowBlurValue = Math.round(Number(surfaceSettings.rowBlur) || 0);
+  const rowH = surfaceHandlers(
+    {
+      color: "rowColor",
+      opacity: "rowOpacity",
+      blur: "rowBlur",
+      ink: "rowTextColor",
+    },
+    rowOpacityValue,
+  );
 
   const qlSettings = widgetsCommitted.quicklinks.settings as QuicklinksSettings;
   const qlSurfaceColor =
@@ -631,6 +740,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             blur: "blur",
           },
         };
+  const pomoH = surfaceHandlers(pomoActive.keys, pomoActive.src.opacity);
   const surfaceOwnsTuning = !!(controls?.todoFrosted && supportsSlider);
   // Quicklinks drives its own panel from the swatch, so it never shows
   // the separate tune toggle.
@@ -715,9 +825,17 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const quicklinksGrid = qlSettings.gridMode;
   const quicklinksPerRow = String(qlSettings.linksPerRow ?? 5);
   const quicklinksVisibleRows = String(qlSettings.visibleRows ?? 1);
-  const typeInDisabled =
-    storageKey === "date" && dateSettings.displayStyle === "calendar";
+  const typeInDisabled = isTypeInUnavailable(
+    storageKey,
+    widgetsCommitted[storageKey].settings as unknown as Record<string, unknown>,
+  );
   const infoFields = (widgetsCommitted.info.settings as InfoSettings).infoFields;
+  // Listed in the widget's own top-to-bottom order (drag-reordered
+  // from the right-click Fields submenu), so the dropdown reads like
+  // the widget.
+  const INFO_FIELD_VALUES = resolveInfoFieldOrder(
+    (widgetsCommitted.info.settings as InfoSettings).infoFieldOrder,
+  );
   const weatherSettings = widgetsCommitted.weather.settings as WeatherSettings;
 
 
@@ -734,6 +852,23 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const highlightFrost = settings.highlightFrost === true;
   const highlightBlur = Math.round(
     typeof settings.highlightBlur === "number" ? settings.highlightBlur : 60
+  );
+  // Blur is a property of the colour: >0 frosts the pill in that colour,
+  // 0 is solid. highlightFrost tracks it so the shell's backdrop-filter
+  // class stays in sync - and None puts it back to the shipped default
+  // along with the rest.
+  const highlightH = surfaceHandlers(
+    {
+      color: "highlightColor",
+      opacity: "highlightOpacity",
+      blur: "highlightBlur",
+      ink: "highlightTextColor",
+    },
+    highlightOpacity,
+    {
+      onBlur: (v) => ({ highlightFrost: v > 0 }),
+      reset: { highlightFrost: configDefault("highlightFrost") === true },
+    },
   );
   // Both fall back rather than trusting storage: these keys are newer
   // than the widget, so anyone upgrading has settings without them.
@@ -817,6 +952,65 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       preset tones, and with a continuous blur slider now in play a
       pair of frost presets alongside it was two controls fighting
       over one property. */}
+  const isWeather = storageKey === "weather";
+  const weatherCardOn = isWeather && weatherSettings.showCard === true;
+  // Which weather look the stored settings amount to. The frosts are
+  // read off their colour alone so they stay lit while the chevron
+  // tunes opacity / blur / ink; the card wins over both because it
+  // hides the adjustable surface entirely.
+  const weatherSurfaceHex = normalizeHex(surfaceColorValue ?? "");
+  const weatherLook: keyof typeof WEATHER_LOOKS | null = !isWeather
+    ? null
+    : weatherCardOn
+      ? "weather"
+      : weatherSurfaceHex === WEATHER_DARK_FROST_HEX
+        ? "frostDark"
+        : weatherSurfaceHex === WEATHER_BLUR_HEX
+          ? "blur"
+          : null;
+  const weatherLookChip = (
+    key: keyof typeof WEATHER_LOOKS,
+    label: string,
+    className: string,
+  ) => ({
+    key,
+    label,
+    className,
+    active: weatherLook === key,
+    // The frosts carry a colour, so the chevron's column applies and
+    // opens on pick; the card paints itself and takes no adjustments.
+    tunable: key !== "weather",
+    onSelect: () => updateWidgetSettings("weather", WEATHER_LOOKS[key]),
+    onPreview: (active: boolean) =>
+      previewWidgetSettings("weather", active ? WEATHER_LOOKS[key] : null),
+  });
+  // Any colour choice - or clearing back to none - takes the weather
+  // card off; it is the option the card overrides. (None's blur reset
+  // to weather's default 0 is what keeps it distinct from the Blur
+  // look.)
+  const surfaceH = surfaceHandlers(
+    {
+      color: "surfaceColor",
+      opacity: surfaceFields.opacity,
+      blur: surfaceFields.blur,
+      ink: "textColor",
+    },
+    surfaceOpacityValue,
+    isWeather
+      ? { onColor: () => ({ showCard: false }) }
+      : isNotes
+        ? // Any pick on the row - or None - retires the pre-row paper
+          // flags, so a stored "no paper" / frosted paper can't keep
+          // overriding what the row now paints.
+          {
+            onColor: () => ({
+              paperFrost: false,
+              paperNone: false,
+              paperColor: null,
+            }),
+          }
+        : {},
+  );
   const surfaceRow = controls?.todoFrosted && (
     <div className="edit-panel-slider-row">
       <span className="edit-panel-row-label">{surfaceLabel}</span>
@@ -824,25 +1018,34 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         // While the weather card is on it overrides the colours, so no
         // colour chip reads active and the tuning chevron goes dead -
         // the card takes no adjustments.
-        color={
-          storageKey === "weather" && weatherSettings.showCard === true
-            ? null
-            : surfaceColorValue
-        }
-        special={
-          storageKey === "weather"
-            ? {
-                label: t("widgets.edit.styleWeather"),
-                className: "color-picker-weather",
-                active: weatherSettings.showCard === true,
-                onSelect: () =>
-                  updateWidgetSettings("weather", { showCard: true }),
-                onPreview: (active) =>
-                  previewWidgetSettings(
-                    "weather",
-                    active ? { showCard: true } : null,
-                  ),
-              }
+        color={weatherCardOn ? null : surfaceColorValue}
+        // Weather offers three looks in place of the colour palette:
+        // plain blur, dark frost (tunable - it carries a colour), and
+        // the mood card.
+        hidePresets={isWeather}
+        // Notes' palette is the sticky-pad papers. Slot 0 (cream) is
+        // the default, i.e. what None restores, so it is not repeated
+        // as a chip.
+        presets={isNotes ? NOTE_PAPER_PRESETS.slice(1) : undefined}
+        looks={
+          isWeather
+            ? [
+                weatherLookChip(
+                  "blur",
+                  t("widgets.edit.blur"),
+                  "color-picker-look-blur",
+                ),
+                weatherLookChip(
+                  "frostDark",
+                  t("widgets.edit.styleFrostDark"),
+                  "color-picker-look-frost-dark",
+                ),
+                weatherLookChip(
+                  "weather",
+                  t("widgets.edit.styleWeather"),
+                  "color-picker-weather",
+                ),
+              ]
             : undefined
         }
         tuningKind={paintsPieces ? "highlight" : "background"}
@@ -851,60 +1054,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         blur={surfaceBlurValue}
         expanded={surfaceTuneOpen}
         onExpandChange={openSurfaceTune}
-        onBlurChange={(v) =>
-          updateWidgetSettings(storageKey, {
-            [surfaceFields.blur]: v,
-          } as never)
-        }
-        onChange={(next) =>
-          updateWidgetSettings(storageKey, {
-            surfaceColor: next,
-            // Any colour choice - or clearing back to none - takes the
-            // weather card off; it is the option the card overrides.
-            ...(storageKey === "weather" ? { showCard: false } : {}),
-            // A colour picked while the surface is fully
-            // transparent would paint nothing and read as a broken
-            // picker; clearing it drops the alpha back so the
-            // widget doesn't keep the theme tint that first pick
-            // introduced.
-            ...(next
-              ? surfaceOpacityValue === 0
-                ? { [surfaceFields.opacity]: 25 }
-                : {}
-              : {
-                  [surfaceFields.opacity]: defaultAlpha(
-                    surfaceFields.opacity
-                  ),
-                }),
-          } as never)
-        }
-        onTextColorChange={(next) =>
-          updateWidgetSettings(storageKey, { textColor: next } as never)
-        }
-        onOpacityChange={(next) =>
-          updateWidgetSettings(storageKey, {
-            [surfaceFields.opacity]: next,
-          } as never)
-        }
-        onPreviewChange={(next) =>
-          // Mirror the commit's alpha bump, or hovering a colour on
-          // a clear surface previews nothing and the swatches look
-          // dead until you actually click one.
-          previewWidgetSettings(storageKey, {
-            surfaceColor: next,
-            ...(storageKey === "weather" ? { showCard: false } : {}),
-            ...(next && surfaceOpacityValue === 0
-              ? { [surfaceFields.opacity]: 25 }
-              : {}),
-          } as never)
-        }
-        onPreviewOpacity={(next) =>
-          previewWidgetSettings(storageKey, { [surfaceFields.opacity]: next } as never)
-        }
-        onPreviewTextColor={(next) =>
-          previewWidgetSettings(storageKey, { textColor: next } as never)
-        }
-        onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+        {...surfaceH}
       />
     </div>
   );
@@ -1307,34 +1457,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             blur={rowBlurValue}
             expanded={rowTuneOpen}
             onExpandChange={openRowTune}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, { rowBlur: v } as never)
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                rowColor: next,
-                ...(next && rowOpacityValue === 0 ? { rowOpacity: 25 } : {}),
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, { rowTextColor: next } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, { rowOpacity: next } as never)
-            }
-            onPreviewChange={(next) =>
-              previewWidgetSettings(storageKey, {
-                rowColor: next,
-                ...(next && rowOpacityValue === 0 ? { rowOpacity: 25 } : {}),
-              } as never)
-            }
-            onPreviewOpacity={(next) =>
-              previewWidgetSettings(storageKey, { rowOpacity: next } as never)
-            }
-            onPreviewTextColor={(next) =>
-              previewWidgetSettings(storageKey, { rowTextColor: next } as never)
-            }
-            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+            {...rowH}
           />
         </div>
       )}
@@ -1572,36 +1695,20 @@ const EditWidget: React.FC<EditWidgetProps> = ({
               ))}
             </div>
           </div>
-          {(() => {
-            const { src, keys } = pomoActive;
-            const set = (patch: Record<string, unknown>) =>
-              updateWidgetSettings(storageKey, patch as never);
-            const preview = (patch: Record<string, unknown>) =>
-              previewWidgetSettings(storageKey, patch as never);
-            return (
-              <ColorPicker
-                // Remounts per tab so the flyout opens on the tab you
-                // are actually editing rather than keeping the other
-                // one's expanded state.
-                key={pomoSurfaceTab}
-                color={src.color}
-                tuningKind="background"
-                textColor={src.ink}
-                opacity={src.opacity}
-                blur={src.blur}
-                expanded={surfaceTuneOpen}
-                onExpandChange={openSurfaceTune}
-                onBlurChange={(v) => set({ [keys.blur]: v })}
-                onChange={(next) => set({ [keys.color]: next })}
-                onTextColorChange={(next) => set({ [keys.ink]: next })}
-                onOpacityChange={(next) => set({ [keys.opacity]: next })}
-                onPreviewChange={(next) => preview({ [keys.color]: next })}
-                onPreviewOpacity={(next) => preview({ [keys.opacity]: next })}
-                onPreviewTextColor={(next) => preview({ [keys.ink]: next })}
-                onPreviewClear={() => previewWidgetSettings(storageKey, null)}
-              />
-            );
-          })()}
+          <ColorPicker
+            // Remounts per tab so the flyout opens on the tab you are
+            // actually editing rather than keeping the other one's
+            // expanded state.
+            key={pomoSurfaceTab}
+            color={pomoActive.src.color}
+            tuningKind="background"
+            textColor={pomoActive.src.ink}
+            opacity={pomoActive.src.opacity}
+            blur={pomoActive.src.blur}
+            expanded={surfaceTuneOpen}
+            onExpandChange={openSurfaceTune}
+            {...pomoH}
+          />
         </div>
       )}
 
@@ -1685,42 +1792,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             expanded={highlightTuneOpen}
             onExpandChange={setHighlightTuneOpen}
             blur={highlightBlur}
-            // Blur is a property of the colour: >0 frosts the pill in
-            // that colour, 0 is solid. highlightFrost tracks it so
-            // the shell's backdrop-filter class stays in sync.
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, {
-                highlightBlur: v,
-                highlightFrost: v > 0,
-              } as never)
-            }
-            // Colour changes leave blur alone - a frosted pill stays
-            // frosted when you re-tint it.
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightColor: next,
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightTextColor: next,
-              } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightOpacity: next,
-              } as never)
-            }
-            onPreviewChange={(next) =>
-              previewWidgetSettings(storageKey, { highlightColor: next })
-            }
-            onPreviewOpacity={(next) =>
-              previewWidgetSettings(storageKey, { highlightOpacity: next })
-            }
-            onPreviewTextColor={(next) =>
-              previewWidgetSettings(storageKey, { highlightTextColor: next })
-            }
-            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+            {...highlightH}
           />
         </div>
       )}
@@ -1750,6 +1822,25 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             typeInDisabled,
           )}
         </Row>
+      )}
+
+      {supportsTypeIn && !typeInDisabled && settings.typeIn === true && (
+        <SliderRow
+          id={`widget-${storageKey}-typeInSpeed`}
+          label={t("widgets.edit.typeInSpeed")}
+          value={
+            typeof settings.typeInSpeed === "number"
+              ? settings.typeInSpeed
+              : 100
+          }
+          min={TYPE_IN_SPEED_MIN}
+          max={TYPE_IN_SPEED_MAX}
+          step={25}
+          ariaLabel={t("widgets.edit.typeInSpeedAria")}
+          onChange={(v) =>
+            updateWidgetSettings(storageKey, { typeInSpeed: v } as never)
+          }
+        />
       )}
 
       {supportsTextShadow && (
@@ -1799,26 +1890,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             textColor={pomoActive.src.ink}
             opacity={pomoActive.src.opacity}
             blur={pomoActive.src.blur}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, {
-                [pomoActive.keys.blur]: v,
-              } as never)
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                [pomoActive.keys.color]: next,
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                [pomoActive.keys.ink]: next,
-              } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                [pomoActive.keys.opacity]: next,
-              } as never)
-            }
+            {...pomoH}
           />
         </div>
       )}
@@ -1832,31 +1904,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             textColor={rowInk}
             opacity={rowOpacityValue}
             blur={rowBlurValue}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, { rowBlur: v } as never)
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                rowColor: next,
-                ...(next && rowOpacityValue === 0 ? { rowOpacity: 25 } : {}),
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, { rowTextColor: next } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, { rowOpacity: next } as never)
-            }
-            onPreviewChange={(next) =>
-              previewWidgetSettings(storageKey, { rowColor: next } as never)
-            }
-            onPreviewOpacity={(next) =>
-              previewWidgetSettings(storageKey, { rowOpacity: next } as never)
-            }
-            onPreviewTextColor={(next) =>
-              previewWidgetSettings(storageKey, { rowTextColor: next } as never)
-            }
-            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+            {...rowH}
           />
         </div>
       )}
@@ -1870,43 +1918,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             textColor={surfaceInk}
             opacity={surfaceOpacityValue}
             blur={surfaceBlurValue}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, {
-                [surfaceFields.blur]: v,
-              } as never)
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                surfaceColor: next,
-                ...(next
-                  ? surfaceOpacityValue === 0
-                    ? { [surfaceFields.opacity]: 25 }
-                    : {}
-                  : {
-                      [surfaceFields.opacity]: defaultAlpha(
-                        surfaceFields.opacity
-                      ),
-                    }),
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, { textColor: next } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                [surfaceFields.opacity]: next,
-              } as never)
-            }
-            onPreviewChange={(next) =>
-              previewWidgetSettings(storageKey, { surfaceColor: next } as never)
-            }
-            onPreviewOpacity={(next) =>
-              previewWidgetSettings(storageKey, { [surfaceFields.opacity]: next } as never)
-            }
-            onPreviewTextColor={(next) =>
-              previewWidgetSettings(storageKey, { textColor: next } as never)
-            }
-            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+            {...surfaceH}
           />
         </div>
       )}
@@ -1920,31 +1932,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             textColor={highlightTextColor}
             opacity={highlightOpacity}
             blur={highlightBlur}
-            onBlurChange={(v) =>
-              updateWidgetSettings(storageKey, {
-                highlightBlur: v,
-                highlightFrost: v > 0,
-              } as never)
-            }
-            onChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightColor: next,
-              } as never)
-            }
-            onTextColorChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightTextColor: next,
-              } as never)
-            }
-            onOpacityChange={(next) =>
-              updateWidgetSettings(storageKey, {
-                highlightOpacity: next,
-              } as never)
-            }
-            onPreviewTextColor={(next) =>
-              previewWidgetSettings(storageKey, { highlightTextColor: next })
-            }
-            onPreviewClear={() => previewWidgetSettings(storageKey, null)}
+            {...highlightH}
           />
         </div>
       )}

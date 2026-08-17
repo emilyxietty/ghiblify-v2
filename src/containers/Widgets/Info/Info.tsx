@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
+import {
+  resolveInfoFieldOrder,
+  typeInMsPerChar,
+  type InfoFieldKey,
+} from "../../../config/widgetConfig";
 import { useScaledPx } from "../../../utils/viewportScale";
 import "./Info.css";
 
@@ -11,9 +16,9 @@ interface InfoProps {
   quote: string;
 }
 
-/** Milliseconds per character. Matches the 55ms the other type-in
- *  widgets use, so a film title types at the same pace as the clock. */
-const TYPE_MS = 55;
+// Milliseconds per character come from the widget's typeInSpeed via
+// typeInMsPerChar - the same scale the CSS type-in widgets use, so a
+// film title types at the same pace as the clock at the same setting.
 /** Beat between one line finishing and the next starting, in ticks.
  *  It's what makes the caret hand-off between lines visible. */
 const LINE_GAP_TICKS = 2;
@@ -49,6 +54,10 @@ const useLineTypeIn = (
    *  would retype the whole block. A line switched on mid-reveal simply
    *  picks up wherever the count has got to. */
   resetKey: string,
+  /** Milliseconds per character. A change restarts the reveal too -
+   *  the interval has to be rebuilt anyway, and replaying is how the
+   *  speed slider shows what it did. */
+  msPerChar: number,
 ): LineReveal => {
   // Each line starts once the one above it has finished, plus the beat.
   const starts: number[] = [];
@@ -73,10 +82,13 @@ const useLineTypeIn = (
       setTick(Number.MAX_SAFE_INTEGER);
       return;
     }
-    timer.current = window.setInterval(() => setTick((t) => t + 1), TYPE_MS);
+    timer.current = window.setInterval(
+      () => setTick((t) => t + 1),
+      msPerChar,
+    );
     return stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey, enabled]);
+  }, [resetKey, enabled, msPerChar]);
 
   useEffect(() => {
     if (tick >= total) stop();
@@ -112,19 +124,22 @@ export const Info: React.FC<InfoProps> = ({
   // window resize.
   const scaledFontSize = useScaledPx(fontSize);
 
-  // The rows that will actually render, in reveal order. Built as a list
+  // The rows that will actually render, top to bottom - the user's
+  // stored order (drag-reordered from the right-click Fields submenu),
+  // minus fields switched off or empty for this film. Built as a list
   // rather than as inline conditionals so the type-in timing below can
   // be computed from the visible lines - with fields switchable off, DOM
   // position is not reveal order.
-  const rows = [
-    infoFields.japaneseTitle && titlejp ? { key: "titlejp", text: titlejp } : null,
-    infoFields.title && title ? { key: "title", text: title } : null,
-    infoFields.quote && quote ? { key: "quote", text: quote } : null,
-    infoFields.year && year ? { key: "year", text: year } : null,
-    infoFields.movieLength && screentime
-      ? { key: "screentime", text: screentime }
-      : null,
-  ].filter((row): row is { key: string; text: string } => row !== null);
+  const textFor: Record<InfoFieldKey, string> = {
+    japaneseTitle: titlejp,
+    title,
+    quote,
+    year,
+    movieLength: screentime,
+  };
+  const rows = resolveInfoFieldOrder(settings.infoFieldOrder)
+    .filter((key) => infoFields[key] && textFor[key])
+    .map((key) => ({ key, text: textFor[key] }));
 
   // Type-in is a canvas affordance: the dock copy has never typed (the
   // shell only opts the canvas in), and a dock column re-typing the
@@ -133,6 +148,7 @@ export const Info: React.FC<InfoProps> = ({
     rows.map((row) => row.text),
     settings.typeIn === true && !inDock,
     [titlejp, title, quote, year, screentime].join("|"),
+    typeInMsPerChar(settings.typeInSpeed),
   );
 
   return (

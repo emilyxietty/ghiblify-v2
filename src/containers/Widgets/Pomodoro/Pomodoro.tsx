@@ -549,6 +549,8 @@ const Pomodoro: React.FC = () => {
     breakColor,
     breakOpacity,
     breakTextColor,
+    blur: focusBlur,
+    breakBlur,
     timerImage: imageChoice,
   } = widgets.pomodoro.settings;
 
@@ -664,6 +666,17 @@ const Pomodoro: React.FC = () => {
             : typeof opacity === "number"
               ? opacity
               : 100) as number) / 100,
+        // Wallpaper blur behind the card, per mode, from the Background
+        // row's blur slider - the CSS used to hard-code 30px and ignore
+        // this setting.
+        ["--pomodoro-blur" as string]:
+          ((isBreak
+            ? typeof breakBlur === "number"
+              ? breakBlur
+              : 0
+            : typeof focusBlur === "number"
+              ? focusBlur
+              : 0) as number) / 100,
         ...(() => {
           const colour = isBreak ? breakColor : cardColor;
           const mode = isBreak ? breakTextColor : textColor;

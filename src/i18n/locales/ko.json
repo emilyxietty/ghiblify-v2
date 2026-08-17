@@ -230,6 +230,9 @@
         "quote": "명대사"
       },
       "infoFieldsLabel": "필드",
+      "infoFieldsDragHint": "드래그하여 순서 변경",
+      "typeInSpeed": "타이핑 속도",
+      "typeInSpeedAria": "타이핑 속도",
       "notesShowBorder": "테두리 표시",
       "notesHideBorder": "테두리 숨기기",
       "notesShowBorderAria": "노트 테두리 표시",

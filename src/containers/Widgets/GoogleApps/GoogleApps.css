@@ -12,13 +12,14 @@
        slider (--widget-opacity is published on the shell). Defaults to
        0, so the cluster stays bare like Google's own new-tab page
        until the user asks for a surface. Frost is handled on the shell
-       instead - a backdrop-filter here would sample the empty shell
-       interior rather than the wallpaper. */
+       instead (.widget-surface-frost) - kept there so the glass and
+       the fill describe one box; see the animation note in Widget.css
+       for why descendant blurs used to be dead. */
     padding: 6px 8px;
     /* Matches the shell's radius, not a pill. Frost paints on the
-       shell (it's the backdrop root), so any other radius here made the
-       solid fill a smaller, differently-shaped box than the glass -
-       the two have to describe the same surface. */
+       shell, so any other radius here made the solid fill a smaller,
+       differently-shaped box than the glass - the two have to describe
+       the same surface. */
     border-radius: var(--radius-lg);
     /* --gapps-opacity is resolved in GoogleApps.tsx (it already folds
        in the frost case), and --dark-rgb carries any custom tint the

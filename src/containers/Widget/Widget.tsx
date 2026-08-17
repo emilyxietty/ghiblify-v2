@@ -10,10 +10,13 @@ import {
 // below means the chunk only fetches the first time any widget enters
 // edit mode.
 const EditWidget = lazy(() => import("../../components/RightClickEditModal/EditWidget/EditWidget"));
-import { AddIcon, BlurOnIcon, KeyboardIcon, ListIcon, OpacityIcon, PaletteIcon, TextFieldsIcon, ThermostatIcon, ViewModuleIcon, VisibilityIcon } from "../../components/Icons/Icons";
+import { AddIcon, BlurOnIcon, KeyboardIcon, ListIcon, OpacityIcon, PaletteIcon, SpeedIcon, TextFieldsIcon, ThermostatIcon, ViewModuleIcon, VisibilityIcon } from "../../components/Icons/Icons";
 import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
+  INFO_FIELD_KEYS,
+  isTypeInUnavailable,
   WEATHER_DETAILS,
+  resolveInfoFieldOrder,
   resolveWeatherDetail,
 } from "../../config/widgetConfig";
 import {
@@ -131,6 +134,27 @@ export const Widget: React.FC<WidgetProps> = ({
     // the text, so a ticking clock doesn't retype itself.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widgetSettings.typeIn, storageKey]);
+
+  // Replay the CSS type-in when its pace changes. Only the animation's
+  // duration changes, and a running or finished CSS animation doesn't
+  // restart for that - so the class comes off, a reflow is forced, and
+  // it goes back on (the standard restart). Done on the DOM directly:
+  // React's next render writes the same className and leaves it be.
+  // Info drives its own reveal in JS and replays itself. Skipped on
+  // mount so a fresh tab types once, not twice.
+  const typeInSpeed = widgetSettings.typeInSpeed;
+  const typeInSpeedSeen = useRef(typeInSpeed);
+  useLayoutEffect(() => {
+    if (typeInSpeedSeen.current === typeInSpeed) return;
+    typeInSpeedSeen.current = typeInSpeed;
+    const el = widgetRef.current;
+    if (!el || widgetSettings.typeIn !== true) return;
+    if (!el.classList.contains("has-type-in")) return;
+    el.classList.remove("has-type-in");
+    void el.offsetWidth;
+    el.classList.add("has-type-in");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeInSpeed]);
 
   // Track context position changes (e.g. from a reset) so the local
   // drag-state doesn't get stuck on a stale value.
@@ -733,8 +757,7 @@ export const Widget: React.FC<WidgetProps> = ({
   const surfacePresentation = getWidgetSurfacePresentation({
     storageKey,
     settings: widgetSettings,
-    allowTypeIn:
-      !(storageKey === "date" && widgetSettings.displayStyle === "calendar"),
+    allowTypeIn: !isTypeInUnavailable(storageKey, widgetSettings),
     typeSteps,
   });
 
@@ -925,14 +948,6 @@ export const Widget: React.FC<WidgetProps> = ({
     </div>
   );
 };
-
-const INFO_FIELD_KEYS = [
-  "japaneseTitle",
-  "title",
-  "year",
-  "movieLength",
-  "quote",
-] as const;
 
 // Per-widget right-click menu builder. Mirrors the controls available
 // in EditWidget so users get the same toggles without entering edit
@@ -1231,8 +1246,14 @@ export function buildContextMenuItems(args: {
   } else if (storageKey === "notes") {
     const s = widgets.notes.settings as NotesSettings;
     const showBorder = s.showBorder !== false;
+    // Reads what Notes.tsx paints: the Background row's surfaceColor,
+    // falling back to the older paperColor.
     const paper =
-      typeof s.paperColor === "string" ? normalizeHex(s.paperColor) : null;
+      typeof s.surfaceColor === "string"
+        ? normalizeHex(s.surfaceColor)
+        : typeof s.paperColor === "string"
+          ? normalizeHex(s.paperColor)
+          : null;
     const paperFrost = s.paperFrost === true;
     extras = [
       {
@@ -1260,9 +1281,14 @@ export function buildContextMenuItems(args: {
                   : hex.toUpperCase(),
               swatch: hex,
               selected: !paperFrost && paper === value,
-              onHover: demo({ paperColor: value, paperFrost: false }),
+              onHover: demo({
+                surfaceColor: value,
+                paperColor: value,
+                paperFrost: false,
+              }),
               onClick: () =>
                 updateWidgetSettings("notes", {
+                  surfaceColor: value,
                   paperColor: value,
                   paperFrost: false,
                 }),
@@ -1272,9 +1298,14 @@ export function buildContextMenuItems(args: {
             type: "radio" as const,
             label: t("widgets.edit.styleFrost"),
             selected: paperFrost,
-            onHover: demo({ paperColor: null, paperFrost: true }),
+            onHover: demo({
+              surfaceColor: null,
+              paperColor: null,
+              paperFrost: true,
+            }),
             onClick: () =>
               updateWidgetSettings("notes", {
+                surfaceColor: null,
                 paperColor: null,
                 paperFrost: true,
               }),
@@ -1466,25 +1497,38 @@ export function buildContextMenuItems(args: {
     const s = widgets.info.settings as InfoSettings;
     const onlyOneOn =
       INFO_FIELD_KEYS.filter((k) => s.infoFields[k]).length <= 1;
+    // The rows are listed in the widget's top-to-bottom order and can
+    // be dragged into a new one - the submenu IS the widget's layout.
+    const order = resolveInfoFieldOrder(s.infoFieldOrder);
     extras = [
       {
         type: "submenu",
         label: t("widgets.edit.infoFieldsLabel"),
         icon: <ListIcon style={{ fontSize: 14 }} />,
-        items: INFO_FIELD_KEYS.map((k) => ({
-          type: "checkbox" as const,
-          label: t(`widgets.edit.infoFields.${k}`),
-          checked: !!s.infoFields[k],
-          disabled: onlyOneOn && !!s.infoFields[k],
-          onClick: () => {
-            const nextFields = { ...s.infoFields, [k]: !s.infoFields[k] };
-            const remaining = INFO_FIELD_KEYS.filter(
-              (fk) => nextFields[fk]
-            ).length;
-            if (remaining === 0) return;
-            updateWidgetSettings("info", { infoFields: nextFields });
+        items: [
+          {
+            type: "sortable",
+            dragLabel: t("widgets.edit.infoFieldsDragHint"),
+            items: order.map((k) => ({
+              key: k,
+              label: t(`widgets.edit.infoFields.${k}`),
+              checked: !!s.infoFields[k],
+              disabled: onlyOneOn && !!s.infoFields[k],
+              onClick: () => {
+                const nextFields = { ...s.infoFields, [k]: !s.infoFields[k] };
+                const remaining = INFO_FIELD_KEYS.filter(
+                  (fk) => nextFields[fk]
+                ).length;
+                if (remaining === 0) return;
+                updateWidgetSettings("info", { infoFields: nextFields });
+              },
+            })),
+            onReorder: (keys) =>
+              updateWidgetSettings("info", {
+                infoFieldOrder: resolveInfoFieldOrder(keys),
+              }),
           },
-        })),
+        ],
       },
     ];
   }
@@ -1630,8 +1674,7 @@ export function buildContextMenuItems(args: {
   // Type-in - auto-attaches wherever the setting exists, same rule as
   // the highlight above.
   if ("typeIn" in widgetSettingsAny) {
-    const typeInDisabled =
-      storageKey === "date" && widgetSettingsAny.displayStyle === "calendar";
+    const typeInDisabled = isTypeInUnavailable(storageKey, widgetSettingsAny);
     extras.push({
       type: "checkbox",
       label: t("widgets.contextMenu.typeIn"),
@@ -1645,6 +1688,27 @@ export function buildContextMenuItems(args: {
         } as never);
       },
     });
+    // Pace presets, only while the effect is on - the widget replays
+    // on pick, so no hover demo (a hovered-and-left row would leave it
+    // mid-retype at the wrong speed).
+    if (!typeInDisabled && widgetSettingsAny.typeIn === true) {
+      const speed =
+        typeof widgetSettingsAny.typeInSpeed === "number"
+          ? widgetSettingsAny.typeInSpeed
+          : 100;
+      extras.push({
+        type: "submenu",
+        label: t("widgets.edit.typeInSpeed"),
+        icon: <SpeedIcon style={{ fontSize: 14 }} />,
+        items: [50, 100, 150, 200, 300].map((v) => ({
+          type: "radio" as const,
+          label: `${v}%`,
+          selected: speed === v,
+          onClick: () =>
+            updateWidgetSettings(storageKey, { typeInSpeed: v } as never),
+        })),
+      });
+    }
   }
 
   if (typeof widgetSettingsAny.textShadow === "number") {

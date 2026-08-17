@@ -456,6 +456,10 @@ export const Todo: React.FC = () => {
     "--todo-opacity": frosted ? 0.14 : todoSettings.opacity / 100,
     "--input-opacity": frosted ? 0.14 : todoSettings.rowOpacity / 100,
     "--todo-row-opacity": todoSettings.rowOpacity / 100,
+    // Row highlight blur, 0-1 of the 20px scale. Falls back to the
+    // configured default rather than 0 so pre-feature blobs keep the
+    // shipped whisper of glass.
+    "--todo-row-blur": (todoSettings.rowBlur ?? 10) / 100,
     ...(surfaceRgb ? { "--todo-surface-rgb": surfaceRgb } : {}),
     ...(rowRgb
       ? { "--todo-row-rgb": rowRgb, "--dark-rgb": rowRgb }

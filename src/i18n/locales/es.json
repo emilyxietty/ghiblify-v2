@@ -224,6 +224,9 @@
         "quote": "Frase"
       },
       "infoFieldsLabel": "Campos",
+      "infoFieldsDragHint": "Arrastra para reordenar",
+      "typeInSpeed": "Velocidad de escritura",
+      "typeInSpeedAria": "Velocidad de escritura",
       "notesShowBorder": "Mostrar borde",
       "notesHideBorder": "Ocultar borde",
       "notesShowBorderAria": "Mostrar el borde de la nota",

@@ -230,6 +230,9 @@
         "quote": "セリフ"
       },
       "infoFieldsLabel": "項目",
+      "infoFieldsDragHint": "ドラッグして並べ替え",
+      "typeInSpeed": "タイプ速度",
+      "typeInSpeedAria": "タイプ速度",
       "notesShowBorder": "枠を表示",
       "notesHideBorder": "枠を非表示",
       "notesShowBorderAria": "メモの枠を表示",

@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRightIcon } from "../Icons/Icons";
-import { CheckIcon, RadioButtonCheckedIcon } from "../Icons/Icons";
+import {
+  CheckIcon,
+  DragIndicatorIcon,
+  RadioButtonCheckedIcon,
+} from "../Icons/Icons";
 import "./ContextMenu.css";
 
 // A right-click menu used by widgets and the background. Supports
@@ -59,7 +63,195 @@ export type ContextMenuItem =
       label: string;
       items: ContextMenuItem[];
       icon?: React.ReactNode;
+    }
+  | {
+      /** A run of checkbox rows the user can drag into a new order -
+       *  the Info widget's fields, say. Each row toggles like a
+       *  checkbox; press-and-move on any row instead lifts it and the
+       *  neighbours slide out of the way. `onReorder` gets the full
+       *  key list in its new order when the row is dropped somewhere
+       *  new. */
+      type: "sortable";
+      items: Array<{
+        key: string;
+        label: string;
+        checked: boolean;
+        onClick: () => void;
+        disabled?: boolean;
+      }>;
+      onReorder: (keys: string[]) => void;
+      /** Accessible name for the grip - "Drag to reorder". */
+      dragLabel?: string;
     };
+
+/** Pointer travel (px) before a press on a sortable row becomes a
+ *  drag rather than a click. Small, so the lift feels immediate, but
+ *  enough that a jittery click still toggles the checkbox. */
+const SORT_DRAG_THRESHOLD_PX = 4;
+
+interface SortDrag {
+  /** Index of the lifted row and where it currently would land. */
+  from: number;
+  to: number;
+  /** Pointer travel since the lift, applied to the lifted row. */
+  dy: number;
+  /** Row rects captured at lift time (positions in the un-dragged
+   *  layout), used to find `to` from the pointer's y. */
+  rects: DOMRect[];
+}
+
+const SortableRows: React.FC<{
+  item: Extract<ContextMenuItem, { type: "sortable" }>;
+}> = ({ item }) => {
+  const listRef = useRef<HTMLDivElement>(null);
+  const [drag, setDragState] = useState<SortDrag | null>(null);
+  // Mirror of `drag` for the pointer handlers: pointermove updates are
+  // continuous-priority and may not have re-rendered by the time the
+  // discrete pointerup arrives, so the drop reads the ref, not the
+  // closure.
+  const dragRef = useRef<SortDrag | null>(null);
+  const setDrag = (next: SortDrag | null) => {
+    dragRef.current = next;
+    setDragState(next);
+  };
+  // Press state before the threshold is crossed - not yet a drag, so
+  // a release here is an ordinary click.
+  const press = useRef<{
+    index: number;
+    startY: number;
+    pointerId: number;
+    dragging: boolean;
+  } | null>(null);
+  // Set the moment a drag lifts, so the click that fires on release
+  // (Chrome dispatches click after pointerup on the same element)
+  // does not also toggle the row.
+  const suppressClick = useRef(false);
+
+  const rowRects = (): DOMRect[] =>
+    Array.from(listRef.current?.children ?? []).map((el) =>
+      (el as HTMLElement).getBoundingClientRect(),
+    );
+
+  const onPointerDown = (index: number) => (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    // A press whose release never produced a click (pointer let go
+    // off-window) would otherwise leave the flag armed for the next
+    // genuine click on any row.
+    suppressClick.current = false;
+    press.current = {
+      index,
+      startY: e.clientY,
+      pointerId: e.pointerId,
+      dragging: false,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    const p = press.current;
+    if (!p || p.pointerId !== e.pointerId) return;
+    const dy = e.clientY - p.startY;
+    if (!p.dragging) {
+      if (Math.abs(dy) < SORT_DRAG_THRESHOLD_PX) return;
+      p.dragging = true;
+      suppressClick.current = true;
+    }
+    const rects = dragRef.current?.rects ?? rowRects();
+    // The slot whose midpoint the lifted row's centre has passed.
+    const lifted = rects[p.index];
+    const centre = lifted.top + lifted.height / 2 + dy;
+    let to = p.index;
+    if (dy < 0) {
+      while (to > 0 && centre < rects[to - 1].top + rects[to - 1].height / 2)
+        to--;
+    } else {
+      while (
+        to < rects.length - 1 &&
+        centre > rects[to + 1].top + rects[to + 1].height / 2
+      )
+        to++;
+    }
+    setDrag({ from: p.index, to, dy, rects });
+  };
+
+  const finish = (commit: boolean) => {
+    const p = press.current;
+    const d = dragRef.current;
+    press.current = null;
+    if (p?.dragging && d && commit && d.to !== d.from) {
+      const keys = item.items.map((row) => row.key);
+      const [moved] = keys.splice(d.from, 1);
+      keys.splice(d.to, 0, moved);
+      item.onReorder(keys);
+    }
+    setDrag(null);
+  };
+
+  return (
+    <div
+      ref={listRef}
+      className={`ctx-menu-sortable${drag ? " is-sorting" : ""}`}
+      role="group"
+    >
+      {item.items.map((row, index) => {
+        // Neighbours slide one slot to open the drop position; the
+        // lifted row rides the pointer.
+        let transform: string | undefined;
+        if (drag) {
+          if (index === drag.from) transform = `translateY(${drag.dy}px)`;
+          else if (drag.from < drag.to && index > drag.from && index <= drag.to)
+            transform = `translateY(${-(drag.rects[drag.from].height + 1)}px)`;
+          else if (drag.from > drag.to && index >= drag.to && index < drag.from)
+            transform = `translateY(${drag.rects[drag.from].height + 1}px)`;
+        }
+        const lifted = drag?.from === index;
+        return (
+          <button
+            key={row.key}
+            type="button"
+            role="menuitemcheckbox"
+            aria-checked={row.checked}
+            // aria-disabled rather than the native attribute: a
+            // disabled <button> swallows pointer events, and a row
+            // that can't be toggled (the last field left on) must
+            // still be draggable.
+            aria-disabled={row.disabled || undefined}
+            className={`ctx-menu-row ctx-menu-sortable-row${
+              row.checked ? " is-selected" : ""
+            }${row.disabled ? " is-disabled" : ""}${lifted ? " is-lifted" : ""}`}
+            style={transform ? { transform } : undefined}
+            onPointerDown={onPointerDown(index)}
+            onPointerMove={onPointerMove}
+            onPointerUp={() => finish(true)}
+            onPointerCancel={() => finish(false)}
+            onClick={() => {
+              if (suppressClick.current) {
+                suppressClick.current = false;
+                return;
+              }
+              if (row.disabled) return;
+              row.onClick();
+              // Stays open like every checkbox row, so several fields
+              // can be flipped (or shuffled) without re-opening.
+            }}
+          >
+            <span className="ctx-menu-icon" aria-hidden="true">
+              {row.checked ? <CheckIcon style={{ fontSize: 14 }} /> : null}
+            </span>
+            <span className="ctx-menu-label">{row.label}</span>
+            <span
+              className="ctx-menu-grip"
+              aria-hidden="true"
+              title={item.dragLabel}
+            >
+              <DragIndicatorIcon style={{ fontSize: 14 }} />
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 /** Grace period before a hovered-away cascade closes. Long enough to
  *  cross the gap to the submenu, short enough not to feel sticky. */
@@ -197,6 +389,9 @@ const Items: React.FC<{
       {items.map((item, idx) => {
         if (item.type === "separator") {
           return <div key={idx} className="ctx-menu-sep" />;
+        }
+        if (item.type === "sortable") {
+          return <SortableRows key={idx} item={item} />;
         }
         if (item.type === "submenu") {
           return (

@@ -220,6 +220,9 @@
         "quote": "Citation"
       },
       "infoFieldsLabel": "Champs",
+      "infoFieldsDragHint": "Faites glisser pour réorganiser",
+      "typeInSpeed": "Vitesse de frappe",
+      "typeInSpeedAria": "Vitesse de frappe",
       "notesShowBorder": "Afficher la bordure",
       "notesHideBorder": "Masquer la bordure",
       "notesShowBorderAria": "Afficher la bordure de la note",

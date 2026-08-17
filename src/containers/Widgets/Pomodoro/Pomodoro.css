@@ -54,15 +54,14 @@
     position: relative;
     overflow: hidden;
     transition: background 200ms ease, border-color 200ms ease;
-    /* Backdrop blur kept independent from --pomodoro-opacity so the
-       card stays distinguishable from the photo background even at
-       0 alpha. Fixed at 30px (the full top of the visually-useful
-       0–30 range) - chosen over a slider because users wanted a
-       single dependable frosted-glass read across themes, and the
-       max value reads as cleanly diffused without dropping into
-       smear territory. */
-    backdrop-filter: blur(30px) saturate(1.05);
-    -webkit-backdrop-filter: blur(30px) saturate(1.05);
+    /* Wallpaper blur behind the card, from the Background row's blur
+       slider (focus and break each keep their own) - Pomodoro.tsx
+       publishes --pomodoro-blur on the usual 0-1 x 20px scale. This
+       used to be a fixed 30px that ignored the slider. */
+    backdrop-filter: blur(calc(var(--pomodoro-blur, 0) * 20px))
+        saturate(1.05);
+    -webkit-backdrop-filter: blur(calc(var(--pomodoro-blur, 0) * 20px))
+        saturate(1.05);
     /* Container query unit `cqw` references the widget's own width
        (turn it into a containment context). Lets the timer digits
        scale fluidly as the user drags the resize handle without

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import {
   resolveSurfaceFrost,
+  typeInMsPerChar,
   type WidgetKey,
 } from "../config/widgetConfig";
 import {
@@ -43,7 +44,17 @@ export const getWidgetSurfacePresentation = ({
 
   if (opacityKey in settings)
     style["--widget-opacity"] = fraction(settings[opacityKey]);
-  if (blurKey in settings)
+  // Published ONLY when non-zero. The shell rules read it without a
+  // fallback, so an absent var leaves backdrop-filter at `none` - a
+  // `blur(0px)` is not nothing: any backdrop-filter on the shell makes
+  // it a backdrop root, and every blur inside the widget (todo rows,
+  // weather's forecast cells, the pomodoro card) would go dead again.
+  // Weather's mood card paints its own surface: the shell blur steps
+  // aside under it no matter which path flipped the card on (the edit
+  // panel's card chip resets blur to 0 itself; the right-click "Card"
+  // radio only sets the flag).
+  const blurSuppressed = storageKey === "weather" && settings.showCard === true;
+  if (blurKey in settings && !blurSuppressed && fraction(settings[blurKey]) > 0)
     style["--widget-blur"] = fraction(settings[blurKey]);
 
   const highlight =
@@ -86,7 +97,11 @@ export const getWidgetSurfacePresentation = ({
   if (allowTypeIn && settings.typeIn === true) {
     classes.push("has-type-in");
     style["--type-in-steps"] = typeSteps;
-    style["--type-in-duration"] = `${typeSteps * 0.055}s`;
+    // One step per character at the widget's own pace, so a 200% clock
+    // types in half the time of a 100% one.
+    style["--type-in-duration"] = `${
+      (typeSteps * typeInMsPerChar(settings.typeInSpeed)) / 1000
+    }s`;
   }
 
   return { className: classes.join(" "), style };

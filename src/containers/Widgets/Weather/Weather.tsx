@@ -27,6 +27,7 @@ const WeatherLocationModal = lazy(
 // bundle). Import them locally where needed.
 import { codeToIconName, iconUrl } from "./weatherIcons";
 import {
+  HIGHLIGHT_TEXT_DARK,
   hexToRgbChannels,
   isHighlightTextColor,
   resolveForeground,
@@ -499,37 +500,49 @@ const Weather: React.FC = () => {
         isCanvasRail ? " weather-canvas-rail" : ""
       }${isHalfInDock ? " weather-tabbed-compact" : ""}`}
       data-weather-mood={mood}
+      // Which way the chosen ink leans, so the CSS halo can flip to
+      // match (a dark halo under dark letters is just mud).
+      data-weather-ink={
+        surfaceInk
+          ? surfaceInk === HIGHLIGHT_TEXT_DARK || surfaceInk === "#1f2420"
+            ? "dark"
+            : "light"
+          : undefined
+      }
       style={{
-        ["--weather-cell-opacity" as any]: (
-          (settings.opacity ?? 0) / 100
-        ).toString(),
         // The widget's REAL surface - painted whether or not a colour
         // has been picked, exactly like the todo card. This is what the
         // opacity slider acts on: an earlier version only painted when
         // a colour existed, so on an untinted widget the slider moved
         // and nothing changed.
         // The card brings its own painted surface, so the adjustable
-        // one steps aside entirely while it is on.
+        // one steps aside entirely while it is on. (Blur is not set
+        // here: it lives on the .widget shell via --widget-blur - see
+        // Widget.css - and the card recipe zeroes the setting itself.)
         ["--weather-surface-alpha" as any]: (settings.showCard
           ? 0
           : (settings.opacity ?? 0) / 100
         ).toString(),
-        ["--weather-blur" as any]: (settings.showCard
-          ? 0
-          : (settings.blur ?? 0) / 100
-        ).toString(),
         ...(surfaceRgb
           ? {
               ["--weather-surface-rgb" as any]: surfaceRgb,
-              // The forecast cells paint with --dark-rgb, so the tint
-              // carries into them too.
-              ["--dark-rgb" as any]: surfaceRgb,
+              // The forecast sub-surfaces (hourly cells, daily panel)
+              // take the surface's INK at a low alpha rather than the
+              // surface colour itself, so they rise off it - light
+              // glass on a dark surface, dark glass on a light one -
+              // instead of tinting deeper into the same colour. See
+              // the tokens note in Weather.css.
+              ["--weather-cell-rgb" as any]: hexToRgbChannels(
+                surfaceInk ?? "#ffffff",
+              ),
+              ["--weather-cell-alpha" as any]: "0.12",
             }
           : {}),
         ...(surfaceInk
           ? {
               ["--light" as any]: surfaceInk,
               ["--weather-ink" as any]: surfaceInk,
+              ["--weather-cell-ink" as any]: surfaceInk,
             }
           : {}),
       }}

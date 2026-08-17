@@ -234,6 +234,9 @@
         "quote": "Quote"
       },
       "infoFieldsLabel": "Fields",
+      "infoFieldsDragHint": "Drag to reorder",
+      "typeInSpeed": "Typing speed",
+      "typeInSpeedAria": "Typing speed",
       "notesShowBorder": "Show border",
       "notesHideBorder": "Hide border",
       "notesShowBorderAria": "Show the cardborder around the note",

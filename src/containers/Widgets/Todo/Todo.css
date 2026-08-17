@@ -240,9 +240,12 @@
     );
     color: var(--todo-text);
     border: 1px solid var(--todo-border);
-    -webkit-backdrop-filter: blur(var(--surface-blur, 6px))
+    /* Highlight blur - the row tint's own tuning column drives it via
+       --todo-row-blur (Todo.tsx), on the same 20px scale as every other
+       blur slider. */
+    -webkit-backdrop-filter: blur(calc(var(--todo-row-blur, 0.1) * 20px))
         saturate(var(--surface-saturate, 1));
-    backdrop-filter: blur(var(--surface-blur, 6px))
+    backdrop-filter: blur(calc(var(--todo-row-blur, 0.1) * 20px))
         saturate(var(--surface-saturate, 1));
     border-radius: var(--radius-lg);
     transition: background 160ms ease, border-color 160ms ease,

@@ -5,13 +5,14 @@
 
 .color-picker {
     position: relative;
-    /* One fixed row of nine chips, evenly distributed across the full
-       panel width - a deterministic count never wraps, so the strip
-       always reads as a designed unit rather than a ragged grid. */
+    /* One row of chips, packed from the left at a fixed pitch. Left-
+       aligned rather than spread across the panel so every palette -
+       the nine-chip colour strips and weather's four looks - lines up
+       under its label with the same chip spacing. */
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 4px;
+    justify-content: flex-start;
+    gap: 6px;
     width: 100%;
 }
 
@@ -463,8 +464,26 @@
     min-width: 0;
 }
 
-/* Weather's special chip - the mood card's own gradient, so the option
-   reads as "the weather look" rather than as one more flat colour. */
+/* Weather's look chips. Each stands for a whole surface recipe, so
+   they are drawn as textures rather than flat colours: glass stripes
+   for the two frosts (light-on-nothing for blur alone, slate for the
+   dark one) and the mood card's own gradient for the weather look. */
+.color-picker-inline-swatch.color-picker-look-blur {
+    background: repeating-linear-gradient(
+        45deg,
+        color-mix(in srgb, var(--light) 55%, transparent) 0 3px,
+        color-mix(in srgb, var(--light) 18%, transparent) 3px 6px
+    );
+}
+
+.color-picker-inline-swatch.color-picker-look-frost-dark {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(12, 16, 20, 0.9) 0 3px,
+        rgba(12, 16, 20, 0.5) 3px 6px
+    );
+}
+
 .color-picker-inline-swatch.color-picker-weather {
     background: linear-gradient(135deg, #78c3f0 0%, #c4aee2 52%, #f8c5d4 100%);
 }

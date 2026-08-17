@@ -224,6 +224,9 @@
         "quote": "Citação"
       },
       "infoFieldsLabel": "Campos",
+      "infoFieldsDragHint": "Arraste para reordenar",
+      "typeInSpeed": "Velocidade de digitação",
+      "typeInSpeedAria": "Velocidade de digitação",
       "notesShowBorder": "Mostrar borda",
       "notesHideBorder": "Ocultar borda",
       "notesShowBorderAria": "Mostrar a borda do bilhete",

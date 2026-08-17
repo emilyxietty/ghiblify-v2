@@ -195,3 +195,65 @@
     font-size: 14px;
     opacity: 0.9;
 }
+
+/* Sortable rows (see the `sortable` item type). The list is a plain
+   column; while a row is lifted the others slide via transform to
+   open its landing slot, so the DOM order never changes mid-drag and
+   only the drop writes back. */
+.ctx-menu-sortable {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.ctx-menu-sortable-row {
+    /* Press-and-move anywhere on the row lifts it; the grip is the
+       affordance, not the only handle. */
+    cursor: grab;
+    touch-action: none;
+    transition: background 110ms ease, transform 140ms ease;
+}
+
+.ctx-menu-grip {
+    margin-left: auto;
+    display: inline-flex;
+    flex-shrink: 0;
+    opacity: 0.4;
+    transition: opacity 110ms ease;
+}
+
+.ctx-menu-sortable-row:hover .ctx-menu-grip,
+.ctx-menu-sortable-row.is-lifted .ctx-menu-grip {
+    opacity: 0.85;
+}
+
+/* Lifted row: rides the pointer (no transition, or it lags), floats
+   above its neighbours, and reads as picked up. */
+.ctx-menu-sortable-row.is-lifted {
+    transition: background 110ms ease;
+    cursor: grabbing;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.ctx-menu-sortable.is-sorting .ctx-menu-sortable-row {
+    cursor: grabbing;
+}
+
+/* A sortable row that can't be toggled (the last field left on) is
+   still draggable, so unlike a plain disabled checkbox the row keeps
+   its hover, cursor and grip; only the toggle half is dimmed. */
+.ctx-menu-sortable-row.is-disabled {
+    opacity: 1;
+    cursor: grab;
+}
+
+.ctx-menu-sortable-row.is-disabled:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ctx-menu-sortable-row.is-disabled .ctx-menu-icon,
+.ctx-menu-sortable-row.is-disabled .ctx-menu-label {
+    opacity: 0.5;
+}

@@ -2,6 +2,12 @@ import React, { lazy, Suspense } from "react";
 import { useWidgetSettings } from "../../../hooks/useWidgetSettings";
 import { useT } from "../../../i18n/i18n";
 import { useScaledPx } from "../../../utils/viewportScale";
+import {
+  HIGHLIGHT_TEXT_DARK,
+  HIGHLIGHT_TEXT_LIGHT,
+  foregroundFor,
+  isHighlightTextColor,
+} from "../../../utils/textHighlight";
 import "./Notes.css";
 
 // Lightweight paper shell. This renders instantly (no Lexical) so the
@@ -18,14 +24,40 @@ export const Notes: React.FC = () => {
   const scaledWidth = useScaledPx(settings.width);
   const scaledHeight = useScaledPx(settings.height);
 
+  // The Background row writes surfaceColor; paperColor is the older
+  // field the right-click paper submenu used to write, still honoured
+  // when nothing newer is set. null = the classic cream.
   const paperColor =
-    typeof settings.paperColor === "string" ? settings.paperColor : null;
+    typeof settings.surfaceColor === "string"
+      ? settings.surfaceColor
+      : typeof settings.paperColor === "string"
+        ? settings.paperColor
+        : null;
+  // Ink. "auto" keeps the classic brown unless the paper is dark enough
+  // to need white; light / dark are the explicit choices.
+  const inkMode = isHighlightTextColor(settings.textColor)
+    ? settings.textColor
+    : "auto";
+  const ink =
+    inkMode === "light"
+      ? HIGHLIGHT_TEXT_LIGHT
+      : inkMode === "dark"
+        ? HIGHLIGHT_TEXT_DARK
+        : paperColor && foregroundFor(paperColor) === HIGHLIGHT_TEXT_LIGHT
+          ? HIGHLIGHT_TEXT_LIGHT
+          : null;
 
   return (
     <div
       className={`notes-widget widget-header${
         settings.showBorder === false ? " no-border" : ""
-      }${settings.paperNone === true ? " no-paper" : ""
+      }${
+        // Legacy "no paper" - only while nothing newer has painted a
+        // tint over it.
+        settings.paperNone === true &&
+        typeof settings.surfaceColor !== "string"
+          ? " no-paper"
+          : ""
       }${settings.paperFrost === true ? " notes-frost" : ""}`}
       style={{
         width: scaledWidth,
@@ -33,6 +65,7 @@ export const Notes: React.FC = () => {
         ...(paperColor
           ? ({ "--note-paper": paperColor } as React.CSSProperties)
           : {}),
+        ...(ink ? ({ "--notes-ink": ink } as React.CSSProperties) : {}),
       }}
     >
       <Suspense
