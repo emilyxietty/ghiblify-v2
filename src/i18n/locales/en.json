@@ -369,12 +369,9 @@
     "ariaLabelButton": "Search",
     "tooltipButton": "Search",
     "clearAria": "Clear search",
-    "voiceAria": "Search by voice",
-    "voiceTooltip": "Search by voice",
     "imageAria": "Search by image",
     "imageTooltip": "Search by image",
-    "removeHistoryAria": "Remove “{{query}}” from recent searches",
-    "voiceDenied": "Microphone access declined - click to try again"
+    "removeHistoryAria": "Remove “{{query}}” from recent searches"
   },
   "quicklinks": {
     "trigger": "Links",

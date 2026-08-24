@@ -45,6 +45,10 @@ then prepend an entry here.
 - The empty list popup shrinks to its one row instead of wrapping a
   420px slab around it.
 
+**Search**
+- Removed search by voice. The mic button, its Web Speech wiring and
+  the microphone prompt are gone; the pill keeps clear / lens / go.
+
 **Frost palette**
 - Focusing a text input no longer turns it into a white box with white
   text on it — the focus state was missing the tint override the resting

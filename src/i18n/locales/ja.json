@@ -363,12 +363,9 @@
     "ariaLabelButton": "検索",
     "tooltipButton": "検索",
     "clearAria": "検索をクリア",
-    "voiceAria": "音声で検索",
-    "voiceTooltip": "音声で検索",
     "imageAria": "画像で検索",
     "imageTooltip": "画像で検索",
-    "removeHistoryAria": "「{{query}}」を最近の検索から削除",
-    "voiceDenied": "マイクへのアクセスが拒否されました — クリックで再試行"
+    "removeHistoryAria": "「{{query}}」を最近の検索から削除"
   },
   "quicklinks": {
     "trigger": "リンク",

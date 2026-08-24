@@ -363,12 +363,9 @@
     "ariaLabelButton": "검색",
     "tooltipButton": "검색",
     "clearAria": "검색어 지우기",
-    "voiceAria": "음성으로 검색",
-    "voiceTooltip": "음성으로 검색",
     "imageAria": "이미지로 검색",
     "imageTooltip": "이미지로 검색",
-    "removeHistoryAria": "최근 검색에서 “{{query}}” 삭제",
-    "voiceDenied": "마이크 접근이 거부되었습니다 — 클릭하여 다시 시도"
+    "removeHistoryAria": "최근 검색에서 “{{query}}” 삭제"
   },
   "quicklinks": {
     "trigger": "링크",

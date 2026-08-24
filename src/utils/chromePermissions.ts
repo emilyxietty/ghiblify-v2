@@ -4,14 +4,6 @@
  * `bookmarks` is declared under `optional_permissions` in the manifest
  * rather than `permissions`, so a fresh install asks for nothing.
  *
- * `audioCapture` used to sit beside it, to gate the Search widget's
- * voice input. It is an APPS-ONLY permission: Chrome drops it at load
- * with "'audioCapture' is only allowed for packaged apps, but this is a
- * extension", so `request()` could never resolve true and the mic
- * toggles were permanently off. Extension pages take the ordinary web
- * route instead - `getUserMedia()` raises Chrome's own mic prompt for
- * the chrome-extension:// origin - so there is no grant to track.
- *
  * `geolocation` is deliberately ABSENT from the manifest entirely.
  * Chrome refuses to make it optional (it's on the documented
  * cannot-be-optional list), and it carried the scary "detect your

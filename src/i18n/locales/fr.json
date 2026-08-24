@@ -353,12 +353,9 @@
     "ariaLabelButton": "Rechercher",
     "tooltipButton": "Rechercher",
     "clearAria": "Effacer la recherche",
-    "voiceAria": "Recherche vocale",
-    "voiceTooltip": "Recherche vocale",
     "imageAria": "Recherche par image",
     "imageTooltip": "Recherche par image",
-    "removeHistoryAria": "Retirer « {{query}} » des recherches récentes",
-    "voiceDenied": "Accès au micro refusé - cliquez pour réessayer"
+    "removeHistoryAria": "Retirer « {{query}} » des recherches récentes"
   },
   "quicklinks": {
     "trigger": "Liens",

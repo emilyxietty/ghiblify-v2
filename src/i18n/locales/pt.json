@@ -357,12 +357,9 @@
     "ariaLabelButton": "Buscar",
     "tooltipButton": "Buscar",
     "clearAria": "Limpar busca",
-    "voiceAria": "Pesquisar por voz",
-    "voiceTooltip": "Pesquisar por voz",
     "imageAria": "Pesquisar por imagem",
     "imageTooltip": "Pesquisar por imagem",
-    "removeHistoryAria": "Remover “{{query}}” das buscas recentes",
-    "voiceDenied": "Acesso ao microfone negado - clique para tentar novamente"
+    "removeHistoryAria": "Remover “{{query}}” das buscas recentes"
   },
   "quicklinks": {
     "ariaDialog": "Links rápidos",

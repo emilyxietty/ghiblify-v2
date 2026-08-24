@@ -4,7 +4,6 @@ import { useT } from "../../../i18n/i18n";
 import {
   CenterFocusStrongIcon,
   CloseIcon,
-  MicIcon,
   RestoreIcon,
   SearchIcon,
 } from "../../../components/Icons/Icons";
@@ -34,10 +33,6 @@ const MIN_PILL_HEIGHT = 56;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const chromeNs = (): any => (typeof chrome !== "undefined" ? chrome : undefined);
 
-/** Chrome exposes the Web Speech API under a vendor prefix. */
-const SpeechRecognitionCtor = (): any =>
-  (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
 const SearchBar: React.FC = () => {
   const t = useT();
   const { widgets } = useAppContext();
@@ -48,13 +43,10 @@ const SearchBar: React.FC = () => {
   // -1 = nothing highlighted, so Enter submits what's typed.
   const [activeIdx, setActiveIdx] = useState(-1);
   const [focused, setFocused] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [micDenied, setMicDenied] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const lensFormRef = useRef<HTMLFormElement | null>(null);
   const lensInputRef = useRef<HTMLInputElement | null>(null);
-  const recognitionRef = useRef<any>(null);
 
   // settings.width/height are reference-px (1920 baseline). Height is
   // clamped up to MIN_PILL_HEIGHT before scaling: users carry a stored
@@ -122,75 +114,6 @@ const SearchBar: React.FC = () => {
       window.clearTimeout(timer);
     };
   }, [query, focused]);
-
-  // Stop the mic if the widget goes away mid-listen.
-  useEffect(
-    () => () => {
-      try {
-        recognitionRef.current?.abort?.();
-      } catch {
-        /* ignore */
-      }
-    },
-    []
-  );
-
-  const startVoiceSearch = async () => {
-    const Ctor = SpeechRecognitionCtor();
-    if (!Ctor) return;
-    if (listening) {
-      recognitionRef.current?.stop?.();
-      return;
-    }
-    // One gate: getUserMedia, which raises Chrome's own mic prompt for
-    // this chrome-extension:// origin and is what actually opens the
-    // device - speech recognition won't start otherwise. This used to
-    // be fronted by a `chrome.permissions.request("audioCapture")`
-    // call, but that permission is apps-only; Chrome strips it from the
-    // manifest at load, so the request never granted and the mic button
-    // was dead. The click gesture carries through to the prompt.
-    try {
-      const stream = await navigator.mediaDevices?.getUserMedia({
-        audio: true,
-      });
-      stream?.getTracks().forEach((track) => track.stop());
-    } catch (err) {
-      // Visible feedback instead of a silent no-op: flash the mic as
-      // denied for a beat. Clicking again re-prompts, unless the user
-      // blocked the origin outright - then it's Chrome's site controls.
-      // eslint-disable-next-line no-console
-      console.debug("[SearchBar] microphone unavailable:", err);
-      setMicDenied(true);
-      window.setTimeout(() => setMicDenied(false), 1600);
-      return;
-    }
-
-    try {
-      const recognition = new Ctor();
-      recognition.lang = navigator.language || "en-US";
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
-      recognition.onresult = (event: any) => {
-        const transcript = Array.from(event.results)
-          .map((r: any) => r[0].transcript)
-          .join("");
-        setQuery(transcript);
-        // Google fires the search as soon as the phrase is final.
-        if (event.results[event.results.length - 1].isFinal) {
-          recognition.stop();
-          submit(transcript);
-        }
-      };
-      recognition.onerror = () => setListening(false);
-      recognition.onend = () => setListening(false);
-      recognitionRef.current = recognition;
-      recognition.start();
-      setListening(true);
-      inputRef.current?.focus();
-    } catch {
-      setListening(false);
-    }
-  };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
@@ -328,24 +251,6 @@ const SearchBar: React.FC = () => {
             drifted away from the rest. */}
         <span className="searchbar-actions">
         <span className="searchbar-divider" aria-hidden="true" />
-
-        {SpeechRecognitionCtor() && (
-          <button
-            type="button"
-            className={`searchbar-icon-btn searchbar-mic${
-              listening ? " is-listening" : ""
-            }${micDenied ? " is-denied" : ""}`}
-            aria-label={t("searchbar.voiceAria")}
-            data-tooltip={
-              micDenied
-                ? t("searchbar.voiceDenied")
-                : t("searchbar.voiceTooltip")
-            }
-            onClick={() => void startVoiceSearch()}
-          >
-            <MicIcon style={{ fontSize: 20 }} />
-          </button>
-        )}
 
         <button
           type="button"
