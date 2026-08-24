@@ -1554,6 +1554,14 @@ export function buildContextMenuItems(args: {
       typeof widgetSettingsAny.highlightOpacity === "number"
         ? widgetSettingsAny.highlightOpacity
         : 100;
+    // Strength for the Frosted radio below. The radio only ever set the
+    // flag, so picking it after the edit panel's slider had been dragged
+    // to 0 selected a "frosted" pill that rendered exactly like a solid
+    // one. Anyone at zero gets the shipped default back instead.
+    const highlightBlur =
+      typeof widgetSettingsAny.highlightBlur === "number"
+        ? widgetSettingsAny.highlightBlur
+        : 60;
     const recents = readRecentColors();
     const swatches = [
       ...recents,
@@ -1659,10 +1667,14 @@ export function buildContextMenuItems(args: {
                 type: "radio" as const,
                 label: t("widgets.edit.styleFrost"),
                 selected: widgetSettingsAny.highlightFrost === true,
-                onHover: demo({ highlightFrost: true }),
+                onHover: demo({
+                  highlightFrost: true,
+                  ...(highlightBlur > 0 ? {} : { highlightBlur: 60 }),
+                }),
                 onClick: () =>
                   updateWidgetSettings(storageKey, {
                     highlightFrost: true,
+                    ...(highlightBlur > 0 ? {} : { highlightBlur: 60 }),
                   } as never),
               },
             ] as const)

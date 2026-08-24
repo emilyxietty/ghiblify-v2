@@ -4,6 +4,11 @@
 }
 
 .info-container {
+    /* The highlight pill's inset, owned here because the leading below
+       has to be derived from it. Widget.css paints the pill (it only
+       exists when a highlight is on) but must use these two. */
+    --info-pill-pad-y: 0.1em;
+    --info-pill-pad-x: 0.32em;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -24,7 +29,22 @@
 }
 
 .info-item {
-    margin-bottom: 1rem;
+    /* A wrapped quote gets one pill per line (box-decoration-break:
+       clone), and an inline box's vertical padding OVERFLOWS its line
+       box instead of pushing the next line down - so at the default
+       `normal` leading (~1.2) each pill grew into its neighbours and the
+       tint painted twice over the seam, reading as a dark band between
+       the lines. Reserve the pill's inset in the leading instead.
+       Unconditional (not scoped to .has-text-highlight) so switching a
+       highlight on stays paint-only and never reflows the block. */
+    line-height: calc(1.15em + 2 * var(--info-pill-pad-y) + 0.1em);
+    /* `em`, not `rem`: the gap between fields has to track the widget's
+       own font size the way the leading above already does. As `1rem` it
+       was pinned to the root's 16px, so scaling the widget up grew the
+       glyphs and their leading while the rows stayed 16px apart - the
+       block tightened into a slab as it got bigger. 1em is exactly the
+       old 16px at the default size, so nothing moves until you resize. */
+    margin-bottom: 1em;
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;

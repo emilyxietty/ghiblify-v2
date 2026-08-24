@@ -22,10 +22,7 @@ import {
 } from "../../../utils/textHighlight";
 import InlinePopover from "../../../components/InlinePopover/InlinePopover";
 import TextInput from "../../../components/TextInput/TextInput";
-import {
-  QUICKLINKS_FALLBACK,
-  resolveSurfaceFrost,
-} from "../../../config/widgetConfig";
+import { resolveSurfaceFrost } from "../../../config/widgetConfig";
 import { useAppContext } from "../../../contexts/AppContext";
 import { useT } from "../../../i18n/i18n";
 import { useScaledPx } from "../../../utils/viewportScale";
@@ -98,15 +95,12 @@ export const QuickLinks: React.FC = () => {
   const isEditing = showWidgetEdits || editingWidgetKey === "quicklinks";
   const quicklinksSettings = widgets.quicklinks.settings;
 
-  // Never sit at zero links. An empty Quick Links renders as a blank
-  // strip with nothing to click, which reads as broken rather than as
-  // empty - so emptying it (or arriving from a version that shipped it
-  // empty) puts the default back. The fallback carries a fixed id, so
-  // this cannot stack up duplicates however often it runs.
-  useEffect(() => {
-    if (quicklinksSettings.links.length > 0) return;
-    updateWidgetSettings("quicklinks", { links: [QUICKLINKS_FALLBACK] });
-  }, [quicklinksSettings.links.length, updateWidgetSettings]);
+  // Zero links is a legitimate state. It used to re-seed a Google tile
+  // the moment you deleted your last link, so the widget could not be
+  // emptied - and a stranger's search engine reappeared uninvited. The
+  // empty state instead renders an always-visible "+", which is the
+  // thing you actually want when there is nothing to click yet.
+  const isEmpty = quicklinksSettings.links.length === 0;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -271,6 +265,14 @@ export const QuickLinks: React.FC = () => {
     }
     setTitle("");
     setUrl("");
+  };
+
+  /** Open the add/edit card in "add" mode, from a clean slate. */
+  const openAddCard = () => {
+    setEditingLinkId(null);
+    setTitle("");
+    setUrl("");
+    setAddGridLink(true);
   };
 
   const removeLink = (id: string) => {
@@ -515,12 +517,7 @@ export const QuickLinks: React.FC = () => {
                 type: "action",
                 label: t("widgets.contextMenu.addLink"),
                 icon: <AddIcon style={{ fontSize: 14 }} />,
-                onClick: () => {
-                  setEditingLinkId(null);
-                  setTitle("");
-                  setUrl("");
-                  setAddGridLink(true);
-                },
+                onClick: openAddCard,
               },
             ];
             return (
@@ -588,23 +585,41 @@ export const QuickLinks: React.FC = () => {
         }
       >
         <div className="quicklinksSettings-grid-list">
-          <button
-            type="button"
-            className="ql-add-chip"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => {
-              setEditingLinkId(null);
-              setTitle("");
-              setUrl("");
-              setAddGridLink(true);
-            }}
-            aria-label={t("quicklinks.addAria")}
-          >
-            <AddIcon />
-            <span>{t("quicklinks.addTooltip")}</span>
-          </button>
+          {/* The hover chip is the shortcut for a widget that already
+              has tiles. With none, it would be the only control on the
+              widget AND invisible until you happened to hover the empty
+              strip - so the empty state gets a permanent "+" tile below
+              instead and the chip stands down. */}
+          {!isEmpty && (
+            <button
+              type="button"
+              className="ql-add-chip"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={openAddCard}
+              aria-label={t("quicklinks.addAria")}
+            >
+              <AddIcon />
+              <span>{t("quicklinks.addTooltip")}</span>
+            </button>
+          )}
 
           <div className="quicklinksSettings-grid-scroll">
+            {isEmpty && (
+              <div className="ql-grid-cell ql-grid-add-cell">
+                <button
+                  type="button"
+                  className="ql-grid-link ql-grid-add"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={openAddCard}
+                  aria-label={t("quicklinks.addAria")}
+                >
+                  <AddIcon className="ql-grid-add-icon" />
+                  <span className="ql-grid-title">
+                    {t("quicklinks.addTile")}
+                  </span>
+                </button>
+              </div>
+            )}
             {visibleGridLinks.map((l, pageIndex) => {
               const index = firstVisibleLink + pageIndex;
               const isDragOver =
@@ -689,7 +704,7 @@ export const QuickLinks: React.FC = () => {
   // widget grows and the EditWidget overlay properly covers everything.
   const dropdownContent = (
     <div
-      className="quicklinksSettings-dropdown"
+      className={`quicklinksSettings-dropdown${isEmpty ? " is-empty" : ""}`}
       role="dialog"
       aria-modal={false}
       aria-label={t("quicklinks.ariaDialog")}
@@ -697,13 +712,11 @@ export const QuickLinks: React.FC = () => {
       style={surfaceStyle as React.CSSProperties}
     >
 
+            {/* No "nothing here" copy when empty: the add row below is
+                always rendered, so the list collapses to just that one
+                "+" - the only thing there is to do at zero links. */}
             <ul className="quicklinksSettings-list">
-              {quicklinksSettings.links.length === 0 ? (
-                <li className="quicklinksSettings-empty">
-                  {t("quicklinks.emptyMessage")}
-                </li>
-              ) : (
-                quicklinksSettings.links.map((l, index) => {
+              {quicklinksSettings.links.map((l, index) => {
                   return (
                     <li
                       key={l.id}
@@ -783,8 +796,7 @@ export const QuickLinks: React.FC = () => {
                       </span>
                     </li>
                   );
-                })
-              )}
+                })}
             </ul>
             {/* Subtle append row - same modal card as the grid. */}
             <button
@@ -792,10 +804,7 @@ export const QuickLinks: React.FC = () => {
               className="ql-list-add"
               onClick={(e) => {
                 e.stopPropagation();
-                setEditingLinkId(null);
-                setTitle("");
-                setUrl("");
-                setAddGridLink(true);
+                openAddCard();
               }}
             >
               <AddIcon fontSize="small" />

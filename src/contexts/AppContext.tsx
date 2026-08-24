@@ -28,6 +28,7 @@ import {
   clearLegacyQuickLinks,
   readLegacyQuickLinks,
 } from "../storage/legacyMigrations";
+import { migrateWidgetSurfaces } from "../storage/widgetSurfaceMigration";
 import {
   readSync as readPersisted,
   remove as removePersisted,
@@ -44,7 +45,7 @@ import { setProportionalScaling } from "../utils/viewportScale";
 
 const STORAGE_KEY = "ghiblify_widgets";
 const SCHEMA_VERSION_KEY = "ghiblify_widgets_schema_version";
-const CURRENT_WIDGET_SCHEMA_VERSION = 7;
+const CURRENT_WIDGET_SCHEMA_VERSION = 8;
 const LEGACY_DOCK_BACKGROUND_KEY = "ghiblify_dock_show_bg";
 
 // Per-widget, the fields stored as REFERENCE-VIEWPORT pixels (i.e.,
@@ -916,6 +917,29 @@ const loadInitialWidgets = (): WidgetsState => {
         delete settings.height;
       }
       schemaVersion = 7;
+      persistWidgetMigration(blob, schemaVersion);
+    }
+
+    // Schema-v8: two settings retired by the surface rework, neither of
+    // which anything reads any more - so without this the choice behind
+    // them is simply lost on upgrade.
+    //
+    // Weather's `frosted` / `frostDark` became the generic Background
+    // row (surfaceColor / opacity / blur) that every card widget now
+    // shares. The old glass was a fixed `blur(14px)` on the shell
+    // (.widget-surface-frost); the Background row's blur is a 0-100
+    // setting spent as `* 20px`, so 14px is 70. Plain frost painted no
+    // tint at all, and "smoked" frost added rgba(12, 16, 20, 0.42) over
+    // the glass - which is exactly surfaceColor #0c1014 at opacity 42.
+    //
+    // Pomodoro's three size presets became a free-resize width/height.
+    // Pomodoro.tsx still carries a fallback that reads `size`, but it
+    // can never fire: settings load as defaults + this blob, and the
+    // new defaults always supply a numeric width, so `size` alone left
+    // a "small" or "large" card snapping back to medium.
+    if (schemaVersion < 8) {
+      migrateWidgetSurfaces(blob);
+      schemaVersion = 8;
       persistWidgetMigration(blob, schemaVersion);
     }
     removePersisted(LEGACY_DOCK_BACKGROUND_KEY);

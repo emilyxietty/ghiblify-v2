@@ -72,7 +72,13 @@ export const getWidgetSurfacePresentation = ({
       ? settings.highlightTextColor
       : "auto";
     classes.push("has-text-highlight");
-    if (settings.highlightFrost === true) classes.push("highlight-frost");
+    // Frost needs BOTH the flag and a strength. `blur(0px)` is not
+    // nothing - it makes the element a backdrop root for no visual
+    // gain - and a "Frosted" pill with the strength dragged to zero
+    // looks identical to a solid one, so the class would be claiming
+    // something the pixels don't show.
+    if (settings.highlightFrost === true && blur > 0)
+      classes.push("highlight-frost");
     style["--text-highlight"] = withAlpha(highlight, opacity);
     style["--text-highlight-blur"] = fraction(blur);
     style["--text-highlight-fg"] = resolveForeground(highlight, textColor);

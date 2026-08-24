@@ -85,16 +85,6 @@ export interface QuicklinkItem {
   url: string;
 }
 
-/** The link a brand-new (or newly emptied) Quick Links falls back to.
- *  An empty widget is indistinguishable from a broken one - it renders
- *  as a blank strip with nothing to click - so it always carries at
- *  least this one. Fixed id, so re-seeding cannot pile up duplicates. */
-export const QUICKLINKS_FALLBACK: QuicklinkItem = {
-  id: "quicklink-default-google",
-  title: "Google",
-  url: "https://www.google.com",
-};
-
 // Per-widget settings: only widget-specific fields. Position and visibility
 // belong to the widget shell (see WidgetEntry in AppContext), not in here.
 export interface TimeSettings {
@@ -915,7 +905,11 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       gridMode: true,
       linksPerRow: 5,
       visibleRows: 1,
-      links: [QUICKLINKS_FALLBACK],
+      // Starts empty on purpose. Seeding a lone Google tile made every
+      // fresh install look like someone else's bookmark bar; the widget
+      // renders an always-visible "+" instead, so empty reads as an
+      // invitation rather than as broken.
+      links: [],
       opacity: 0,
       blur: 0,
       listOpacity: 95,

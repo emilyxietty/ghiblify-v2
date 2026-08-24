@@ -616,12 +616,18 @@ const Pomodoro: React.FC = () => {
       volume: typeof soundVolume === "number" ? soundVolume : 70,
     };
   }, [sound, soundVolume]);
-  // Footprint. Width/height are the source of truth; `size` is only
-  // consulted for a blob written before free-resize existed, so that a
-  // user who had picked "small" opens on a small card instead of
-  // snapping to the default. Legacy names from an earlier rename
-  // ("compact" / "regular") aren't in the map and fall through to the
-  // default, which is what they normalised to anyway.
+  // Footprint. Width/height are the source of truth.
+  //
+  // `size` is the retired preset. The schema-8 migration is what
+  // actually carries it over (see widgetSurfaceMigration.ts) - it has
+  // to be done there, on the stored blob, because by the time settings
+  // reach this component they are defaults + blob, and the defaults
+  // always supply a numeric width. That makes the fallback below
+  // unreachable in practice; it stays only as a guard for a blob that
+  // somehow arrives unmigrated, and must not be relied on. Legacy
+  // names from an earlier rename ("compact" / "regular") aren't in the
+  // map and fall through to the default, which is what they normalised
+  // to anyway.
   const legacy =
     typeof size === "string"
       ? POMODORO_LEGACY_DIMS[size as PomodoroSize]

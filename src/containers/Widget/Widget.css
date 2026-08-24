@@ -498,7 +498,10 @@
 .widget[data-widget-key="info"].has-text-highlight .info-item-typed {
     background: var(--text-highlight);
     border-radius: var(--text-highlight-radius, 0.35em);
-    padding: 0.1em 0.32em;
+    /* Info.css owns these: .info-item's line-height is derived from the
+       vertical one so wrapped pills clear each other. Change them there,
+       not here. */
+    padding: var(--info-pill-pad-y, 0.1em) var(--info-pill-pad-x, 0.32em);
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
 }

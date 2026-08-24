@@ -200,6 +200,59 @@
         drop-shadow(0 5px 8px rgba(0, 0, 0, 0.3));
 }
 
+/* The lone "+" would otherwise land in column 1 of a 5-column grid -
+   parked off to the left of a widget that is centred on the page, which
+   reads as a layout bug. Span the whole row and centre it, keeping it
+   about one cell wide so it stays the size the first real tile will be.
+   (The gaps make that width approximate; a cell either side of it is
+   empty regardless, so a pixel or two doesn't show.) */
+.ql-grid-add-cell {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(100% / var(--ql-grid-columns));
+}
+
+/* The empty state's permanent "+" tile. It borrows .ql-grid-link for
+   layout and surface so it sits at exactly the size and spacing a real
+   tile would, then adds the button resets and a dashed outline that
+   says "this slot is waiting for something" rather than "this is a
+   link". Unlike .ql-add-chip it is never hover-gated: with no links it
+   is the only thing on the widget. */
+.ql-grid-add {
+    border: 1px dashed var(--ql-border-strong);
+    font-family: inherit;
+    cursor: pointer;
+    color: var(--ql-text);
+    /* .ql-grid-link is `box-sizing: border-box`, so the border eats
+       from the padding rather than growing the tile past its cell. */
+    transition: background 120ms ease, border-color 120ms ease;
+}
+
+.ql-grid-add:hover {
+    border-color: var(--ql-text);
+}
+
+.ql-grid-add:focus-visible {
+    outline: 2px solid var(--ql-focus-ring);
+    outline-offset: 2px;
+}
+
+.ql-grid-add-icon {
+    /* Same clamp as .ql-grid-favicon so the glyph lands where a
+       favicon would - the tile keeps its rhythm once links exist. */
+    width: clamp(
+        var(--ql-grid-icon-min),
+        var(--ql-grid-icon-fluid),
+        var(--ql-grid-icon-max)
+    );
+    height: clamp(
+        var(--ql-grid-icon-min),
+        var(--ql-grid-icon-fluid),
+        var(--ql-grid-icon-max)
+    );
+    flex-shrink: 0;
+}
+
 .ql-favicon-fallback {
     display: flex;
     align-items: center;
@@ -308,6 +361,15 @@
     padding: 14px;
     box-sizing: border-box;
     z-index: 2001;
+}
+
+/* With no links the popup holds one "Add new link" row, and the 420px
+   min-width plus 14px of padding wrapped a wide dark slab around a
+   button a third its width. Shrink to the row - the min-width exists to
+   stop a list of links looking ragged, and there is no list yet. */
+.quicklinksSettings-dropdown.is-empty {
+    min-width: 0;
+    padding: 6px;
 }
 
 /* Lift the QuickLinks widget itself above sibling widgets while its

@@ -850,9 +850,19 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const notesPaperNone = notesSettings.paperNone === true;
   const avatarSettings = widgetsCommitted.avatar.settings as AvatarSettings;
   const highlightFrost = settings.highlightFrost === true;
-  const highlightBlur = Math.round(
+  // The STORED strength, which survives a trip through solid so turning
+  // frost back on restores the blur you had.
+  const highlightBlurStrength = Math.round(
     typeof settings.highlightBlur === "number" ? settings.highlightBlur : 60
   );
+  // ...but the slider shows the EFFECTIVE blur. The two settings ship
+  // out of step - highlightBlur defaults to 60 while highlightFrost is
+  // absent (falsy) - so picking a highlight colour used to park the
+  // slider at 60% over text with no blur on it at all, and the control
+  // only started telling the truth once you dragged it. Reading 0 while
+  // frost is off makes the slider match what is on screen, and dragging
+  // up switches frost on via onBlur below.
+  const highlightBlur = highlightFrost ? highlightBlurStrength : 0;
   // Blur is a property of the colour: >0 frosts the pill in that colour,
   // 0 is solid. highlightFrost tracks it so the shell's backdrop-filter
   // class stays in sync - and None puts it back to the shipped default

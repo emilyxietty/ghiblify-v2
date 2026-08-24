@@ -7,6 +7,55 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
+## 2.5.1 — 2026-08-17
+
+**Backgrounds**
+- Animated wallpapers are filed under the film they come from rather
+  than one "animated" pseudo-film, and the last hotlinked stills are
+  self-hosted (one was plain `http`, which the CSP refused outright, so
+  it had never rendered).
+- Selection is per image now, folding away the three settings that each
+  said "do not rotate these" in a different shape. Added The Tale of the
+  Princess Kaguya.
+
+**Widget surfaces**
+- Weather, Notes, Todo and Pomodoro all take the one Background row
+  (tint / ink / opacity / blur); the weather style system is retired and
+  its mood card is a palette chip. Weather now ships fully transparent
+  by default.
+- Fixed the text-highlight blur, which never applied at all: the slider
+  showed 60% over text with no blur on it, and only started telling the
+  truth once dragged. It now reads the effective blur, and "Frosted"
+  cannot select a zero-strength frost.
+
+**Film info**
+- Per-line highlight blur, drag-reorderable fields, and a type-in speed
+  control (also on Time, Date and Greeting).
+- Wrapped quotes no longer overlap: an inline box's vertical padding
+  overflows its line box, so at the default leading each line's
+  highlight grew into its neighbour and the tint painted twice over the
+  seam. Line spacing now scales with the widget instead of staying
+  pinned to 16px.
+
+**Quick Links**
+- An emptied Quick Links stays empty. It used to re-seed a Google tile
+  the moment you deleted your last link, so the widget could not be
+  emptied; there is an always-visible "+" instead, and a fresh install
+  no longer starts with someone else's search engine.
+- The empty list popup shrinks to its one row instead of wrapping a
+  420px slab around it.
+
+**Frost palette**
+- Focusing a text input no longer turns it into a white box with white
+  text on it — the focus state was missing the tint override the resting
+  state already had.
+
+**Migrations**
+- Schema 8 carries two retired settings across: weather's frosted /
+  smoked glass becomes the equivalent Background row values, and
+  Pomodoro's small / medium / large presets become the free-resize
+  width and height they measured.
+
 ## 2.5.0 — 2026-08-07
 
 - Added a rich Notes editor with links, lists, indentation, dividers,

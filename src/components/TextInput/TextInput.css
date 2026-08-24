@@ -58,6 +58,24 @@
     border-color: var(--focus-ring);
 }
 
+/* Focus needs the SAME --dark-rgb escape the resting rule above gets.
+   Without it, focusing an input on Frost swapped the tint back to the
+   palette's near-white --dark-rgb and turned the field into a light
+   box - with --light ink still on top, so you were typing white on
+   white. Worst where a field is auto-focused (the QuickLinks add
+   card), because it opened that way rather than degrading on click.
+   Same fallback chain as the resting rule, so a picked todo row colour
+   still wins; only the +0.2 focus bump differs. */
+.theme-frost .custom-input:focus {
+    background: rgba(
+        var(--todo-row-rgb, var(--surface-rgb, 10, 14, 20)),
+        min(
+            calc(var(--input-opacity, 0.5) + 0.2),
+            var(--surface-alpha-cap, 1)
+        )
+    );
+}
+
 .custom-input-small {
     font-size: 10px;
 }
