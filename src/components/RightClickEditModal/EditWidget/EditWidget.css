@@ -433,6 +433,17 @@
     max-width: 100%;
 }
 
+/* The row is flex-wrap: wrap so a control that can't shrink (segmented
+   buttons) drops under its label. This control CAN shrink, and must:
+   with a flex-basis of auto its max-content width is the whole place
+   name, which is what made the row wrap and the button land on a line
+   of its own. Basis 0 means it never asks for more than the label
+   leaves, and grow 1 lets it take exactly that. */
+.edit-panel-row-control:has(.edit-panel-location-button) {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
 .edit-panel-location-text {
     min-width: 0;
     overflow: hidden;
