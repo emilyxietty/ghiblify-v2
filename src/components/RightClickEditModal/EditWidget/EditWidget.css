@@ -422,9 +422,21 @@
     color: var(--light);
 }
 
+/* One line, however long the geocoder's label is. The button may take
+   the whole panel width (the row wraps it under its label when needed)
+   and the text span inside it is what actually truncates: .btn is a
+   flex container, and text-overflow never applies to a bare text node
+   in one, so the old max-width + ellipsis on the button itself clipped
+   nothing and the name overflowed. */
 .edit-panel-location-button.btn {
-    max-width: 150px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.edit-panel-location-text {
+    min-width: 0;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 

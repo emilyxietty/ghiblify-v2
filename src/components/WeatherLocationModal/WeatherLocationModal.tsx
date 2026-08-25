@@ -178,7 +178,11 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
 
       <p className="weather-location-current">
         <PlaceIcon style={{ fontSize: 14 }} />
-        {current}
+        {/* Own span so a long "City, Region, Country" truncates on one
+            line instead of wrapping under the icon. */}
+        <span className="weather-location-current-text" title={current}>
+          {current}
+        </span>
       </p>
 
       <div className="weather-location-actions">
@@ -244,6 +248,7 @@ export const WeatherLocationModal: React.FC<WeatherLocationModalProps> = ({
             role="option"
             aria-selected={manual?.name === r.name}
             className="weather-location-result"
+            title={r.name}
             onClick={() => pick(r)}
           >
             {r.name}

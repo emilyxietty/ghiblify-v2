@@ -81,6 +81,21 @@
     margin: 0;
     font-size: 12.5px;
     color: var(--light-muted);
+    min-width: 0;
+}
+
+.weather-location-current > svg {
+    flex-shrink: 0;
+}
+
+/* One line for the place name, ellipsised - the geocoder's labels
+   ("Kingston upon Thames, England, United Kingdom") otherwise wrapped
+   into a two-line paragraph under a 14px icon. */
+.weather-location-current-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .weather-location-actions {
@@ -178,6 +193,11 @@
     font-size: 13px;
     font-family: inherit;
     text-align: left;
+    /* Each result on one line; the full label is in the title. */
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     color: var(--light);
     background: transparent;
     border: none;

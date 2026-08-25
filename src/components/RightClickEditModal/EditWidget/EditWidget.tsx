@@ -1527,11 +1527,18 @@ const EditWidget: React.FC<EditWidgetProps> = ({
             {/* "Auto" only means something while device location is on.
                 With it off and no city chosen there is no location at
                 all, and labelling that state "Auto" read as though the
-                widget had one - so it becomes the invitation to pick. */}
-            {weatherSettings.manualPlace?.name ??
-              (weatherSettings.useDeviceLocation !== false
-                ? (deviceLocationLabel ?? t("widgets.edit.weatherLocationAuto"))
-                : t("widgets.edit.weatherLocationChoose"))}
+                widget had one - so it becomes the invitation to pick.
+                The text sits in its own span: .btn is a flex box, and
+                text-overflow does nothing to a bare text node inside
+                one, so a geocoded "City, Region, Country" ran straight
+                past the button's edge. */}
+            <span className="edit-panel-location-text">
+              {weatherSettings.manualPlace?.name ??
+                (weatherSettings.useDeviceLocation !== false
+                  ? (deviceLocationLabel ??
+                    t("widgets.edit.weatherLocationAuto"))
+                  : t("widgets.edit.weatherLocationChoose"))}
+            </span>
           </Button>
         </Row>
       )}
