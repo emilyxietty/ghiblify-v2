@@ -79,6 +79,17 @@
     width: 100%;
 }
 
+/* Inset tracks the corner style like every other card surface
+   (search for --pad-scale): a pill-shaped field needs the placeholder
+   further in or the curve crowds the first glyph, and the base 10px
+   in TextInput.css is a flat-corner figure. The right side reserves
+   the add button (30px) plus its own scaled offset, so the two move
+   together. */
+.todo-input-wrapper .custom-input {
+    padding-left: calc(10px * var(--pad-scale, 1));
+    padding-right: calc(30px + 6px * var(--pad-scale, 1));
+}
+
 /* .todo-input {
     width: 100%;
     padding: 12px 36px 12px 10px;
@@ -104,7 +115,7 @@
 .todo-add-btn {
     position: absolute;
     top: 50%;
-    right: 6px;
+    right: calc(6px * var(--pad-scale, 1));
     width: 30px;
     height: 30px;
     padding: 0;
@@ -230,7 +241,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 9px 12px;
+    /* Horizontal inset scales with the corner style so the rows keep
+       lining up with the input above them. */
+    padding: 9px calc(12px * var(--pad-scale, 1));
     /* Rows carry the HIGHLIGHT tint, which is separate from the
        widget's own background on .todo-container. Defaults to the
        surface colour so an untouched widget looks as it always has. */
@@ -620,12 +633,13 @@
 @container todo-widget (max-width: 280px) {
     .todo-input-wrapper .custom-input {
         min-height: 34px;
-        padding: 8px 30px 8px 8px;
+        padding: 8px calc(24px + 6px * var(--pad-scale, 1)) 8px
+            calc(8px * var(--pad-scale, 1));
         font-size: 12px;
     }
 
     .todo-add-btn {
-        right: 5px;
+        right: calc(5px * var(--pad-scale, 1));
         width: 24px;
         height: 24px;
         font-size: 15px;
@@ -640,7 +654,7 @@
 
     .todo-item-content {
         gap: 6px;
-        padding: 6px 7px;
+        padding: 6px calc(7px * var(--pad-scale, 1));
     }
 
     .todo-checkbox {
