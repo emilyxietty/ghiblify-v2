@@ -180,6 +180,7 @@
       "pomodoroSizeMedium": "中",
       "timeFormat": "时钟格式",
       "weatherLocation": "位置",
+      "greetingName": "名字",
       "weatherUseMyLocation": "使用我的位置",
       "weatherChooseCity": "选择城市…",
       "weatherRefresh": "立即刷新",

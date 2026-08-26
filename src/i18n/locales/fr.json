@@ -170,6 +170,7 @@
       "pomodoroSizeMedium": "Moyen",
       "timeFormat": "Format de l'horloge",
       "weatherLocation": "Localisation",
+      "greetingName": "Nom",
       "weatherUseMyLocation": "Utiliser ma position",
       "weatherChooseCity": "Choisir une ville…",
       "weatherRefresh": "Actualiser",

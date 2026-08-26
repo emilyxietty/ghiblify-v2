@@ -184,6 +184,7 @@
       "pomodoroSizeMedium": "Medium",
       "timeFormat": "Clock format",
       "weatherLocation": "Location",
+      "greetingName": "Name",
       "weatherUseMyLocation": "Use my location",
       "weatherChooseCity": "Choose a city…",
       "weatherRefresh": "Refresh now",

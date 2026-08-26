@@ -1163,6 +1163,39 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         <p className="edit-panel-empty">{t("widgets.edit.noCustomization")}</p>
       )}
 
+      {/* The greeting's name. Clicking the name on the widget edits it
+          in place too, but that affordance is invisible until you know
+          it's there - so the panel, where every other greeting setting
+          lives, carries it as well. Live: each keystroke lands on the
+          widget. Enter just drops focus; the row must not let it reach
+          the document handler that reads Enter as "close the panel". */}
+      {storageKey === "greeting" && (
+        <Row label={t("widgets.contextMenu.greetingName")}>
+          <input
+            type="text"
+            className="edit-panel-text-input"
+            value={typeof settings.name === "string" ? settings.name : ""}
+            placeholder={t("greeting.namePlaceholder")}
+            aria-label={t("greeting.editNameAria")}
+            autoComplete="off"
+            spellCheck={false}
+            onPointerDown={(e) => e.stopPropagation()}
+            onChange={(e) =>
+              updateWidgetSettings("greeting", {
+                name: e.target.value,
+              } as never)
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.blur();
+              }
+            }}
+          />
+        </Row>
+      )}
+
       {supportsDockOrdering && (
         <Row label={t("rightDock.orderLabel")}>
           <div className="edit-panel-order-control">

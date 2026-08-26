@@ -180,6 +180,7 @@
       "pomodoroSizeMedium": "中",
       "timeFormat": "時計の形式",
       "weatherLocation": "場所",
+      "greetingName": "名前",
       "weatherUseMyLocation": "現在地を使う",
       "weatherChooseCity": "都市を選ぶ…",
       "weatherRefresh": "今すぐ更新",

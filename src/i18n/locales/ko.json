@@ -180,6 +180,7 @@
       "pomodoroSizeMedium": "보통",
       "timeFormat": "시계 형식",
       "weatherLocation": "위치",
+      "greetingName": "이름",
       "weatherUseMyLocation": "내 위치 사용",
       "weatherChooseCity": "도시 선택…",
       "weatherRefresh": "지금 새로고침",
