@@ -241,9 +241,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    /* Horizontal inset scales with the corner style so the rows keep
-       lining up with the input above them. */
-    padding: 9px calc(12px * var(--pad-scale, 1));
+    padding: 9px 12px;
     /* Rows carry the HIGHLIGHT tint, which is separate from the
        widget's own background on .todo-container. Defaults to the
        surface colour so an untouched widget looks as it always has. */
@@ -370,10 +368,18 @@
     overflow-wrap: break-word;
 }
 
+/* Pill rows: the checkbox ring sits concentric with the capsule end,
+   so its horizontal inset equals the vertical one. The generic
+   --pad-scale multiplier every card uses goes the wrong way here - it
+   pushed the ring off the curve and left a dead gap before it. */
+html.corners-pill .todo-item-content {
+    padding-inline: 9px;
+}
+
 .todo-delete-btn {
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
     background: transparent;
     border: none;
     border-radius: var(--radius-sm);
@@ -465,9 +471,9 @@
    The whole text span is still click-to-edit, but the pencil makes
    that affordance discoverable. */
 .todo-edit-btn {
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
     background: transparent;
     border: none;
     border-radius: var(--radius-sm);
@@ -483,6 +489,15 @@
 .todo-item:hover .todo-edit-btn,
 .todo-item:focus-within .todo-edit-btn {
     opacity: 1;
+}
+
+/* Glyph size lives here, not inline on the icon: at 14px the pencil
+   and cross rendered around 10px beside a 22px checkbox ring - most
+   obviously on the pill corner style, where the taller, rounder row
+   made them read as specks. 16px keeps them a step below the ring. */
+.todo-edit-btn svg,
+.todo-delete-btn svg {
+    font-size: 16px;
 }
 
 .todo-edit-btn:hover {
@@ -654,7 +669,11 @@
 
     .todo-item-content {
         gap: 6px;
-        padding: 6px calc(7px * var(--pad-scale, 1));
+        padding: 6px 7px;
+    }
+
+    html.corners-pill .todo-item-content {
+        padding-inline: 6px;
     }
 
     .todo-checkbox {
@@ -682,14 +701,14 @@
 
     .todo-edit-btn,
     .todo-delete-btn {
-        width: 18px;
-        height: 18px;
-        min-width: 18px;
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
     }
 
     .todo-edit-btn svg,
     .todo-delete-btn svg {
-        font-size: 12px !important;
+        font-size: 14px;
     }
 
     .todo-drag-handle {

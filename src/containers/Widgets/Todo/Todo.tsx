@@ -591,7 +591,7 @@ export const Todo: React.FC = () => {
                     aria-label={t("todo.editAria", { text: todo.text })}
                     data-tooltip={t("todo.editTooltip")}
                   >
-                    <EditIcon style={{ fontSize: "14px" }} />
+                    <EditIcon />
                   </button>
                 )}
                 <button
@@ -600,7 +600,7 @@ export const Todo: React.FC = () => {
                   aria-label={t("todo.deleteAria", { text: todo.text })}
                   data-tooltip={t("todo.deleteTooltip")}
                 >
-                  <ClearIcon style={{ fontSize: "14px" }} />
+                  <ClearIcon />
                 </button>
                 <span
                   className="todo-drag-handle"
