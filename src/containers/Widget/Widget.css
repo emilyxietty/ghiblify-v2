@@ -394,9 +394,6 @@
     outline-offset: 2px;
 }
 
-/* Right-click menu styles moved to ContextMenu.css (shared with the
-   background's context menu). */
-
 /* ---------------------------------------------------------------------------
    Text highlight
    ---------------------------------------------------------------------------
@@ -416,48 +413,6 @@
 .widget .info-item-text {
     position: relative;
     isolation: isolate;
-}
-
-/* Pencil-in-swatch for the "pick a custom colour" row. Slightly
-   bigger than the plain colour chips so the pencil stays legible.
-   The rainbow chip is the universal "custom colour" affordance;
-   Widget.tsx overrides it with the ACTIVE highlight colour inline
-   once one is set, so the chip doubles as a live preview. */
-.ctx-menu-swatch-edit {
-    width: 16px;
-    height: 16px;
-    display: inline-grid;
-    place-items: center;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: conic-gradient(
-        #e04b4b,
-        #f7d774,
-        #7ec98a,
-        #6db3e8,
-        #a870d8,
-        #e04b4b
-    );
-    color: #ffffff;
-}
-
-.ctx-menu-swatch-edit svg {
-    /* Legible pencil on any chip colour. */
-    filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.85));
-}
-
-/* Hidden native colour input - exists only so the context menu's
-   "custom colour" row can .click() it to summon the OS palette.
-   Zero-footprint but NOT display:none (Chrome ignores clicks on
-   display:none colour inputs). */
-.native-color-input {
-    position: fixed;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-    border: none;
-    padding: 0;
 }
 
 /* ONE highlight mechanism for solid AND frosted: the pill is always

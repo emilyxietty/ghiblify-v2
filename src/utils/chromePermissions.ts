@@ -74,12 +74,6 @@ const call = <T,>(
   }
 };
 
-/** False outside an extension page (plain `vite preview`, tests). Callers
- *  that gate a feature on a grant should treat "no API" as "don't gate" - *
- * there's nothing to grant and nothing to prompt with. */
-export const permissionsApiAvailable = (): boolean =>
-  !!permissionsApi()?.contains;
-
 export const hasPermission = (name: OptionalPermission): Promise<boolean> =>
   call("contains", { permissions: [name] });
 

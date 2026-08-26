@@ -246,8 +246,7 @@
     gap: 8px;
 }
 
-.timer-input-row input,
-.timer-mins-input {
+.timer-input-row input {
     font-size: clamp(26px, 16cqw, 70px);
     text-align: center;
     background: transparent;
@@ -274,8 +273,7 @@
     margin: 0;
 }
 
-.timer-input-row input:focus,
-.timer-mins-input:focus {
+.timer-input-row input:focus {
     border-bottom-color: var(--light);
 }
 
@@ -592,7 +590,6 @@ body.pomodoro-focus .pomodoro-widget .timer-display,
 body.pomodoro-focus .pomodoro-widget .timer-mins-label,
 body.pomodoro-focus .pomodoro-widget .pomodoro-switch-header h2,
 body.pomodoro-focus .pomodoro-widget .timer-input-row input,
-body.pomodoro-focus .pomodoro-widget .timer-mins-input,
 body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn,
 body.pomodoro-focus .pomodoro-widget .pomodoro-control-btn svg {
     color: #ffffff !important;
@@ -609,8 +606,7 @@ body.pomodoro-focus .pomodoro-widget .timer-display {
         0 8px 60px rgba(0, 0, 0, 0.45);
 }
 
-body.pomodoro-focus .pomodoro-widget .timer-input-row input,
-body.pomodoro-focus .pomodoro-widget .timer-mins-input {
+body.pomodoro-focus .pomodoro-widget .timer-input-row input {
     font-size: clamp(7rem, 22vw, 18rem);
     width: clamp(220px, 40vw, 460px);
     line-height: 0.95;
@@ -622,8 +618,7 @@ body.pomodoro-focus .pomodoro-widget .timer-mins-input {
         0 8px 60px rgba(0, 0, 0, 0.45);
 }
 
-body.pomodoro-focus .pomodoro-widget .timer-input-row input:focus,
-body.pomodoro-focus .pomodoro-widget .timer-mins-input:focus {
+body.pomodoro-focus .pomodoro-widget .timer-input-row input:focus {
     border-bottom-color: #ffffff !important;
 }
 

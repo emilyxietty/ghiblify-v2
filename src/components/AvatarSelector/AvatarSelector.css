@@ -48,21 +48,6 @@
     width: 100%;
 }
 
-.avatar-image-wrap {
-    position: relative;
-    display: block;
-    /* allow overlays to extend outside the image bounds */
-    overflow: visible;
-    border-radius: var(--radius-md);
-}
-
-.avatar-image-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
 .avatar-main-row {
     display: flex;
     align-items: center;

@@ -16,8 +16,7 @@
     width: 100%;
 }
 
-.color-picker-inline-swatch,
-.color-picker-custom-trigger {
+.color-picker-inline-swatch {
     box-sizing: border-box;
     width: 20px;
     height: 20px;
@@ -30,8 +29,7 @@
         border-color 120ms ease;
 }
 
-.color-picker-inline-swatch:hover,
-.color-picker-custom-trigger:hover {
+.color-picker-inline-swatch:hover {
     transform: scale(1.12);
 }
 
@@ -62,15 +60,6 @@
    the edit panel. The bridge's padding keeps the hover unbroken while
    the cursor travels from strip to card.
    --------------------------------------------------------------------------- */
-/* Portaled to <body> and positioned above the strip in fixed coords -
-   inside the strip it was clipped by the edit panel's overflow.
-   Open/close is JS-managed hover with a 100ms grace timer (see
-   ColorPicker.tsx), so leaving genuinely closes it. */
-.color-picker-hovercard-floating {
-    position: fixed;
-    transform: translateY(-100%);
-    box-sizing: border-box;
-}
 
 /* Persistent disclosure cue for the tuning column. It stays in the
    strip while disabled so choosing a swatch never reveals a surprise
@@ -194,80 +183,6 @@
             transparent calc(50% + 1px)
         ),
         color-mix(in srgb, var(--light) 10%, transparent);
-}
-
-.color-picker-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 9px;
-    font-family: inherit;
-    color: var(--light);
-    background: color-mix(in srgb, var(--dark, #1f2620) 65%, transparent);
-    border: 1px solid color-mix(in srgb, var(--light) 20%, transparent);
-    border-radius: var(--radius-pill, 999px);
-    cursor: pointer;
-    transition: background 140ms ease;
-}
-
-.color-picker-custom-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 2px;
-    color: var(--light);
-    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 18%, transparent);
-    border-color: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 55%, transparent);
-}
-
-.color-picker-custom-trigger:hover {
-    color: #ffffff;
-    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 30%, transparent);
-}
-
-.color-picker-trigger:hover {
-    background: color-mix(in srgb, var(--dark, #1f2620) 85%, transparent);
-}
-
-.color-picker-chip {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-/* "Off" reads as an empty slot rather than as a colour - a diagonal
-   slash through a transparent chip. */
-.color-picker-chip.is-empty {
-    background:
-        linear-gradient(
-            to top right,
-            transparent calc(50% - 1px),
-            rgba(255, 255, 255, 0.7) calc(50% - 1px),
-            rgba(255, 255, 255, 0.7) calc(50% + 1px),
-            transparent calc(50% + 1px)
-        );
-}
-
-.color-picker-panel {
-    /* Position comes from JS (fixed, viewport coords) - the panel is
-       portalled to <body> so it can't be trapped by the stacking
-       context or overflow of whatever opened it. */
-    /* Opens from the edit panel AND from the right-click menu, so it
-       has to clear both - the shared portal tier does. */
-    z-index: var(--z-portal);
-    width: 196px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    box-sizing: border-box;
-    background: rgba(var(--surface-rgb, 31, 38, 32), 0.97);
-    border: 1px solid color-mix(in srgb, var(--light) 18%, transparent);
-    border-radius: var(--radius-lg, 12px);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-    color: var(--light);
-    text-align: left;
 }
 
 .color-picker-label {
@@ -433,7 +348,6 @@
 .color-picker-opacity-step.is-active {
     border-color: var(--light);
 }
-
 
 /* Inside the narrow side column, rows STACK (label above control) - the
    label-left layout that works at panel width piles controls on

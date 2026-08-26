@@ -13,11 +13,8 @@ import {
 } from "../../../utils/pomodoroMode";
 import { Button } from "../../../components/Button/Button";
 import {
-  BlurOnIcon,
-  CloseIcon,
   DragIndicatorIcon,
   ExpandMoreIcon,
-  OpacityIcon,
   PlaceIcon,
   VisibilityOffIcon,
 } from "../../Icons/Icons";
@@ -34,8 +31,6 @@ import {
   isTypeInUnavailable,
   isWidgetKey,
   NOTE_PAPER_PRESETS,
-  NotesSettings,
-  POMODORO_CARD_PRESETS,
   POMODORO_IMAGE_KEYS,
   isPomodoroImageKey,
   PomodoroSettings,
@@ -648,17 +643,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   );
 
   const qlSettings = widgetsCommitted.quicklinks.settings as QuicklinksSettings;
-  const qlSurfaceColor =
-    typeof qlSettings.surfaceColor === "string" ? qlSettings.surfaceColor : null;
-  const qlTextColor = isHighlightTextColor(qlSettings.textColor)
-    ? qlSettings.textColor
-    : "auto";
-  const qlOpacityValue = Math.round(
-    Number(qlSettings[qlFields.opacity as keyof QuicklinksSettings]) || 0
-  );
-  const qlBlurValue = Math.round(
-    Number(qlSettings[qlFields.blur as keyof QuicklinksSettings]) || 0
-  );
 
   // Widgets whose Background row owns the numeric tuning. Others keep
   // the slider inline, since without a surface row there'd be nothing
@@ -744,7 +728,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const surfaceOwnsTuning = !!(controls?.todoFrosted && supportsSlider);
   // Quicklinks drives its own panel from the swatch, so it never shows
   // the separate tune toggle.
-  const showTuneToggle = surfaceOwnsTuning && storageKey !== "quicklinks";
   // Naming follows what the control actually paints:
   //   Highlights - the individual pieces inside the widget
   //                (quicklinks GRID tiles, todo rows)
@@ -839,15 +822,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const weatherSettings = widgetsCommitted.weather.settings as WeatherSettings;
 
 
-  const notesShowBorder =
-    (widgetsCommitted.notes.settings as NotesSettings).showBorder !== false;
-  const notesSettings = widgetsCommitted.notes.settings as NotesSettings;
-  const notesPaperColor =
-    typeof notesSettings.paperColor === "string"
-      ? normalizeHex(notesSettings.paperColor)
-      : null;
-  const notesPaperFrost = notesSettings.paperFrost === true;
-  const notesPaperNone = notesSettings.paperNone === true;
   const avatarSettings = widgetsCommitted.avatar.settings as AvatarSettings;
   const highlightFrost = settings.highlightFrost === true;
   // The STORED strength, which survives a trip through solid so turning
@@ -894,10 +868,6 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   const pomodoroImage = isPomodoroImageKey(pomodoroSettings.timerImage)
     ? pomodoroSettings.timerImage
     : "random";
-  const pomodoroCardColor =
-    typeof pomodoroSettings.cardColor === "string"
-      ? normalizeHex(pomodoroSettings.cardColor)
-      : null;
   /** Segmented control - for two or three short, mutually-exclusive
    *  options where a dropdown would hide the alternatives. */
   const segmented = <T extends string>(

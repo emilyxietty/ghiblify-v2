@@ -1,16 +1,9 @@
 {
   "common": {
     "done": "完了",
-    "save": "保存",
-    "cancel": "キャンセル",
     "close": "閉じる",
-    "delete": "削除",
-    "add": "追加",
-    "edit": "編集",
     "reset": "リセット",
     "guide": "ガイド",
-    "search": "検索",
-    "exit": "終了",
     "offlineCallout": "Wi-Fiに接続されていません"
   },
   "changelog": {
@@ -57,15 +50,11 @@
       "shikigami": "紙の鳥"
     },
     "buttons": {
-      "githubRepo": "GitHubリポジトリ",
       "buyCoffee": "コーヒーをおごる",
       "guide": "ガイド",
       "guideAria": "ガイドを開く",
       "rate": "評価する",
       "rateAria": "Chromeウェブストアで評価",
-      "languageAria": "言語を選択",
-      "editWidgets": "編集モード",
-      "resetAllWidgets": "ウィジェットをリセット",
       "selectBackgrounds": "背景を選択",
       "deselectBackground": "背景の選択を解除",
       "deselectBackgroundAria": "現在の背景をローテーションから外す",
@@ -159,37 +148,18 @@
     },
     "contextMenu": {
       "edit": "{{name}}を編集",
-      "drag": "{{name}}を移動",
       "hide": "{{name}}を非表示",
-      "showInRightSidebar": "右サイドバーに表示",
-      "hideFromRightSidebar": "右サイドバーから外す",
       "dockWidthFull": "全幅",
       "dockWidthHalf": "半幅",
-      "time12": "12時間制",
-      "time24": "24時間制",
-      "timeAnalog": "アナログ",
-      "textShadow": "テキストの影",
       "opacity": "不透明度",
-      "blur": "ぼかし",
       "addLink": "新しいリンクを追加",
-      "focusModeOn": "集中モードに入る",
-      "focusModeOff": "集中モードを終了",
       "selectAvatar": "アバターを選ぶ",
-      "pomodoroSizeLarge": "大",
-      "pomodoroSizeSmall": "小",
-      "pomodoroSizeMedium": "中",
       "timeFormat": "時計の形式",
       "weatherLocation": "場所",
       "greetingName": "名前",
-      "weatherUseMyLocation": "現在地を使う",
-      "weatherChooseCity": "都市を選ぶ…",
-      "weatherRefresh": "今すぐ更新",
-      "highlight": "ハイライト",
       "highlightOff": "なし",
       "quicklinksView": "表示",
       "weatherDetail": "表示量",
-      "weatherStyle": "スタイル",
-      "highlightCustom": "カラーピッカー…",
       "typeIn": "読み込み時にタイプ表示"
     },
     "edit": {
@@ -205,7 +175,6 @@
       "textShadowAria": "テキストの影の強さ",
       "noCustomization": "カスタマイズはありません",
       "dockWidth": "ウィジェットの幅",
-      "darkModeAria": "ダークモード切替",
       "timeFormatAria": "時計の表示形式を選択",
       "timeFormat12": "12時間",
       "timeFormat24": "24時間",
@@ -231,19 +200,10 @@
         "quote": "セリフ"
       },
       "infoFieldsLabel": "項目",
-      "infoFieldsDragHint": "ドラッグして並べ替え",
       "typeInSpeed": "タイプ速度",
       "typeInSpeedAria": "タイプ速度",
-      "notesShowBorder": "枠を表示",
-      "notesHideBorder": "枠を非表示",
-      "notesShowBorderAria": "メモの枠を表示",
-      "notesHideBorderAria": "メモの枠を非表示",
       "weatherUnitAria": "摂氏/華氏を切替",
       "weatherUnitLabel": "単位",
-      "pomodoroSizeLabel": "サイズ",
-      "pomodoroSizeSmall": "小",
-      "pomodoroSizeMedium": "中",
-      "pomodoroSizeLarge": "大",
       "pomodoroFocusNoSurface": "集中モードではカードが非表示になるため、変更できる面がありません",
       "pomodoroImageLabel": "スタンプ",
       "pomodoroImage": {
@@ -256,7 +216,6 @@
         "sootsprite": "ススワタリ"
       },
       "pomodoroSoundLabel": "サウンド",
-      "pomodoroSoundAria": "終了音を選択",
       "pomodoroVolume": "音量",
       "pomodoroVolumeAria": "終了音の音量",
       "pomodoroSound": {
@@ -275,8 +234,6 @@
       "weatherLocationSearching": "検索中…",
       "weatherLocationNoResults": "都市が見つかりません",
       "weatherLocationError": "検索に失敗しました。再試行してください。",
-      "highlightLabel": "ハイライト",
-      "highlightAria": "ハイライトの色を選ぶ",
       "highlightNone": "ハイライトなし",
       "highlightRecent": "最近使用",
       "highlightPresets": "プリセット",
@@ -294,25 +251,11 @@
       "weatherLayoutAria": "天気のレイアウトを選択",
       "weatherLayoutStandard": "標準",
       "weatherLayoutCompact": "コンパクト",
-      "weatherStylePlain": "シンプル",
-      "weatherStyleCard": "カード",
       "weatherAnimatedIcons": "アイコンを動かす",
       "weatherAnimatedOn": "オン",
       "weatherAnimatedOff": "オフ",
       "panelDragHint": "ドラッグで移動",
-      "notesBorder": "枠線",
-      "borderShow": "表示",
-      "borderHide": "非表示",
-      "notesPaper": "用紙",
-      "notesPaperNone": "用紙なし",
-      "notesPaperAria": "用紙の色",
-      "notesPaperStyle": "用紙スタイル",
-      "styleSolid": "不透明",
       "styleFrost": "すりガラス",
-      "highlightStyle": "ハイライトの種類",
-      "pomodoroColor": "カードの色",
-      "pomodoroColorAria": "カードの色",
-      "pomodoroColorDefaultAria": "テーマの既定色",
       "highlightTextLight": "明",
       "highlightTextDark": "暗",
       "surfaceStyle": "背景",
@@ -328,9 +271,7 @@
       "weatherLocationDeviceOff": "位置情報サービスはオフ",
       "weatherLocationLocating": "現在地を取得中…",
       "weatherLocationChoose": "手動で選ぶ",
-      "guideResize": "サイズ変更",
-      "surfaceHighlights": "ハイライト",
-      "pomodoroBreakColor": "休憩の背景"
+      "surfaceHighlights": "ハイライト"
     },
     "gapps": {
       "menuAria": "Google アプリ",
@@ -373,17 +314,11 @@
     "ariaDialog": "クイックリンク",
     "addAria": "新しいクイックリンクを追加",
     "addTooltip": "リンクを追加",
-    "saveAria": "リンクを保存",
-    "saveTooltip": "リンクを保存",
     "editLink": "リンクを編集",
     "deleteLink": "リンクを削除",
     "deleteAria": "{{title}}を削除",
     "deleteListTooltip": "リンクを削除",
-    "removeTooltip": "リンクを削除",
-    "doneDeleteTooltip": "削除を終了",
     "labelPlaceholder": "ラベル(任意)",
-    "labelSrOnly": "ラベル(任意)",
-    "emptyMessage": "クイックリンクはまだありません。上から追加してください。",
     "addTile": "追加",
     "addTitle": "リンクを追加",
     "editTitle": "リンクを編集",
@@ -403,8 +338,6 @@
     "play": "開始",
     "pause": "一時停止",
     "reset": "リセット",
-    "focus": "集中",
-    "exit": "終了",
     "playAria": "タイマー開始",
     "pauseAria": "タイマー一時停止",
     "resetAria": "タイマーリセット",
@@ -502,9 +435,6 @@
     }
   },
   "weather": {
-    "offline": "オフライン",
-    "permissionDenied": "位置情報の許可が拒否されました。Chromeで有効にしてください。",
-    "permissionUnavailable": "この環境では位置情報を利用できません。",
     "fetchError": "天気を取得できませんでした。後でもう一度試してください。",
     "feelsLike": "体感 {{temp}}",
     "hi": "最高 {{temp}}",
@@ -576,10 +506,6 @@
     "discordSub": "ここでバグを報告"
   },
   "widgetSettings": {
-    "openAria": "ウィジェット設定を開く",
-    "openTooltip": "ウィジェット設定",
-    "modalTitle": "ウィジェット設定",
-    "modalIntro": "画面サイズに応じたウィジェットの動作を選択できます。",
     "proportionalScaling": "画面サイズに合わせて調整",
     "proportionalScalingSub": "ウィジェットがビューポートの幅に比例して拡大縮小します。"
   },
@@ -606,13 +532,7 @@
       "animatedSub": "{{count}}枚の動く画像を静止画と混ぜて表示します",
       "animatedBadge": "GIF"
     },
-    "loadingError": "背景が見つかりません。コンソールでエラーを確認してください。",
-    "contextMenu": {
-      "open": "背景を選択...",
-      "favorite": "この写真をお気に入り",
-      "unfavorite": "お気に入りから削除",
-      "delete": "この写真を削除"
-    }
+    "loadingError": "背景が見つかりません。コンソールでエラーを確認してください。"
   },
   "modal": {
     "common": {
@@ -620,7 +540,6 @@
     }
   },
   "callouts": {
-    "focusMode": "Escで集中モードを終了",
     "widgetDraggable": "{{name}}をドラッグできるようになりました。クリックしたまま動かせます"
   },
   "welcome": {
@@ -711,7 +630,6 @@
   },
   "settings": {
     "title": "設定",
-    "buttonLabel": "設定",
     "buttonAria": "設定を開く",
     "permissionsTitle": "権限",
     "permissionsSub": "Ghiblify は最初は何も要求しません。使うものだけを有効にしてください。取り消しは即時反映されます。",
@@ -719,7 +637,6 @@
     "permissionGeolocationSub": "ネットワーク接続からのおおよその（都市レベルの）位置情報 — 地域の天気予報の取得のみに使用します。GPS・位置情報権限は不要です。",
     "permissionBookmarks": "ブックマーク",
     "permissionBookmarksSub": "パネルが Chrome のブックマークを読み取り、整理できるようにします。",
-    "storageTitle": "保存データ",
     "storageSub": "{{count}} 件 · 合計 {{size}}。行を展開すると中身を確認できます。",
     "storageEmpty": "まだ何も保存されていません。",
     "deleteKey": "削除",
@@ -727,7 +644,6 @@
     "resetTitle": "すべてリセット",
     "resetSub": "保存された設定（ウィジェット、背景、名前、ToDo など）をすべて削除してページを再読み込みします。",
     "resetButton": "すべてリセット",
-    "resetConfirm": "この操作は元に戻せません。",
     "resetConfirmYes": "はい、リセット",
     "resetConfirmCancel": "キャンセル",
     "section": {
@@ -749,9 +665,6 @@
     "resetBackground": "背景設定をリセット",
     "resetCursor": "カーソルをリセット",
     "storageGroup": {
-      "widgets": "ウィジェット",
-      "background": "背景",
-      "appearance": "外観",
       "other": "その他"
     },
     "deleteKeyConfirm": "「{{key}}」を削除しますか？含まれるデータは元に戻せません。",

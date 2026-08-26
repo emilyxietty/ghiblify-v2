@@ -1,5 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useState } from "react";
 import { useT } from "../../../i18n/i18n";
 import {
   HIGHLIGHT_OPACITY_PRESETS,
@@ -12,11 +11,8 @@ import {
   withAlpha,
   type HighlightTextColor,
 } from "../../../utils/textHighlight";
-import { Z_FLOATING } from "../../../utils/zLayers";
 import { ChevronRightIcon, EditIcon } from "../../Icons/Icons";
 import "./ColorPicker.css";
-
-const VIEWPORT_MARGIN = 8;
 
 interface PanelProps {
   /** Current colour, or null when the highlight is off. */
@@ -262,89 +258,6 @@ export const ColorPickerPanel: React.FC<PanelProps> = ({
   );
 };
 
-interface PopoverProps extends PanelProps {
-  /** Viewport point to open next to - a click position, or a trigger's
-   *  rect. */
-  anchor: { x: number; y: number; height?: number };
-  onClose: () => void;
-}
-
-/**
- * The panel, floating.
- *
- * Portalled to <body> and positioned in viewport coordinates. Both
- * matter: rendered in place it sat inside `.widget-opacity-control`,
- * whose own z-index opens a stacking context - so no z-index on the
- * panel could lift it above the sibling buttons, and the widget's
- * overflow clipped whatever was left.
- */
-export const ColorPickerPopover: React.FC<PopoverProps> = ({
-  anchor,
-  onClose,
-  ...panel
-}) => {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [pos, setPos] = useState<{ top: number; left: number }>({
-    top: anchor.y,
-    left: anchor.x,
-  });
-
-  // Measure after mount, then flip above the anchor / clamp sideways so
-  // the panel always lands fully on screen.
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const below = anchor.y + (anchor.height ?? 0) + 6;
-    const top =
-      below + rect.height + VIEWPORT_MARGIN <= window.innerHeight
-        ? below
-        : Math.max(VIEWPORT_MARGIN, anchor.y - rect.height - 6);
-    const left = Math.min(
-      Math.max(VIEWPORT_MARGIN, anchor.x),
-      window.innerWidth - rect.width - VIEWPORT_MARGIN
-    );
-    setPos({ top, left });
-  }, [anchor.x, anchor.y, anchor.height]);
-
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (ref.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey, true);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey, true);
-    };
-  }, [onClose]);
-
-  return createPortal(
-    <div
-      ref={ref}
-      className="color-picker-panel"
-      role="dialog"
-      style={{
-        position: "fixed",
-        top: pos.top,
-        left: pos.left,
-        zIndex: Z_FLOATING,
-      }}
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      <ColorPickerPanel {...panel} />
-    </div>,
-    document.body
-  );
-};
 /** Inline swatch strip for the widget edit overlay: off + the six
  *  curated presets + custom-palette pencil + a chevron that expands
  *  the edit panel's tuning column (opacity / blur / ink - see

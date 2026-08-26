@@ -21,14 +21,6 @@ const OFFLINE_FALLBACKS: Array<{ path: string; film: string }> = [
   { path: "assets/backgrounds/ponyo005.jpg", film: "ponyo" },
 ];
 
-interface BackgroundItem {
-  link: string;
-  title: string;
-  titlejp: string;
-  year: string;
-  screentime: string;
-  quote: string;
-}
 
 interface BackgroundSource {
   title: string;

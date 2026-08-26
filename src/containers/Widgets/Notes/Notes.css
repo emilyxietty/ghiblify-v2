@@ -463,12 +463,6 @@
     width: auto;
 }
 
-.notes-tb-q {
-    font-family: Georgia, serif;
-    font-size: 16px;
-    line-height: 0.6;
-}
-
 /* Drop-up select menus, anchored to their group button. */
 .notes-tb-group {
     position: relative;

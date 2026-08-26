@@ -61,21 +61,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Empty-state - shown when a widget has nothing customizable. The
-   overlay still lays over the widget (so it's clear you've entered
-   edit mode for it), but the only contents are a centered hint. */
-.widget-overlay-empty-message {
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-align: center;
-    padding: 6px 12px;
-    border-radius: var(--radius-pill);
-    background: rgba(0, 0, 0, 0.55);
-    pointer-events: auto;
-}
-
 /* Styles specific to the edit-overlay shown by `EditWidget` */
 .widget-overlay {
     position: absolute;
@@ -104,11 +89,6 @@
 .widget-overlay:not(:has(.widget-controls-container, .field-selector)) {
     /* If there are no interactive controls inside the overlay, keep
        pointer-events:none so drags still work. */
-    /* pointer-events: none !important; */
-    cursor: pointer;
-}
-
-.widget-overlay.draggable-overlay {
     /* pointer-events: none !important; */
     cursor: pointer;
 }
@@ -247,7 +227,6 @@
 .widget-controls-container .widget-pomodoro-size {
     min-height: 30px;
 }
-
 
 .widget-resize-handle {
     position: absolute;
@@ -712,33 +691,6 @@
     box-shadow: 0 0 0 2px var(--light);
 }
 
-.edit-panel-swatch-empty {
-    background:
-        linear-gradient(
-            to top right,
-            transparent calc(50% - 1px),
-            var(--red, #d54a3e) calc(50% - 1px),
-            var(--red, #d54a3e) calc(50% + 1px),
-            transparent calc(50% + 1px)
-        ),
-        color-mix(in srgb, var(--light) 8%, transparent);
-}
-
-/* Frosted-glass paper swatch - translucent stripes read as "glass"
-   next to the solid colour chips. */
-.edit-panel-swatch-frost {
-    background: repeating-linear-gradient(
-        45deg,
-        rgba(255, 255, 255, 0.75) 0 3px,
-        rgba(255, 255, 255, 0.3) 3px 6px
-    );
-}
-
-/* Theme-default surface chip. */
-.edit-panel-swatch-theme {
-    background: rgb(var(--surface-rgb, 31, 38, 32));
-}
-
 .edit-panel-avatar-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -820,24 +772,6 @@
     pointer-events: none;
 }
 
-/* Style chips and colour swatches in one strip, so a Background row
-   that offers both reads as one control rather than two that happen to
-   share a label. Wraps rather than squeezing - the colour strip is
-   ~10 swatches wide and the styles add four more. */
-.edit-panel-surface-strip {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-/* A divider between the two halves, so it is clear the first four chips
-   change the KIND of surface and the rest change its colour. */
-.edit-panel-surface-strip > .surface-style-picker {
-    padding-right: 8px;
-    border-right: 1px solid color-mix(in srgb, var(--light) 16%, transparent);
-}
-
 .edit-panel-slider-head {
     display: flex;
     align-items: baseline;
@@ -870,73 +804,6 @@
 .edit-panel-grip {
     color: var(--light-muted);
     flex-shrink: 0;
-}
-
-/* Tune toggle on the Background row - opens the same kind of side
-   flyout the highlight picker uses, so opacity / blur don't take up a
-   permanent row on every widget that has a surface. Sits at the end of
-   the chip strip, visually separated so it doesn't read as one of the
-   surface choices. */
-.edit-panel-tune-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    margin-left: 4px;
-    padding: 0;
-    flex-shrink: 0;
-    border: 1px solid color-mix(in srgb, var(--light) 22%, transparent);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: color-mix(in srgb, var(--light) 70%, transparent);
-    cursor: pointer;
-    transition: background 140ms ease, color 140ms ease,
-        border-color 140ms ease;
-}
-
-.edit-panel-tune-btn:hover {
-    background: color-mix(in srgb, var(--light) 12%, transparent);
-    color: var(--light);
-}
-
-.edit-panel-tune-btn.is-open {
-    background: color-mix(in srgb, var(--light) 18%, transparent);
-    border-color: color-mix(in srgb, var(--light) 45%, transparent);
-    color: var(--light);
-}
-
-.edit-panel-tune-btn:focus-visible {
-    outline: 2px solid var(--focus-ring);
-    outline-offset: 2px;
-}
-
-/* Header for a side flyout: title on the left, dismiss on the right. */
-.edit-panel-side-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.edit-panel-side-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: color-mix(in srgb, var(--light) 65%, transparent);
-    cursor: pointer;
-}
-
-.edit-panel-side-close:hover {
-    background: color-mix(in srgb, var(--light) 14%, transparent);
-    color: var(--light);
 }
 
 /* Grip + widget name. Carries the drag hint so the heading itself

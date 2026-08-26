@@ -46,7 +46,6 @@ import { AVATAR_OPTIONS } from "../../config/avatarConfig";
 import {
   BackgroundFilters,
   CORNER_STYLES,
-  CornerStyle,
   CURSOR_NAMES,
   FONT_NAMES,
   FontName,
@@ -107,7 +106,6 @@ const THEME_KEYS: ThemeName[] = [
  *  its own layout constraint), one tile represents the edge and a
  *  picker chooses which panel occupies it. */
 const EDGE_PANEL_KEYS = ["bookmarks", "rightSidebar"] as const;
-type EdgePanelKey = (typeof EDGE_PANEL_KEYS)[number];
 
 const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
   blur: "px",

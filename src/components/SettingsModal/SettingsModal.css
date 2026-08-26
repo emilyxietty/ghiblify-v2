@@ -327,43 +327,11 @@
     background: color-mix(in srgb, var(--red) 22%, transparent);
 }
 
-.settings-confirm-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.settings-confirm-text {
-    font-size: 12.5px;
-    color: var(--light);
-}
-
 /* Row of destructive actions inside a section. */
 .settings-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-}
-
-.settings-storage-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.settings-storage-group + .settings-storage-group {
-    margin-top: 10px;
-}
-
-.settings-storage-group-title {
-    margin: 0;
-    padding-left: 4px;
-    font-size: 10.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: color-mix(in srgb, var(--light) 45%, transparent);
 }
 
 /* Stored-data block inside a section - visually subordinate to the

@@ -26,7 +26,6 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   options,
   selectedValues,
   onChange,
-  placeholder = "Select fields...",
   buttonText = "Fields",
   onOptionPreview,
   onPreviewEnd,

@@ -228,15 +228,6 @@
     opacity: 0.4;
 }
 
-/* Constrain the popover wrapper so its internal scrolling works and
-   it doesn't exceed the widget size. */
-.todo-popover {
-    box-sizing: border-box;
-    max-width: 100%;
-    max-height: 360px;
-    overflow: hidden;
-}
-
 .todo-item-content {
     display: flex;
     align-items: center;
@@ -601,20 +592,6 @@ html.corners-pill .todo-item-content {
     }
 }
 
-/* Dark mode scrollbar */
-.todo-container.todo-dark .todo-list {
-    scrollbar-color: #4c4c4c #4c4c4c;
-}
-
-.todo-container.todo-dark .todo-list::-webkit-scrollbar {
-    background: #4c4c4c;
-}
-
-.todo-container.todo-dark .todo-list::-webkit-scrollbar-thumb {
-    background: #4c4c4c;
-    border-radius: var(--radius-sm);
-}
-
 /* .todo-container.todo-dark .todo-input {
     background: #000000a9;
     color: var(--todo-text);
@@ -624,17 +601,6 @@ html.corners-pill .todo-item-content {
 /* (dark-mode .todo-item-content background is set above with the
    slider-driven formula - leaving this stub so the rule isn't silently
    re-introduced from elsewhere) */
-
-/* Dark-mode toggle - checkbox + add button now use the theme-aware base
-   styles above and inherit naturally; per-mode overrides removed. */
-
-
-.toto-title-text:hover {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(var(--surface-blur, 6px));
-    cursor: pointer;
-}
-
 
 /* when collapsed hide the input and list while keeping header visible */
 .todo-container.collapsed .todo-input-wrapper,

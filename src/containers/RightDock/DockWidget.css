@@ -199,8 +199,7 @@
 /* Info - defaults to center-aligned flex column with center text;
    the items themselves are also center-aligned via .info-item.
    Override all three so the film info reads right-aligned. */
-.dock-widget .info-container,
-.dock-widget .info-wrapper {
+.dock-widget .info-container {
     align-items: flex-end !important;
     justify-content: flex-end !important;
     text-align: right !important;
@@ -225,8 +224,7 @@
    viewport height. The internal `.todo-list` scrolls when content
    exceeds the cap. The Todo root class is `.todo-container` (not
    `-widget`); both are kept here in case markup changes. */
-.dock-widget .todo-container,
-.dock-widget .todo-widget {
+.dock-widget .todo-container {
     width: 100% !important;
     height: auto !important;
     max-height: 50vh !important;
@@ -445,8 +443,7 @@
 }
 
 .dock-widget-date .date-container,
-.dock-widget-info .info-container,
-.dock-widget-info .info-wrapper {
+.dock-widget-info .info-container {
     align-items: var(--dock-content-align) !important;
     text-align: var(--dock-text-align) !important;
 }

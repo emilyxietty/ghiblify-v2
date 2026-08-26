@@ -398,16 +398,14 @@
    right that only appears while the section is hovered or the cog
    itself has keyboard focus. Hiding it keeps four identical cogs from
    turning the sidebar into a column of buttons. */
-.section-heading-row,
-.widgets-heading-row {
+.section-heading-row {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 8px;
 }
 
-.section-heading-row h4,
-.widgets-heading-row h4 {
+.section-heading-row h4 {
     /* Keep the underline accent anchored under the heading text only,
        not stretched across the row, by letting the h4 hug its
        content. flex sibling button doesn't grow either. */
@@ -884,8 +882,6 @@
     height: 44%;
     pointer-events: none;
 }
-
-
 
 .cursor-swatch:hover {
     transform: scale(1.06);

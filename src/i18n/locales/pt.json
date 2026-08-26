@@ -1,16 +1,9 @@
 {
   "common": {
     "done": "Concluído",
-    "save": "Salvar",
-    "cancel": "Cancelar",
     "close": "Fechar",
-    "delete": "Excluir",
-    "add": "Adicionar",
-    "edit": "Editar",
     "reset": "Restaurar",
     "guide": "Guia",
-    "search": "Buscar",
-    "exit": "Sair",
     "offlineCallout": "Wi-Fi indisponível"
   },
   "changelog": {
@@ -52,15 +45,11 @@
       "shikigami": "Aves de papel"
     },
     "buttons": {
-      "githubRepo": "Repositório no Github",
       "buyCoffee": "Pague-me um café",
       "guide": "Guia",
       "guideAria": "Abrir o guia",
       "rate": "Avaliar",
       "rateAria": "Avaliar Ghiblify na Chrome Web Store",
-      "languageAria": "Escolher idioma",
-      "editWidgets": "Modo edição",
-      "resetAllWidgets": "Restaurar widgets",
       "selectBackgrounds": "Selecionar planos de fundo",
       "deselectBackground": "Desmarcar fundo",
       "deselectBackgroundAria": "Tirar o fundo atual da rotação",
@@ -153,37 +142,18 @@
     },
     "contextMenu": {
       "edit": "Editar {{name}}",
-      "drag": "Arrastar {{name}}",
       "hide": "Ocultar {{name}}",
-      "showInRightSidebar": "Mostrar na barra lateral direita",
-      "hideFromRightSidebar": "Ocultar da barra lateral direita",
       "dockWidthFull": "Largura total",
       "dockWidthHalf": "Meia largura",
-      "time12": "12 horas",
-      "time24": "24 horas",
-      "timeAnalog": "Analógico",
-      "textShadow": "Sombra do texto",
       "opacity": "Opacidade",
-      "blur": "Desfoque",
       "addLink": "Adicionar novo link",
-      "focusModeOn": "Modo concentração",
-      "focusModeOff": "Sair do modo concentração",
       "selectAvatar": "Escolher avatar",
-      "pomodoroSizeLarge": "Grande",
-      "pomodoroSizeSmall": "Pequeno",
-      "pomodoroSizeMedium": "Médio",
       "timeFormat": "Formato do relógio",
       "weatherLocation": "Localização",
       "greetingName": "Nome",
-      "weatherUseMyLocation": "Usar minha localização",
-      "weatherChooseCity": "Escolher uma cidade…",
-      "weatherRefresh": "Atualizar agora",
-      "highlight": "Destaque",
       "highlightOff": "Nenhum",
       "quicklinksView": "Exibição",
       "weatherDetail": "Detalhe",
-      "weatherStyle": "Estilo",
-      "highlightCustom": "Seletor de cor…",
       "typeIn": "Digitar ao carregar"
     },
     "edit": {
@@ -199,7 +169,6 @@
       "textShadowAria": "Intensidade da sombra do texto",
       "noCustomization": "Sem opções de personalização",
       "dockWidth": "Largura do widget",
-      "darkModeAria": "Alternar modo escuro",
       "timeFormatAria": "Escolher formato do relógio",
       "timeFormat12": "12h",
       "timeFormat24": "24h",
@@ -225,19 +194,10 @@
         "quote": "Citação"
       },
       "infoFieldsLabel": "Campos",
-      "infoFieldsDragHint": "Arraste para reordenar",
       "typeInSpeed": "Velocidade de digitação",
       "typeInSpeedAria": "Velocidade de digitação",
-      "notesShowBorder": "Mostrar borda",
-      "notesHideBorder": "Ocultar borda",
-      "notesShowBorderAria": "Mostrar a borda do bilhete",
-      "notesHideBorderAria": "Ocultar a borda do bilhete",
       "weatherUnitAria": "Alternar Celsius / Fahrenheit",
       "weatherUnitLabel": "Unidade",
-      "pomodoroSizeLabel": "Tamanho",
-      "pomodoroSizeSmall": "P",
-      "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "G",
       "pomodoroFocusNoSurface": "O modo concentração oculta o cartão, então não há superfície para estilizar",
       "pomodoroImageLabel": "Adesivo",
       "pomodoroImage": {
@@ -250,7 +210,6 @@
         "sootsprite": "Duende de fuligem"
       },
       "pomodoroSoundLabel": "Som",
-      "pomodoroSoundAria": "Escolher som de conclusão",
       "pomodoroVolume": "Volume",
       "pomodoroVolumeAria": "Volume do som de conclusão",
       "pomodoroSound": {
@@ -269,8 +228,6 @@
       "weatherLocationSearching": "Buscando…",
       "weatherLocationNoResults": "Nenhuma cidade encontrada",
       "weatherLocationError": "Falha na busca. Tente novamente.",
-      "highlightLabel": "Destaque",
-      "highlightAria": "Escolher uma cor de destaque",
       "highlightNone": "Sem destaque",
       "highlightRecent": "Recentes",
       "highlightPresets": "Predefinições",
@@ -288,25 +245,11 @@
       "weatherLayoutAria": "Escolher layout do clima",
       "weatherLayoutStandard": "Padrão",
       "weatherLayoutCompact": "Compacto",
-      "weatherStylePlain": "Simples",
-      "weatherStyleCard": "Cartão",
       "weatherAnimatedIcons": "Ícones animados",
       "weatherAnimatedOn": "Sim",
       "weatherAnimatedOff": "Não",
       "panelDragHint": "Arraste para mover",
-      "notesBorder": "Borda",
-      "borderShow": "Mostrar",
-      "borderHide": "Ocultar",
-      "notesPaper": "Papel",
-      "notesPaperNone": "Sem papel",
-      "notesPaperAria": "Cor do papel",
-      "notesPaperStyle": "Estilo do papel",
-      "styleSolid": "Sólido",
       "styleFrost": "Fosco",
-      "highlightStyle": "Estilo de destaque",
-      "pomodoroColor": "Cor do cartão",
-      "pomodoroColorAria": "Cor do cartão",
-      "pomodoroColorDefaultAria": "Padrão do tema",
       "highlightTextLight": "Claro",
       "highlightTextDark": "Escuro",
       "surfaceStyle": "Fundo",
@@ -322,9 +265,7 @@
       "weatherLocationDeviceOff": "Serviços de localização desativados",
       "weatherLocationLocating": "Procurando sua localização…",
       "weatherLocationChoose": "Escolher manualmente",
-      "guideResize": "Redimensionar",
-      "surfaceHighlights": "Destaques",
-      "pomodoroBreakColor": "Fundo da pausa"
+      "surfaceHighlights": "Destaques"
     },
     "gapps": {
       "menuAria": "Apps do Google",
@@ -366,18 +307,12 @@
     "ariaDialog": "Links rápidos",
     "addAria": "Adicionar novo link rápido",
     "addTooltip": "Adicionar link",
-    "saveAria": "Salvar link",
-    "saveTooltip": "Salvar link",
     "editLink": "Editar link",
     "deleteLink": "Excluir link",
     "deleteAria": "Excluir {{title}}",
     "deleteListTooltip": "Excluir link",
-    "removeTooltip": "Remover links",
-    "doneDeleteTooltip": "Concluído",
     "labelPlaceholder": "Rótulo (opcional)",
-    "labelSrOnly": "Rótulo (opcional)",
     "urlPlaceholder": "https://exemplo.com",
-    "emptyMessage": "Sem links rápidos. Adicione um acima.",
     "addTile": "Adicionar",
     "addTitle": "Adicionar um link",
     "editTitle": "Editar link",
@@ -396,8 +331,6 @@
     "play": "Iniciar",
     "pause": "Pausar",
     "reset": "Reiniciar",
-    "focus": "Concentração",
-    "exit": "Sair",
     "playAria": "Iniciar cronômetro",
     "pauseAria": "Pausar cronômetro",
     "resetAria": "Reiniciar cronômetro",
@@ -496,8 +429,6 @@
   },
   "weather": {
     "unavailable": "N/D",
-    "permissionDenied": "Permissão de localização negada. Habilite no Chrome para ver o clima local.",
-    "permissionUnavailable": "Geolocalização indisponível neste contexto.",
     "fetchError": "Não foi possível carregar o clima. Tente novamente.",
     "feelsLike": "Sensação {{temp}}",
     "hi": "Máx {{temp}}",
@@ -569,10 +500,6 @@
     "discordSub": "relate um bug aqui"
   },
   "widgetSettings": {
-    "openAria": "Abrir configurações dos widgets",
-    "openTooltip": "Configurações dos widgets",
-    "modalTitle": "Configurações dos widgets",
-    "modalIntro": "Escolha como os widgets se comportam em suas telas.",
     "proportionalScaling": "Redimensionar com a tela",
     "proportionalScalingSub": "Os widgets escalam proporcionalmente à largura da sua janela."
   },
@@ -599,13 +526,7 @@
       "animatedSub": "{{count}} imagens em movimento, misturadas às estáticas",
       "animatedBadge": "GIF"
     },
-    "loadingError": "Nenhum plano de fundo encontrado. Veja erros no console.",
-    "contextMenu": {
-      "open": "Selecionar planos de fundo...",
-      "favorite": "Favoritar esta foto",
-      "unfavorite": "Remover dos favoritos",
-      "delete": "Excluir esta foto"
-    }
+    "loadingError": "Nenhum plano de fundo encontrado. Veja erros no console."
   },
   "modal": {
     "common": {
@@ -613,7 +534,6 @@
     }
   },
   "callouts": {
-    "focusMode": "Esc para sair do modo concentração",
     "widgetDraggable": "{{name}} agora pode ser arrastado - clique e arraste para mover"
   },
   "welcome": {
@@ -704,7 +624,6 @@
   },
   "settings": {
     "title": "Configurações",
-    "buttonLabel": "Configurações",
     "buttonAria": "Abrir configurações",
     "permissionsTitle": "Permissões",
     "permissionsSub": "O Ghiblify não pede nada de início. Ative apenas o que usar; revogar tem efeito imediato.",
@@ -712,7 +631,6 @@
     "permissionGeolocationSub": "Localização aproximada (nível de cidade) pela sua conexão de rede - usada apenas para obter a previsão local. Sem GPS, sem permissão de localização.",
     "permissionBookmarks": "Favoritos",
     "permissionBookmarksSub": "Permite que o painel leia e organize seus favoritos do Chrome.",
-    "storageTitle": "Dados salvos",
     "storageSub": "{{count}} chaves · {{size}} no total. Expanda uma linha para ver o conteúdo.",
     "storageEmpty": "Nada foi salvo ainda.",
     "deleteKey": "Excluir",
@@ -720,7 +638,6 @@
     "resetTitle": "Redefinir tudo",
     "resetSub": "Apaga todas as configurações salvas - widgets, fundos, nomes, tarefas - e recarrega a página.",
     "resetButton": "Redefinir tudo",
-    "resetConfirm": "Isso não pode ser desfeito.",
     "resetConfirmYes": "Sim, redefinir",
     "resetConfirmCancel": "Cancelar",
     "section": {
@@ -742,9 +659,6 @@
     "resetBackground": "Redefinir configurações de fundo",
     "resetCursor": "Redefinir cursor",
     "storageGroup": {
-      "widgets": "Widgets",
-      "background": "Fundo",
-      "appearance": "Aparência",
       "other": "Outros"
     },
     "deleteKeyConfirm": "Excluir “{{key}}” do armazenamento? O que estiver nele será perdido.",

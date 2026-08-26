@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
 
-interface InfoItem {
-  title: string;
-  size: "small" | "medium" | "large";
-}
-
-type InfoConfig = InfoItem[];
-
 interface MovieMetadata {
   title: string;
   titlejp: string;

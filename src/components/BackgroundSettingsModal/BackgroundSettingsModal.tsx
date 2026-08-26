@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CheckIcon } from "../Icons/Icons";
 import { ContextMenu } from "../ContextMenu/ContextMenu";
@@ -302,8 +302,6 @@ export const BackgroundSettingsModal: React.FC<
     () => new Set(backgroundSources.flatMap((s) => s.animated ?? [])),
     [backgroundSources],
   );
-
-  const selectedMovie = movies.find((m) => m.key === selectedKey) ?? null;
 
   // Which films background.json actually carries images for. Matching is
   // forgiving because the metadata key and the source title are written

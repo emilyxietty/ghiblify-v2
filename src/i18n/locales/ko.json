@@ -1,16 +1,9 @@
 {
   "common": {
     "done": "완료",
-    "save": "저장",
-    "cancel": "취소",
     "close": "닫기",
-    "delete": "삭제",
-    "add": "추가",
-    "edit": "편집",
     "reset": "초기화",
     "guide": "가이드",
-    "search": "검색",
-    "exit": "종료",
     "offlineCallout": "Wi-Fi를 사용할 수 없습니다"
   },
   "changelog": {
@@ -57,15 +50,11 @@
       "shikigami": "종이 새"
     },
     "buttons": {
-      "githubRepo": "Github 저장소",
       "buyCoffee": "커피 한 잔",
       "guide": "가이드",
       "guideAria": "가이드 열기",
       "rate": "평가하기",
       "rateAria": "Chrome 웹 스토어에서 Ghiblify 평가",
-      "languageAria": "언어 선택",
-      "editWidgets": "편집 모드",
-      "resetAllWidgets": "위젯 초기화",
       "selectBackgrounds": "배경 선택",
       "deselectBackground": "배경 선택 해제",
       "deselectBackgroundAria": "현재 배경을 로테이션에서 제외",
@@ -159,37 +148,18 @@
     },
     "contextMenu": {
       "edit": "{{name}} 편집",
-      "drag": "{{name}} 이동",
       "hide": "{{name}} 숨기기",
-      "showInRightSidebar": "오른쪽 사이드바에 표시",
-      "hideFromRightSidebar": "오른쪽 사이드바에서 숨기기",
       "dockWidthFull": "전체 너비",
       "dockWidthHalf": "반 너비",
-      "time12": "12시간제",
-      "time24": "24시간제",
-      "timeAnalog": "아날로그",
-      "textShadow": "텍스트 그림자",
       "opacity": "불투명도",
-      "blur": "블러",
       "addLink": "새 링크 추가",
-      "focusModeOn": "집중 모드",
-      "focusModeOff": "집중 모드 종료",
       "selectAvatar": "아바타 선택",
-      "pomodoroSizeLarge": "크게",
-      "pomodoroSizeSmall": "작게",
-      "pomodoroSizeMedium": "보통",
       "timeFormat": "시계 형식",
       "weatherLocation": "위치",
       "greetingName": "이름",
-      "weatherUseMyLocation": "내 위치 사용",
-      "weatherChooseCity": "도시 선택…",
-      "weatherRefresh": "지금 새로고침",
-      "highlight": "강조",
       "highlightOff": "없음",
       "quicklinksView": "보기",
       "weatherDetail": "표시 범위",
-      "weatherStyle": "스타일",
-      "highlightCustom": "색상 선택기…",
       "typeIn": "불러올 때 타이핑"
     },
     "edit": {
@@ -205,7 +175,6 @@
       "textShadowAria": "텍스트 그림자 강도",
       "noCustomization": "사용 가능한 옵션 없음",
       "dockWidth": "위젯 너비",
-      "darkModeAria": "다크 모드 전환",
       "timeFormatAria": "시계 형식 선택",
       "timeFormat12": "12시간",
       "timeFormat24": "24시간",
@@ -231,19 +200,10 @@
         "quote": "명대사"
       },
       "infoFieldsLabel": "필드",
-      "infoFieldsDragHint": "드래그하여 순서 변경",
       "typeInSpeed": "타이핑 속도",
       "typeInSpeedAria": "타이핑 속도",
-      "notesShowBorder": "테두리 표시",
-      "notesHideBorder": "테두리 숨기기",
-      "notesShowBorderAria": "노트 테두리 표시",
-      "notesHideBorderAria": "노트 테두리 숨기기",
       "weatherUnitAria": "섭씨/화씨 전환",
       "weatherUnitLabel": "단위",
-      "pomodoroSizeLabel": "크기",
-      "pomodoroSizeSmall": "S",
-      "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "집중 모드에서는 카드가 숨겨져 꾸밀 표면이 없습니다",
       "pomodoroImageLabel": "스티커",
       "pomodoroImage": {
@@ -256,7 +216,6 @@
         "sootsprite": "검댕이"
       },
       "pomodoroSoundLabel": "사운드",
-      "pomodoroSoundAria": "완료 소리 선택",
       "pomodoroVolume": "음량",
       "pomodoroVolumeAria": "완료 소리 음량",
       "pomodoroSound": {
@@ -275,8 +234,6 @@
       "weatherLocationSearching": "검색 중…",
       "weatherLocationNoResults": "도시를 찾을 수 없습니다",
       "weatherLocationError": "검색에 실패했습니다. 다시 시도하세요.",
-      "highlightLabel": "강조",
-      "highlightAria": "강조 색상 선택",
       "highlightNone": "강조 없음",
       "highlightRecent": "최근 사용",
       "highlightPresets": "프리셋",
@@ -294,25 +251,11 @@
       "weatherLayoutAria": "날씨 레이아웃 선택",
       "weatherLayoutStandard": "표준",
       "weatherLayoutCompact": "컴팩트",
-      "weatherStylePlain": "기본",
-      "weatherStyleCard": "카드",
       "weatherAnimatedIcons": "애니메이션 아이콘",
       "weatherAnimatedOn": "켜기",
       "weatherAnimatedOff": "끄기",
       "panelDragHint": "드래그하여 이동",
-      "notesBorder": "테두리",
-      "borderShow": "표시",
-      "borderHide": "숨기기",
-      "notesPaper": "종이",
-      "notesPaperNone": "종이 없음",
-      "notesPaperAria": "종이 색상",
-      "notesPaperStyle": "종이 스타일",
-      "styleSolid": "단색",
       "styleFrost": "반투명",
-      "highlightStyle": "강조 스타일",
-      "pomodoroColor": "카드 색상",
-      "pomodoroColorAria": "카드 색상",
-      "pomodoroColorDefaultAria": "테마 기본값",
       "highlightTextLight": "밝게",
       "highlightTextDark": "어둡게",
       "surfaceStyle": "배경",
@@ -328,9 +271,7 @@
       "weatherLocationDeviceOff": "위치 서비스 꺼짐",
       "weatherLocationLocating": "위치를 찾는 중…",
       "weatherLocationChoose": "직접 선택",
-      "guideResize": "크기 조절",
-      "surfaceHighlights": "하이라이트",
-      "pomodoroBreakColor": "휴식 배경"
+      "surfaceHighlights": "하이라이트"
     },
     "gapps": {
       "menuAria": "Google 앱",
@@ -373,17 +314,11 @@
     "ariaDialog": "빠른 링크",
     "addAria": "새 빠른 링크 추가",
     "addTooltip": "링크 추가",
-    "saveAria": "링크 저장",
-    "saveTooltip": "링크 저장",
     "editLink": "링크 편집",
     "deleteLink": "링크 삭제",
     "deleteAria": "{{title}} 삭제",
     "deleteListTooltip": "링크 삭제",
-    "removeTooltip": "링크 삭제",
-    "doneDeleteTooltip": "완료",
     "labelPlaceholder": "라벨 (선택)",
-    "labelSrOnly": "라벨 (선택)",
-    "emptyMessage": "빠른 링크가 없습니다. 위에 추가해 보세요.",
     "addTile": "추가",
     "addTitle": "링크 추가",
     "editTitle": "링크 편집",
@@ -403,8 +338,6 @@
     "play": "시작",
     "pause": "일시정지",
     "reset": "초기화",
-    "focus": "집중",
-    "exit": "종료",
     "playAria": "타이머 시작",
     "pauseAria": "타이머 일시정지",
     "resetAria": "타이머 초기화",
@@ -502,9 +435,6 @@
     }
   },
   "weather": {
-    "offline": "오프라인",
-    "permissionDenied": "위치 권한이 거부되었습니다. Chrome에서 활성화하세요.",
-    "permissionUnavailable": "이 환경에서는 위치 정보를 사용할 수 없습니다.",
     "fetchError": "날씨를 불러오지 못했습니다. 나중에 다시 시도하세요.",
     "feelsLike": "체감 {{temp}}",
     "hi": "최고 {{temp}}",
@@ -576,10 +506,6 @@
     "discordSub": "여기에서 버그 신고"
   },
   "widgetSettings": {
-    "openAria": "위젯 설정 열기",
-    "openTooltip": "위젯 설정",
-    "modalTitle": "위젯 설정",
-    "modalIntro": "화면에 따라 위젯이 동작하는 방식을 선택하세요.",
     "proportionalScaling": "화면 크기에 맞춰 조정",
     "proportionalScalingSub": "위젯이 뷰포트 너비에 비례해 크기가 조정됩니다."
   },
@@ -606,13 +532,7 @@
       "animatedSub": "{{count}}개의 움직이는 이미지를 정지 이미지와 함께 표시합니다",
       "animatedBadge": "GIF"
     },
-    "loadingError": "배경을 찾을 수 없습니다. 콘솔에서 오류를 확인하세요.",
-    "contextMenu": {
-      "open": "배경 선택...",
-      "favorite": "이 사진 즐겨찾기",
-      "unfavorite": "즐겨찾기 해제",
-      "delete": "이 사진 삭제"
-    }
+    "loadingError": "배경을 찾을 수 없습니다. 콘솔에서 오류를 확인하세요."
   },
   "modal": {
     "common": {
@@ -620,7 +540,6 @@
     }
   },
   "callouts": {
-    "focusMode": "Esc로 집중 모드 종료",
     "widgetDraggable": "이제 {{name}}을(를) 드래그할 수 있습니다. 클릭한 채 끌어 옮기세요"
   },
   "welcome": {
@@ -711,7 +630,6 @@
   },
   "settings": {
     "title": "설정",
-    "buttonLabel": "설정",
     "buttonAria": "설정 열기",
     "permissionsTitle": "권한",
     "permissionsSub": "Ghiblify는 처음에 아무것도 요구하지 않습니다. 사용하는 것만 켜세요. 취소는 즉시 적용됩니다.",
@@ -719,7 +637,6 @@
     "permissionGeolocationSub": "네트워크 연결 기반의 대략적인(도시 수준) 위치 — 지역 날씨를 가져오는 데만 사용됩니다. GPS나 위치 권한이 필요 없습니다.",
     "permissionBookmarks": "북마크",
     "permissionBookmarksSub": "패널이 Chrome 북마크를 읽고 정리할 수 있게 합니다.",
-    "storageTitle": "저장된 데이터",
     "storageSub": "{{count}}개 항목 · 총 {{size}}. 행을 펼치면 내용을 볼 수 있습니다.",
     "storageEmpty": "아직 저장된 데이터가 없습니다.",
     "deleteKey": "삭제",
@@ -727,7 +644,6 @@
     "resetTitle": "전체 초기화",
     "resetSub": "저장된 모든 설정(위젯, 배경, 이름, 할 일 등)을 삭제하고 페이지를 다시 불러옵니다.",
     "resetButton": "전체 초기화",
-    "resetConfirm": "되돌릴 수 없습니다.",
     "resetConfirmYes": "네, 초기화",
     "resetConfirmCancel": "취소",
     "section": {
@@ -749,9 +665,6 @@
     "resetBackground": "배경 설정 초기화",
     "resetCursor": "커서 초기화",
     "storageGroup": {
-      "widgets": "위젯",
-      "background": "배경",
-      "appearance": "모양",
       "other": "기타"
     },
     "deleteKeyConfirm": "저장소에서 “{{key}}”을(를) 삭제할까요? 저장된 내용은 복구할 수 없습니다.",

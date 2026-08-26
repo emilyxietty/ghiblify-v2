@@ -763,24 +763,6 @@
     fill: currentColor;
 }
 
-/* QuickLinks circular add button uses var(--dark) directly (not the
-   Button component), so the .btn-dark override above doesn't apply.
-   Match the same dark pill treatment so it's visible on Frost. */
-.theme-frost .quicklinksSettings-add-btn {
-    background: rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
-    color: var(--frost-ink, #ffffff) !important;
-    border-color: rgba(var(--frost-rgb, 10, 14, 20), 0.7) !important;
-}
-
-.theme-frost .quicklinksSettings-add-btn:hover:not(:disabled) {
-    background: rgba(var(--frost-rgb, 10, 14, 20), 0.88) !important;
-    border-color: rgba(var(--frost-rgb, 10, 14, 20), 0.88) !important;
-}
-
-.theme-frost .quicklinksSettings-add-btn svg {
-    color: var(--frost-ink, #ffffff) !important;
-}
-
 /* Pomodoro card on Frost - its base uses var(--purple-dark) /
    var(--red-dark), which on Frost are pale lavender / dusty rose
    (white text on those reads poorly). Force a dark charcoal card
@@ -857,7 +839,6 @@
 .theme-frost .pomodoro-widget.break-mode:not(.custom-card) .pomodoro-switch-header h2.active-mode {
     background: rgba(155, 200, 219, 0.25) !important;
 }
-
 
 /* Frost outline-variant buttons get the white-on-transparent treatment
    so they remain visible against the frosted glass / photo background.
@@ -942,7 +923,6 @@
 .high-contrast .quicklinksSettings-item,
 .high-contrast .quicklinksSettings-item:hover,
 .high-contrast .quicklinksSettings-dropdown,
-.high-contrast .searchbar-search-btn,
 .high-contrast .pomodoro-widget,
 .high-contrast .pomodoro-widget.break-mode {
     background: #000000 !important;
@@ -956,13 +936,11 @@
 .high-contrast .todo-text,
 .high-contrast .ql-grid-title,
 .high-contrast .ql-title,
-.high-contrast .ql-url,
 .high-contrast .quicklinksSettings-link,
 .high-contrast .quicklinksSettings-title,
 .high-contrast .ql-grid-link,
 .high-contrast .quicklinksSettings-item,
 .high-contrast .quicklinksSettings-item .quicklinksSettings-link,
-.high-contrast .searchbar-search-btn svg,
 .high-contrast .custom-input,
 .high-contrast .custom-input-light,
 .high-contrast .custom-input-dark {
@@ -1034,7 +1012,6 @@ body {
     overflow: hidden;
     overscroll-behavior: none;
 }
-
 
 /* Bundled font set - woff2 files live at public/assets/fonts/. Each
    is the latin subset, regular weight only. font-display:swap keeps
@@ -1245,8 +1222,7 @@ html.corners-pill {
    (aspect-ratio: 1/1), so a 50% radius is a true circle - the shape
    Chrome's own new-tab shortcuts use. */
 html.corners-pill .ql-grid-cell,
-html.corners-pill .ql-grid-link,
-html.corners-pill .ql-add-cell {
+html.corners-pill .ql-grid-link {
     border-radius: 50%;
 }
 

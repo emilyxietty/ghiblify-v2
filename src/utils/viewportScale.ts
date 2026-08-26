@@ -40,7 +40,6 @@ export const setProportionalScaling = (on: boolean): void => {
   proportionalListeners.forEach((fn) => fn());
 };
 
-export const getProportionalScaling = (): boolean => proportionalEnabled;
 
 /** Reference px → current-viewport px. Use at render. */
 export const toScreenPx = (refPx: number, viewportWidth?: number): number => {

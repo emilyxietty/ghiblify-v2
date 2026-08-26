@@ -138,15 +138,6 @@
     opacity: 1;
 }
 
-/* Action buttons in header */
-.modal-action-btn {
-    transition: background 140ms ease, transform 140ms ease;
-}
-
-.modal-action-btn:hover:not(:disabled):not(.btn-disabled) {
-    transform: translateY(-1px);
-}
-
 /* ---------------------------------------------------------------------------
    Body
    --------------------------------------------------------------------------- */
@@ -295,84 +286,6 @@
 .thumb-fav:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
-}
-
-/* ---------------------------------------------------------------------------
-   Favorites entry - pinned to the top of the list. Selectable like a
-   movie (checkbox toggles inclusion in rotation). Expanded contents
-   show each favorited thumbnail with a per-image unfavorite button.
-   --------------------------------------------------------------------------- */
-
-/* Small info icon next to the Favorites title - hover reveals the
-   tooltip explaining that favorites always rotate. The span is the
-   hover target (TooltipPortal listens at the [data-tooltip] level).
-   Inline-flex centers the inline-mounted SVG vertically with the
-   text without nudging the line height. */
-
-/* "X / Y" count next to each movie title in the summary row.
-   X = images currently kept (post-blacklist), Y = full source list.
-   Same muted treatment as the Favorites/Deleted counters. */
-
-.background-modal .favorites-grid {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    /* Soft custom scrollbar to match the rest of the modal. */
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--light) 25%, transparent)
-        transparent;
-    padding-bottom: 6px;
-}
-
-.background-modal .favorites-grid::-webkit-scrollbar {
-    height: 6px;
-    background: transparent;
-}
-
-.background-modal .favorites-grid::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--light) 25%, transparent);
-    border-radius: var(--radius-pill);
-}
-
-.background-modal .favorites-grid .favorite-thumb-wrap {
-    flex: 0 0 auto;
-}
-
-.background-modal .favorite-thumb-wrap {
-    position: relative;
-}
-
-/* Always-visible pink heart badge in the top-right of each favorited
-   thumbnail so the user knows it's favorited at a glance. Click to
-   unfavorite. */
-.background-modal .favorite-thumb-unfav {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    background: rgba(0, 0, 0, 0.55);
-    color: #ff6b8a;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 140ms ease, transform 140ms ease;
-}
-
-.background-modal .favorite-thumb-unfav:hover {
-    background: rgba(0, 0, 0, 0.78);
-    transform: scale(1.1);
-}
-
-.background-modal .favorite-thumb-unfav svg {
-    font-size: 16px;
-    filter: drop-shadow(0 0 4px rgba(255, 107, 138, 0.5));
 }
 
 /* ---------------------------------------------------------------------------
@@ -576,10 +489,6 @@
     font-weight: 600;
 }
 
-.bg-restore-all {
-    margin-left: auto;
-}
-
 /* One scroller for the whole library - every film's grid lives inside
    it, so the pane reads as a continuous list rather than a viewer that
    swaps one film for another. */
@@ -707,7 +616,6 @@
     cursor: default;
 }
 
-
 .bg-cell:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
@@ -775,7 +683,6 @@
     background: color-mix(in srgb, #ff6b8a 88%, transparent);
     color: #2a0d13;
 }
-
 
 /* Static inside the cluster - the bar owns the position now. */
 .bg-cell .thumb-fav {

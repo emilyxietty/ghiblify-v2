@@ -63,17 +63,8 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
       return;
     }
 
-    // Helper: find nearest positioned ancestor (non-static) for inline mode.
-    const findPositionedAncestor = (el: HTMLElement | null) => {
-      let p = el?.parentElement || null;
-      while (p && getComputedStyle(p).position === "static") {
-        p = p.parentElement;
-      }
-      return p || document.body;
-    };
 
     let ro: ResizeObserver | null = null;
-    let container: HTMLElement | null = null;
 
     const update = () => {
       if (!effectiveAnchor || !popup) return;
@@ -176,7 +167,7 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
   }, [internalOpen]);
 
   // Toggle handler when a trigger is provided
-  const handleTriggerToggle = (e?: React.MouseEvent | React.KeyboardEvent) => {
+  const handleTriggerToggle = () => {
     if (disabled) return;
     setInternalOpen((v) => !v);
   };
@@ -200,7 +191,7 @@ const InlinePopover: React.FC<InlinePopoverProps> = ({
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              handleTriggerToggle(e);
+              handleTriggerToggle();
             }
           }}
           style={{ pointerEvents: "auto" }}

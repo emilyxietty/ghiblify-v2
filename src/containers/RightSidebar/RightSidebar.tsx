@@ -329,7 +329,6 @@ interface BookmarkFolderProps {
 
 const BookmarkFolder: React.FC<BookmarkFolderProps> = ({
   node,
-  parentId,
   depth,
   filter,
   sort,

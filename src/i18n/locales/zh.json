@@ -1,16 +1,9 @@
 {
   "common": {
     "done": "完成",
-    "save": "保存",
-    "cancel": "取消",
     "close": "关闭",
-    "delete": "删除",
-    "add": "添加",
-    "edit": "编辑",
     "reset": "重置",
     "guide": "指南",
-    "search": "搜索",
-    "exit": "退出",
     "offlineCallout": "Wi-Fi 不可用"
   },
   "changelog": {
@@ -57,15 +50,11 @@
       "shikigami": "纸鸟"
     },
     "buttons": {
-      "githubRepo": "Github 仓库",
       "buyCoffee": "请我喝咖啡",
       "guide": "指南",
       "guideAria": "打开指南",
       "rate": "评分",
       "rateAria": "在 Chrome 应用商店评分",
-      "languageAria": "选择语言",
-      "editWidgets": "编辑模式",
-      "resetAllWidgets": "重置所有小组件",
       "selectBackgrounds": "选择背景",
       "deselectBackground": "取消选择背景",
       "deselectBackgroundAria": "将当前背景移出轮播",
@@ -159,37 +148,18 @@
     },
     "contextMenu": {
       "edit": "编辑 {{name}}",
-      "drag": "拖动 {{name}}",
       "hide": "隐藏 {{name}}",
-      "showInRightSidebar": "在右侧栏显示",
-      "hideFromRightSidebar": "从右侧栏隐藏",
       "dockWidthFull": "整宽",
       "dockWidthHalf": "半宽",
-      "time12": "12 小时制",
-      "time24": "24 小时制",
-      "timeAnalog": "指针时钟",
-      "textShadow": "文字阴影",
       "opacity": "不透明度",
-      "blur": "模糊",
       "addLink": "添加新链接",
-      "focusModeOn": "进入专注模式",
-      "focusModeOff": "退出专注模式",
       "selectAvatar": "选择头像",
-      "pomodoroSizeLarge": "大",
-      "pomodoroSizeSmall": "小",
-      "pomodoroSizeMedium": "中",
       "timeFormat": "时钟格式",
       "weatherLocation": "位置",
       "greetingName": "名字",
-      "weatherUseMyLocation": "使用我的位置",
-      "weatherChooseCity": "选择城市…",
-      "weatherRefresh": "立即刷新",
-      "highlight": "高亮",
       "highlightOff": "无",
       "quicklinksView": "视图",
       "weatherDetail": "显示内容",
-      "weatherStyle": "样式",
-      "highlightCustom": "颜色选择器…",
       "typeIn": "加载时打字显示"
     },
     "edit": {
@@ -205,7 +175,6 @@
       "textShadowAria": "文字阴影强度",
       "noCustomization": "无可用选项",
       "dockWidth": "小组件宽度",
-      "darkModeAria": "切换深色模式",
       "timeFormatAria": "选择时钟格式",
       "timeFormat12": "12 小时",
       "timeFormat24": "24 小时",
@@ -231,19 +200,10 @@
         "quote": "台词"
       },
       "infoFieldsLabel": "字段",
-      "infoFieldsDragHint": "拖动以重新排序",
       "typeInSpeed": "打字速度",
       "typeInSpeedAria": "打字速度",
-      "notesShowBorder": "显示边框",
-      "notesHideBorder": "隐藏边框",
-      "notesShowBorderAria": "显示便签边框",
-      "notesHideBorderAria": "隐藏便签边框",
       "weatherUnitAria": "切换摄氏/华氏",
       "weatherUnitLabel": "单位",
-      "pomodoroSizeLabel": "尺寸",
-      "pomodoroSizeSmall": "小",
-      "pomodoroSizeMedium": "中",
-      "pomodoroSizeLarge": "大",
       "pomodoroFocusNoSurface": "专注模式下卡片会隐藏，因此没有可设置的表面",
       "pomodoroImageLabel": "贴纸",
       "pomodoroImage": {
@@ -256,7 +216,6 @@
         "sootsprite": "煤球精灵"
       },
       "pomodoroSoundLabel": "声音",
-      "pomodoroSoundAria": "选择完成提示音",
       "pomodoroVolume": "音量",
       "pomodoroVolumeAria": "完成提示音音量",
       "pomodoroSound": {
@@ -275,8 +234,6 @@
       "weatherLocationSearching": "搜索中…",
       "weatherLocationNoResults": "未找到城市",
       "weatherLocationError": "搜索失败，请重试。",
-      "highlightLabel": "高亮",
-      "highlightAria": "选择高亮颜色",
       "highlightNone": "无高亮",
       "highlightRecent": "最近使用",
       "highlightPresets": "预设",
@@ -294,25 +251,11 @@
       "weatherLayoutAria": "选择天气布局",
       "weatherLayoutStandard": "标准",
       "weatherLayoutCompact": "紧凑",
-      "weatherStylePlain": "简洁",
-      "weatherStyleCard": "卡片",
       "weatherAnimatedIcons": "动画图标",
       "weatherAnimatedOn": "开",
       "weatherAnimatedOff": "关",
       "panelDragHint": "拖动以移动",
-      "notesBorder": "边框",
-      "borderShow": "显示",
-      "borderHide": "隐藏",
-      "notesPaper": "纸张",
-      "notesPaperNone": "无纸张",
-      "notesPaperAria": "纸张颜色",
-      "notesPaperStyle": "纸张样式",
-      "styleSolid": "纯色",
       "styleFrost": "磨砂",
-      "highlightStyle": "高亮样式",
-      "pomodoroColor": "卡片颜色",
-      "pomodoroColorAria": "卡片颜色",
-      "pomodoroColorDefaultAria": "主题默认",
       "highlightTextLight": "浅色",
       "highlightTextDark": "深色",
       "surfaceStyle": "背景",
@@ -328,9 +271,7 @@
       "weatherLocationDeviceOff": "定位服务已关闭",
       "weatherLocationLocating": "正在获取您的位置…",
       "weatherLocationChoose": "手动选择",
-      "guideResize": "调整大小",
-      "surfaceHighlights": "高亮",
-      "pomodoroBreakColor": "休息背景"
+      "surfaceHighlights": "高亮"
     },
     "gapps": {
       "menuAria": "Google 应用",
@@ -373,17 +314,11 @@
     "ariaDialog": "快速链接",
     "addAria": "添加新的快速链接",
     "addTooltip": "添加链接",
-    "saveAria": "保存链接",
-    "saveTooltip": "保存链接",
     "editLink": "编辑链接",
     "deleteLink": "删除链接",
     "deleteAria": "删除 {{title}}",
     "deleteListTooltip": "删除链接",
-    "removeTooltip": "移除链接",
-    "doneDeleteTooltip": "完成删除",
     "labelPlaceholder": "标签（可选）",
-    "labelSrOnly": "标签（可选）",
-    "emptyMessage": "暂无快速链接，请在上方添加。",
     "addTile": "添加",
     "addTitle": "添加链接",
     "editTitle": "编辑链接",
@@ -403,8 +338,6 @@
     "play": "开始",
     "pause": "暂停",
     "reset": "重置",
-    "focus": "专注",
-    "exit": "退出",
     "playAria": "开始计时",
     "pauseAria": "暂停计时",
     "resetAria": "重置计时器",
@@ -502,9 +435,6 @@
     }
   },
   "weather": {
-    "offline": "离线",
-    "permissionDenied": "位置权限被拒绝。请在 Chrome 中启用以查看本地天气。",
-    "permissionUnavailable": "此环境下无法使用地理定位。",
     "fetchError": "无法加载天气，请稍后重试。",
     "feelsLike": "体感 {{temp}}",
     "hi": "最高 {{temp}}",
@@ -576,10 +506,6 @@
     "discordSub": "在此报告问题"
   },
   "widgetSettings": {
-    "openAria": "打开小组件设置",
-    "openTooltip": "小组件设置",
-    "modalTitle": "小组件设置",
-    "modalIntro": "选择小组件在不同屏幕上的行为方式。",
     "proportionalScaling": "随屏幕大小缩放",
     "proportionalScalingSub": "小组件会按视口宽度的比例缩放。"
   },
@@ -606,13 +532,7 @@
       "animatedSub": "{{count}} 张动图，与静态图片一起轮播",
       "animatedBadge": "GIF"
     },
-    "loadingError": "未找到背景。请查看控制台错误。",
-    "contextMenu": {
-      "open": "选择背景...",
-      "favorite": "收藏此照片",
-      "unfavorite": "取消收藏",
-      "delete": "删除此照片"
-    }
+    "loadingError": "未找到背景。请查看控制台错误。"
   },
   "modal": {
     "common": {
@@ -620,7 +540,6 @@
     }
   },
   "callouts": {
-    "focusMode": "按 Esc 退出专注模式",
     "widgetDraggable": "现在可以拖动{{name}}了——点击并拖动即可移动"
   },
   "welcome": {
@@ -711,7 +630,6 @@
   },
   "settings": {
     "title": "设置",
-    "buttonLabel": "设置",
     "buttonAria": "打开设置",
     "permissionsTitle": "权限",
     "permissionsSub": "Ghiblify 默认不请求任何权限。只开启你需要的，撤销后立即生效。",
@@ -719,7 +637,6 @@
     "permissionGeolocationSub": "根据网络连接获取的大致（城市级）位置 — 仅用于获取本地天气预报。无需 GPS，无需位置权限。",
     "permissionBookmarks": "书签",
     "permissionBookmarksSub": "让书签面板读取并整理你的 Chrome 书签。",
-    "storageTitle": "已存储数据",
     "storageSub": "{{count}} 个键 · 共 {{size}}。展开某行可查看内容。",
     "storageEmpty": "尚未存储任何内容。",
     "deleteKey": "删除",
@@ -727,7 +644,6 @@
     "resetTitle": "重置全部",
     "resetSub": "删除所有已保存的设置——小组件、背景、名称、待办等——并重新加载页面。",
     "resetButton": "重置全部",
-    "resetConfirm": "此操作无法撤销。",
     "resetConfirmYes": "是，重置",
     "resetConfirmCancel": "取消",
     "section": {
@@ -749,9 +665,6 @@
     "resetBackground": "重置背景设置",
     "resetCursor": "重置光标",
     "storageGroup": {
-      "widgets": "小组件",
-      "background": "背景",
-      "appearance": "外观",
       "other": "其他"
     },
     "deleteKeyConfirm": "要从存储中删除“{{key}}”吗？其中的数据将无法恢复。",

@@ -1,7 +1,4 @@
-.info-wrapper {
-    position: relative;
-    display: inline-block;
-}
+
 
 .info-container {
     /* The highlight pill's inset, owned here because the leading below

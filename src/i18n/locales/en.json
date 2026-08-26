@@ -1,16 +1,9 @@
 {
   "common": {
     "done": "Done",
-    "save": "Save",
-    "cancel": "Cancel",
     "close": "Close",
-    "delete": "Delete",
-    "add": "Add",
-    "edit": "Edit",
     "reset": "Reset",
     "guide": "Guide",
-    "search": "Search",
-    "exit": "Exit",
     "offlineCallout": "Wi-Fi is not currently available"
   },
   "changelog": {
@@ -57,15 +50,11 @@
       "shikigami": "Paper birds"
     },
     "buttons": {
-      "githubRepo": "Github Repo",
       "buyCoffee": "Buy me a Coffee",
       "guide": "Guide",
       "guideAria": "Open the guide",
       "rate": "Rate me",
       "rateAria": "Rate Ghiblify on the Chrome Web Store",
-      "languageAria": "Choose language",
-      "editWidgets": "Edit Mode",
-      "resetAllWidgets": "Reset All Widgets",
       "selectBackgrounds": "Select Backgrounds",
       "deselectBackground": "Deselect background",
       "deselectBackgroundAria": "Take the current background out of the rotation",
@@ -163,37 +152,18 @@
     },
     "contextMenu": {
       "edit": "Edit {{name}}",
-      "drag": "Drag {{name}}",
       "hide": "Hide {{name}}",
-      "showInRightSidebar": "Show in right sidebar",
-      "hideFromRightSidebar": "Hide from right sidebar",
       "dockWidthFull": "Full width",
       "dockWidthHalf": "Half width",
-      "time12": "12-hour",
-      "time24": "24-hour",
-      "timeAnalog": "Analog",
-      "textShadow": "Text shadow",
       "opacity": "Opacity",
-      "blur": "Blur",
       "addLink": "Add new link",
-      "focusModeOn": "Enter focus mode",
-      "focusModeOff": "Exit focus mode",
       "selectAvatar": "Choose avatar",
-      "pomodoroSizeLarge": "Large",
-      "pomodoroSizeSmall": "Small",
-      "pomodoroSizeMedium": "Medium",
       "timeFormat": "Clock format",
       "weatherLocation": "Location",
       "greetingName": "Name",
-      "weatherUseMyLocation": "Use my location",
-      "weatherChooseCity": "Choose a city…",
-      "weatherRefresh": "Refresh now",
-      "highlight": "Highlight",
       "highlightOff": "None",
       "quicklinksView": "View",
       "weatherDetail": "Detail",
-      "weatherStyle": "Style",
-      "highlightCustom": "Colour picker…",
       "typeIn": "Type in on load"
     },
     "edit": {
@@ -209,7 +179,6 @@
       "textShadowAria": "Text shadow strength",
       "noCustomization": "No customization available",
       "dockWidth": "Widget width",
-      "darkModeAria": "Toggle dark mode",
       "timeFormatAria": "Choose clock format",
       "timeFormat12": "12h",
       "timeFormat24": "24h",
@@ -235,21 +204,12 @@
         "quote": "Quote"
       },
       "infoFieldsLabel": "Fields",
-      "infoFieldsDragHint": "Drag to reorder",
       "typeInSpeed": "Typing speed",
       "typeInSpeedAria": "Typing speed",
-      "notesShowBorder": "Show border",
-      "notesHideBorder": "Hide border",
-      "notesShowBorderAria": "Show the cardborder around the note",
-      "notesHideBorderAria": "Hide the cardborder around the note",
       "weatherUnitAria": "Toggle Celsius / Fahrenheit",
       "weatherUnitLabel": "Unit",
       "weatherUnitC": "°C",
       "weatherUnitF": "°F",
-      "pomodoroSizeLabel": "Size",
-      "pomodoroSizeSmall": "S",
-      "pomodoroSizeMedium": "M",
-      "pomodoroSizeLarge": "L",
       "pomodoroFocusNoSurface": "Focus mode hides the card, so there is no surface to style",
       "pomodoroImageLabel": "Sticker",
       "pomodoroImage": {
@@ -262,7 +222,6 @@
         "sootsprite": "Soot sprite"
       },
       "pomodoroSoundLabel": "Sound",
-      "pomodoroSoundAria": "Choose completion sound",
       "pomodoroVolume": "Volume",
       "pomodoroVolumeAria": "Completion sound volume",
       "pomodoroSound": {
@@ -281,8 +240,6 @@
       "weatherLocationSearching": "Searching…",
       "weatherLocationNoResults": "No cities found",
       "weatherLocationError": "Search failed. Try again.",
-      "highlightLabel": "Highlight",
-      "highlightAria": "Choose a text highlight colour",
       "highlightNone": "No highlight",
       "highlightRecent": "Recent",
       "highlightPresets": "Presets",
@@ -300,25 +257,11 @@
       "weatherLayoutAria": "Choose weather layout",
       "weatherLayoutStandard": "Standard",
       "weatherLayoutCompact": "Compact",
-      "weatherStylePlain": "Plain",
-      "weatherStyleCard": "Card",
       "weatherAnimatedIcons": "Animated icons",
       "weatherAnimatedOn": "On",
       "weatherAnimatedOff": "Off",
       "panelDragHint": "Drag to move",
-      "notesBorder": "Border",
-      "borderShow": "Show",
-      "borderHide": "Hide",
-      "notesPaper": "Paper",
-      "notesPaperNone": "No paper",
-      "notesPaperAria": "Paper colour",
-      "notesPaperStyle": "Paper style",
-      "styleSolid": "Solid",
       "styleFrost": "Frosted",
-      "highlightStyle": "Highlight style",
-      "pomodoroColor": "Card colour",
-      "pomodoroColorAria": "Card colour",
-      "pomodoroColorDefaultAria": "Theme default",
       "highlightTextLight": "Light",
       "highlightTextDark": "Dark",
       "surfaceStyle": "Background",
@@ -334,9 +277,7 @@
       "weatherLocationDeviceOff": "Location services off",
       "weatherLocationLocating": "Finding your location…",
       "weatherLocationChoose": "Select manually",
-      "guideResize": "Resize",
-      "surfaceHighlights": "Highlights",
-      "pomodoroBreakColor": "Break background"
+      "surfaceHighlights": "Highlights"
     },
     "gapps": {
       "menuAria": "Google apps",
@@ -379,19 +320,12 @@
     "ariaDialog": "Quick links",
     "addAria": "Add a new quick link",
     "addTooltip": "Add link",
-    "saveAria": "Save link",
-    "saveTooltip": "Save link",
     "editLink": "Edit link",
     "deleteLink": "Delete link",
     "deleteAria": "Delete {{title}}",
     "deleteListTooltip": "Delete link",
-    "removeTooltip": "Remove links",
-    "doneDeleteTooltip": "Done deleting",
     "labelPlaceholder": "Label (optional)",
-    "labelSrOnly": "Label (optional)",
     "urlPlaceholder": "https://example.com",
-    "urlSrOnly": "URL",
-    "emptyMessage": "No quick links yet. Add one above to get started.",
     "addTile": "Add",
     "addTitle": "Add a link",
     "editTitle": "Edit link",
@@ -411,8 +345,6 @@
     "play": "Start",
     "pause": "Pause",
     "reset": "Reset",
-    "focus": "Focus",
-    "exit": "Exit",
     "playAria": "Start timer",
     "pauseAria": "Pause timer",
     "resetAria": "Reset timer",
@@ -511,9 +443,6 @@
   },
   "weather": {
     "unavailable": "N/A",
-    "offline": "Offline",
-    "permissionDenied": "Location permission denied. Enable it in Chrome to see local weather.",
-    "permissionUnavailable": "Geolocation isn't available in this context.",
     "fetchError": "Couldn't load weather. Try again later.",
     "feelsLike": "Feels like {{temp}}",
     "hi": "H {{temp}}",
@@ -585,10 +514,6 @@
     "discordSub": "report a bug here"
   },
   "widgetSettings": {
-    "openAria": "Open widget settings",
-    "openTooltip": "Widget settings",
-    "modalTitle": "Widget Settings",
-    "modalIntro": "Choose how widgets behave across your screens.",
     "proportionalScaling": "Resize with screen size",
     "proportionalScalingSub": "Widgets scale proportionally to your viewport width."
   },
@@ -615,13 +540,7 @@
       "animatedSub": "{{count}} moving images, mixed in with the stills",
       "animatedBadge": "GIF"
     },
-    "loadingError": "No background found. Check console for errors.",
-    "contextMenu": {
-      "open": "Select Backgrounds...",
-      "favorite": "Favorite this photo",
-      "unfavorite": "Unfavorite this photo",
-      "delete": "Trash this photo"
-    }
+    "loadingError": "No background found. Check console for errors."
   },
   "modal": {
     "common": {
@@ -629,7 +548,6 @@
     }
   },
   "callouts": {
-    "focusMode": "Press Esc to exit focus mode",
     "widgetDraggable": "{{name}} is draggable now - click and drag to move it"
   },
   "welcome": {
@@ -673,7 +591,7 @@
         "rightClickIconCue": "Right-click icon"
       },
       "drag": {
-      "hide": "Hide {{name}}",
+        "hide": "Hide {{name}}",
         "title": "Drag, resize, edit widgets",
         "body1": "Use the edit panel to change the widget's settings.",
         "body2": "Drag the widget itself to move it—no key needed.",
@@ -721,7 +639,6 @@
   },
   "settings": {
     "title": "Settings",
-    "buttonLabel": "Settings",
     "buttonAria": "Open settings",
     "permissionsTitle": "Permissions",
     "permissionsSub": "Ghiblify asks for nothing up front. Turn on only what you use - revoking takes effect immediately.",
@@ -729,7 +646,6 @@
     "permissionGeolocationSub": "Approximate (city-level) location from your network connection - used only to fetch the local forecast. No GPS, no location permission.",
     "permissionBookmarks": "Bookmarks",
     "permissionBookmarksSub": "Lets the bookmarks panel read and organise your Chrome bookmarks.",
-    "storageTitle": "Stored data",
     "storageSub": "{{count}} keys · {{size}} total. Expand a row to see its contents.",
     "storageEmpty": "Nothing is stored yet.",
     "deleteKey": "Delete",
@@ -737,7 +653,6 @@
     "resetTitle": "Reset everything",
     "resetSub": "Deletes every saved setting - widgets, backgrounds, names, todos, the lot - and reloads the page.",
     "resetButton": "Reset everything",
-    "resetConfirm": "This can't be undone.",
     "resetConfirmYes": "Yes, reset",
     "resetConfirmCancel": "Cancel",
     "section": {
@@ -759,9 +674,6 @@
     "resetBackground": "Reset background settings",
     "resetCursor": "Reset cursor",
     "storageGroup": {
-      "widgets": "Widgets",
-      "background": "Background",
-      "appearance": "Appearance",
       "other": "Other"
     },
     "deleteKeyConfirm": "Delete “{{key}}” from storage? Anything it holds is gone for good.",
