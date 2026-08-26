@@ -41,6 +41,7 @@
       "summaryLabel": "스타일",
       "default": "기본",
       "soot": "검댕이",
+      "sootsprite": "걸어다니는 숯검댕이",
       "sparkle": "반짝임",
       "petal": "꽃잎",
       "bubble": "비눗방울",
@@ -208,6 +209,7 @@
       "weatherUnitAria": "섭씨/화씨 전환",
       "weatherUnitLabel": "단위",
       "pomodoroFocusNoSurface": "집중 모드에서는 카드가 숨겨져 꾸밀 표면이 없습니다",
+      "avatarLabel": "캐릭터",
       "pomodoroImageLabel": "스티커",
       "pomodoroImage": {
         "random": "무작위",

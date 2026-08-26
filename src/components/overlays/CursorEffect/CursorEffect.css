@@ -167,6 +167,28 @@
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
 }
 
+/* --- Soot companion --------------------------------------------------
+   A persistent single-file line of animated sprites that chases the
+   cursor (mode "sootsprite"). Position, size and centring margins are
+   inline per sprite (the file shrinks down the line); starts invisible
+   until the first mousemove seeds it. */
+.cursor-companion {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: var(--z-portal, 99999);
+    opacity: 0;
+    transition: opacity 180ms ease;
+}
+
+.cursor-companion img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+}
+
 /* Bubble - translucent, subtle blue rim. */
 .cursor-particle-bubble {
     width: 20px;

@@ -41,6 +41,7 @@
       "summaryLabel": "Style",
       "default": "Default",
       "soot": "Soot sprite",
+      "sootsprite": "Walking soot",
       "sparkle": "Sparkle",
       "petal": "Petal",
       "bubble": "Bubble",
@@ -214,6 +215,7 @@
       "weatherUnitC": "°C",
       "weatherUnitF": "°F",
       "pomodoroFocusNoSurface": "Focus mode hides the card, so there is no surface to style",
+      "avatarLabel": "Character",
       "pomodoroImageLabel": "Sticker",
       "pomodoroImage": {
         "random": "Random",

@@ -1400,40 +1400,37 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       {isAvatarPanel && surfaceRow}
 
       {controls?.avatarSelector && (
-        <div className="edit-panel-avatar-grid" role="radiogroup" aria-label={t("widgets.contextMenu.selectAvatar")}>
-          {AVATAR_OPTIONS.map((avatar) => (
-            <div key={avatar.value} className="edit-panel-avatar-option">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={avatarSettings.selectedAvatar === avatar.value}
-                aria-label={avatar.label}
-                className={`edit-panel-avatar-button${
-                  avatarSettings.selectedAvatar === avatar.value ? " is-active" : ""
-                }`}
-                onMouseEnter={() =>
-                  previewWidgetSettings("avatar", { selectedAvatar: avatar.value })
-                }
-                onMouseLeave={() => previewWidgetSettings("avatar", null)}
-                onClick={() =>
-                  updateWidgetSettings("avatar", { selectedAvatar: avatar.value })
-                }
-              >
-                <img src={avatar.src} alt="" />
-                <span>{avatar.label}</span>
-              </button>
-              {avatar.creator && (
-                avatar.source ? (
-                  <a href={avatar.source} target="_blank" rel="noopener noreferrer">
-                    {avatar.creator}
-                  </a>
-                ) : (
-                  <span className="edit-panel-avatar-credit">{avatar.creator}</span>
-                )
-              )}
-            </div>
-          ))}
-        </div>
+        <Row label={t("widgets.edit.avatarLabel")}>
+          <Dropdown
+            className="edit-panel-dropdown"
+            size="small"
+            variant="outline-light"
+            portal
+            options={AVATAR_OPTIONS.map((avatar) => ({
+              value: avatar.value,
+              label: avatar.label,
+              // The character IS the option - each row leads with its
+              // sprite, same structure as the pomodoro sticker picker.
+              icon: (
+                <img
+                  className="edit-panel-avatar-thumb"
+                  src={avatar.src}
+                  alt=""
+                  loading="lazy"
+                />
+              ),
+            }))}
+            value={avatarSettings.selectedAvatar}
+            onChange={(v) => updateWidgetSettings("avatar", { selectedAvatar: v })}
+            // Hovering a row swaps the sprite on the canvas live; the
+            // widget's own credit chip follows it, so attribution stays
+            // visible while previewing.
+            onOptionPreview={(v) =>
+              previewWidgetSettings("avatar", { selectedAvatar: v })
+            }
+            onPreviewEnd={() => previewWidgetSettings("avatar", null)}
+          />
+        </Row>
       )}
 
       {controls?.gridMode && (

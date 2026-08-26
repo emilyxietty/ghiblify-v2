@@ -41,6 +41,7 @@
       "summaryLabel": "样式",
       "default": "默认",
       "soot": "煤炭精灵",
+      "sootsprite": "散步的煤炭精灵",
       "sparkle": "闪光",
       "petal": "花瓣",
       "bubble": "泡泡",
@@ -208,6 +209,7 @@
       "weatherUnitAria": "切换摄氏/华氏",
       "weatherUnitLabel": "单位",
       "pomodoroFocusNoSurface": "专注模式下卡片会隐藏，因此没有可设置的表面",
+      "avatarLabel": "角色",
       "pomodoroImageLabel": "贴纸",
       "pomodoroImage": {
         "random": "随机",

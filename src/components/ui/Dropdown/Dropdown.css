@@ -37,9 +37,10 @@
     justify-content: center;
 }
 
-/* Sticker thumbnails in the pomodoro image picker - sized like a
-   glyph so rows stay text-height. */
-.dropdown-icon .pomodoro-sticker-thumb {
+/* Sprite thumbnails in the pomodoro sticker + avatar pickers -
+   sized like a glyph so rows stay text-height. */
+.dropdown-icon .pomodoro-sticker-thumb,
+.dropdown-icon .edit-panel-avatar-thumb {
     width: 18px;
     height: 18px;
     object-fit: contain;

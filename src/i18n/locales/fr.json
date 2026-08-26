@@ -35,6 +35,7 @@
     "cursor": {
       "default": "Par défaut",
       "soot": "Noiraud",
+      "sootsprite": "Suie promeneuse",
       "sparkle": "Étincelle",
       "petal": "Pétale",
       "bubble": "Bulle",
@@ -198,6 +199,7 @@
       "weatherUnitAria": "Basculer Celsius / Fahrenheit",
       "weatherUnitLabel": "Unité",
       "pomodoroFocusNoSurface": "Le mode concentration masque la carte : il n’y a plus de surface à styliser",
+      "avatarLabel": "Personnage",
       "pomodoroImageLabel": "Autocollant",
       "pomodoroImage": {
         "random": "Aléatoire",

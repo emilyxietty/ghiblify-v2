@@ -47,6 +47,7 @@ import {
   BackgroundFilters,
   CORNER_STYLES,
   CURSOR_NAMES,
+  cursorAssetPath,
   FONT_NAMES,
   FontName,
   normalizeCursor,
@@ -1148,7 +1149,7 @@ export const LeftSidebar: React.FC = () => {
                     >
                       <img
                         className="preview-cursor-img"
-                        src={assetUrl(`/assets/cursors/${cur}.svg`)}
+                        src={assetUrl(cursorAssetPath(cur))}
                         alt=""
                         aria-hidden="true"
                         draggable={false}
@@ -1199,7 +1200,7 @@ export const LeftSidebar: React.FC = () => {
                       </svg>
                     ) : (
                       <img
-                        src={assetUrl(`/assets/cursors/${name}.svg`)}
+                        src={assetUrl(cursorAssetPath(name))}
                         alt=""
                         aria-hidden="true"
                         draggable={false}

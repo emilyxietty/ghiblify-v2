@@ -691,67 +691,6 @@
     box-shadow: 0 0 0 2px var(--light);
 }
 
-.edit-panel-avatar-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-}
-
-.edit-panel-avatar-option {
-    min-width: 0;
-    text-align: center;
-}
-
-.edit-panel-avatar-button {
-    width: 100%;
-    padding: 7px 5px 5px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: var(--light);
-    font: inherit;
-    font-size: 11px;
-    background: color-mix(in srgb, var(--light) 7%, transparent);
-    border: 1px solid color-mix(in srgb, var(--light) 14%, transparent);
-    border-radius: var(--radius-md, 8px);
-    cursor: pointer;
-    transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
-}
-
-.edit-panel-avatar-button:hover {
-    transform: translateY(-1px);
-    background: color-mix(in srgb, var(--interaction-accent, #8fc7e8) 16%, transparent);
-}
-
-.edit-panel-avatar-button.is-active {
-    border-color: var(--interaction-accent, #8fc7e8);
-    box-shadow: 0 0 0 1px var(--interaction-accent, #8fc7e8);
-}
-
-.edit-panel-avatar-button img {
-    width: 54px;
-    height: 54px;
-    object-fit: contain;
-    border-radius: var(--radius-sm, 6px);
-}
-
-.edit-panel-avatar-option a,
-.edit-panel-avatar-credit {
-    display: block;
-    margin-top: 3px;
-    overflow: hidden;
-    color: color-mix(in srgb, var(--light) 66%, transparent);
-    font-size: 9px;
-    line-height: 1.2;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.edit-panel-avatar-option a:hover {
-    color: var(--light);
-}
-
 .edit-panel-slider-row {
     display: flex;
     flex-direction: column;

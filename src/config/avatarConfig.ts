@@ -73,4 +73,30 @@ export const AVATAR_OPTIONS: AvatarOption[] = [
     src: assetUrl("/assets/avatars/chibichu.webp"),
   },
   { value: "totoro", label: "Totoro", src: assetUrl("/assets/avatars/totoro.webp") },
+  {
+    value: "sheeta",
+    label: "Sheeta",
+    src: assetUrl("/assets/avatars/sheeta.gif"),
+    creator: "@kyecheng",
+    source:
+      "https://giphy.com/stickers/castle-in-the-sky-laputa-sheeta-3tKc39IvFQzl6XRero",
+  },
+  // The pomodoro break stickers double as avatars. They reference the
+  // pomodoro copies directly so the packaged extension ships each GIF
+  // once. "chibi" is taken by the Giphy sticker above, so the pomodoro
+  // one keys as "chibi-totoro".
+  { value: "mei", label: "Mei", src: assetUrl("/assets/pomodoro/mei.gif") },
+  {
+    value: "sootsprite",
+    label: "Soot sprite",
+    src: assetUrl("/assets/pomodoro/sootsprite.gif"),
+    source: "https://giphy.com/stickers/art-movie-ghibli-Mme4s8S3cm7fi",
+  },
+  { value: "heen", label: "Heen", src: assetUrl("/assets/pomodoro/heen.gif") },
+  {
+    value: "chibi-totoro",
+    label: "Chibi Totoro",
+    src: assetUrl("/assets/pomodoro/chibi.gif"),
+  },
+  { value: "catbus", label: "Catbus", src: assetUrl("/assets/pomodoro/catbus.gif") },
 ];

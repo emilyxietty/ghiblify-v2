@@ -41,6 +41,7 @@
       "summaryLabel": "スタイル",
       "default": "デフォルト",
       "soot": "まっくろくろすけ",
+      "sootsprite": "歩くまっくろくろすけ",
       "sparkle": "きらめき",
       "petal": "花びら",
       "bubble": "あわ",
@@ -208,6 +209,7 @@
       "weatherUnitAria": "摂氏/華氏を切替",
       "weatherUnitLabel": "単位",
       "pomodoroFocusNoSurface": "集中モードではカードが非表示になるため、変更できる面がありません",
+      "avatarLabel": "キャラクター",
       "pomodoroImageLabel": "スタンプ",
       "pomodoroImage": {
         "random": "ランダム",

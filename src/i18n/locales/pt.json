@@ -36,6 +36,7 @@
       "summaryLabel": "Estilo",
       "default": "Padrão",
       "soot": "Duende-da-fuligem",
+      "sootsprite": "Fuligem andarilha",
       "sparkle": "Brilho",
       "petal": "Pétala",
       "bubble": "Bolha",
@@ -202,6 +203,7 @@
       "weatherUnitAria": "Alternar Celsius / Fahrenheit",
       "weatherUnitLabel": "Unidade",
       "pomodoroFocusNoSurface": "O modo concentração oculta o cartão, então não há superfície para estilizar",
+      "avatarLabel": "Personagem",
       "pomodoroImageLabel": "Adesivo",
       "pomodoroImage": {
         "random": "Aleatório",

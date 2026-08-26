@@ -125,6 +125,9 @@ export const CURSOR_NAMES = [
   "strawberry",
   // The folded paper birds from Spirited Away.
   "shikigami",
+  // The animated waving soot ball - the pomodoro break sticker,
+  // emitted as a trail. Distinct from "soot", the static fluff.
+  "sootsprite",
 ] as const;
 export type CursorName = (typeof CURSOR_NAMES)[number];
 
@@ -270,6 +273,15 @@ export const normalizeCursor = (value: unknown): CursorName =>
   (CURSOR_NAMES as readonly string[]).includes(value as string)
     ? (value as CursorName)
     : "default";
+
+/** Where a cursor mode's particle art lives. Every mode ships an SVG
+ *  under /assets/cursors/ except "sootsprite", which reuses the
+ *  pomodoro break GIF so the animated file is bundled once. Feed the
+ *  result through `assetUrl`. */
+export const cursorAssetPath = (name: CursorName): string =>
+  name === "sootsprite"
+    ? "/assets/pomodoro/sootsprite.gif"
+    : `/assets/cursors/${name}.svg`;
 
 /** The tint Frost shipped with, as a hex so the colour input can show
  *  it: rgb(10, 14, 20), the dark slate its glass has always used. */

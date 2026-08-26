@@ -36,6 +36,7 @@
       "summaryLabel": "Estilo",
       "default": "Por defecto",
       "soot": "Duendecillo del polvo",
+      "sootsprite": "Hollín caminante",
       "sparkle": "Destello",
       "petal": "Pétalo",
       "bubble": "Burbuja",
@@ -202,6 +203,7 @@
       "weatherUnitAria": "Alternar Celsius / Fahrenheit",
       "weatherUnitLabel": "Unidad",
       "pomodoroFocusNoSurface": "El modo concentración oculta la tarjeta, así que no hay superficie que personalizar",
+      "avatarLabel": "Personaje",
       "pomodoroImageLabel": "Pegatina",
       "pomodoroImage": {
         "random": "Aleatorio",
