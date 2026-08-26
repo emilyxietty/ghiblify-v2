@@ -37,29 +37,50 @@
        element with higher specificity, so don't fight it here - the
        pin-to-start lives on .notes-editor-shell below, which the
        positional rule doesn't reach. */
-    background-image: url("/assets/notes/cardborder.svg");
-    /* `contain` preserves the SVG's natural square ratio - never
-       stretched. If the user resizes to a non-square footprint, the
-       cream background fills the letterboxed gaps. */
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+    /* The painted border lives on ::before (below), inset from the
+       edge - see the note there. */
     /* Rounded corners on the cream backing so the card reads as a
        soft-cornered piece of paper rather than a hard rectangle.
-       The SVG's painted corners sit on top of this. Follows the corner
-       setting like every other surface - 16px was the old fixed value,
-       which --radius-xl matches exactly at the Rounded default. */
+       Follows the corner setting like every other surface - 16px was
+       the old fixed value, which --radius-xl matches exactly at the
+       Rounded default. */
     border-radius: var(--radius-xl);
+    /* How far the painted border pulls in from the paper's edge. The
+       art is a square-cornered drawing; a square corner sits inside a
+       curve of radius R only once it is inset R * (1 - 1/sqrt 2) ~ 0.3R,
+       and the corner loops have thickness, so a few px on top. At the
+       Rounded default that is ~8px; the Soft (pill) setting's 32px
+       radius used to slice clean through the loops. */
+    --notes-border-inset: calc(var(--radius-xl) * 0.3 + 3px);
     overflow: hidden;
     container-name: notes-widget;
     container-type: inline-size;
 }
 
+/* The painted border. Its own layer so it can be inset by
+   --notes-border-inset while the paper (background-color on the note)
+   still fills to the rounded edge. `contain` preserves the SVG's
+   natural square ratio - never stretched; on a non-square footprint
+   the paper fills the letterboxed gaps, exactly as before. Sits under
+   the editor (.notes-editor-shell is positioned and later in the DOM)
+   and never takes the pointer. */
+.notes-widget::before {
+    content: "";
+    position: absolute;
+    inset: var(--notes-border-inset, 0px);
+    background: url("/assets/notes/cardborder.svg") center / contain
+        no-repeat;
+    pointer-events: none;
+}
+
 /* Border-off variant - drop the cardborder.svg layer and tighten
    the padding (no painted edge to clear). The cream backing stays
    so the note still reads as paper. */
+.notes-widget.no-border::before {
+    display: none;
+}
+
 .notes-widget.no-border {
-    background-image: none;
     /* ≈ the old 18px at the 260px default, scaling with the note. */
     padding: calc(7% * var(--pad-scale, 1));
 }
