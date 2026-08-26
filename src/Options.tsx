@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Dropdown } from "./components/Dropdown/Dropdown";
+import { Dropdown } from "./components/ui/Dropdown/Dropdown";
 import {
   DiscordIcon,
   EmailIcon,
   LocalCafeIcon,
   StarIcon,
-} from "./components/Icons/Icons";
-import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
+} from "./components/ui/Icons/Icons";
+import TooltipPortal from "./components/ui/TooltipPortal/TooltipPortal";
 import { SOCIALS } from "./config/socials";
 import { LANGUAGES, getLocale, setLocale, useT } from "./i18n/i18n";
 import {

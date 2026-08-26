@@ -1,22 +1,22 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
-import { HelpOutlineIcon } from "./components/Icons/Icons";
+import { HelpOutlineIcon } from "./components/ui/Icons/Icons";
 import "./App.css";
-import { Button } from "./components/Button/Button";
+import { Button } from "./components/ui/Button/Button";
 // Lazy - fetched only on first guide open. Saves it from the initial
 // newtab paint chunk.
-const WelcomeModal = lazy(() => import("./components/WelcomeModal/WelcomeModal"));
-import { Background } from "./containers/Background/Background";
-import { LeftSidebar } from "./containers/LeftSidebar/LeftSidebar";
-import { DockWidget } from "./containers/RightDock/DockWidget";
-import { RightDock } from "./containers/RightDock/RightDock";
-import { RightSidebar } from "./containers/RightSidebar/RightSidebar";
-import { Widget } from "./containers/Widget/Widget";
+const WelcomeModal = lazy(() => import("./components/dialogs/WelcomeModal/WelcomeModal"));
+import { Background } from "./layout/Background/Background";
+import { LeftSidebar } from "./layout/LeftSidebar/LeftSidebar";
+import { DockWidget } from "./layout/RightDock/DockWidget";
+import { RightDock } from "./layout/RightDock/RightDock";
+import { RightSidebar } from "./layout/RightSidebar/RightSidebar";
+import { Widget } from "./widgets/Widget/Widget";
 import {
   WidgetRenderer,
   type FilmInfo,
-} from "./containers/WidgetRenderer/WidgetRenderer";
-import TooltipPortal from "./components/TooltipPortal/TooltipPortal";
-import CursorEffect from "./components/CursorEffect/CursorEffect";
+} from "./widgets/WidgetRenderer/WidgetRenderer";
+import TooltipPortal from "./components/ui/TooltipPortal/TooltipPortal";
+import CursorEffect from "./components/overlays/CursorEffect/CursorEffect";
 import {
   CANVAS_WIDGET_KEYS,
   DOCK_WIDGET_KEYS,

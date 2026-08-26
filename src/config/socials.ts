@@ -5,7 +5,7 @@ import {
   InstagramIcon,
   LinkedInIcon,
   TikTokIcon,
-} from "../components/Icons/Icons";
+} from "../components/ui/Icons/Icons";
 
 /**
  * Shared social-links config. Read by both the in-app SocialsModal
