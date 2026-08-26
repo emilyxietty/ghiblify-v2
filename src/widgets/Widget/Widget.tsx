@@ -7,6 +7,7 @@ import { RemoveIcon } from "../../components/ui/Icons/Icons";
 // edit mode.
 const EditWidget = lazy(() => import("../../components/editor/EditWidget/EditWidget"));
 import { isTypeInUnavailable } from "../../config/widgetConfig";
+import { isInsideEditable } from "../../utils/isEditableTarget";
 import { getWidgetConfig, WidgetKey } from "../../config/widgetConfig";
 import { useAppContext } from "../../contexts/AppContext";
 import { getWidgetSurfacePresentation } from "../../utils/widgetSurfacePresentation";
@@ -716,18 +717,8 @@ export const Widget: React.FC<WidgetProps> = ({
         // hijacking those would break basic editing UX. We DO still
         // stop propagation so the background's right-click handler
         // doesn't fire either.
-        const target = e.target as HTMLElement | null;
-        const isEditable = !!(
-          target &&
-          (target.matches?.(
-            "input, textarea, [contenteditable], [contenteditable='true']"
-          ) ||
-            target.closest?.(
-              "input, textarea, [contenteditable], [contenteditable='true']"
-            ))
-        );
         e.stopPropagation();
-        if (isEditable) return;
+        if (isInsideEditable(e.target)) return;
         e.preventDefault();
         setEditingWidgetKey(storageKey);
       }}

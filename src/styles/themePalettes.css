@@ -139,6 +139,9 @@
     --ui-chrome-border: rgba(255, 255, 255, 0.18);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Ghibli rich (default)
+   --------------------------------------------------------------------------- */
 .theme-ghibli {
     --dark: #1f2620;
     --dark-rgb: 31, 38, 32;
@@ -155,6 +158,13 @@
     --purple-dark: #5a4374;
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Spirited Away - light-mode palette. Soft pink-cream paper
+   for widget surfaces, deep plum text for legibility, with vivid
+   soot-sprite pink as the dominant accent and herb-bath green as
+   the secondary. Sidebar uses a coral-pink → light-green gradient
+   so both accent colors read at a glance.
+   --------------------------------------------------------------------------- */
 .theme-spirited {
     --dark: #fce0db;
     --dark-rgb: 252, 224, 219;
@@ -175,16 +185,21 @@
     --light: rgba(74, 38, 50, 0.95);
     --light-muted: rgba(74, 38, 50, 0.6);
     --text-shadow-color: rgba(253, 242, 238, 0.85);
-    --sidebar-bg: linear-gradient(
-        160deg,
-        rgba(250, 184, 200, 0.92) 0%,
-        rgba(204, 232, 184, 0.92) 100%
-    );
+    --sidebar-bg: linear-gradient(160deg,
+            rgba(250, 184, 200, 0.92) 0%,
+            rgba(204, 232, 184, 0.92) 100%);
     --sidebar-card: rgba(255, 255, 255, 0.45);
     --focus-ring: rgba(232, 93, 138, 0.95);
     --disabled-light: rgba(110, 60, 80, 0.5);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Howl's Moving Castle - Sophie's curse-grey hair as the
+   primary accent ("silver" / soft pewter), the dusky periwinkle of
+   her dress, and the misty alpine green-blue of the meadow scenes.
+   Pulled the base toward a softer dusk-blue (less navy than before)
+   so the silver accents read against it.
+   --------------------------------------------------------------------------- */
 .theme-howls {
     --dark: #2a3a5c;
     --dark-rgb: 42, 58, 92;
@@ -206,6 +221,9 @@
     --focus-ring: rgba(196, 200, 212, 0.95);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Totoro - deep forest, mossy greens, warm earth
+   --------------------------------------------------------------------------- */
 .theme-totoro {
     --dark: #1a3018;
     --dark-rgb: 26, 48, 24;
@@ -225,6 +243,13 @@
     --focus-ring: rgba(245, 130, 165, 0.9);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Ponyo - Ponyo's actual palette: she's a goldfish-girl in a red
+   dress against deep ocean blue, but the FILM reads as mostly blue
+   (sea, sky) with bright pink/red accents (her dress, hair). Lean
+   into the deep blue base and use pink as the primary accent rather
+   than coral-on-everything.
+   --------------------------------------------------------------------------- */
 .theme-ponyo {
     --dark: #0a2a52;
     --dark-rgb: 10, 42, 82;
@@ -244,6 +269,9 @@
     --focus-ring: rgba(255, 130, 165, 0.95);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Sky - bright cyan, sun yellow, cheerful
+   --------------------------------------------------------------------------- */
 .theme-sky {
     --dark: #14406e;
     --dark-rgb: 20, 64, 110;
@@ -263,6 +291,9 @@
     --focus-ring: rgba(245, 130, 165, 0.95);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Butter - neutral light, sand + sage + warm clay
+   --------------------------------------------------------------------------- */
 .theme-butter {
     --dark: #efe2c4;
     --dark-rgb: 239, 226, 196;
@@ -286,6 +317,9 @@
     --disabled-light: rgba(110, 90, 60, 0.45);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Mint - pale green + butter yellow + soft coral
+   --------------------------------------------------------------------------- */
 .theme-mint {
     --dark: #c8e8d0;
     --dark-rgb: 200, 232, 208;
@@ -309,6 +343,11 @@
     --disabled-light: rgba(60, 110, 80, 0.45);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Spring - pastel pink + pastel green together. Light theme: soft
+   pink-cream sidebar with sage green and rose as paired accents, both
+   visibly present. Dark text on light surfaces.
+   --------------------------------------------------------------------------- */
 .theme-spring {
     --dark: #f4d2dc;
     --dark-rgb: 244, 210, 220;
@@ -331,16 +370,18 @@
     --text-shadow-color: rgba(255, 240, 246, 0.85);
     /* Sidebar gradient: pink → mint, with both stops more saturated so
        the dual-tone reads clearly at a glance. */
-    --sidebar-bg: linear-gradient(
-        160deg,
-        rgba(245, 195, 215, 0.94) 0%,
-        rgba(195, 235, 200, 0.94) 100%
-    );
+    --sidebar-bg: linear-gradient(160deg,
+            rgba(245, 195, 215, 0.94) 0%,
+            rgba(195, 235, 200, 0.94) 100%);
     --sidebar-card: rgba(255, 248, 252, 0.55);
     --focus-ring: rgba(245, 90, 146, 0.95);
     --disabled-light: rgba(120, 60, 90, 0.5);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Peony - pastel pink + pastel sky blue, paired equally.
+   Light theme: light blue-pink wash sidebar, dark plum text.
+   --------------------------------------------------------------------------- */
 .theme-peony {
     --dark: #d8d4ec;
     --dark-rgb: 216, 212, 236;
@@ -361,16 +402,16 @@
     --light-muted: rgba(60, 36, 70, 0.6);
     --text-shadow-color: rgba(255, 240, 250, 0.85);
     /* Sidebar gradient: blue → pink so both colors live in chrome itself */
-    --sidebar-bg: linear-gradient(
-        160deg,
-        rgba(184, 216, 240, 0.94) 0%,
-        rgba(248, 200, 224, 0.94) 100%
-    );
+    --sidebar-bg: linear-gradient(160deg,
+            rgba(184, 216, 240, 0.94) 0%,
+            rgba(248, 200, 224, 0.94) 100%);
     --sidebar-card: rgba(255, 248, 252, 0.55);
     --focus-ring: rgba(255, 138, 174, 0.95);
     --disabled-light: rgba(110, 70, 100, 0.5);
 }
 
+/* Light - neutral grayscale (the palette formerly named "mono"). Soft
+   off-white surfaces with dark text. */
 .theme-light {
     --dark: #ececec;
     --dark-rgb: 236, 236, 236;
@@ -397,6 +438,8 @@
     --disabled-light: rgba(120, 120, 120, 0.5);
 }
 
+/* Dark - neutral grayscale, the inverse of "Light". Charcoal surfaces
+   with bright off-white text. Mirror of the structure above. */
 .theme-dark {
     --dark: #1a1a1a;
     --dark-rgb: 26, 26, 26;
@@ -420,10 +463,19 @@
     --disabled-light: rgba(120, 120, 120, 0.55);
 }
 
+/* ---------------------------------------------------------------------------
+   Theme: Frost - Apple Liquid Glass aesthetic. Widget surfaces become
+   nearly clear panes of frosted glass: heavy blur + saturation boost
+   on the backdrop-filter so the Ghibli photo bleeds through with even
+   richer color than it has natively, plus a hard alpha cap so the
+   surface never goes fully opaque even when the user maxes the opacity
+   slider. Text is the cream--light pair, kept dark so it reads against
+   any frosted background.
+   --------------------------------------------------------------------------- */
 .theme-frost {
-    --dark: #ffffff;
+    --dark: #000000;
     --dark-rgb: 255, 255, 255;
-    --dark-muted: rgba(255, 255, 255, 0.7);
+    --dark-muted: rgba(0, 0, 0, 0.7);
     --cream: #ffffff;
     --cream-rgb: 255, 255, 255;
     --red: #c8a8b8;
@@ -434,13 +486,23 @@
     --green: #a8c8b0;
     --rose: #d8b8c4;
     --purple-dark: #c8c0d8;
-    /* White text - the Frost glass keeps the Ghibli photo visible
-       behind every surface, so light text + a soft dark halo reads
-       cleanest regardless of which film is showing. */
-    --light: rgba(255, 255, 255, 0.96);
-    --light-muted: rgba(255, 255, 255, 0.7);
-    --text-shadow-color: rgba(0, 0, 0, 0.55);
-    --sidebar-bg: rgba(10, 14, 20, 0.62);
+    /* Text follows the tint. White-on-glass reads cleanest over a
+       photo, which is what the fallbacks give you - but Frost is the
+       one palette whose surface colour the user picks, and white text
+       on a white tint is nothing at all. AppContext writes --frost-ink
+       (and its muted + halo companions) from the tint's luminance and
+       strength, so a pale glass flips the whole palette to ink without
+       a single per-component override. */
+    --light: var(--frost-ink, rgba(255, 255, 255, 0.96));
+    --light-muted: var(--frost-ink-muted, rgba(255, 255, 255, 0.7));
+    --text-shadow-color: var(--frost-text-shadow, rgba(0, 0, 0, 0.55));
+    /* Every glass alpha below is the shipped value TIMES --frost-alpha
+       (the opacity knob), so the hierarchy holds at any setting: a
+       dialog stays more opaque than the sidebar, and 0 leaves pure
+       blur with no tint at all. The solid pills (btn-dark/-light, the
+       QuickLinks add button) and the Pomodoro card keep fixed alphas -
+       they're controls and a widget surface, not the palette's glass. */
+    --sidebar-bg: rgba(var(--frost-rgb, 10, 14, 20), calc(0.62 * var(--frost-alpha, 1)));
     --sidebar-card: rgba(255, 255, 255, 0.08);
     --focus-ring: rgba(120, 150, 180, 0.85);
     --disabled-light: rgba(80, 100, 120, 0.5);
@@ -455,5 +517,5 @@
        glass automatically - no per-component .theme-frost override
        needed. (Without this, cards using `rgba(var(--surface-rgb),…)`
        would inherit the white --dark-rgb above and disappear.) */
-    --surface-rgb: 10, 14, 20;
+    --surface-rgb: var(--frost-rgb, 10, 14, 20);
 }

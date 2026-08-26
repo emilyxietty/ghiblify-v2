@@ -20,6 +20,7 @@ import { useRightDockGuide } from "../../contexts/RightDockGuideContext";
 import { getWidgetSurfacePresentation } from "../../utils/widgetSurfacePresentation";
 import { useT } from "../../i18n/i18n";
 import "./DockWidget.css";
+import { isInsideEditable } from "../../utils/isEditableTarget";
 
 const EditWidget = lazy(() => import("../../components/editor/EditWidget/EditWidget"));
 
@@ -94,12 +95,8 @@ export const DockWidget: React.FC<DockWidgetProps> = ({
       data-guide-right-click={t("rightDock.guide.rightClickCue")}
       style={surfacePresentation.style}
       onContextMenu={(e) => {
-        const target = e.target as HTMLElement | null;
-        const isEditable = !!target?.closest(
-          "input, textarea, [contenteditable], [contenteditable='true']",
-        );
         e.stopPropagation();
-        if (isEditable) return;
+        if (isInsideEditable(e.target)) return;
         e.preventDefault();
         setEditing(true);
         guide.onWidgetEdit(storageKey);

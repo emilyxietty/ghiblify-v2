@@ -9,3 +9,14 @@ export const isEditableTarget = (target: EventTarget | null): boolean => {
   const tag = target.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 };
+
+const EDITABLE_SELECTOR =
+  "input, textarea, select, [contenteditable], [contenteditable='true']";
+
+/** True when `target` is, or sits inside, an editable surface. The
+ *  right-click handlers on widgets use this to leave the browser's
+ *  own context menu (copy / paste / spell-check) alone over text
+ *  fields, where `isEditableTarget`'s exact-element check is not
+ *  enough - a click can land on a span inside a contenteditable. */
+export const isInsideEditable = (target: EventTarget | null): boolean =>
+  target instanceof Element && !!target.closest(EDITABLE_SELECTOR);
