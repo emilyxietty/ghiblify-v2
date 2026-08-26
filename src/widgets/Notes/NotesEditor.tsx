@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import type { NoteKey } from "../../config/widgetConfig";
 import {
   InitialConfigType,
   LexicalComposer,
@@ -205,8 +206,9 @@ interface PersistHandle {
 const DEBOUNCE_MS = 300;
 
 const PersistPlugin: React.FC<{
+  storageKey: NoteKey;
   handle: React.MutableRefObject<PersistHandle>;
-}> = ({ handle }) => {
+}> = ({ handle, storageKey }) => {
   const { updateWidgetSettings } = useAppContext();
   const pending = useRef<{ json: string; text: string } | null>(null);
   const timer = useRef<number | null>(null);
@@ -220,7 +222,7 @@ const PersistPlugin: React.FC<{
     const { json, text } = pending.current;
     pending.current = null;
     handle.current.lastSynced = json;
-    updateWidgetSettings("notes", { content: text, richContent: json });
+    updateWidgetSettings(storageKey, { content: text, richContent: json });
   }, [handle, updateWidgetSettings]);
 
   // Debounced persist - coalesces typing bursts (same cadence the
@@ -1536,13 +1538,15 @@ const FloatingToolbarPlugin: React.FC = () => {
 // can be code-split into its own chunk and lazy-loaded. The lightweight
 // paper shell (Notes.tsx) renders instantly and drops this in once the
 // chunk arrives, so the note no longer waits on Lexical to paint.
-const NotesEditor: React.FC = () => {
+const NotesEditor: React.FC<{ storageKey?: NoteKey }> = ({
+  storageKey = "notes",
+}) => {
   const t = useT();
   // Display reads merged settings - `showBorder` flips per surface
   // (dock + canvas can have different border states). Content writes
   // go through updateWidgetSettings (canvas-only) inside
   // PersistPlugin so the typed text stays a single shared note.
-  const { settings } = useWidgetSettings("notes");
+  const { settings } = useWidgetSettings(storageKey);
 
   // Shared loop-guard between persist (outbound) and external sync
   // (inbound). Seeded with the mounted state so neither direction
@@ -1633,7 +1637,7 @@ const NotesEditor: React.FC = () => {
           is never reinterpreted, so a note that literally says
           "# groceries" keeps looking exactly like it always did. */}
       <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
-      <PersistPlugin handle={syncHandle} />
+      <PersistPlugin handle={syncHandle} storageKey={storageKey} />
       <ExternalSyncPlugin
         richContent={settings.richContent}
         content={settings.content}

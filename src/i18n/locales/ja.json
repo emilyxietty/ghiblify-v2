@@ -140,7 +140,10 @@
       "weather": "天気",
       "notes": "付箋",
       "rightSidebar": "右サイドバー",
-      "googleApps": "Google アプリ"
+      "googleApps": "Google アプリ",
+      "notes2": "付箋 2",
+      "notes3": "付箋 3",
+      "notes4": "付箋 4"
     },
     "tooltip": {
       "show": "{{name}}を表示",
@@ -271,7 +274,10 @@
       "weatherLocationDeviceOff": "位置情報サービスはオフ",
       "weatherLocationLocating": "現在地を取得中…",
       "weatherLocationChoose": "手動で選ぶ",
-      "surfaceHighlights": "ハイライト"
+      "surfaceHighlights": "ハイライト",
+      "notesNewLabel": "付箋",
+      "notesNew": "新しい付箋",
+      "notesNewFull": "付箋は{{max}}枚まで"
     },
     "gapps": {
       "menuAria": "Google アプリ",

@@ -591,6 +591,9 @@ export interface WidgetSettingsMap {
   bookmarks: BookmarksSettings;
   weather: WeatherSettings;
   notes: NotesSettings;
+  notes2: NotesSettings;
+  notes3: NotesSettings;
+  notes4: NotesSettings;
   rightSidebar: RightSidebarSettings;
   googleApps: GoogleAppsSettings;
 }
@@ -610,9 +613,22 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "bookmarks",
   "weather",
   "notes",
+  "notes2",
+  "notes3",
+  "notes4",
   "rightSidebar",
   "googleApps",
 ];
+
+/** The sticky-note slots. One widget key per note: the app keys every
+ *  widget by a fixed name, so "another note" is another slot revealed
+ *  from the note's edit panel rather than a dynamic instance. `notes`
+ *  is the one the sidebar toggle and the dock know about; the rest
+ *  exist only on the canvas and only while shown. */
+export const NOTE_KEYS = ["notes", "notes2", "notes3", "notes4"] as const;
+export type NoteKey = (typeof NOTE_KEYS)[number];
+export const isNoteKey = (key: string): key is NoteKey =>
+  (NOTE_KEYS as readonly string[]).includes(key);
 
 /**
  * Widget placement lives here so the canvas, sidebar, and dock do not
@@ -632,6 +648,9 @@ export const CANVAS_WIDGET_KEYS = [
   "weather",
   "googleApps",
   "notes",
+  "notes2",
+  "notes3",
+  "notes4",
 ] as const satisfies readonly WidgetKey[];
 
 export type CanvasWidgetKey = (typeof CANVAS_WIDGET_KEYS)[number];
@@ -785,6 +804,54 @@ export interface WidgetConfig<K extends WidgetKey> {
 }
 
 type WidgetConfigsType = { [K in WidgetKey]: WidgetConfig<K> };
+
+
+/** The sticky note's config, hoisted so the extra note slots can be
+ *  built from it (see noteSlot below). */
+const NOTES_CONFIG: WidgetConfig<"notes"> = {
+  name: "Notes",
+  // Left edge, vertically centred. x is the widget's CENTRE (the
+  // shell is translate(-50%, 0)) and y is its TOP, so the y sits half
+  // the note's height (260px, ~24vh) above the 50% line.
+  position: { x: 12, y: 38 },
+  // Square footprint so the cardborder.svg (square) sits flush
+  // against the widget's edges with no letterboxing cream gap
+  // around it. squareLock ties the two axes during drag-resize so
+  // the note stays square at every size; identical bounds on both
+  // axes keep the snapped values aligned.
+  settings: {
+    width: 260,
+    height: 260,
+    content: "",
+    showBorder: true,
+    paperColor: null,
+    paperNone: false,
+    paperFrost: false,
+    opacity: 100,
+    surfaceColor: null,
+    blur: 0,
+    textColor: "auto",
+  },
+  width: { min: 200, max: 600, step: 20 },
+  height: { min: 200, max: 600, step: 20 },
+  squareLock: true,
+  // todoFrosted = the shared Background row (paper tint / ink /
+  // opacity / blur), with the sticky-pad colours as its palette.
+  customControls: { notesShowBorder: true, todoFrosted: true },
+};
+
+/** Slot n of the note pool: the same widget, offset a little down and
+ *  to the right of the previous one so a freshly revealed note never
+ *  lands exactly on top of its sibling. */
+const noteSlot = <K extends NoteKey>(n: number): WidgetConfig<K> => ({
+  ...NOTES_CONFIG,
+  name: `Notes ${n}`,
+  position: {
+    x: NOTES_CONFIG.position.x + 4 * (n - 1),
+    y: NOTES_CONFIG.position.y + 4 * (n - 1),
+  },
+  settings: { ...NOTES_CONFIG.settings },
+}) as WidgetConfig<K>;
 
 export const WIDGET_CONFIGS: WidgetConfigsType = {
   time: {
@@ -1005,37 +1072,10 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
       weatherLocation: true,
     },
   },
-  notes: {
-    name: "Notes",
-    // Left edge, vertically centred. x is the widget's CENTRE (the
-    // shell is translate(-50%, 0)) and y is its TOP, so the y sits half
-    // the note's height (260px, ~24vh) above the 50% line.
-    position: { x: 12, y: 38 },
-    // Square footprint so the cardborder.svg (square) sits flush
-    // against the widget's edges with no letterboxing cream gap
-    // around it. squareLock ties the two axes during drag-resize so
-    // the note stays square at every size; identical bounds on both
-    // axes keep the snapped values aligned.
-    settings: {
-      width: 260,
-      height: 260,
-      content: "",
-      showBorder: true,
-      paperColor: null,
-      paperNone: false,
-      paperFrost: false,
-      opacity: 100,
-      surfaceColor: null,
-      blur: 0,
-      textColor: "auto",
-    },
-    width: { min: 200, max: 600, step: 20 },
-    height: { min: 200, max: 600, step: 20 },
-    squareLock: true,
-    // todoFrosted = the shared Background row (paper tint / ink /
-    // opacity / blur), with the sticky-pad colours as its palette.
-    customControls: { notesShowBorder: true, todoFrosted: true },
-  },
+  notes: NOTES_CONFIG,
+  notes2: noteSlot(2),
+  notes3: noteSlot(3),
+  notes4: noteSlot(4),
   googleApps: {
     name: "Google apps",
     // Top-right region, mirroring Google's own NTP cluster - inset a

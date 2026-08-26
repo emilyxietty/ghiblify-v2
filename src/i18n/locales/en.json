@@ -144,7 +144,10 @@
       "weather": "Weather",
       "notes": "Sticky note",
       "rightSidebar": "Right sidebar",
-      "googleApps": "Google apps"
+      "googleApps": "Google apps",
+      "notes2": "Sticky note 2",
+      "notes3": "Sticky note 3",
+      "notes4": "Sticky note 4"
     },
     "tooltip": {
       "show": "Show {{name}} widget",
@@ -277,7 +280,10 @@
       "weatherLocationDeviceOff": "Location services off",
       "weatherLocationLocating": "Finding your location…",
       "weatherLocationChoose": "Select manually",
-      "surfaceHighlights": "Highlights"
+      "surfaceHighlights": "Highlights",
+      "notesNewLabel": "Note",
+      "notesNew": "New note",
+      "notesNewFull": "Up to {{max}} notes"
     },
     "gapps": {
       "menuAria": "Google apps",

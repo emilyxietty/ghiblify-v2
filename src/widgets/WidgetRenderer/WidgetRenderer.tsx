@@ -52,7 +52,10 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({
     case "weather":
       return <Weather />;
     case "notes":
-      return <Notes />;
+    case "notes2":
+    case "notes3":
+    case "notes4":
+      return <Notes storageKey={storageKey} />;
     case "googleApps":
       return <GoogleApps />;
   }

@@ -46,6 +46,9 @@ export const WidgetIcon: React.FC<WidgetIconProps> = ({ storageKey }) => {
     case "weather":
       return <WbSunnyIcon />;
     case "notes":
+    case "notes2":
+    case "notes3":
+    case "notes4":
       return <StickyNote2Icon />;
     case "rightSidebar":
       return <VerticalSplitIcon />;

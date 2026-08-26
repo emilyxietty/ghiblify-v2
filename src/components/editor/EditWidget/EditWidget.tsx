@@ -17,6 +17,7 @@ import {
   ExpandMoreIcon,
   PlaceIcon,
   VisibilityOffIcon,
+  AddIcon,
 } from "../../ui/Icons/Icons";
 import { AVATAR_OPTIONS } from "../../../config/avatarConfig";
 import {
@@ -45,6 +46,9 @@ import {
   WEATHER_DETAILS,
   type WeatherDetail,
   type DateDisplayStyle,
+  isNoteKey,
+  NOTE_KEYS,
+  type NoteKey,
 } from "../../../config/widgetConfig";
 import {
   useAppContext,
@@ -235,6 +239,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
     previewWidgetSettings: previewSurfaceSettings,
     previewWidgetDockLayout,
     toggleWidgetVisibility,
+    updateWidgetPosition,
     setWidgetInRightSidebar,
     setWidgetDockWidth,
     setWidgetDockAlignment,
@@ -477,7 +482,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
   };
 
   // --- Generic controls, driven by what the config declares ----------
-  const isNotes = storageKey === "notes";
+  const isNotes = isNoteKey(storageKey);
   const isNotesPaperFrost =
     isNotes && (settings as Record<string, unknown>).paperFrost === true;
   // The single slider is surface opacity on every palette. It used to
@@ -1139,6 +1144,66 @@ const EditWidget: React.FC<EditWidgetProps> = ({
           lives, carries it as well. Live: each keystroke lands on the
           widget. Enter just drops focus; the row must not let it reach
           the document handler that reads Enter as "close the panel". */}
+      {/* Another sticky note. The app keys widgets by fixed name, so the
+          pool is four slots (NOTE_KEYS); "new" reveals the first hidden
+          one, blank, wearing this note's paper and size, a step down
+          and right so it never lands exactly on top. Hiding a note (the
+          panel's eye button) is how one goes away; the slot comes back
+          blank next time. */}
+      {isNotes && !isDock && (() => {
+        const next = NOTE_KEYS.find((k) => !committedWidgets[k].visible);
+        const current = committedWidgets[storageKey as NoteKey];
+        const addNote = () => {
+          if (!next) return;
+          const src = current.settings;
+          updateCanvasWidgetSettings(next, {
+            content: "",
+            richContent: undefined,
+            width: src.width,
+            height: src.height,
+            showBorder: src.showBorder,
+            paperColor: src.paperColor ?? null,
+            paperNone: src.paperNone === true,
+            paperFrost: src.paperFrost === true,
+            surfaceColor: src.surfaceColor ?? null,
+            opacity: src.opacity,
+            blur: src.blur,
+            textColor: src.textColor,
+          } as never);
+          updateWidgetPosition(next, {
+            x: Math.min(92, current.position.x + 4),
+            y: Math.min(88, current.position.y + 4),
+          });
+          toggleWidgetVisibility(next);
+          setEditingWidgetKey(next);
+        };
+        return (
+          <Row label={t("widgets.edit.notesNewLabel")}>
+            <Button
+              className="edit-panel-location-button"
+              size="small"
+              variant="outline-light"
+              disabled={!next}
+              aria-label={t("widgets.edit.notesNew")}
+              data-tooltip={
+                next
+                  ? t("widgets.edit.notesNew")
+                  : t("widgets.edit.notesNewFull", { max: NOTE_KEYS.length })
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                addNote();
+              }}
+            >
+              <AddIcon style={{ fontSize: 14 }} />
+              <span className="edit-panel-location-text">
+                {t("widgets.edit.notesNew")}
+              </span>
+            </Button>
+          </Row>
+        );
+      })()}
+
       {storageKey === "greeting" && (
         <Row label={t("widgets.contextMenu.greetingName")}>
           <input

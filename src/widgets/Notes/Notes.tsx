@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { useWidgetSettings } from "../../hooks/useWidgetSettings";
+import type { NoteKey } from "../../config/widgetConfig";
 import { useT } from "../../i18n/i18n";
 import { useScaledPx } from "../../utils/viewportScale";
 import {
@@ -18,9 +19,11 @@ import "./Notes.css";
 // showed at all until Lexical downloaded - hence the slow pop-in.
 const NotesEditor = lazy(() => import("./NotesEditor"));
 
-export const Notes: React.FC = () => {
+export const Notes: React.FC<{ storageKey?: NoteKey }> = ({
+  storageKey = "notes",
+}) => {
   const t = useT();
-  const { settings } = useWidgetSettings("notes");
+  const { settings } = useWidgetSettings(storageKey);
   const scaledWidth = useScaledPx(settings.width);
   const scaledHeight = useScaledPx(settings.height);
 
@@ -88,7 +91,7 @@ export const Notes: React.FC = () => {
           </div>
         }
       >
-        <NotesEditor />
+        <NotesEditor storageKey={storageKey} />
       </Suspense>
     </div>
   );

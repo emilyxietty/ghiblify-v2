@@ -140,7 +140,10 @@
       "weather": "날씨",
       "notes": "스티키 노트",
       "rightSidebar": "오른쪽 사이드바",
-      "googleApps": "Google 앱"
+      "googleApps": "Google 앱",
+      "notes2": "스티키 노트 2",
+      "notes3": "스티키 노트 3",
+      "notes4": "스티키 노트 4"
     },
     "tooltip": {
       "show": "{{name}} 위젯 표시",
@@ -271,7 +274,10 @@
       "weatherLocationDeviceOff": "위치 서비스 꺼짐",
       "weatherLocationLocating": "위치를 찾는 중…",
       "weatherLocationChoose": "직접 선택",
-      "surfaceHighlights": "하이라이트"
+      "surfaceHighlights": "하이라이트",
+      "notesNewLabel": "노트",
+      "notesNew": "새 노트",
+      "notesNewFull": "최대 {{max}}개"
     },
     "gapps": {
       "menuAria": "Google 앱",

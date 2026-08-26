@@ -2,8 +2,7 @@ import type { CSSProperties } from "react";
 import {
   resolveSurfaceFrost,
   typeInMsPerChar,
-  type WidgetKey,
-} from "../config/widgetConfig";
+  type WidgetKey, isNoteKey } from "../config/widgetConfig";
 import {
   isHighlightTextColor,
   normalizeHex,
@@ -84,7 +83,7 @@ export const getWidgetSurfacePresentation = ({
     style["--text-highlight-fg"] = resolveForeground(highlight, textColor);
   }
 
-  if (storageKey === "notes" && settings.paperFrost === true)
+  if (isNoteKey(storageKey) && settings.paperFrost === true)
     classes.push("widget-notes-frost");
 
   // Weather is out of this list: its frost styles were retired with

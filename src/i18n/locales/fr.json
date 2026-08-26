@@ -130,7 +130,10 @@
       "weather": "Météo",
       "notes": "Note",
       "rightSidebar": "Barre latérale droite",
-      "googleApps": "Applications Google"
+      "googleApps": "Applications Google",
+      "notes2": "Note 2",
+      "notes3": "Note 3",
+      "notes4": "Note 4"
     },
     "tooltip": {
       "show": "Afficher le widget {{name}}",
@@ -261,7 +264,10 @@
       "weatherLocationDeviceOff": "Services de localisation désactivés",
       "weatherLocationLocating": "Recherche de votre position…",
       "weatherLocationChoose": "Choisir manuellement",
-      "surfaceHighlights": "Surlignages"
+      "surfaceHighlights": "Surlignages",
+      "notesNewLabel": "Note",
+      "notesNew": "Nouvelle note",
+      "notesNewFull": "Jusqu'à {{max}} notes"
     },
     "gapps": {
       "menuAria": "Applications Google",

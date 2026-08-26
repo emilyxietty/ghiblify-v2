@@ -134,7 +134,10 @@
       "weather": "Clima",
       "notes": "Bilhete",
       "rightSidebar": "Barra lateral direita",
-      "googleApps": "Apps do Google"
+      "googleApps": "Apps do Google",
+      "notes2": "Bilhete 2",
+      "notes3": "Bilhete 3",
+      "notes4": "Bilhete 4"
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
@@ -265,7 +268,10 @@
       "weatherLocationDeviceOff": "Serviços de localização desativados",
       "weatherLocationLocating": "Procurando sua localização…",
       "weatherLocationChoose": "Escolher manualmente",
-      "surfaceHighlights": "Destaques"
+      "surfaceHighlights": "Destaques",
+      "notesNewLabel": "Nota",
+      "notesNew": "Nova nota",
+      "notesNewFull": "Até {{max}} notas"
     },
     "gapps": {
       "menuAria": "Apps do Google",

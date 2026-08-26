@@ -472,6 +472,9 @@ const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "avatar",
   "pomodoro",
   "notes",
+  "notes2",
+  "notes3",
+  "notes4",
   "rightSidebar",
   "googleApps",
 ]);

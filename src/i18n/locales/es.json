@@ -134,7 +134,10 @@
       "weather": "Clima",
       "notes": "Nota adhesiva",
       "rightSidebar": "Barra lateral derecha",
-      "googleApps": "Aplicaciones de Google"
+      "googleApps": "Aplicaciones de Google",
+      "notes2": "Nota adhesiva 2",
+      "notes3": "Nota adhesiva 3",
+      "notes4": "Nota adhesiva 4"
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
@@ -265,7 +268,10 @@
       "weatherLocationDeviceOff": "Servicios de ubicación desactivados",
       "weatherLocationLocating": "Buscando tu ubicación…",
       "weatherLocationChoose": "Elegir manualmente",
-      "surfaceHighlights": "Resaltados"
+      "surfaceHighlights": "Resaltados",
+      "notesNewLabel": "Nota",
+      "notesNew": "Nueva nota",
+      "notesNewFull": "Hasta {{max}} notas"
     },
     "gapps": {
       "menuAria": "Aplicaciones de Google",

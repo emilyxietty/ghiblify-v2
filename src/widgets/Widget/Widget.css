@@ -106,7 +106,7 @@
    exactly with the inner card box (where the weather-mood card and
    todo/notes surfaces paint) - without it, glass backgrounds ran
    15px larger on every side than card backgrounds. */
-.widget[data-widget-key="notes"] .widget-content,
+.widget[data-widget-key^="notes"] .widget-content,
 .widget[data-widget-key="weather"] .widget-content,
 .widget[data-widget-key="googleApps"] .widget-content,
 .widget[data-widget-key="quicklinks"] .widget-content,
@@ -175,8 +175,8 @@
 /* Notes: the Background row's blur behind the paper. The legacy
    frosted-paper flag keeps its own fixed glass (.widget-notes-frost
    below); the note's rounding is --radius-xl. */
-.widget[data-widget-key="notes"]:not(.widget-notes-frost),
-.dock-widget[data-widget-key="notes"]:not(.widget-notes-frost) {
+.widget[data-widget-key^="notes"]:not(.widget-notes-frost),
+.dock-widget[data-widget-key^="notes"]:not(.widget-notes-frost) {
     border-radius: var(--radius-xl);
     -webkit-backdrop-filter: blur(calc(var(--widget-blur) * 20px))
         saturate(1.05);

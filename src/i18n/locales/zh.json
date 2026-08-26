@@ -140,7 +140,10 @@
       "weather": "天气",
       "notes": "便签",
       "rightSidebar": "右侧栏",
-      "googleApps": "Google 应用"
+      "googleApps": "Google 应用",
+      "notes2": "便签 2",
+      "notes3": "便签 3",
+      "notes4": "便签 4"
     },
     "tooltip": {
       "show": "显示 {{name}} 小组件",
@@ -271,7 +274,10 @@
       "weatherLocationDeviceOff": "定位服务已关闭",
       "weatherLocationLocating": "正在获取您的位置…",
       "weatherLocationChoose": "手动选择",
-      "surfaceHighlights": "高亮"
+      "surfaceHighlights": "高亮",
+      "notesNewLabel": "便签",
+      "notesNew": "新建便签",
+      "notesNewFull": "最多 {{max}} 张便签"
     },
     "gapps": {
       "menuAria": "Google 应用",
