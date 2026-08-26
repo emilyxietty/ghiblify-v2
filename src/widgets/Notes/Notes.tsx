@@ -73,7 +73,7 @@ export const Notes: React.FC = () => {
           <div className="notes-editor-shell">
             {/* While the editor chunk loads, show the note's CONTENT
                 (plaintext mirror), not the placeholder - otherwise a
-                populated note flashes "Jot something down…" on every
+                populated note flashes "Type here…" on every
                 new tab before the text pops back in. Placeholder only
                 for genuinely empty notes. */}
             {settings.content ? (

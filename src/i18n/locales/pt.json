@@ -371,7 +371,7 @@
     }
   },
   "notes": {
-    "placeholder": "Anote algo…",
+    "placeholder": "Escreva aqui…",
     "ariaLabel": "Bilhete",
     "toolbar": {
       "ariaLabel": "Barra de formatação",

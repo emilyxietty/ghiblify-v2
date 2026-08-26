@@ -158,6 +158,12 @@
     position: absolute;
     top: 0;
     left: 0;
+    /* Pinned to both edges so it wraps inside the note instead of
+       running past the painted border on a small footprint - with
+       only `left` set, an absolute box sizes to its text. */
+    right: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     color: color-mix(in srgb, var(--notes-ink, #4a3826) 45%, transparent);
     font-size: inherit;
     line-height: 1.5;

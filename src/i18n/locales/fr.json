@@ -367,7 +367,7 @@
     }
   },
   "notes": {
-    "placeholder": "Notez quelque chose…",
+    "placeholder": "Écrivez ici…",
     "ariaLabel": "Note",
     "toolbar": {
       "ariaLabel": "Barre de mise en forme",

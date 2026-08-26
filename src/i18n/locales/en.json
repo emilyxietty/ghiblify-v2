@@ -385,7 +385,7 @@
     }
   },
   "notes": {
-    "placeholder": "Jot something down…",
+    "placeholder": "Type here…",
     "ariaLabel": "Sticky note",
     "toolbar": {
       "ariaLabel": "Formatting toolbar",
