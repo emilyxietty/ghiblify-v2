@@ -65,7 +65,7 @@ App.tsx
 
 ## Drag and resize
 
-In `containers/Widget/Widget.tsx`:
+In `widgets/Widget/Widget.tsx`:
 
 - **Drag**: hold `d` and drag, or drag a widget that is already in edit mode. Interactive controls are excluded outside edit mode. Position updates on `mousemove`; on `mouseup` it snaps to the nearest grid line (2%, 50%, 98% of viewport) and commits to AppContext.
 - **Resize**: the handle is only visible in edit mode. Behavior depends on config bounds: `fontSize`, `width`/`height`, a single `size`, or square-locked width/height for Notes. Updates flow through AppContext immediately.
@@ -83,15 +83,15 @@ Holding `d` toggles `body.show-widget-outline`, which reveals outlines and quick
 
 Canvas exit handling lives in `App.tsx`; the shared editor handles the same exits when a dock `onClose` callback is supplied.
 
-`EditWidget` (in `components/RightClickEditModal/EditWidget/`, alongside the pickers that exist for it) is rendered as an overlay by either wrapper. It reads the widget's config entry and conditionally renders controls (font slider, dark mode switch, time-format toggle, avatar picker, field selector, grid-mode toggle). Widget-specific behavior is keyed off `customControls` in `widgetConfig.ts`; dock edits and previews write to `dockSettings`, while canvas edits write to `settings`.
+`EditWidget` (in `components/editor/EditWidget/`, alongside the pickers that exist for it) is rendered as an overlay by either wrapper. It reads the widget's config entry and conditionally renders controls (font slider, dark mode switch, time-format toggle, avatar picker, field selector, grid-mode toggle). Widget-specific behavior is keyed off `customControls` in `widgetConfig.ts`; dock edits and previews write to `dockSettings`, while canvas edits write to `settings`.
 
 ## Cross-widget signaling
 
-Ordinary settings never use an event bus: widgets read context and `EditWidget` writes context. Targeted custom events remain for genuinely imperative coordination such as guide demos, a dock peek, a weather refresh, or synchronizing two Todo instances mounted in the same tab. Keep those events namespaced as `ghiblify:*` and do not use them as parallel settings state.
+Ordinary settings never use an event bus: widgets read context and `EditWidget` writes context. Targeted custom events remain for genuinely imperative coordination such as guide demos, a dock peek, a weather refresh, or synchronizing the canvas and dock copies of one Todo list mounted in the same tab (`storage/todoStorage.ts`, keyed per list). Keep those events namespaced as `ghiblify:*` and do not use them as parallel settings state.
 
 ## Pomodoro: leader election
 
-`containers/Widgets/Pomodoro/Pomodoro.tsx` runs across all open tabs. Naively, every tab would tick its own `setInterval` and they'd drift. Instead:
+`widgets/Pomodoro/Pomodoro.tsx` runs across all open tabs. Naively, every tab would tick its own `setInterval` and they'd drift. Instead:
 
 1. On mount, a tab tries to claim the `pomodoro_leader` key in `localStorage` (with its own random ID)
 2. The leader runs the `setInterval`, decrements `pomodoro_seconds_left`, and writes state
@@ -117,8 +117,8 @@ Both files live in `public/` so Vite copies them into `dist/`. Because they are 
 
 ## File structure invariants
 
-- `components/` = stateless, no context use, take props in and emit events out
-- `containers/` = stateful, may use context, may know about layout
+- `components/ui/` = stateless, no context use, take props in and emit events out
+- `components/dialogs|editor|overlays/`, `layout/`, `widgets/` = stateful, may use context, may know about layout
 - `hooks/` = side effects and data fetching
 - `config/` = static metadata only - no React, no JSX
 - One folder per component, with co-located `.css`

@@ -5,7 +5,7 @@ Every widget is registered in `src/config/widgetConfig.ts`. `WidgetRenderer.tsx`
 ## Anatomy of a widget
 
 ```
-src/containers/Widgets/<Name>/
+src/widgets/<Name>/
 ├── <Name>.tsx     # render + widget-specific state/effects
 └── <Name>.css     # co-located styles, BEM-lite class names
 ```
@@ -49,7 +49,7 @@ The map type `WidgetConfigsType` is `{ [K in WidgetKey]: WidgetConfig<K> }` - ad
    - Add `foo: FooSettings` to `WidgetSettingsMap` and `"foo"` to `WIDGET_KEYS`.
    - Add the `foo` entry to `WIDGET_CONFIGS` with `name`, `position`, `settings`, and any of `fontSize`/`width`/`height`/`size`/`customControls` you need.
    - Add the key to `CANVAS_WIDGET_KEYS` and, when applicable, `LEFT_SIDEBAR_WIDGET_KEYS` or `DOCK_WIDGET_KEYS`. Dockable widgets also need a `DOCK_WIDTH_POLICIES` entry.
-2. **Build the component** in `src/containers/Widgets/Foo/Foo.tsx`:
+2. **Build the component** in `src/widgets/Foo/Foo.tsx`:
    ```ts
    const { widgets } = useAppContext();
    const settings = widgets.foo.settings;  // typed as FooSettings
@@ -60,7 +60,16 @@ The map type `WidgetConfigsType` is `{ [K in WidgetKey]: WidgetConfig<K> }` - ad
 
 No `App.tsx` or `LeftSidebar.tsx` render branch is required. The generic `updateWidgetSettings` and `WidgetsState` shape pick up the new key automatically. Add the key to `HIDDEN_BY_DEFAULT` only when it should start off.
 
-Small widget-owned content can live in settings (Quick Links does). Larger, independently synchronized content can use a dedicated hybrid key (Todo does). Cross-tab coordination that relies on the browser `storage` event, such as Pomodoro leader election, stays in plain localStorage.
+Small widget-owned content can live in settings (Quick Links does). Larger, independently synchronized content can use a dedicated hybrid key (Todo does, one per list - `storage/todoStorage.ts`). A new hybrid key also goes in `HYBRID_KEYS` and in `STORAGE_GROUPS` in `SettingsModal.tsx`. Cross-tab coordination that relies on the browser `storage` event, such as Pomodoro leader election, stays in plain localStorage.
+
+## More than one of a widget (slots)
+
+The app keys every widget by a fixed name, so a second note or list is an extra key rather than a dynamic instance: `notes2`-`notes4` (`NOTE_KEYS`) and `todo2` (`TODO_KEYS`). Each slot is built from the first instance's config, is canvas-only (not in the sidebar or dock lists), and is in `HIDDEN_BY_DEFAULT`. The first instance's edit panel reveals the next hidden slot blank ("New note" / "New list"), copying its look and size. Hiding a slot retires it.
+
+- The widget takes the slot key as a prop (`<Notes storageKey>`, `<Todo storageKey>`), and `WidgetRenderer` maps every slot key to it.
+- CSS that targets the widget uses a prefix match: `[data-widget-key^="notes"]`, `[data-widget-key^="todo"]`.
+- **Never reveal the first key** (`notes` / `todo`) from "New ...": hidden on the canvas, it can still be showing in the dock, and revealing blanks it.
+- **Append new keys to the end of `WIDGET_KEYS`.** A widget's default `dockOrder` is its index there, and the stored blob omits orders equal to the default, so inserting mid-list shifts existing users' docks.
 
 ## Reusing controls in EditWidget
 
