@@ -46,6 +46,7 @@
     },
     "buttons": {
       "buyCoffee": "Offrir un café",
+      "guide": "Guide",
       "guideAria": "Ouvrir le guide",
       "rate": "Noter",
       "rateAria": "Noter Ghiblify sur le Chrome Web Store",

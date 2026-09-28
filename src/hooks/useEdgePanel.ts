@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
+/** The side panels (left sidebar, bookmarks, right dock) never take
+ *  more than this share of the viewport, so a narrow window keeps a
+ *  strip of the page visible beside an open panel. Must match the
+ *  `90vw` in each panel's CSS width. */
+const PANEL_MAX_VIEWPORT_SHARE = 0.9;
+
+/** A panel's on-screen width: its design width, capped at 90% of the
+ *  viewport. Every edge hit-test measures against this. */
+export const visiblePanelWidth = (panelWidth: number): number =>
+  Math.min(panelWidth, window.innerWidth * PANEL_MAX_VIEWPORT_SHARE);
+
 interface UseEdgePanelOptions {
   visible: boolean;
   panelWidth: number;
@@ -53,12 +64,12 @@ export const useEdgePanel = ({
     const handleMouseMove = (event: MouseEvent) => {
       if (interactionLocked || callbacks.current.shouldKeepOpen?.()) return;
       const viewportWidth = window.innerWidth;
-      const visiblePanelWidth = Math.min(panelWidth, viewportWidth);
+      const panelLeft = viewportWidth - visiblePanelWidth(panelWidth);
       if (event.clientX > viewportWidth - edgeTrigger) {
         setIsOpen(true);
       } else if (
         isOpen &&
-        event.clientX < viewportWidth - visiblePanelWidth
+        event.clientX < panelLeft
       ) {
         setIsOpen(false);
         callbacks.current.onAutoClose?.();

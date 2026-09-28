@@ -63,6 +63,7 @@ import {
   requestPermission,
 } from "../../utils/chromePermissions";
 import { clearWeatherLocation } from "../../hooks/useWeather";
+import { visiblePanelWidth } from "../../hooks/useEdgePanel";
 import {
   DEFAULT_FILTERS,
   readFavorites,
@@ -380,7 +381,7 @@ export const LeftSidebar: React.FC = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging || toggleMenu || edgeMenu) return;
-      const sidebarWidth = Math.min(SIDEBAR_WIDTH, window.innerWidth);
+      const sidebarWidth = visiblePanelWidth(SIDEBAR_WIDTH);
       if (e.clientX < SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
       else if (isOpen && !showGuide && e.clientX > sidebarWidth)
         setIsOpen(false);

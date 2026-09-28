@@ -34,7 +34,7 @@
     body.spotlight-active
         .welcome-backdrop:not(.is-cornered-mode):not(.is-passthrough) {
         justify-content: flex-end;
-        padding-left: calc(var(--sidebar-width, 430px) + 16px);
+        padding-left: calc(min(var(--sidebar-width, 430px), 90vw) + 16px);
         padding-right: 16px;
     }
 }

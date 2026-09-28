@@ -13,8 +13,10 @@
     /* Width is driven by the --sidebar-width CSS variable, which
        LeftSidebar.tsx writes from the SIDEBAR_WIDTH constant in
        config/appConfig.ts. Falls back to 460px so styling still
-       works if the variable hasn't been set yet (first paint). */
-    width: min(var(--sidebar-width, 430px), 100vw);
+       works if the variable hasn't been set yet (first paint). Never
+       wider than 90% of the viewport (PANEL_MAX_VIEWPORT_SHARE in
+       hooks/useEdgePanel.ts), so a strip of the page stays visible. */
+    width: min(var(--sidebar-width, 430px), 90vw);
     height: 100vh;
     background: var(--sidebar-bg);
     backdrop-filter: blur(14px) saturate(110%);
@@ -149,6 +151,17 @@
 .sidebar-header {
     flex-shrink: 0;
     padding: 32px 24px 16px 24px;
+    /* The three labels need ~350px in English and more in Portuguese,
+       but a narrow window caps the sidebar at 90vw and .sidebar-content
+       clips - so the last button used to be sliced off mid-word. Wrap
+       instead, and let each button grow to fill its row: one even band
+       spanning the sidebar when they fit, a full-width button on a
+       second row when they don't. */
+    flex-wrap: wrap;
+}
+
+.sidebar-header > .btn {
+    flex: 1 1 auto;
 }
 
 /* Scrolling middle - owns the overflow. Extends to the sidebar's
