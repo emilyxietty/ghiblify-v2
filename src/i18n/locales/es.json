@@ -138,7 +138,8 @@
       "googleApps": "Aplicaciones de Google",
       "notes2": "Nota adhesiva 2",
       "notes3": "Nota adhesiva 3",
-      "notes4": "Nota adhesiva 4"
+      "notes4": "Nota adhesiva 4",
+      "todo2": "Lista de tareas 2"
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
@@ -273,7 +274,10 @@
       "surfaceHighlights": "Resaltados",
       "notesNewLabel": "Nota",
       "notesNew": "Nueva nota",
-      "notesNewFull": "Hasta {{max}} notas"
+      "notesNewFull": "Hasta {{max}} notas",
+      "todoNewLabel": "Lista",
+      "todoNew": "Nueva lista",
+      "todoNewFull": "Hasta {{max}} listas"
     },
     "gapps": {
       "menuAria": "Aplicaciones de Google",

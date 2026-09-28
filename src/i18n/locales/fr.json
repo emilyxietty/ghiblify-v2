@@ -134,7 +134,8 @@
       "googleApps": "Applications Google",
       "notes2": "Note 2",
       "notes3": "Note 3",
-      "notes4": "Note 4"
+      "notes4": "Note 4",
+      "todo2": "Liste de tâches 2"
     },
     "tooltip": {
       "show": "Afficher le widget {{name}}",
@@ -269,7 +270,10 @@
       "surfaceHighlights": "Surlignages",
       "notesNewLabel": "Note",
       "notesNew": "Nouvelle note",
-      "notesNewFull": "Jusqu'à {{max}} notes"
+      "notesNewFull": "Jusqu'à {{max}} notes",
+      "todoNewLabel": "Liste",
+      "todoNew": "Nouvelle liste",
+      "todoNewFull": "Jusqu'à {{max}} listes"
     },
     "gapps": {
       "menuAria": "Applications Google",

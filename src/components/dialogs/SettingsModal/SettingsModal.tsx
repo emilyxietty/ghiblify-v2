@@ -54,6 +54,7 @@ const STORAGE_GROUPS: Array<{ id: string; keys: string[] }> = [
       "ghiblify_widgets",
       "ghiblify_widgets_schema_version",
       "ghiblify_todo",
+      "ghiblify_todo2",
       "ghiblify_pomodoro",
       "ghiblify_weather",
       "ghiblify_recent_colors",

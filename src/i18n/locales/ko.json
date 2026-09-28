@@ -144,7 +144,8 @@
       "googleApps": "Google 앱",
       "notes2": "스티키 노트 2",
       "notes3": "스티키 노트 3",
-      "notes4": "스티키 노트 4"
+      "notes4": "스티키 노트 4",
+      "todo2": "할 일 목록 2"
     },
     "tooltip": {
       "show": "{{name}} 위젯 표시",
@@ -279,7 +280,10 @@
       "surfaceHighlights": "하이라이트",
       "notesNewLabel": "노트",
       "notesNew": "새 노트",
-      "notesNewFull": "최대 {{max}}개"
+      "notesNewFull": "최대 {{max}}개",
+      "todoNewLabel": "목록",
+      "todoNew": "새 목록",
+      "todoNewFull": "최대 {{max}}개"
     },
     "gapps": {
       "menuAria": "Google 앱",

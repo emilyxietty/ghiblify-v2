@@ -62,6 +62,7 @@ export const HYBRID_KEYS: Record<string, Area> = {
   ghiblify_widgets_schema_version: "local",
   ghiblify_background: "local",
   ghiblify_todo: "local",
+  ghiblify_todo2: "local",
   // Per-install flag.
   ghiblify_guide_seen: "local",
 };

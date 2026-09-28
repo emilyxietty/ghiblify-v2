@@ -32,6 +32,7 @@ export const WidgetIcon: React.FC<WidgetIconProps> = ({ storageKey }) => {
     case "info":
       return <FormatQuoteIcon />;
     case "todo":
+    case "todo2":
       return <CheckBoxIcon />;
     case "avatar":
       return <FaceIcon />;

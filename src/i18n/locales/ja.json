@@ -144,7 +144,8 @@
       "googleApps": "Google アプリ",
       "notes2": "付箋 2",
       "notes3": "付箋 3",
-      "notes4": "付箋 4"
+      "notes4": "付箋 4",
+      "todo2": "ToDoリスト 2"
     },
     "tooltip": {
       "show": "{{name}}を表示",
@@ -279,7 +280,10 @@
       "surfaceHighlights": "ハイライト",
       "notesNewLabel": "付箋",
       "notesNew": "新しい付箋",
-      "notesNewFull": "付箋は{{max}}枚まで"
+      "notesNewFull": "付箋は{{max}}枚まで",
+      "todoNewLabel": "リスト",
+      "todoNew": "新しいリスト",
+      "todoNewFull": "リストは{{max}}つまで"
     },
     "gapps": {
       "menuAria": "Google アプリ",

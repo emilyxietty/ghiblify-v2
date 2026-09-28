@@ -138,7 +138,8 @@
       "googleApps": "Apps do Google",
       "notes2": "Bilhete 2",
       "notes3": "Bilhete 3",
-      "notes4": "Bilhete 4"
+      "notes4": "Bilhete 4",
+      "todo2": "Lista de tarefas 2"
     },
     "tooltip": {
       "show": "Mostrar widget {{name}}",
@@ -273,7 +274,10 @@
       "surfaceHighlights": "Destaques",
       "notesNewLabel": "Nota",
       "notesNew": "Nova nota",
-      "notesNewFull": "Até {{max}} notas"
+      "notesNewFull": "Até {{max}} notas",
+      "todoNewLabel": "Lista",
+      "todoNew": "Nova lista",
+      "todoNewFull": "Até {{max}} listas"
     },
     "gapps": {
       "menuAria": "Apps do Google",

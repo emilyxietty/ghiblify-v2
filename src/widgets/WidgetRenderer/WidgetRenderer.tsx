@@ -40,7 +40,8 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({
     case "info":
       return <Info {...filmInfo} />;
     case "todo":
-      return <Todo />;
+    case "todo2":
+      return <Todo storageKey={storageKey} />;
     case "avatar":
       return <Avatar />;
     case "quicklinks":

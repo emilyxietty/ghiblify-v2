@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import {
   resolveSurfaceFrost,
   typeInMsPerChar,
-  type WidgetKey, isNoteKey } from "../config/widgetConfig";
+  type WidgetKey, isNoteKey, isTodoKey } from "../config/widgetConfig";
 import {
   isHighlightTextColor,
   normalizeHex,
@@ -90,7 +90,7 @@ export const getWidgetSurfacePresentation = ({
   // the style strip, and honouring a stored `frosted` flag would put
   // shell glass under a surface the Background row now paints.
   const supportsSurfaceFrost =
-    storageKey === "todo" || storageKey === "googleApps";
+    isTodoKey(storageKey) || storageKey === "googleApps";
   if (
     supportsSurfaceFrost &&
     resolveSurfaceFrost(settings.frosted as boolean | undefined)

@@ -482,12 +482,12 @@ body.pomodoro-focus .background-content {
    front of the focus view. */
 body.pomodoro-focus
     .widget:not([data-widget-key="pomodoro"]):not(
-        [data-widget-key="todo"]
+        [data-widget-key^="todo"]
     ) {
     display: none !important;
 }
 
-body.pomodoro-focus .widget[data-widget-key="todo"] {
+body.pomodoro-focus .widget[data-widget-key^="todo"] {
     z-index: 1500 !important;
 }
 

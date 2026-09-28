@@ -584,6 +584,7 @@ export interface WidgetSettingsMap {
   greeting: GreetingSettings;
   info: InfoSettings;
   todo: TodoSettings;
+  todo2: TodoSettings;
   avatar: AvatarSettings;
   quicklinks: QuicklinksSettings;
   searchbar: SearchBarSettings;
@@ -618,6 +619,10 @@ export const WIDGET_KEYS: readonly WidgetKey[] = [
   "notes4",
   "rightSidebar",
   "googleApps",
+  // Appended, not beside "todo": a widget's default dockOrder is its
+  // index here, and the stored blob only keeps orders that differ from
+  // that default - shifting the keys after it could reshuffle a dock.
+  "todo2",
 ];
 
 /** The sticky-note slots. One widget key per note: the app keys every
@@ -630,6 +635,14 @@ export type NoteKey = (typeof NOTE_KEYS)[number];
 export const isNoteKey = (key: string): key is NoteKey =>
   (NOTE_KEYS as readonly string[]).includes(key);
 
+/** The to-do list slots, on the same terms as the note slots: `todo`
+ *  is the list the sidebar and the dock know about, `todo2` is a
+ *  canvas-only second list revealed from the first one's edit panel. */
+export const TODO_KEYS = ["todo", "todo2"] as const;
+export type TodoKey = (typeof TODO_KEYS)[number];
+export const isTodoKey = (key: string): key is TodoKey =>
+  (TODO_KEYS as readonly string[]).includes(key);
+
 /**
  * Widget placement lives here so the canvas, sidebar, and dock do not
  * maintain competing lists. The order is also the default visual order for
@@ -641,6 +654,7 @@ export const CANVAS_WIDGET_KEYS = [
   "date",
   "greeting",
   "todo",
+  "todo2",
   "info",
   "avatar",
   "searchbar",
@@ -805,6 +819,27 @@ export interface WidgetConfig<K extends WidgetKey> {
 
 type WidgetConfigsType = { [K in WidgetKey]: WidgetConfig<K> };
 
+/** The to-do list's config, hoisted so the second list slot can be
+ *  built from it. */
+const TODO_CONFIG: WidgetConfig<"todo"> = {
+  name: "Todo",
+  position: { x: 13.169590643274855, y: 2 },
+  settings: {
+    width: 350,
+    height: 350,
+    collapsed: false,
+    opacity: 0,
+    rowOpacity: 75,
+    rowBlur: 10,
+    blur: 10,
+    // `frosted` intentionally absent: undefined = follow the theme
+    // (Frost palette ⇒ glass). The chips write true/false explicitly.
+    surfaceColor: null,
+  },
+  width: { min: 250, max: 600, step: 50 },
+  height: { min: 200, max: 700, step: 50 },
+  customControls: { todoFrosted: true },
+};
 
 /** The sticky note's config, hoisted so the extra note slots can be
  *  built from it (see noteSlot below). */
@@ -929,24 +964,14 @@ export const WIDGET_CONFIGS: WidgetConfigsType = {
     fontSize: { min: 10, max: 50, step: 5 },
     customControls: { infoFields: true },
   },
-  todo: {
-    name: "Todo",
-    position: { x: 13.169590643274855, y: 2 },
-    settings: {
-      width: 350,
-      height: 350,
-      collapsed: false,
-      opacity: 0,
-      rowOpacity: 75,
-      rowBlur: 10,
-      blur: 10,
-      // `frosted` intentionally absent: undefined = follow the theme
-      // (Frost palette ⇒ glass). The chips write true/false explicitly.
-      surfaceColor: null,
-    },
-    width: { min: 250, max: 600, step: 50 },
-    height: { min: 200, max: 700, step: 50 },
-    customControls: { todoFrosted: true },
+  todo: TODO_CONFIG,
+  todo2: {
+    ...TODO_CONFIG,
+    name: "Todo 2",
+    // Beside the first list rather than under it; the edit panel's
+    // "New list" re-places it next to wherever the first one is.
+    position: { x: 32, y: 2 },
+    settings: { ...TODO_CONFIG.settings },
   },
   avatar: {
     name: "Avatar",

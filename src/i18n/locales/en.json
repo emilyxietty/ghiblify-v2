@@ -148,7 +148,8 @@
       "googleApps": "Google apps",
       "notes2": "Sticky note 2",
       "notes3": "Sticky note 3",
-      "notes4": "Sticky note 4"
+      "notes4": "Sticky note 4",
+      "todo2": "Todo list 2"
     },
     "tooltip": {
       "show": "Show {{name}} widget",
@@ -285,7 +286,10 @@
       "surfaceHighlights": "Highlights",
       "notesNewLabel": "Note",
       "notesNew": "New note",
-      "notesNewFull": "Up to {{max}} notes"
+      "notesNewFull": "Up to {{max}} notes",
+      "todoNewLabel": "List",
+      "todoNew": "New list",
+      "todoNewFull": "Up to {{max}} lists"
     },
     "gapps": {
       "menuAria": "Google apps",

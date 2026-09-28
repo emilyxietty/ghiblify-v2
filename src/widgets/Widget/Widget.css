@@ -111,7 +111,7 @@
 .widget[data-widget-key="googleApps"] .widget-content,
 .widget[data-widget-key="quicklinks"] .widget-content,
 .widget[data-widget-key="avatar"] .widget-content,
-.widget[data-widget-key="todo"] .widget-content {
+.widget[data-widget-key^="todo"] .widget-content {
     padding: 0;
 }
 
@@ -164,8 +164,8 @@
    the fixed .widget-surface-frost glass. */
 .widget[data-widget-key="weather"],
 .dock-widget[data-widget-key="weather"],
-.widget[data-widget-key="todo"]:not(.widget-surface-frost),
-.dock-widget[data-widget-key="todo"]:not(.widget-surface-frost) {
+.widget[data-widget-key^="todo"]:not(.widget-surface-frost),
+.dock-widget[data-widget-key^="todo"]:not(.widget-surface-frost) {
     border-radius: var(--radius-lg);
     -webkit-backdrop-filter: blur(calc(var(--widget-blur) * 20px))
         saturate(1.05);
