@@ -1143,12 +1143,16 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {/* Another sticky note. The app keys widgets by fixed name, so the
           pool is four slots (NOTE_KEYS); "new" reveals the first hidden
-          one, blank, wearing this note's paper and size, a step down
-          and right so it never lands exactly on top. Hiding a note (the
-          panel's eye button) is how one goes away; the slot comes back
-          blank next time. */}
+          extra one, blank, wearing this note's paper and size, a step
+          down and right so it never lands exactly on top. Hiding a note
+          (the panel's eye button) is how one goes away; the slot comes
+          back blank next time. Never `notes` itself: hidden on the
+          canvas it can still be showing in the dock, and revealing it
+          would blank that note. */}
       {isNotes && !isDock && (() => {
-        const next = NOTE_KEYS.find((k) => !committedWidgets[k].visible);
+        const next = NOTE_KEYS.find(
+          (k) => k !== "notes" && !committedWidgets[k].visible,
+        );
         const current = committedWidgets[storageKey as NoteKey];
         const addNote = () => {
           if (!next) return;
