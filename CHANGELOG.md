@@ -7,6 +7,56 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
+## 2.5.2 — 2026-09-29
+
+**Sticky notes**
+- Up to four notes: "New note" in a note's edit panel adds one beside
+  it, blank, in the same paper and size. It never reuses the first
+  note, which the right dock may still be showing.
+- Checklist boxes line up with their text at every note size. They
+  were a fixed 14px square, so once a note's text stepped down to
+  12px or 10.5px they sat low and towered over the letters.
+- The painted border stays inside the paper at every corner style (the
+  Soft setting used to slice through its corner loops), and the
+  placeholder is a shorter "Type here…" that wraps inside small notes.
+
+**Todo**
+- A second to-do list: "New list" in the list's edit panel adds one
+  beside it, with its own tasks, in the same look and size.
+- The "Add a task" field and the rows follow the corner style, and the
+  edit / delete icons are larger.
+
+**Film info and avatars**
+- Every film carries at least ten quotes, and Soothing (Beta) gets
+  Hayao Miyazaki interview quotes of its own.
+- New avatars: Sheeta, plus the Pomodoro break stickers (Mei, Soot
+  sprite, Heen, Chibi Totoro, Catbus). The avatar picker is a compact
+  dropdown that previews on the canvas as you hover.
+
+**Cursor**
+- New "Walking soot" cursor: three soot sprites that trail the pointer
+  at different speeds and bunch up when it rests.
+
+**Sidebars**
+- The left sidebar, the bookmarks panel and the right dock never take
+  more than 90% of the window, so a narrow window keeps part of the page
+  visible beside an open panel.
+- The sidebar's Guide / My socials / Buy me a Coffee buttons wrap onto
+  a second row instead of being cut off mid-word in a narrow sidebar.
+
+**Other widgets**
+- Greeting: the name can be set from the edit panel.
+- Weather: long place names stay on one line in the edit panel and the
+  location dialog.
+
+**Options page**
+- The Frost palette's ink matches the new-tab page; the options page
+  carried its own copy of the palettes, which had drifted.
+
+**Housekeeping**
+- Removed the retired widget right-click menu, other unreachable code,
+  and 16 unused Google app icons.
+
 ## 2.5.1 — 2026-08-17
 
 **Backgrounds**
