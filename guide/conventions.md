@@ -3,7 +3,7 @@
 ## File and folder layout
 
 - One folder per component, named PascalCase: `Button/Button.tsx` + `Button/Button.css`
-- `containers/` for stateful + layout-aware code; `components/` for stateless UI
+- `src/` is organised by role: `components/ui/` for stateless primitives, `components/dialogs|editor|overlays/` for modals, the edit panel and ambient page pieces, `layout/` for page-level surfaces, `widgets/` for the widget shell, renderer and widgets
 - `hooks/` for data fetching and side effects, camelCase filenames (`useBackground.ts`)
 - `config/` for static data only - no React, no JSX
 - No barrel `index.ts` files. Always import the concrete file.

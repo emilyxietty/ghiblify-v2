@@ -8,7 +8,8 @@
     position: fixed;
     top: 0;
     right: 0;
-    width: min(360px, 100vw);
+    /* 90vw: see PANEL_MAX_VIEWPORT_SHARE in hooks/useEdgePanel.ts. */
+    width: min(360px, 90vw);
     height: 100vh;
     background: var(--sidebar-bg);
     backdrop-filter: blur(14px) saturate(110%);

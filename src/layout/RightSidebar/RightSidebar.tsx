@@ -29,7 +29,7 @@ import type {
   BookmarksSettings,
   BookmarksSort,
 } from "../../config/widgetConfig";
-import { useEdgePanel } from "../../hooks/useEdgePanel";
+import { useEdgePanel, visiblePanelWidth } from "../../hooks/useEdgePanel";
 import { useT } from "../../i18n/i18n";
 import { isEditableTarget } from "../../utils/isEditableTarget";
 import { useOptionalPermission } from "../../utils/chromePermissions";
@@ -849,7 +849,7 @@ const BookmarksSettingsPopover: React.FC<{
     // sidebar's edge, and it measures position rather than hit-testing
     // the DOM - so a portalled popup that pokes out to the left would
     // shut the sidebar the moment you reached for it.
-    const sidebarLeft = window.innerWidth - Math.min(SIDEBAR_WIDTH, window.innerWidth);
+    const sidebarLeft = window.innerWidth - visiblePanelWidth(SIDEBAR_WIDTH);
     const left = Math.min(
       Math.max(sidebarLeft + VIEWPORT_MARGIN, anchor.x),
       window.innerWidth - rect.width - VIEWPORT_MARGIN

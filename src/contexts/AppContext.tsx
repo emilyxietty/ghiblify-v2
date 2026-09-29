@@ -483,6 +483,7 @@ const HIDDEN_BY_DEFAULT: ReadonlySet<WidgetKey> = new Set<WidgetKey>([
   "quicklinks",
   "avatar",
   "pomodoro",
+  "todo2",
   "notes",
   "notes2",
   "notes3",

@@ -21,7 +21,8 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: min(var(--right-dock-width), 100vw);
+    /* 90vw: see PANEL_MAX_VIEWPORT_SHARE in hooks/useEdgePanel.ts. */
+    width: min(var(--right-dock-width), 90vw);
     /* Transparent surface - unlike the bookmarks RightSidebar (which
        paints a solid dark panel for legibility against tiny favicon +
        text rows), the dock hosts widgets that already paint their own

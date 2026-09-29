@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import TextInput from "../../components/ui/TextInput/TextInput";
-import { resolveSurfaceFrost } from "../../config/widgetConfig";
+import {
+  resolveSurfaceFrost,
+  type TodoKey,
+} from "../../config/widgetConfig";
 import { useWidgetSettings } from "../../hooks/useWidgetSettings";
 import { useT } from "../../i18n/i18n";
 import {
@@ -16,16 +19,13 @@ import {
   readLegacyTodos,
 } from "../../storage/legacyMigrations";
 import {
-  readSync as readPersisted,
-  write as writePersisted,
-} from "../../storage/hybridStorage";
+  flushPersistTodos,
+  persistTodos,
+  readTodos,
+  subscribeTodos,
+  type TodoItem,
+} from "../../storage/todoStorage";
 import "./Todo.css";
-
-interface TodoItem {
-  id: string;
-  text: string;
-  checked: boolean;
-}
 
 // Keep aligned with the leave animation duration in Todo.css. The
 // item stays mounted for this long after the user clicks delete so
@@ -37,76 +37,9 @@ const REMOVE_ANIM_MS = 340;
 // this many ms so the bouncy pop plays once per completion.
 const COMPLETE_ANIM_MS = 480;
 
-// Storage key. Renamed from the bare "todo_data" used during dev to
-// the namespaced "ghiblify_todo" so every persisted entry the app
-// owns starts with the same prefix. The migration helper below
-// folds any old "todo_data" value into the new key on first read.
-const STORAGE_KEY = "ghiblify_todo";
-
-// Debounced persist - coalesces typing bursts on the inline edit
-// input so the storage layer doesn't take a write per keystroke.
-// Module-scoped because the timer needs to survive remounts (the
-// user tapping out of edit mode and back in shouldn't drop a pending
-// write). Multiple Todo instances (canvas + dock) all share this
-// timer + the broadcast event below so they stay in sync.
-let persistTimer: number | null = null;
-let persistPendingValue: TodoItem[] | null = null;
-// Cross-instance sync: when one Todo widget updates the list, every
-// other mounted Todo (e.g. the dock copy) needs to re-render to the
-// new array. We dispatch a custom event with the next array as the
-// detail and have each instance subscribe.
-const TODO_CHANGE_EVENT = "ghiblify:todo:change";
-const broadcastTodos = (next: TodoItem[]) => {
-  window.dispatchEvent(
-    new CustomEvent<TodoItem[]>(TODO_CHANGE_EVENT, { detail: next })
-  );
-};
-const persistTodos = (next: TodoItem[]) => {
-  persistPendingValue = next;
-  // Sibling instances should reflect the change immediately, even
-  // before the debounced storage write commits. Fire the event on
-  // every call to persistTodos.
-  broadcastTodos(next);
-  if (persistTimer != null) window.clearTimeout(persistTimer);
-  persistTimer = window.setTimeout(() => {
-    if (persistPendingValue) writePersisted(STORAGE_KEY, persistPendingValue);
-    persistTimer = null;
-    persistPendingValue = null;
-  }, 300);
-};
-
-// Force-write any pending value immediately. Called on
-// visibilitychange/pagehide so a quick close-mid-typing doesn't drop
-// the last few keystrokes.
-const flushPersistTodos = () => {
-  if (persistTimer != null) {
-    window.clearTimeout(persistTimer);
-    persistTimer = null;
-  }
-  if (persistPendingValue) {
-    writePersisted(STORAGE_KEY, persistPendingValue);
-    persistPendingValue = null;
-  }
-};
-
-// One-time read of the previous in-app key. If we find anything,
-// rewrite it to the new key and delete the old one. Idempotent.
-const readModernTodosOrMigrate = (): TodoItem[] | null => {
-  const current = readPersisted<TodoItem[] | null>(STORAGE_KEY, null);
-  if (current && current.length) return current;
-  try {
-    const old = localStorage.getItem("todo_data");
-    if (!old) return null;
-    const parsed = JSON.parse(old) as TodoItem[];
-    writePersisted(STORAGE_KEY, parsed);
-    localStorage.removeItem("todo_data");
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-export const Todo: React.FC = () => {
+export const Todo: React.FC<{ storageKey?: TodoKey }> = ({
+  storageKey = "todo",
+}) => {
   const t = useT();
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -122,7 +55,7 @@ export const Todo: React.FC = () => {
   // bouncy "task completed" pop on the row; stripped after
   // COMPLETE_ANIM_MS so subsequent re-renders don't re-trigger it.
   const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
-  const { settings: todoSettings } = useWidgetSettings("todo");
+  const { settings: todoSettings } = useWidgetSettings(storageKey);
   // settings.width/height are reference-px (1920 baseline); scale to
   // current-viewport px so the widget stays proportional to screen.
   const width = useScaledPx(todoSettings.width);
@@ -133,33 +66,27 @@ export const Todo: React.FC = () => {
   // the widget unmounts, so a quick close-mid-typing doesn't drop
   // the last keystrokes.
   useEffect(() => {
+    const flush = () => flushPersistTodos(storageKey);
     const onVisibility = () => {
-      if (document.visibilityState === "hidden") flushPersistTodos();
+      if (document.visibilityState === "hidden") flush();
     };
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pagehide", flushPersistTodos);
+    window.addEventListener("pagehide", flush);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pagehide", flushPersistTodos);
-      flushPersistTodos();
+      window.removeEventListener("pagehide", flush);
+      flush();
     };
-  }, []);
+  }, [storageKey]);
 
   // Cross-instance sync: when any other Todo widget calls
   // persistTodos, mirror the new list into our local state so canvas
   // and dock instances stay in lockstep without a page reload.
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const next = (e as CustomEvent<TodoItem[]>).detail;
-      if (Array.isArray(next)) setTodos(next);
-    };
-    window.addEventListener(TODO_CHANGE_EVENT, handler);
-    return () => window.removeEventListener(TODO_CHANGE_EVENT, handler);
-  }, []);
+  useEffect(() => subscribeTodos(storageKey, setTodos), [storageKey]);
 
   useEffect(() => {
-    const savedTodos = readModernTodosOrMigrate();
-    if (savedTodos && savedTodos.length) {
+    const savedTodos = readTodos(storageKey);
+    if (savedTodos.length || storageKey !== "todo") {
       setTodos(savedTodos);
       return;
     }
@@ -171,13 +98,13 @@ export const Todo: React.FC = () => {
     readLegacyTodos().then((legacy) => {
       if (cancelled || !legacy || !legacy.length) return;
       setTodos(legacy);
-      persistTodos(legacy);
+      persistTodos("todo", legacy);
       clearLegacyTodos();
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [storageKey]);
 
   const addTodo = () => {
     if (!inputValue.trim()) return;
@@ -188,7 +115,7 @@ export const Todo: React.FC = () => {
     };
     setTodos((prev) => {
       const next = [...prev, newTodo];
-      persistTodos(next);
+      persistTodos(storageKey, next);
       return next;
     });
     setEnteringIds((prev) => {
@@ -217,7 +144,7 @@ export const Todo: React.FC = () => {
       const next = prev.map((t) =>
         t.id === id ? { ...t, checked: !t.checked } : t
       );
-      persistTodos(next);
+      persistTodos(storageKey, next);
       return next;
     });
     if (becomingChecked) {
@@ -246,7 +173,7 @@ export const Todo: React.FC = () => {
     window.setTimeout(() => {
       setTodos((prev) => {
         const next = prev.filter((t) => t.id !== id);
-        persistTodos(next);
+        persistTodos(storageKey, next);
         return next;
       });
       setRemovingIds((prev) => {
@@ -261,7 +188,7 @@ export const Todo: React.FC = () => {
   const updateTodoText = (id: string, newText: string) => {
     setTodos((prev) => {
       const next = prev.map((t) => (t.id === id ? { ...t, text: newText } : t));
-      persistTodos(next);
+      persistTodos(storageKey, next);
       return next;
     });
   };
@@ -399,7 +326,7 @@ export const Todo: React.FC = () => {
       if (fromIdx < targetIdx) insertAt -= 1;
       if (pos === "after") insertAt += 1;
       next.splice(insertAt, 0, removed);
-      persistTodos(next);
+      persistTodos(storageKey, next);
       return next;
     });
     resetDrag();

@@ -72,35 +72,43 @@ src/
 ├── hooks/
 │   ├── useBackground.ts               # picks a random film background
 │   ├── useInfoConfig.ts               # film metadata for Info widget
-│   └── useWeather.ts                  # Open-Meteo fetch + cache for Weather widget
+│   ├── useWeather.ts                  # Open-Meteo fetch + cache for Weather widget
+│   └── useWidgetSettings.ts           # surface-aware (canvas/dock) settings read + write
 ├── storage/
 │   ├── hybridStorage.ts               # chrome.storage source + local mirror
 │   ├── backgroundStorage.ts           # filters + film selection persistence
+│   ├── todoStorage.ts                 # task lists, one hybrid key per todo slot
 │   └── legacyMigrations.ts            # one-shot read of v1 quickLinks blob
-├── components/                        # stateless, reusable UI (Button, Dropdown, …)
-│   └── RightClickEditModal/           # the right-click edit panel + the pickers only it uses
-└── containers/
-    ├── Background/, LeftSidebar/      # full-bleed layout pieces
-    ├── RightSidebar/                  # bookmarks slide-out panel
-    ├── RightDock/                     # dock surface + dock widget wrapper
-    ├── WidgetRenderer/                # one content renderer for canvas + dock
+├── components/
+│   ├── ui/                            # stateless primitives (Button, Dropdown, Icons, WidgetIcon, …)
+│   ├── dialogs/                       # the app's modals
+│   ├── editor/                        # the widget edit panel (EditWidget) + the pickers only it uses
+│   └── overlays/                      # ambient page-level pieces (CursorEffect, RightDockGuide, …)
+├── layout/
+│   ├── Background/, LeftSidebar/      # full-bleed layout pieces
+│   ├── RightSidebar/                  # bookmarks slide-out panel
+│   └── RightDock/                     # dock surface + dock widget wrapper
+└── widgets/
     ├── Widget/Widget.tsx              # universal drag/resize/edit wrapper
-    └── Widgets/                       # 12 canvas widgets (+ Bookmarks and dock surfaces)
+    ├── WidgetRenderer/                # one content renderer for canvas + dock
+    └── <Name>/                        # the 12 widgets (Notes and Todo also fill extra slots)
 ```
 
-`components/` = dumb. `containers/` = stateful, knows about layout/context.
+`components/ui/` = dumb. Everything else (`dialogs/`, `editor/`, `overlays/`, `layout/`, `widgets/`) may be stateful and read context.
 
 ## Adding/modifying a widget
 
 You usually touch three places:
 
 1. `src/config/widgetConfig.ts` - define the settings type, add to `WidgetSettingsMap`, `WIDGET_KEYS`, `WIDGET_CONFIGS`, and the applicable placement lists (`CANVAS_WIDGET_KEYS`, `LEFT_SIDEBAR_WIDGET_KEYS`, `DOCK_WIDGET_KEYS`)
-2. `src/containers/Widgets/<Name>/<Name>.tsx` - the widget itself; reads `widgets[key].settings` from `useAppContext()`
-3. `src/containers/WidgetRenderer/WidgetRenderer.tsx` - map the key to its content once; the canvas and dock both reuse it
+2. `src/widgets/<Name>/<Name>.tsx` - the widget itself; reads `widgets[key].settings` from `useAppContext()`
+3. `src/widgets/WidgetRenderer/WidgetRenderer.tsx` - map the key to its content once; the canvas and dock both reuse it
 
 `App.tsx` and `LeftSidebar.tsx` do not need a new render branch. `AppContext.tsx` only changes if the widget should default to hidden (`HIDDEN_BY_DEFAULT`). Add a glyph to `WidgetIcon.tsx` if the widget appears in a picker.
 
 Exceptions: `bookmarks` and `rightSidebar` live in `WIDGET_KEYS` for shared visibility plumbing but are not canvas widgets. Bookmarks renders in `RightSidebar`; `rightSidebar` controls the `RightDock`. Their positions are unused.
+
+More than one of a widget = extra fixed keys ("slots"): `notes2`-`notes4` (`NOTE_KEYS`) and `todo2` (`TODO_KEYS`). They are canvas-only, hidden by default, and revealed blank from the first instance's edit panel. Append any new key to the END of `WIDGET_KEYS`: its index is the default `dockOrder`, so inserting mid-list reshuffles existing docks. See `guide/widgets.md`.
 
 See `guide/widgets.md` for the full walkthrough.
 

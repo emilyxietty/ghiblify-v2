@@ -144,7 +144,8 @@
       "googleApps": "Google 应用",
       "notes2": "便签 2",
       "notes3": "便签 3",
-      "notes4": "便签 4"
+      "notes4": "便签 4",
+      "todo2": "待办列表 2"
     },
     "tooltip": {
       "show": "显示 {{name}} 小组件",
@@ -279,7 +280,10 @@
       "surfaceHighlights": "高亮",
       "notesNewLabel": "便签",
       "notesNew": "新建便签",
-      "notesNewFull": "最多 {{max}} 张便签"
+      "notesNewFull": "最多 {{max}} 张便签",
+      "todoNewLabel": "列表",
+      "todoNew": "新建列表",
+      "todoNewFull": "最多 {{max}} 个列表"
     },
     "gapps": {
       "menuAria": "Google 应用",

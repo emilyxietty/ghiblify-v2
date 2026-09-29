@@ -49,6 +49,8 @@ import {
   isNoteKey,
   NOTE_KEYS,
   type NoteKey,
+  isTodoKey,
+  TODO_KEYS,
 } from "../../../config/widgetConfig";
 import {
   useAppContext,
@@ -60,6 +62,7 @@ import {
   getDeviceLocationLabel,
 } from "../../../hooks/useWeather";
 import { useT } from "../../../i18n/i18n";
+import { clearTodoList } from "../../../storage/todoStorage";
 import {
   POMODORO_SOUND_KEYS,
   isPomodoroSoundKey,
@@ -1050,7 +1053,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
       className={`edit-panel${
         (highlightTuneOpen && supportsHighlight && highlightValue) ||
         (surfaceTuneOpen && controls?.todoFrosted && supportsSlider) ||
-        (rowTuneOpen && storageKey === "todo") ||
+        (rowTuneOpen && isTodoKey(storageKey)) ||
         (surfaceTuneOpen && storageKey === "pomodoro")
           ? " edit-panel-expanded"
           : ""
@@ -1138,20 +1141,18 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         <p className="edit-panel-empty">{t("widgets.edit.noCustomization")}</p>
       )}
 
-      {/* The greeting's name. Clicking the name on the widget edits it
-          in place too, but that affordance is invisible until you know
-          it's there - so the panel, where every other greeting setting
-          lives, carries it as well. Live: each keystroke lands on the
-          widget. Enter just drops focus; the row must not let it reach
-          the document handler that reads Enter as "close the panel". */}
       {/* Another sticky note. The app keys widgets by fixed name, so the
           pool is four slots (NOTE_KEYS); "new" reveals the first hidden
-          one, blank, wearing this note's paper and size, a step down
-          and right so it never lands exactly on top. Hiding a note (the
-          panel's eye button) is how one goes away; the slot comes back
-          blank next time. */}
+          extra one, blank, wearing this note's paper and size, a step
+          down and right so it never lands exactly on top. Hiding a note
+          (the panel's eye button) is how one goes away; the slot comes
+          back blank next time. Never `notes` itself: hidden on the
+          canvas it can still be showing in the dock, and revealing it
+          would blank that note. */}
       {isNotes && !isDock && (() => {
-        const next = NOTE_KEYS.find((k) => !committedWidgets[k].visible);
+        const next = NOTE_KEYS.find(
+          (k) => k !== "notes" && !committedWidgets[k].visible,
+        );
         const current = committedWidgets[storageKey as NoteKey];
         const addNote = () => {
           if (!next) return;
@@ -1204,6 +1205,91 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         );
       })()}
 
+      {/* A second to-do list, on the notes' terms: "new" reveals the
+          free slot blank, wearing this list's look and size, placed
+          beside it. Only the extra slots are ever handed out - never
+          `todo` itself, whose tasks the dock may still be showing. */}
+      {isTodoKey(storageKey) && !isDock && (() => {
+        const slots = TODO_KEYS.filter(
+          (k) => k !== "todo" && k !== storageKey,
+        );
+        if (slots.length === 0) return null;
+        const next = slots.find((k) => !committedWidgets[k].visible);
+        const current = committedWidgets[storageKey];
+        const addList = () => {
+          if (!next) return;
+          const src = current.settings;
+          clearTodoList(next);
+          updateCanvasWidgetSettings(next, {
+            width: src.width,
+            height: src.height,
+            opacity: src.opacity,
+            blur: src.blur,
+            frosted: src.frosted,
+            frostDark: src.frostDark,
+            surfaceColor: src.surfaceColor ?? null,
+            textColor: src.textColor,
+            rowColor: src.rowColor ?? null,
+            rowOpacity: src.rowOpacity,
+            rowBlur: src.rowBlur,
+            rowTextColor: src.rowTextColor,
+          });
+          // Side by side at the same height: one list-width (plus a
+          // small gap) to the right, or to the left when the right
+          // edge is too close; a step down-right if neither fits.
+          const widthVw = anchorEl
+            ? (anchorEl.getBoundingClientRect().width / window.innerWidth) *
+              100
+            : 20;
+          const step = widthVw + 1.5;
+          const fits = (x: number) =>
+            x - widthVw / 2 >= 0.5 && x + widthVw / 2 <= 99.5;
+          const { x, y } = current.position;
+          const nextX = fits(x + step)
+            ? x + step
+            : fits(x - step)
+              ? x - step
+              : Math.min(92, x + 4);
+          updateWidgetPosition(next, {
+            x: nextX,
+            y: fits(x + step) || fits(x - step) ? y : Math.min(88, y + 4),
+          });
+          toggleWidgetVisibility(next);
+          setEditingWidgetKey(next);
+        };
+        return (
+          <Row label={t("widgets.edit.todoNewLabel")}>
+            <Button
+              className="edit-panel-location-button"
+              size="small"
+              variant="outline-light"
+              disabled={!next}
+              aria-label={t("widgets.edit.todoNew")}
+              data-tooltip={
+                next
+                  ? t("widgets.edit.todoNew")
+                  : t("widgets.edit.todoNewFull", { max: TODO_KEYS.length })
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                addList();
+              }}
+            >
+              <AddIcon style={{ fontSize: 14 }} />
+              <span className="edit-panel-location-text">
+                {t("widgets.edit.todoNew")}
+              </span>
+            </Button>
+          </Row>
+        );
+      })()}
+
+      {/* The greeting's name. Clicking the name on the widget edits it
+          in place too, but that affordance is invisible until you know
+          it's there - so the panel, where every other greeting setting
+          lives, carries it as well. Live: each keystroke lands on the
+          widget. Enter just drops focus; the row must not let it reach
+          the document handler that reads Enter as "close the panel". */}
       {storageKey === "greeting" && (
         <Row label={t("widgets.contextMenu.greetingName")}>
           <input
@@ -1519,7 +1605,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
 
       {!isAvatarPanel && surfaceRow}
 
-      {storageKey === "todo" && (
+      {isTodoKey(storageKey) && (
         <div className="edit-panel-slider-row">
           <span className="edit-panel-row-label">
             {t("widgets.edit.surfaceHighlights")}
@@ -1977,7 +2063,7 @@ const EditWidget: React.FC<EditWidgetProps> = ({
         </div>
       )}
 
-      {rowTuneOpen && storageKey === "todo" && (
+      {rowTuneOpen && isTodoKey(storageKey) && (
         <div className="edit-panel-side">
           <ColorTuning
             onClose={() => setRowTuneOpen(false)}
