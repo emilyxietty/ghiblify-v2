@@ -15,125 +15,17 @@
    page; only the per-component theme overrides stay in this file. */
 @import "./styles/themePalettes.css";
 
+/* The base tokens every palette inherits (text, sidebar surfaces, focus
+   ring, radii, z-tiers, UI chrome) live in themePalettes.css's :root.
+   Never redeclare one here: this rule lands after the @import with the
+   same specificity as a `.theme-*` block, so a repeat beats every
+   palette - the sidebar and all text stuck on the default colours the
+   last time it happened. Only tokens the Options page never uses go
+   here. */
 :root {
-    /* Text - same across themes (themes can override if they want) */
-    --light: rgba(240, 227, 196, 0.95);
-    --light-muted: rgba(240, 227, 196, 0.6);
-
-    /* Drop-shadow color used by Time/Date over the photo background.
-       Dark by default (white text + dark shadow). Light themes override
-       to a near-white shadow so dark text gets a luminous halo. */
-    --text-shadow-color: rgba(0, 0, 0, 0.6);
-
-    /* Disabled */
-    --disabled-dark: rgba(70, 75, 65, 0.55);
-    --disabled-light: rgba(190, 180, 155, 0.55);
-
-    /* Sidebar surfaces */
-    --sidebar-bg: rgba(31, 38, 32, 0.86);
-    --sidebar-card: rgba(20, 26, 22, 0.55);
-
-    /* Focus ring - soft pink, palette-agnostic. Reads as "active"
-       on every backdrop without competing with the warm palette
-       accents (which use --yellow). Light/dark/frost themes
-       override below for contrast reasons. */
-    --focus-ring: rgba(245, 130, 165, 0.9);
     --interaction-accent: #8fc7e8;
     --interaction-accent-strong: #6fb5dc;
 
-    /* High-contrast overridable params */
-    --focus-ring-width: 2px;
-    --widget-border-alpha: 0;
-
-    /* Border-radius scale. Use these instead of ad-hoc px values so
-       the corner softness reads as a coherent system across widgets,
-       inputs, popovers, and modals.
-         xs - micro: scrollbar thumbs, tiny chips
-         sm - small detail: kbd, tooltip, base button
-         md - inputs, link tiles, small image surfaces
-         lg - widget shells, popovers, dropdown menus
-         xl - modals, large container surfaces
-         pill - pill buttons, segments, nav arrows
-
-       Every step derives from --radius-unit, so the whole system moves
-       together when the user picks a corner style (Settings →
-       Appearance). At the default unit of 4px the scale evaluates to
-       the values it has always had: 4 / 6 / 8 / 12 / 16. */
-    --radius-unit: 4px;
-    --radius-xs: calc(var(--radius-unit) * 1);
-    --radius-sm: calc(var(--radius-unit) * 1.5);
-    --radius-md: calc(var(--radius-unit) * 2);
-    --radius-lg: calc(var(--radius-unit) * 3);
-    --radius-xl: calc(var(--radius-unit) * 4);
-    --radius-pill: 999px;
-
-    /* Concentric corners. A surface sitting flush inside another, with
-       `--nest-inset` of padding between them, needs its own radius to
-       be the outer one MINUS that inset - otherwise the two curves run
-       at different rates and the gap between them visibly pinches at
-       the corners. Containers set --nest-inset; children use these.
-       Floored at 0 so a tight inset can't produce a negative radius. */
-    /* Interactive controls - inputs, add-buttons, pills. One step
-       rounder than a surface, so at "Soft" a 38px-tall input reads as a
-       capsule while a card stays a card. */
-    --radius-control: var(--radius-lg);
-
-    /* Padding multiplier. Rounder corners need more breathing room:
-       the curve eats into the corner, so text that sat comfortably at
-       12px starts crowding the edge at a 24px radius. Surfaces that
-       opt in multiply their padding by this. */
-    --pad-scale: 1;
-
-    /* Corner rounding for the text-highlight bar. Expressed in em so it
-       tracks the font size - the same px radius that reads as "rounded"
-       on 16px Info text is invisible behind a 200px clock. */
-    --text-highlight-radius: 0.16em;
-
-    --nest-inset: 0px;
-    --radius-nested-lg: max(0px, calc(var(--radius-lg) - var(--nest-inset)));
-    --radius-nested-md: max(0px, calc(var(--radius-md) - var(--nest-inset)));
-
-    /* Backdrop blur for widget surfaces (Todo input, SearchBar, QuickLinks
-       tiles, Weather forecast cells). No theme overrides these two: a
-       palette that raises them is frosting widget backgrounds by proxy,
-       which is a per-widget opt-in, not a palette's call. */
-    --surface-blur: 6px;
-    /* Saturation multiplier baked into the backdrop-filter. 1 = no
-       change. */
-    --surface-saturate: 1;
-    /* Hard upper bound on the alpha of widget surfaces. 1 = no cap, the
-       opacity slider drives the surface fully. No theme lowers it: a
-       palette must not quietly override what the user set on a widget
-       (Frost used to cap at 0.22 to keep its glass translucent). Kept
-       as a token for the per-widget frosted surfaces to use. */
-    --surface-alpha-cap: 1;
-
-    /* Surface RGB triple for widget cards / modals / tooltips - anything
-       that paints `rgba(<this>, alpha)` as its background.
-       Defaults to the active palette's --dark-rgb so widgets pick
-       up the palette tint on most themes.
-       The Frost theme remaps --dark-rgb to white (because Frost is
-       a "dark glass" palette where the photo behind shows through
-       every widget), which would render every card white-on-white.
-       Frost overrides --surface-rgb to a fixed dark slate further
-       down. Modals, tooltips, and per-widget cards use this token
-       instead of --dark-rgb directly so Frost works without per-
-       site overrides. */
-    --surface-rgb: var(--dark-rgb, 31, 38, 32);
-
-    /* Z-index tiers. Use these instead of ad-hoc values so layers
-       compose predictably. Existing in-stacking-context values
-       (1, 2, 5, 6, 30, 70, 100, 1000, 2000, 6000, 9000, 9999) are
-       fine as raw numbers - these tokens cover the cross-component
-       layers that previously used arms-race values like 10M / 20T. */
-    --z-edit-overlay: 10000;
-    /* dim covering sidebars + widgets in edit mode */
-    --z-edit-overlay-content: 10001;
-    /* widget content that must poke above the dim */
-    --z-edit-panel-base: 90000;
-    /* widget edit panels - they stack among themselves (see the counter
-       in EditWidget.tsx) but stay under every floating layer, so a menu
-       opened FROM a panel always paints above it */
     /* Guide highlight colour, as an RGB triple so callers can vary
        alpha freely. Cool white rather than the palette amber: the
        spotlight has to read as "the app is pointing at this", and an
@@ -141,43 +33,13 @@
        already use for their own accents. */
     --guide-glow: 255, 255, 255;
 
-    --z-tutorial-widget: 100050;
-    /* guide-only: lifts the widget being demoed, and the edit panel it
+    /* Guide-only: lifts the widget being demoed, and the edit panel it
        opens, above the guide dialog (100002). The panel's own counter
        tops out at 99000, so during the guide it would otherwise paint
        BEHIND the very box telling you to use it. Kept under --z-portal
        so menus opened from the panel still stack above it. */
+    --z-tutorial-widget: 100050;
     --z-tutorial-panel: 100051;
-    --z-portal: 100100;
-    /* body-portaled context menus + dropdowns (above modals at 100002) */
-    --z-resize-handle: 100200;
-    /* always-on-top corner grip */
-    --z-tutorial-pulse: 100201;
-    /* tutorial-only pulse above the handle */
-    --z-tooltip: 100300;
-    /* tooltips + transient callouts (offline, drag hints, bookmarks/dock
-       callouts, tutorial callouts) - highest tier; must read above
-       EVERYTHING (modals, sidebars, pulses) since they're contextual help
-       that the user is actively reaching for */
-
-    /* UI chrome tokens. Use these for buttons, dropdowns, tooltips,
-       pills, callouts - anything that's NOT a widget surface and
-       needs to read consistently against any photo or palette.
-       These are deliberately theme-INDEPENDENT (no theme overrides
-       them). The existing `--dark` / `--light` are intentionally
-       remapped per theme (e.g. Frost makes `--dark` white because
-       the widget glass layer adds darkness over it), which broke
-       any chrome consumer expecting `--dark` to actually be dark.
-       Migrate new chrome to these tokens - no Frost override
-       needed.
-         --ui-chrome-bg        - solid-feeling dark surface
-         --ui-chrome-bg-hover  - slightly lighter on hover
-         --ui-chrome-fg        - readable text
-         --ui-chrome-border    - subtle 1px outline */
-    --ui-chrome-bg: rgba(20, 26, 32, 0.78);
-    --ui-chrome-bg-hover: rgba(20, 26, 32, 0.9);
-    --ui-chrome-fg: rgba(255, 255, 255, 0.96);
-    --ui-chrome-border: rgba(255, 255, 255, 0.18);
 }
 
 /* ===========================================================================
