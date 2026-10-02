@@ -7,6 +7,18 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
+## 2.5.4 — 2026-10-02
+
+**Backgrounds**
+- Right-click the sidebar's background row for a menu: the picker's
+  "N of M images selected" count, Select all, and Keep only favourites
+  (N), which empties every film except its hearted images. With nothing
+  hearted the row reads Deselect all. An open picker follows along, and
+  the wallpaper is only re-picked when the one on screen leaves the
+  rotation.
+- Deselecting everything shows a bundled still (as offline does)
+  instead of a black "No background found" screen.
+
 ## 2.5.3 — 2026-10-02
 
 **Palettes**
