@@ -7,6 +7,26 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
+## 2.5.3 — 2026-10-02
+
+**Palettes**
+- Picking a palette recolours the app again. Consolidating the palettes
+  after 2.5.1 left a second copy of the default colours in App.css that
+  overrode every palette, so the sidebar stayed dark green with pale
+  cream text whichever palette was chosen (light palettes painted pale
+  text on pale buttons), and widget surfaces, text shadows, the focus
+  ring and high-contrast borders ignored the palette too. The 2.5.2
+  builds carried this.
+
+**Clock**
+- The minute changes on the second. The clock ticked on a one-second
+  timer started whenever the tab opened, so it rolled over up to a
+  second after the system clock; it now ticks on whole seconds and
+  catches up as soon as a background tab is shown again. The date at
+  midnight follows the same clock.
+- Equal-width digits, so the clock no longer slides sideways as the
+  minutes change.
+
 ## 2.5.2 — 2026-09-29
 
 **Sticky notes**
