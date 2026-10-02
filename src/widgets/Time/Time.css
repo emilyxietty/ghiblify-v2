@@ -12,6 +12,10 @@
        can tune it via EditWidget. */
     color: white;
     font-weight: 600;
+    /* Equal-width digits: the clock is centred on its own width, so
+       proportional figures ("1:11" is ~30% narrower than "4:48") slid
+       the whole clock sideways every time the minute changed. */
+    font-variant-numeric: tabular-nums;
     text-shadow:
         0 2px 8px rgba(0, 0, 0, calc(0.32 * var(--text-shadow-strength, 1))),
         0 4px 22px rgba(0, 0, 0, calc(0.28 * var(--text-shadow-strength, 1)));
