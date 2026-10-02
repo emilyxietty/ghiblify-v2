@@ -91,6 +91,12 @@
     "edgePanel": {
       "label": "Painel direito",
       "off": "Desligado"
+    },
+    "backgroundMenu": {
+      "selectAll": "Selecionar tudo",
+      "keepFavourites": "Manter só os favoritos ({{count}})",
+      "deselectAll": "Desmarcar tudo",
+      "hint": "Clique direito: selecionar tudo ou manter só os favoritos"
     }
   },
   "rightDock": {

@@ -232,9 +232,15 @@ export const useBackground = () => {
               setCurrentBackground(found.link);
               setFilmTitle(meta?.title || "");
             } else {
-              // Nothing selected anywhere; clear selection
-              setCurrentBackground("");
-              setFilmTitle("");
+              // Nothing selected anywhere - the sidebar's "Deselect all"
+              // gets here in one click. A bundled still, like offline:
+              // it belongs to no film's selection, so showing it
+              // contradicts nothing, and a black "no background found"
+              // screen read as a crash.
+              const pick =
+                OFFLINE_FALLBACKS[Math.floor(Math.random() * OFFLINE_FALLBACKS.length)];
+              setCurrentBackground(chrome.runtime.getURL(pick.path));
+              setFilmTitle(metadataData[pick.film]?.title || "");
             }
           }
           setLoading(false);

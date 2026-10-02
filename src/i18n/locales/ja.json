@@ -96,6 +96,12 @@
     "edgePanel": {
       "label": "右パネル",
       "off": "オフ"
+    },
+    "backgroundMenu": {
+      "selectAll": "すべて選択",
+      "keepFavourites": "お気に入りだけ残す（{{count}}枚）",
+      "deselectAll": "すべて選択解除",
+      "hint": "右クリック：すべて選択、またはお気に入りだけ残す"
     }
   },
   "rightDock": {

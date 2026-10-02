@@ -96,6 +96,12 @@
     "edgePanel": {
       "label": "右侧面板",
       "off": "关闭"
+    },
+    "backgroundMenu": {
+      "selectAll": "全选",
+      "keepFavourites": "只保留收藏（{{count}} 张）",
+      "deselectAll": "全部取消选择",
+      "hint": "右键：全选，或只保留收藏"
     }
   },
   "rightDock": {

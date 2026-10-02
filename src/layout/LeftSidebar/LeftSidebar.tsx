@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { assetUrl } from "../../utils/assetUrl";
 // Lazy - these dialogs only render when the user clicks their trigger,
 // so each becomes its own chunk fetched on first open. They eagerly
@@ -67,7 +67,9 @@ import { visiblePanelWidth } from "../../hooks/useEdgePanel";
 import {
   DEFAULT_FILTERS,
   readFavorites,
+  readImageSelection,
   writeFavorites,
+  writeImageSelection,
 } from "../../storage/backgroundStorage";
 import "./LeftSidebar.css";
 
@@ -108,6 +110,10 @@ const THEME_KEYS: ThemeName[] = [
  *  its own layout constraint), one tile represents the edge and a
  *  picker chooses which panel occupies it. */
 const EDGE_PANEL_KEYS = ["bookmarks", "rightSidebar"] as const;
+
+/** Every film in background.json with all of its images, stills and
+ *  animated alike - the shape the selection is written against. */
+type BackgroundLibrary = Array<{ title: string; images: string[] }>;
 
 const FILTER_UNITS: Record<keyof BackgroundFilters, "px" | "percent"> = {
   blur: "px",
@@ -200,6 +206,73 @@ export const LeftSidebar: React.FC = () => {
     setFavorites(next);
     writeFavorites(Array.from(next));
     window.dispatchEvent(new CustomEvent("ghiblify:favorites:change"));
+  };
+
+  // Right-click on the background row: every image back in, or only
+  // the favourites. Both write the selection per film, so they need
+  // the library - fetched the first time the menu opens (the browser
+  // has it cached from useBackground's own load) and kept after that.
+  const [bgMenu, setBgMenu] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [bgLibrary, setBgLibrary] = useState<BackgroundLibrary | null>(null);
+  const bgLibraryLoad = useRef<Promise<BackgroundLibrary> | null>(null);
+  const loadBackgroundLibrary = (): Promise<BackgroundLibrary> => {
+    if (!bgLibraryLoad.current) {
+      bgLibraryLoad.current = fetch(assetUrl("background.json"))
+        .then((res) => res.json())
+        .then(
+          (data: {
+            sources?: Array<{
+              title: string;
+              links?: string[];
+              animated?: string[];
+            }>;
+          }) =>
+            (data.sources ?? []).map((source) => ({
+              title: source.title,
+              images: [...(source.links ?? []), ...(source.animated ?? [])],
+            })),
+        )
+        .catch((err) => {
+          bgLibraryLoad.current = null;
+          throw err;
+        });
+    }
+    return bgLibraryLoad.current;
+  };
+  const openBackgroundMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setBgMenu({ x: e.clientX, y: e.clientY });
+    loadBackgroundLibrary().then(setBgLibrary, () => {});
+  };
+  const announceSelectionChange = () =>
+    window.dispatchEvent(new CustomEvent("ghiblify:background:selection"));
+  const selectAllBackgrounds = () => {
+    writeImageSelection({});
+    announceSelectionChange();
+    // An empty pool shows a bundled fallback, or nothing at all when
+    // even the default was deselected; with the library back, show a
+    // real one straight away.
+    if (!currentBackground || !/^https?:/.test(currentBackground)) {
+      window.dispatchEvent(new CustomEvent("ghiblify:background:refresh"));
+    }
+  };
+  const keepOnlyFavouriteBackgrounds = () => {
+    loadBackgroundLibrary().then((library) => {
+      const next: Record<string, string[]> = {};
+      library.forEach((film) => {
+        const kept = film.images.filter((url) => favorites.has(url));
+        // A film whose every image is a favourite is "all of it", which
+        // is stored as no entry - the convention the picker keeps too.
+        if (kept.length < film.images.length) next[film.title] = kept;
+      });
+      writeImageSelection(next);
+      announceSelectionChange();
+      if (currentBackground && !favorites.has(currentBackground)) {
+        window.dispatchEvent(new CustomEvent("ghiblify:background:refresh"));
+      }
+    }, () => {});
   };
 
   // Live weather icon for the toggle - mirrors whatever Meteocons
@@ -380,7 +453,7 @@ export const LeftSidebar: React.FC = () => {
   // reveal) and a sidebar that's already open stays open.
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging || toggleMenu || edgeMenu) return;
+      if (isDragging || toggleMenu || edgeMenu || bgMenu) return;
       const sidebarWidth = visiblePanelWidth(SIDEBAR_WIDTH);
       if (e.clientX < SIDEBAR_EDGE_TRIGGER) setIsOpen(true);
       else if (isOpen && !showGuide && e.clientX > sidebarWidth)
@@ -388,7 +461,7 @@ export const LeftSidebar: React.FC = () => {
     };
     document.addEventListener("mousemove", handleMouseMove);
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [edgeMenu, isOpen, showGuide, isDragging, toggleMenu]);
+  }, [bgMenu, edgeMenu, isOpen, showGuide, isDragging, toggleMenu]);
 
   useEffect(() => {
     if (isOpen) return;
@@ -1030,13 +1103,14 @@ export const LeftSidebar: React.FC = () => {
                 </button>
               </div>
             </details>
-            <div className="background-actions">
+            <div className="background-actions" onContextMenu={openBackgroundMenu}>
               <Button
                 variant="dark"
                 onClick={() => setShowBackgroundSettings((s) => !s)}
                 aria-haspopup="dialog"
                 aria-expanded={showBackgroundSettings}
                 className="background-actions-select"
+                data-tooltip={t("sidebar.backgroundMenu.hint")}
               >
                 {t("sidebar.buttons.selectBackgrounds")}
               </Button>
@@ -1370,6 +1444,62 @@ export const LeftSidebar: React.FC = () => {
               onClose={() => {
                 if (sidebarSpotlight !== "widgetEdit") setToggleMenu(null);
               }}
+            />
+          );
+        })()}
+      {bgMenu &&
+        (() => {
+          const items: React.ComponentProps<typeof ContextMenu>["items"] = [];
+          if (bgLibrary) {
+            // Same rule as the picker: a favourite counts as selected
+            // whatever its film's entry says.
+            const selection = readImageSelection();
+            let total = 0;
+            let selected = 0;
+            bgLibrary.forEach((film) => {
+              const chosen = selection[film.title];
+              total += film.images.length;
+              selected += film.images.filter(
+                (url) => favorites.has(url) || !chosen || chosen.includes(url),
+              ).length;
+            });
+            items.push(
+              {
+                type: "info",
+                label: t("background.modal.selectedCount", { selected, total }),
+              },
+              { type: "separator" },
+            );
+          }
+          items.push(
+            {
+              type: "action",
+              label: t("sidebar.backgroundMenu.selectAll"),
+              onClick: () => {
+                selectAllBackgrounds();
+                setBgMenu(null);
+              },
+            },
+            {
+              type: "action",
+              // With nothing hearted there is nothing to keep, so the
+              // row says what it will actually do.
+              label: favorites.size
+                ? t("sidebar.backgroundMenu.keepFavourites", {
+                    count: favorites.size,
+                  })
+                : t("sidebar.backgroundMenu.deselectAll"),
+              onClick: () => {
+                keepOnlyFavouriteBackgrounds();
+                setBgMenu(null);
+              },
+            },
+          );
+          return (
+            <ContextMenu
+              position={bgMenu}
+              items={items}
+              onClose={() => setBgMenu(null)}
             />
           );
         })()}

@@ -96,6 +96,12 @@
     "edgePanel": {
       "label": "오른쪽 패널",
       "off": "끄기"
+    },
+    "backgroundMenu": {
+      "selectAll": "모두 선택",
+      "keepFavourites": "즐겨찾기만 남기기 ({{count}}개)",
+      "deselectAll": "모두 선택 해제",
+      "hint": "우클릭: 모두 선택 또는 즐겨찾기만 남기기"
     }
   },
   "rightDock": {

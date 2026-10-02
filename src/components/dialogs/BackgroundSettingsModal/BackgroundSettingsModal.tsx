@@ -161,8 +161,11 @@ export const BackgroundSettingsModal: React.FC<
   React.useEffect(() => {
     const refresh = () => setImageSelection(readImageSelection());
     window.addEventListener("ghiblify:background:deselect", refresh);
-    return () =>
+    window.addEventListener("ghiblify:background:selection", refresh);
+    return () => {
       window.removeEventListener("ghiblify:background:deselect", refresh);
+      window.removeEventListener("ghiblify:background:selection", refresh);
+    };
   }, []);
 
   // Every image the library knows, and the film it came from. Selection
