@@ -59,6 +59,12 @@ export const AVATAR_OPTIONS: AvatarOption[] = [
     source: "https://giphy.com/molehill",
   },
   {
+    value: "noface",
+    label: "No-Face",
+    src: assetUrl("/assets/avatars/noface.webp"),
+    // creator: TBD
+  },
+  {
     value: "chibi",
     label: "Chibi",
     src: assetUrl("/assets/avatars/chibi.webp"),
