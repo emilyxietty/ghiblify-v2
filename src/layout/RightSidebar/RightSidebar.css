@@ -231,18 +231,11 @@
     position: relative;
 }
 
-.bookmarks-link-item.is-draggable {
-    cursor: grab;
-}
-
-.bookmarks-link-item.is-draggable:active {
+/* Rows are links first: a press is usually a click, so the hand stays
+   until a drag has actually started. */
+.bookmarks-link-item.is-dragging,
+.bookmarks-link-item.is-dragging .bookmarks-link {
     cursor: grabbing;
-}
-
-/* The inner <a> would otherwise show the link cursor on top of the
-   row's grab cursor - keep the row's affordance consistent. */
-.bookmarks-link-item .bookmarks-link {
-    cursor: inherit;
 }
 
 /* Drag-to-reorder visual cues. The dragged item dims; the drop

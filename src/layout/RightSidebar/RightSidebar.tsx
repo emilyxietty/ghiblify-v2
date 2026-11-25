@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { assetUrl } from "../../utils/assetUrl";
-import { hasFaviconCache } from "../../utils/faviconCache";
+import { Favicon } from "../../components/ui/Favicon/Favicon";
 import { EdgePanelCallout } from "../../components/overlays/EdgePanelCallout/EdgePanelCallout";
 import {
   ChevronRightIcon,
@@ -135,29 +135,6 @@ const useChromeBookmarks = (active: boolean) => {
   }, [active]);
 
   return { tree, error };
-};
-
-const getFavicon = (rawUrl: string, size = 32) => {
-  if (!rawUrl) return "";
-  const chromeNs: any = typeof chrome !== "undefined" ? chrome : undefined;
-  if (hasFaviconCache && chromeNs?.runtime?.getURL) {
-    try {
-      const faviconUrl = new URL(chromeNs.runtime.getURL("/_favicon/"));
-      faviconUrl.searchParams.set("pageUrl", rawUrl);
-      faviconUrl.searchParams.set("size", String(size));
-      return faviconUrl.toString();
-    } catch {
-      /* fall through */
-    }
-  }
-  try {
-    const url = new URL(rawUrl);
-    return `https://www.google.com/s2/favicons?sz=${size}&domain=${encodeURIComponent(
-      url.hostname
-    )}`;
-  } catch {
-    return "";
-  }
 };
 
 const matches = (node: BookmarkNode, query: string): boolean => {
@@ -500,7 +477,6 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
 }) => {
   const t = useT();
   const drag = useBmDrag();
-  const favicon = node.url ? getFavicon(node.url) : "";
   const [contextMenuPos, setContextMenuPos] = useState<{
     x: number;
     y: number;
@@ -525,10 +501,6 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
     <li
       className={[
         "bookmarks-link-item",
-        // The grab cursor is a promise the row can't keep under a
-        // sort or a search - reordering only writes back in manual
-        // order, so anything else renders as a plain row.
-        draggable ? "is-draggable" : "",
         isDragging ? "is-dragging" : "",
         isDropTarget ? `drop-target drop-${drag.hoveredPos ?? "before"}` : "",
       ]
@@ -600,19 +572,13 @@ const BookmarkLink: React.FC<BookmarkLinkProps> = ({
           setContextMenuPos({ x: e.clientX, y: e.clientY });
         }}
       >
-        {favicon ? (
-          <img
-            src={favicon}
-            alt=""
-            aria-hidden="true"
-            className="bookmarks-favicon"
-            draggable={false}
-          />
-        ) : (
-          <div className="bookmarks-favicon bookmarks-favicon-fallback" aria-hidden="true">
-            {node.title.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Favicon
+          url={node.url ?? ""}
+          size={32}
+          className="bookmarks-favicon"
+          fallbackClassName="bookmarks-favicon bookmarks-favicon-fallback"
+          fallback={node.title.charAt(0).toUpperCase()}
+        />
         <span className="bookmarks-link-title">{node.title || node.url}</span>
       </a>
       {subtitle && (

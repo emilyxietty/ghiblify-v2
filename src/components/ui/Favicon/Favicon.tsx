@@ -1,27 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { hasFaviconCache } from "../../../utils/faviconCache";
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  faviconCacheUrl,
+  isFaviconCacheUrl,
+  isPlaceholderFavicon,
+} from "../../../utils/faviconCache";
 
 const normalizeUrl = (raw: string): string => {
   const t = raw.trim();
   if (!t) return t;
   if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(t)) return t;
   return `https://${t}`;
-};
-
-
-const chromeFavicon = (pageUrl: string, size: number): string | null => {
-  const ns: any = typeof chrome !== "undefined" ? chrome : undefined;
-  if (!hasFaviconCache || !ns?.runtime?.getURL) return null;
-  try {
-    const url = new URL(ns.runtime.getURL("/_favicon/"));
-    url.searchParams.set("pageUrl", pageUrl);
-    url.searchParams.set("size", String(size));
-    return url.toString();
-  } catch {
-    return null;
-  }
 };
 
 /**
@@ -42,7 +30,7 @@ export const faviconCandidates = (rawUrl: string, size = 64): string[] => {
     if (v && !out.includes(v)) out.push(v);
   };
 
-  push(chromeFavicon(full, size));
+  push(faviconCacheUrl(full, size));
 
   let host = "";
   try {
@@ -51,10 +39,10 @@ export const faviconCandidates = (rawUrl: string, size = 64): string[] => {
     const swapped = host.startsWith("www.")
       ? host.slice(4)
       : `www.${host}`;
-    push(chromeFavicon(`${parsed.protocol}//${swapped}/`, size));
+    push(faviconCacheUrl(`${parsed.protocol}//${swapped}/`, size));
     // Origin-only, in case the cache holds the site's home page but not
     // the deep link that was pasted.
-    push(chromeFavicon(`${parsed.origin}/`, size));
+    push(faviconCacheUrl(`${parsed.origin}/`, size));
   } catch {
     /* unparseable - the chrome entry above is all we have */
   }
@@ -94,12 +82,29 @@ export const Favicon: React.FC<FaviconProps> = ({
 }) => {
   const candidates = faviconCandidates(url, size);
   const [idx, setIdx] = useState(0);
+  // The candidate that loaded and is not the browser's generic globe.
+  const [shown, setShown] = useState(-1);
 
   // A new URL restarts the chain - otherwise an exhausted index from the
   // previous link would render this one as the fallback forever.
   useEffect(() => {
     setIdx(0);
+    setShown(-1);
   }, [url]);
+
+  const next = (from: number) => setIdx((i) => (i === from ? i + 1 : i));
+
+  const onLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const at = idx;
+    if (!isFaviconCacheUrl(candidates[at])) {
+      setShown(at);
+      return;
+    }
+    const img = e.currentTarget;
+    void isPlaceholderFavicon(img, size).then((placeholder) =>
+      placeholder ? next(at) : setShown(at),
+    );
+  };
 
   if (idx >= candidates.length) {
     return (
@@ -116,7 +121,9 @@ export const Favicon: React.FC<FaviconProps> = ({
       aria-hidden="true"
       draggable={false}
       className={className}
-      onError={() => setIdx((i) => i + 1)}
+      style={shown === idx ? undefined : { visibility: "hidden" }}
+      onLoad={onLoad}
+      onError={() => next(idx)}
     />
   );
 };
