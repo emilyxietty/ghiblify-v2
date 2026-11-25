@@ -7,20 +7,7 @@ notes — so this stays as a developer-facing changelog only.
 When bumping the version: update `package.json` + `public/manifest.json`,
 then prepend an entry here.
 
-## 2.5.5 — 2026-11-02
-
-**Backgrounds**
-- 16 new animated backgrounds: rain at the Totoro bus stop and jizo
-  shrine, Totoro under his leaf, Chihiro in the rain, Boh and the soot
-  sprites, konpeito soot sprites, kodama, Ashitaka in the healing pool,
-  the forest canopy, Calcifer, Howl's bedroom, Jiji on the mug shelf and
-  with Lily's kittens, and a plum blossom loop under Soothing.
-- Whisper of the Heart gets its first animated background - Moon asleep.
-
-**Avatar**
-- No-Face joins the avatar picker.
-
-## 2.5.4 — 2026-10-02
+## 2.5.4 — 2026-11-24
 
 **Backgrounds**
 - Right-click the sidebar's background row for a menu: the picker's
@@ -31,6 +18,25 @@ then prepend an entry here.
   rotation.
 - Deselecting everything shows a bundled still (as offline does)
   instead of a black "No background found" screen.
+- 16 new animated backgrounds: rain at the Totoro bus stop and jizo
+  shrine, Totoro under his leaf, Chihiro in the rain, Boh and the soot
+  sprites, konpeito soot sprites, kodama, Ashitaka in the healing pool,
+  the forest canopy, Calcifer, Howl's bedroom, Jiji on the mug shelf and
+  with Lily's kittens, and a plum blossom loop under Soothing.
+- Whisper of the Heart gets its first animated background - Moon asleep.
+
+**Bookmarks**
+- Bookmark icons fall back to the site's icon by hostname, then to its
+  initial, when the browser has none cached. A cache miss used to show
+  the browser's generic globe (or a broken image) with no fallback; the
+  same globe check now covers Quick Links.
+- Clicking a bookmark shows the link cursor instead of the drag hand;
+  the grabbing hand appears only once a drag has started.
+
+**Avatar**
+- No-Face joins the avatar picker.
+
+2.5.5 (2026-11-02) was never published; its changes ship here.
 
 ## 2.5.3 — 2026-10-02
 
